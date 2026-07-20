@@ -3,7 +3,9 @@
  * Fetches data from the Express/MongoDB backend.
  */
 
-const API = '/api'
+// In development, requests proxy through Vite to localhost:4000.
+// In production (Vercel), set VITE_API_URL to your Render backend URL.
+const API = import.meta.env.VITE_API_URL || '/api'
 
 async function fetchJson(url) {
   const res = await fetch(`${API}${url}`)

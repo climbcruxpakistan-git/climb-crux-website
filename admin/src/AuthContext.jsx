@@ -2,7 +2,9 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const AuthContext = createContext(null)
 
-const API = '/api'
+// In development, requests proxy through Vite to localhost:4000.
+// In production (Vercel), set VITE_API_URL to your Render backend URL.
+const API = import.meta.env.VITE_API_URL || '/api'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)

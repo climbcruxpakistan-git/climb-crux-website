@@ -4,7 +4,9 @@
  * Normalises _id → id so admin pages work without change.
  */
 
-const API = '/api'
+// In development, requests proxy through Vite to localhost:4000.
+// In production (Vercel), set VITE_API_URL to your Render backend URL.
+const API = import.meta.env.VITE_API_URL || '/api'
 
 async function request(method, path, body) {
   const opts = {

@@ -11,6 +11,9 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Vercel (local project config & auth tokens)
+.vercel
+
 # Windows reserved names (can't be tracked by git)
 nul
 NUL
