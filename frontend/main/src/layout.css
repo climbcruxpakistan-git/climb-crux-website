@@ -1,0 +1,237 @@
+/* ============================== NAVBAR ============================== */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--chalk);
+  border-bottom: 3px solid var(--orange);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88px;
+}
+
+@media (max-width: 500px) {
+  .navbar-inner { height: 68px; }
+  .navbar-brand img { height: 44px; }
+}
+
+.navbar-brand img {
+  height: 60px;
+}
+
+@media (max-width: 500px) {
+  .navbar-brand img { height: 44px; }
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navbar-link {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.86rem;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  color: var(--charcoal);
+  padding: 10px 16px;
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navbar-link:hover,
+.navbar-link.is-active {
+  background: var(--orange);
+}
+
+.navbar-cta {
+  padding: 0.65em 1.4em;
+  font-size: 0.82rem;
+}
+
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.navbar-toggle span {
+  height: 2px;
+  background: var(--charcoal);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.navbar-toggle.is-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.navbar-toggle.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-toggle.is-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 860px) {
+  .navbar-toggle {
+    display: flex;
+  }
+
+  .navbar-links {
+    position: absolute;
+    top: 88px;
+    left: 0;
+    right: 0;
+    background: var(--chalk);
+    border-bottom: 3px solid var(--orange);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+
+  .navbar-links.is-open {
+    max-height: 480px;
+  }
+
+  .navbar-link {
+    width: 100%;
+    padding: 16px var(--edge);
+    border-bottom: 1px solid var(--chalk-dim);
+  }
+
+  .navbar-link::after {
+    display: none;
+  }
+
+  .navbar-cta {
+    margin: 16px var(--edge) 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  .navbar-links {
+    top: 68px;
+  }
+  .navbar-link {
+    padding: 14px var(--edge);
+    font-size: 0.82rem;
+  }
+  .navbar-cta {
+    width: calc(100% - calc(var(--edge) * 2));
+    text-align: center;
+    font-size: 0.78rem;
+  }
+}
+
+/* ============================== FOOTER ============================== */
+
+.cliff-edge {
+  display: block;
+  width: 100%;
+}
+
+.footer {
+  background: var(--charcoal);
+  color: var(--chalk-dim);
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-top: 8px;
+  padding-bottom: 56px;
+}
+
+.footer-logo {
+  height: 60px;
+  margin-bottom: 16px;
+  filter: brightness(0) invert(1);
+}
+
+.footer-brand p {
+  color: #a9a49a;
+  font-size: 0.92rem;
+}
+
+.footer h4 {
+  color: var(--chalk);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 1em;
+}
+
+.footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer ul a {
+  color: #c9c4b8;
+  font-size: 0.92rem;
+  transition: color 0.15s ease;
+}
+
+.footer ul a:hover {
+  color: var(--orange-light);
+}
+
+.footer-bottom {
+  border-top: 1px solid #4a4a4b;
+}
+
+.footer-bottom-inner {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px var(--edge);
+  font-size: 0.8rem;
+  color: #8f8a80;
+}
+
+@media (max-width: 760px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-bottom-inner {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 0;
+    padding-bottom: 40px;
+  }
+  .footer-logo { height: 48px; }
+  .footer h4 { font-size: 0.78rem; }
+  .footer ul a { font-size: 0.85rem; }
+  .footer-bottom-inner {
+    font-size: 0.72rem;
+    text-align: center;
+  }
+}

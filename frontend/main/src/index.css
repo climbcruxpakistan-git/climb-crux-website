@@ -1,0 +1,269 @@
+/* ===================================================================
+   CLIMB CRUX — Design tokens
+   Palette pulled from the brand mark + the limestone of Margalla Hills.
+   =================================================================== */
+
+:root {
+  /* Brand core (sampled from logo) */
+  --charcoal: #383839;
+  --charcoal-deep: #201f21;
+  --orange: #f36f21;
+  --orange-dark: #cf5711;
+  --orange-light: #ff9455;
+
+  /* Limestone / chalk neutrals — the rock itself */
+  --chalk: #f6f2e9;
+  --chalk-dim: #ece5d5;
+  --stone: #8c8578;
+  --stone-dark: #5a5650;
+  --ink: #201f1c;
+
+  /* Type */
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Work Sans', sans-serif;
+
+  /* Layout */
+  --max-width: 1180px;
+  --edge: clamp(20px, 5vw, 64px);
+  --radius: 3px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--chalk);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--charcoal);
+  margin: 0 0 0.4em;
+  line-height: 1.05;
+}
+
+p {
+  margin: 0 0 1em;
+  color: var(--stone-dark);
+  max-width: 60ch;
+}
+
+:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 3px;
+}
+
+.wrap {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--edge);
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  color: var(--orange);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.9em;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 2px;
+  background: var(--orange);
+  display: inline-block;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 0.95em 1.8em;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: var(--orange);
+  color: var(--chalk);
+}
+
+.btn-primary:hover {
+  background: var(--orange-dark);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--charcoal);
+  color: var(--charcoal);
+  clip-path: none;
+}
+
+.btn-outline:hover {
+  background: var(--charcoal);
+  color: var(--chalk);
+}
+
+.btn-outline-light {
+  background: transparent;
+  border: 2px solid var(--chalk);
+  color: var(--chalk);
+  clip-path: none;
+}
+
+.btn-outline-light:hover {
+  background: var(--chalk);
+  color: var(--charcoal);
+}
+
+/* Grade badge — the site's signature recurring element.
+   Mirrors real climbing route grades, used wherever a session/plan
+   needs to communicate its difficulty at a glance. */
+.grade-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-family: var(--font-display);
+  background: var(--charcoal);
+  color: var(--chalk);
+  padding: 0.4em 0.85em;
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+}
+
+.grade-badge .grade {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--orange-light);
+}
+
+.grade-badge .label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Responsive table-like containers */
+@media (max-width: 560px) {
+  h2 { font-size: clamp(1.2rem, 5.5vw, 1.6rem); }
+  h3 { font-size: clamp(1rem, 5vw, 1.3rem); }
+  h4 { font-size: clamp(0.88rem, 4vw, 1rem); }
+  body { font-size: 15px; }
+  .section { padding: clamp(24px, 5vw, 40px) 0; }
+  .eyebrow { font-size: 0.7rem; }
+  .eyebrow::before { width: 16px; }
+  .btn {
+    font-size: 0.82rem;
+    padding: 0.8em 1.4em;
+    white-space: normal;
+  }
+  .grade-badge .grade { font-size: 0.92rem; }
+  .grade-badge .label { font-size: 0.65rem; }
+}
+
+/* Section rhythm */
+.section {
+  padding: clamp(32px, 6vw, 80px) 0;
+}
+
+.section-dark {
+  background: var(--charcoal);
+  color: var(--chalk);
+}
+
+.section-dark h2, .section-dark h3 {
+  color: var(--chalk);
+}
+
+.section-dark p {
+  color: #c9c4b8;
+}
+
+/* Placeholder imagery — a stand-in "topo" panel until real photos
+   are dropped in. Deliberately looks like a route diagram rather
+   than a generic gray box. */
+.placeholder-photo {
+  position: relative;
+  aspect-ratio: var(--ar, 4 / 3);
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 14px),
+    linear-gradient(155deg, var(--charcoal) 0%, #2c2b2d 55%, var(--orange-dark) 140%);
+  color: var(--chalk-dim);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.placeholder-photo .tag {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  padding: 14px 16px;
+  color: var(--chalk-dim);
+  opacity: 0.85;
+}
+
+.container-grid {
+  display: grid;
+  gap: 32px;
+}

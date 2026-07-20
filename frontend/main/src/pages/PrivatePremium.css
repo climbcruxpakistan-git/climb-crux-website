@@ -1,0 +1,13 @@
+.price-card {
+  transition: transform 0.25s ease;
+}
+
+.price-card:hover {
+  transform: scale(1.03);
+}
+
+@media (max-width: 480px) {
+  .price-card {
+    padding: 24px 18px;
+  }
+}
