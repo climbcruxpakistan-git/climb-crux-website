@@ -95,10 +95,10 @@ const seedGallery = [
   { tag: 'Public Session · Belay Practice', cat: 'Public Sessions' },
   { tag: 'Public Session · First Ascent', cat: 'Public Sessions' },
   { tag: 'Private Coaching · Technique', cat: 'Private Sessions' },
-  { tag: 'Premium Ascent · 7c+', cat: 'Premium Ascents' },
+  { tag: 'Premium Ascent · 7c+', cat: 'High Grade Rock Climbing' },
   { tag: 'Public Session · Group Photo', cat: 'Public Sessions' },
   { tag: 'Private Coaching · 1-on-1', cat: 'Private Sessions' },
-  { tag: 'Premium Ascent · Overhang', cat: 'Premium Ascents' },
+  { tag: 'Premium Ascent · Overhang', cat: 'High Grade Rock Climbing' },
   { tag: 'Public Session · Basecamp', cat: 'Public Sessions' },
   { tag: 'Private Coaching · Small Group', cat: 'Private Sessions' },
 ]
