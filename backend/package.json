@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "seed": "node src/seed.js"
+    "seed": "node src/seed.js",
+    "db:backup": "node src/backup.js",
+    "db:restore": "node src/restore.js"
   },
   "dependencies": {
     "cloudinary": "^2.10.0",

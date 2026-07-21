@@ -1,0 +1,1245 @@
+{
+  "sessions": [
+    {
+      "_id": "6a5f627323c53b566a0e83a7",
+      "date": "Sun, Aug 2",
+      "time": "8:00 AM – 1:00 PM",
+      "spots": "5 spots left",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.052Z",
+      "updatedAt": "2026-07-21T12:13:39.052Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83a8",
+      "date": "Sun, Aug 16",
+      "time": "8:00 AM – 1:00 PM",
+      "spots": "7 spots left",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.053Z",
+      "updatedAt": "2026-07-21T12:13:39.053Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83a9",
+      "date": "Sun, Aug 30",
+      "time": "8:00 AM – 1:00 PM",
+      "spots": "Open",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.053Z",
+      "updatedAt": "2026-07-21T12:13:39.053Z"
+    }
+  ],
+  "plans": [
+    {
+      "_id": "6a5f627323c53b566a0e83ab",
+      "type": "private-starter",
+      "grade": "Up to 5c",
+      "label": "Small Group",
+      "title": "Starter Private",
+      "price": "8,000",
+      "unit": "/ person",
+      "tag": "",
+      "featured": false,
+      "features": [
+        "Private group of up to 4 climbers",
+        "Choose your own date & time",
+        "Instructor focused on your group only",
+        "Full gear provided"
+      ],
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.419Z",
+      "updatedAt": "2026-07-21T12:13:39.419Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83ac",
+      "type": "private-advanced",
+      "grade": "Up to 6b+",
+      "label": "1-on-1 or Small Group",
+      "title": "Advanced Private",
+      "price": "15,000",
+      "unit": "/ person",
+      "tag": "Most booked",
+      "featured": true,
+      "features": [
+        "1-on-1 or private group of up to 3",
+        "Technique & movement coaching",
+        "Progression plan across sessions",
+        "Priority scheduling"
+      ],
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.419Z",
+      "updatedAt": "2026-07-21T12:13:39.419Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83ad",
+      "type": "elite-premium",
+      "grade": "7c+",
+      "label": "Highest Grade Access",
+      "title": "Elite Premium",
+      "price": "30,000",
+      "unit": "/ person",
+      "tag": "",
+      "featured": false,
+      "features": [
+        "1-on-1 with a senior instructor",
+        "Access to our hardest routes",
+        "Fully custom route & pacing plan",
+        "Performance feedback after each climb"
+      ],
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.419Z",
+      "updatedAt": "2026-07-21T12:13:39.419Z"
+    }
+  ],
+  "teamMembers": [
+    {
+      "_id": "6a5f627323c53b566a0e83af",
+      "name": "Ahmed Khan",
+      "role": "Founder & Head Guide",
+      "bio": "Runs every public session and designs our premium routes. Certified in rock rescue and high-angle safety with over 12 years of climbing experience.",
+      "photoUrl": "",
+      "experience": "12+ years of climbing across Pakistan, Nepal, and Turkey. Has led over 200 group sessions on Margalla Hills and designed the grade 7c+ premium route system. Started climbing at age 16 and has since summited over 30 major routes in the Karakoram range.",
+      "coachingExperience": "",
+      "certifications": [
+        "UIAA Certified Climbing Instructor",
+        "Wilderness First Responder (WFR)",
+        "Rock Rescue Level 3",
+        "High-Angle Rescue Technician",
+        "Leave No Trace Master Educator"
+      ],
+      "specialties": "Premium route design, advanced lead climbing technique, multi-pitch safety systems, fear management coaching for advanced climbers.",
+      "instagram": "https://instagram.com/climbcrux",
+      "facebook": "https://facebook.com/climbcrux",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.508Z",
+      "updatedAt": "2026-07-21T12:13:39.508Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b0",
+      "name": "Zara Malik",
+      "role": "Private & Premium Coaching",
+      "bio": "Focuses on 1-on-1 technique and grade progression for climbers working toward harder routes. Specialist in movement coaching.",
+      "photoUrl": "",
+      "experience": "8+ years of climbing experience with a focus on technique coaching. Has helped over 50 climbers progress from beginner to advanced grades. Trained under IFMGA-certified guides in the French Alps and regularly updates her coaching methodology.",
+      "coachingExperience": "",
+      "certifications": [
+        "PMCIA Certified Climbing Coach",
+        "Sports Climbing Level 2 Coach",
+        "Certified Belay Systems Trainer",
+        "Mental Game Coach Certification",
+        "Advanced First Aid"
+      ],
+      "specialties": "Movement efficiency coaching, grade progression planning, fear of heights management, technique refinement for intermediate climbers.",
+      "instagram": "https://instagram.com/climbcrux",
+      "facebook": "https://facebook.com/climbcrux",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.508Z",
+      "updatedAt": "2026-07-21T12:13:39.508Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b1",
+      "name": "Usman Ali",
+      "role": "Public Sessions Lead",
+      "bio": "First point of contact for new climbers — patient, safety-first, and great at calming first-timer nerves and making climbing accessible.",
+      "photoUrl": "",
+      "experience": "6+ years of guiding experience, specializing in beginner and intermediate instruction. Has introduced over 500 first-time climbers to the sport. Known for his patient teaching style and ability to make anyone feel confident on the wall.",
+      "coachingExperience": "",
+      "certifications": [
+        "Certified Climbing Instructor",
+        "Belay Systems Specialist",
+        "Wilderness First Aid",
+        "Child Safeguarding Certification",
+        "Adaptive Climbing Techniques Training"
+      ],
+      "specialties": "First-time climber instruction, group dynamics management, adaptive climbing techniques, youth climbing programs, safety briefing expertise.",
+      "instagram": "https://instagram.com/climbcrux",
+      "facebook": "https://facebook.com/climbcrux",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.508Z",
+      "updatedAt": "2026-07-21T12:13:39.508Z"
+    }
+  ],
+  "galleryItems": [
+    {
+      "_id": "6a5f627323c53b566a0e83b3",
+      "tag": "Public Session · Belay Practice",
+      "cat": "Public Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b4",
+      "tag": "Public Session · First Ascent",
+      "cat": "Public Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b5",
+      "tag": "Private Coaching · Technique",
+      "cat": "Private Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b6",
+      "tag": "Premium Ascent · 7c+",
+      "cat": "High Grade Rock Climbing",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b7",
+      "tag": "Public Session · Group Photo",
+      "cat": "Public Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b8",
+      "tag": "Private Coaching · 1-on-1",
+      "cat": "Private Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83b9",
+      "tag": "Premium Ascent · Overhang",
+      "cat": "High Grade Rock Climbing",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83ba",
+      "tag": "Public Session · Basecamp",
+      "cat": "Public Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    },
+    {
+      "_id": "6a5f627323c53b566a0e83bb",
+      "tag": "Private Coaching · Small Group",
+      "cat": "Private Sessions",
+      "imageUrl": "",
+      "caption": "",
+      "photoSlug": "",
+      "__v": 0,
+      "createdAt": "2026-07-21T12:13:39.588Z",
+      "updatedAt": "2026-07-21T12:13:39.588Z"
+    }
+  ],
+  "bookings": [],
+  "about": [
+    {
+      "_id": "6a5f627323c53b566a0e83bd",
+      "description": "Climb Crux started with a simple idea: the limestone of Margalla Hills shouldn't be reserved for people who already know how to climb. We run sessions for the person picking up a harness for the first time, and for the one training toward their hardest send yet.",
+      "safetyItems": [
+        {
+          "h": "Pre-climb briefing",
+          "p": "Every session opens with a full gear check and safety walkthrough before anyone touches rock."
+        },
+        {
+          "h": "Certified belay technique",
+          "p": "All instructors are trained and certified in belay systems, knots, and anchor building."
+        },
+        {
+          "h": "Redundant anchor systems",
+          "p": "Routes are set with backup anchor points as standard practice, not an upgrade."
+        },
+        {
+          "h": "First-aid ready",
+          "p": "Instructors carry first-aid kits and are trained in on-site response and evacuation procedure."
+        }
+      ],
+      "createdAt": "2026-07-21T12:13:39.696Z",
+      "updatedAt": "2026-07-21T12:13:39.696Z",
+      "__v": 0
+    }
+  ],
+  "homeContent": [
+    {
+      "_id": "6a5a34439d250983e96049f7",
+      "heroTitle": "Find your next hold.",
+      "heroLede": "Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you've chased yet.",
+      "heroPhotoUrl": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784563194/climb-crux/hawsvptqkbvkfscf8fn3.jpg",
+      "pathsEyebrow": "Two ways to climb with us",
+      "pathsTitle": "Pick your route",
+      "paths": [
+        {
+          "grade": "4 – 6a",
+          "label": "Beginner Friendly",
+          "title": "Public Sessions",
+          "copy": "Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.",
+          "to": "/sessions",
+          "cta": "See schedule & pricing",
+          "photoUrl": ""
+        },
+        {
+          "grade": "Up to 7c+",
+          "label": "Custom & Premium",
+          "title": "Private & Premium",
+          "copy": "Book a private slot for your group or go one-on-one with an instructor. Premium plans open the door to the hardest routes we run.",
+          "to": "/private-premium",
+          "cta": "Explore plans",
+          "photoUrl": ""
+        }
+      ],
+      "teasersEyebrow": "From the wall",
+      "teasersTitle": "A look at recent sessions",
+      "teasers": [
+        {
+          "tag": "Public Session",
+          "photoUrl": ""
+        },
+        {
+          "tag": "Private Session",
+          "photoUrl": ""
+        }
+      ],
+      "createdAt": "2026-07-17T13:55:15.631Z",
+      "updatedAt": "2026-07-20T17:17:56.448Z",
+      "__v": 1,
+      "teaserSessionSlug": "public-session-1"
+    }
+  ],
+  "sessionContent": [
+    {
+      "_id": "6a5a32cf74b634245c813a82",
+      "includedItems": [
+        {
+          "h": "Certified guidance",
+          "p": "Every session is led by a certified climbing instructor, start to finish."
+        },
+        {
+          "h": "Full safety gear",
+          "p": "Harness, helmet, rope, belay setup, and climbing shoes provided."
+        },
+        {
+          "h": "Beginner-friendly routes",
+          "p": "Routes are set for first-timers, roughly grade 4–6a on the French scale."
+        },
+        {
+          "h": "Small groups",
+          "p": "Group sessions capped at 20 climbers so there's plenty of room on the wall."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Do I need climbing experience?",
+          "a": "No — public sessions are built for first-timers. Instructors walk you through technique, belay basics and route reading before anyone leaves the ground."
+        },
+        {
+          "q": "What should I bring?",
+          "a": "Comfortable athletic clothing water, and sun protection. We provide the harness, helmet, rope and climbing shoes (if you don't have)."
+        },
+        {
+          "q": "What is the minimum age?",
+          "a": "Climbers 4 and up are welcome on public sessions. Anyone under 18 needs a parent or guardian's consent."
+        },
+        {
+          "q": "What if it rains or a session is cancelled?",
+          "a": "We reschedule affected sessions to the next available date, or move your booking to a private session at no extra cost."
+        }
+      ],
+      "createdAt": "2026-07-17T13:49:03.447Z",
+      "updatedAt": "2026-07-21T12:11:05.130Z",
+      "__v": 6,
+      "sessionsDisabled": false,
+      "pricingFeatures": [
+        {
+          "text": "3 hour guided session"
+        },
+        {
+          "text": "Certified instructor & safety briefing"
+        },
+        {
+          "text": "Harness, helmet, rope, belay gear & climbing shoes"
+        },
+        {
+          "text": "Group of up to 20 climbers"
+        }
+      ],
+      "pricingPrice": "2,500",
+      "pricingTitle": "Public Session",
+      "pricingUnit": "/ person",
+      "customSession": {
+        "title": "Customizable Session",
+        "grade": "You decide",
+        "label": "Fully Custom",
+        "price": "On Request",
+        "unit": "Per Person",
+        "features": []
+      },
+      "faqEyebrow": "Good to know",
+      "faqSectionTitle": "Frequently asked questions",
+      "includedSectionTitle": "Everything you need, nothing to bring",
+      "ppCustomEyebrow": "What gets customized",
+      "ppCustomItems": [],
+      "ppCustomSectionTitle": "Built around your goal, not a template",
+      "ppCustomSession": {
+        "title": "Customizable Session",
+        "grade": "You decide",
+        "label": "Fully Custom",
+        "price": "On Request",
+        "unit": "Per Person",
+        "features": []
+      },
+      "ppEyebrow": "Plans",
+      "ppHeaderDesc": "Private sessions are built around you — solo, with your group, or working toward the highest grades we run.",
+      "ppHeaderTitle": "Your route, your pace.",
+      "ppSectionDesc": "Every plan below is a starting point, not a fixed package — Tell us the goal and we'll design the climb around it.",
+      "ppSectionTitle": "Pick a plan to start from",
+      "pricingSectionTitle": "One flat rate, everything included",
+      "sessionsHeaderDesc": "Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.",
+      "sessionsHeaderTitle": "Climb with the group.",
+      "sessionsSectionTitle": "Upcoming sessions"
+    }
+  ],
+  "photos": [
+    {
+      "_id": "6a5e3d8311abb61e55a5f920",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561023/climb-crux/b8ipqq22dld65smho3jd.jpg",
+      "publicId": "climb-crux/b8ipqq22dld65smho3jd",
+      "originalName": "IMG_2929.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2980031,
+      "createdAt": "2026-07-20T15:23:47.768Z",
+      "updatedAt": "2026-07-20T15:23:47.768Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3d8811abb61e55a5f922",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561028/climb-crux/kvbnipbmwcmuum2tamat.jpg",
+      "publicId": "climb-crux/kvbnipbmwcmuum2tamat",
+      "originalName": "IMG_2955.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2974033,
+      "createdAt": "2026-07-20T15:23:52.007Z",
+      "updatedAt": "2026-07-20T15:23:52.007Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3d8b11abb61e55a5f924",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561032/climb-crux/hxz7eqx3wz8wg8gsnfnw.jpg",
+      "publicId": "climb-crux/hxz7eqx3wz8wg8gsnfnw",
+      "originalName": "IMG_2957.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2342215,
+      "createdAt": "2026-07-20T15:23:55.783Z",
+      "updatedAt": "2026-07-20T15:23:55.783Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3d9011abb61e55a5f926",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561036/climb-crux/ye5ynpa8avda5c86gzjm.jpg",
+      "publicId": "climb-crux/ye5ynpa8avda5c86gzjm",
+      "originalName": "IMG_2982.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 3066809,
+      "createdAt": "2026-07-20T15:24:00.937Z",
+      "updatedAt": "2026-07-20T15:24:00.937Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3d9911abb61e55a5f928",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561041/climb-crux/z2dko2kkger2ghmzkuys.jpg",
+      "publicId": "climb-crux/z2dko2kkger2ghmzkuys",
+      "originalName": "IMG_3166.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 5712,
+      "height": 4284,
+      "format": "jpg",
+      "bytes": 4299974,
+      "createdAt": "2026-07-20T15:24:09.484Z",
+      "updatedAt": "2026-07-20T15:24:09.484Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3d9d11abb61e55a5f92a",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561049/climb-crux/c5rlpyo5vebcc3r7hvjl.jpg",
+      "publicId": "climb-crux/c5rlpyo5vebcc3r7hvjl",
+      "originalName": "IMG_3172.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2320437,
+      "createdAt": "2026-07-20T15:24:13.342Z",
+      "updatedAt": "2026-07-20T15:24:13.342Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3da211abb61e55a5f92c",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561054/climb-crux/zpouzbzv1qhu8uy51wns.jpg",
+      "publicId": "climb-crux/zpouzbzv1qhu8uy51wns",
+      "originalName": "IMG_2831.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 5712,
+      "height": 4284,
+      "format": "jpg",
+      "bytes": 3687537,
+      "createdAt": "2026-07-20T15:24:18.726Z",
+      "updatedAt": "2026-07-20T15:24:18.726Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3da611abb61e55a5f92e",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561058/climb-crux/bddvhvksmqzt0cyvn2vj.jpg",
+      "publicId": "climb-crux/bddvhvksmqzt0cyvn2vj",
+      "originalName": "IMG_2835.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2345553,
+      "createdAt": "2026-07-20T15:24:22.551Z",
+      "updatedAt": "2026-07-20T15:24:22.551Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3dab11abb61e55a5f930",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561063/climb-crux/nm0vjatjsyynkcbixkoh.jpg",
+      "publicId": "climb-crux/nm0vjatjsyynkcbixkoh",
+      "originalName": "IMG_2840.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 3023560,
+      "createdAt": "2026-07-20T15:24:27.051Z",
+      "updatedAt": "2026-07-20T15:24:27.051Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3db011abb61e55a5f932",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561067/climb-crux/r4tzlbliykyxswkcf8ps.jpg",
+      "publicId": "climb-crux/r4tzlbliykyxswkcf8ps",
+      "originalName": "IMG_2846.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 4284,
+      "height": 5712,
+      "format": "jpg",
+      "bytes": 2669373,
+      "createdAt": "2026-07-20T15:24:32.507Z",
+      "updatedAt": "2026-07-20T15:24:32.507Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3db611abb61e55a5f934",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561073/climb-crux/iqmztgxyw4iemy1za3ja.jpg",
+      "publicId": "climb-crux/iqmztgxyw4iemy1za3ja",
+      "originalName": "IMG_2876.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 5712,
+      "height": 4284,
+      "format": "jpg",
+      "bytes": 3501814,
+      "createdAt": "2026-07-20T15:24:38.079Z",
+      "updatedAt": "2026-07-20T15:24:38.079Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3dba11abb61e55a5f936",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561078/climb-crux/k88ougvt4dmnat6ch7ek.jpg",
+      "publicId": "climb-crux/k88ougvt4dmnat6ch7ek",
+      "originalName": "IMG_2883.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2751933,
+      "createdAt": "2026-07-20T15:24:42.461Z",
+      "updatedAt": "2026-07-20T15:24:42.461Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3dbe11abb61e55a5f938",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561082/climb-crux/khddl9javuozqwxnxryf.jpg",
+      "publicId": "climb-crux/khddl9javuozqwxnxryf",
+      "originalName": "IMG_2889.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2323102,
+      "createdAt": "2026-07-20T15:24:46.077Z",
+      "updatedAt": "2026-07-20T15:24:46.077Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3dc111abb61e55a5f93a",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561086/climb-crux/alkgqaiwrcgjvqwvka0q.jpg",
+      "publicId": "climb-crux/alkgqaiwrcgjvqwvka0q",
+      "originalName": "IMG_2893.jpg",
+      "title": "First Session",
+      "tags": [
+        "public-session-1"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2490494,
+      "createdAt": "2026-07-20T15:24:49.869Z",
+      "updatedAt": "2026-07-20T15:24:49.869Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ebb11abb61e55a5f956",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561335/climb-crux/p9avxfn7yfnvvr7cdjli.jpg",
+      "publicId": "climb-crux/p9avxfn7yfnvvr7cdjli",
+      "originalName": "DSC02087.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1580486,
+      "createdAt": "2026-07-20T15:28:59.203Z",
+      "updatedAt": "2026-07-20T15:28:59.203Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ebf11abb61e55a5f958",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561340/climb-crux/txuyozxueairye7rjxhv.jpg",
+      "publicId": "climb-crux/txuyozxueairye7rjxhv",
+      "originalName": "DSC02110.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 2034149,
+      "createdAt": "2026-07-20T15:29:03.382Z",
+      "updatedAt": "2026-07-20T15:29:03.382Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ec311abb61e55a5f95a",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561343/climb-crux/luwixogsufvyuucoghyg.jpg",
+      "publicId": "climb-crux/luwixogsufvyuucoghyg",
+      "originalName": "DSC02175.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1247937,
+      "createdAt": "2026-07-20T15:29:07.065Z",
+      "updatedAt": "2026-07-20T15:29:07.065Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ec711abb61e55a5f95c",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561348/climb-crux/ekjspariylskfcaa72zq.jpg",
+      "publicId": "climb-crux/ekjspariylskfcaa72zq",
+      "originalName": "DSC02351.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1504747,
+      "createdAt": "2026-07-20T15:29:11.614Z",
+      "updatedAt": "2026-07-20T15:29:11.614Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ecb11abb61e55a5f95e",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561352/climb-crux/sxjikzvw97mjjedkwsn2.jpg",
+      "publicId": "climb-crux/sxjikzvw97mjjedkwsn2",
+      "originalName": "DSC02376.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1878861,
+      "createdAt": "2026-07-20T15:29:15.307Z",
+      "updatedAt": "2026-07-20T15:29:15.307Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ece11abb61e55a5f960",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561355/climb-crux/f1jj8iio0wox80hedzx1.jpg",
+      "publicId": "climb-crux/f1jj8iio0wox80hedzx1",
+      "originalName": "DSC02453.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1665742,
+      "createdAt": "2026-07-20T15:29:18.929Z",
+      "updatedAt": "2026-07-20T15:29:18.929Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ed311abb61e55a5f962",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561360/climb-crux/jldfz0w4tcs0wge1svu5.jpg",
+      "publicId": "climb-crux/jldfz0w4tcs0wge1svu5",
+      "originalName": "DSC02500.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 2739419,
+      "createdAt": "2026-07-20T15:29:23.643Z",
+      "updatedAt": "2026-07-20T15:29:23.643Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ed711abb61e55a5f964",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561363/climb-crux/k4qzrgghuthwv0vrppqt.jpg",
+      "publicId": "climb-crux/k4qzrgghuthwv0vrppqt",
+      "originalName": "DSC02627.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1492050,
+      "createdAt": "2026-07-20T15:29:27.011Z",
+      "updatedAt": "2026-07-20T15:29:27.011Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3eda11abb61e55a5f966",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561367/climb-crux/rnzi15idxy2o5tjgn8lv.jpg",
+      "publicId": "climb-crux/rnzi15idxy2o5tjgn8lv",
+      "originalName": "DSC02879.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1425699,
+      "createdAt": "2026-07-20T15:29:30.337Z",
+      "updatedAt": "2026-07-20T15:29:30.337Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ede11abb61e55a5f968",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561371/climb-crux/bdqqsajksmwjaiotqnns.jpg",
+      "publicId": "climb-crux/bdqqsajksmwjaiotqnns",
+      "originalName": "DSC03196.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1654612,
+      "createdAt": "2026-07-20T15:29:34.160Z",
+      "updatedAt": "2026-07-20T15:29:34.160Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ee311abb61e55a5f96a",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561376/climb-crux/tta5cndcrhixv1iuf9wv.jpg",
+      "publicId": "climb-crux/tta5cndcrhixv1iuf9wv",
+      "originalName": "DSC03357.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 4240651,
+      "createdAt": "2026-07-20T15:29:39.571Z",
+      "updatedAt": "2026-07-20T15:29:39.571Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3eeb11abb61e55a5f96c",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561382/climb-crux/gawzpjanoybklrmidxxz.jpg",
+      "publicId": "climb-crux/gawzpjanoybklrmidxxz",
+      "originalName": "IMG_2554.jpg",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 5712,
+      "height": 4284,
+      "format": "jpg",
+      "bytes": 5366030,
+      "createdAt": "2026-07-20T15:29:47.935Z",
+      "updatedAt": "2026-07-20T15:29:47.935Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ef311abb61e55a5f96e",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561390/climb-crux/qqepgmwh7jmkkhnfhf7x.jpg",
+      "publicId": "climb-crux/qqepgmwh7jmkkhnfhf7x",
+      "originalName": "IMG_2567.jpg",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4284,
+      "height": 5712,
+      "format": "jpg",
+      "bytes": 4252013,
+      "createdAt": "2026-07-20T15:29:55.142Z",
+      "updatedAt": "2026-07-20T15:29:55.142Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3ef611abb61e55a5f970",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561395/climb-crux/l4ld8qkbbs3g3kos659q.jpg",
+      "publicId": "climb-crux/l4ld8qkbbs3g3kos659q",
+      "originalName": "DSC01793.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1366160,
+      "createdAt": "2026-07-20T15:29:58.863Z",
+      "updatedAt": "2026-07-20T15:29:58.863Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3efc11abb61e55a5f972",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561400/climb-crux/i62uz0tl26f82pbzfn58.jpg",
+      "publicId": "climb-crux/i62uz0tl26f82pbzfn58",
+      "originalName": "DSC01833.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1692308,
+      "createdAt": "2026-07-20T15:30:04.032Z",
+      "updatedAt": "2026-07-20T15:30:04.032Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f0011abb61e55a5f974",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561404/climb-crux/c8nwmttrqlx7uc763rsw.jpg",
+      "publicId": "climb-crux/c8nwmttrqlx7uc763rsw",
+      "originalName": "DSC01953.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1937334,
+      "createdAt": "2026-07-20T15:30:08.027Z",
+      "updatedAt": "2026-07-20T15:30:08.027Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f0311abb61e55a5f976",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561408/climb-crux/eolheiom73qe9i8ibtpd.jpg",
+      "publicId": "climb-crux/eolheiom73qe9i8ibtpd",
+      "originalName": "DSC01957.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1895396,
+      "createdAt": "2026-07-20T15:30:11.593Z",
+      "updatedAt": "2026-07-20T15:30:11.593Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f0711abb61e55a5f978",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561412/climb-crux/b0zhxpfbodgn0z7gdwrb.jpg",
+      "publicId": "climb-crux/b0zhxpfbodgn0z7gdwrb",
+      "originalName": "DSC01977.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1735375,
+      "createdAt": "2026-07-20T15:30:15.490Z",
+      "updatedAt": "2026-07-20T15:30:15.490Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f0b11abb61e55a5f97a",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561415/climb-crux/fzciun575c7nxrpvjrhd.jpg",
+      "publicId": "climb-crux/fzciun575c7nxrpvjrhd",
+      "originalName": "DSC01994.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1558106,
+      "createdAt": "2026-07-20T15:30:19.157Z",
+      "updatedAt": "2026-07-20T15:30:19.157Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f0e11abb61e55a5f97c",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561419/climb-crux/nmbiikn8zih1iejqik1c.jpg",
+      "publicId": "climb-crux/nmbiikn8zih1iejqik1c",
+      "originalName": "DSC02042.JPG",
+      "title": "April Sessions",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1569159,
+      "createdAt": "2026-07-20T15:30:22.647Z",
+      "updatedAt": "2026-07-20T15:30:22.647Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f3711abb61e55a5f97e",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561459/climb-crux/qyyvtej3x3xluay16ata.jpg",
+      "publicId": "climb-crux/qyyvtej3x3xluay16ata",
+      "originalName": "IMG_2690.jpg",
+      "title": "April Session",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 923100,
+      "createdAt": "2026-07-20T15:31:03.535Z",
+      "updatedAt": "2026-07-20T15:31:03.535Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f3b11abb61e55a5f980",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561463/climb-crux/hal92xgrqp8z5pmq6a5x.jpg",
+      "publicId": "climb-crux/hal92xgrqp8z5pmq6a5x",
+      "originalName": "IMG_2604.jpg",
+      "title": "April Session",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 4032,
+      "height": 3024,
+      "format": "jpg",
+      "bytes": 2079190,
+      "createdAt": "2026-07-20T15:31:07.856Z",
+      "updatedAt": "2026-07-20T15:31:07.856Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f3f11abb61e55a5f982",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561467/climb-crux/t65q0nweutu1wvcg4kpd.jpg",
+      "publicId": "climb-crux/t65q0nweutu1wvcg4kpd",
+      "originalName": "IMG_2682.jpg",
+      "title": "April Session",
+      "tags": [
+        "public-session-april"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2063538,
+      "createdAt": "2026-07-20T15:31:11.585Z",
+      "updatedAt": "2026-07-20T15:31:11.585Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f5f11abb61e55a5f984",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561501/climb-crux/qs3zg7gciygszrjpeviq.jpg",
+      "publicId": "climb-crux/qs3zg7gciygszrjpeviq",
+      "originalName": "IMG_2129.JPG",
+      "title": "Pubic Session May",
+      "tags": [
+        "public-session-may"
+      ],
+      "width": 1980,
+      "height": 3520,
+      "format": "jpg",
+      "bytes": 1425136,
+      "createdAt": "2026-07-20T15:31:43.853Z",
+      "updatedAt": "2026-07-20T15:31:43.853Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f6111abb61e55a5f986",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561503/climb-crux/zqqzq2tgrihlrfqmgcnw.jpg",
+      "publicId": "climb-crux/zqqzq2tgrihlrfqmgcnw",
+      "originalName": "IMG_2131.JPG",
+      "title": "Pubic Session May",
+      "tags": [
+        "public-session-may"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 1066136,
+      "createdAt": "2026-07-20T15:31:45.728Z",
+      "updatedAt": "2026-07-20T15:31:45.728Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f6511abb61e55a5f988",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561504/climb-crux/qeoqbyfliopcbar8rfes.jpg",
+      "publicId": "climb-crux/qeoqbyfliopcbar8rfes",
+      "originalName": "IMG_2133.JPG",
+      "title": "Pubic Session May",
+      "tags": [
+        "public-session-may"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 856484,
+      "createdAt": "2026-07-20T15:31:49.381Z",
+      "updatedAt": "2026-07-20T15:31:49.381Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f6611abb61e55a5f98a",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561508/climb-crux/ulkerjkcefsxkgqusogw.jpg",
+      "publicId": "climb-crux/ulkerjkcefsxkgqusogw",
+      "originalName": "IMG_2135.JPG",
+      "title": "Pubic Session May",
+      "tags": [
+        "public-session-may"
+      ],
+      "width": 1980,
+      "height": 3520,
+      "format": "jpg",
+      "bytes": 976388,
+      "createdAt": "2026-07-20T15:31:50.943Z",
+      "updatedAt": "2026-07-20T15:31:50.943Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f6911abb61e55a5f98c",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561510/climb-crux/tlryzinifj2wojsgeu5d.jpg",
+      "publicId": "climb-crux/tlryzinifj2wojsgeu5d",
+      "originalName": "IMG_2138.JPG",
+      "title": "Pubic Session May",
+      "tags": [
+        "public-session-may"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 2203740,
+      "createdAt": "2026-07-20T15:31:53.584Z",
+      "updatedAt": "2026-07-20T15:31:53.584Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e3f6b11abb61e55a5f98e",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784561513/climb-crux/ecddafgk8zeq1vvddadk.jpg",
+      "publicId": "climb-crux/ecddafgk8zeq1vvddadk",
+      "originalName": "IMG_2142.JPG",
+      "title": "Pubic Session May",
+      "tags": [
+        "public-session-may"
+      ],
+      "width": 3024,
+      "height": 4032,
+      "format": "jpg",
+      "bytes": 1797440,
+      "createdAt": "2026-07-20T15:31:55.942Z",
+      "updatedAt": "2026-07-20T15:31:55.942Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e45ff0ecf293881b8bab7",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784563194/climb-crux/hawsvptqkbvkfscf8fn3.jpg",
+      "publicId": "climb-crux/hawsvptqkbvkfscf8fn3",
+      "originalName": "IMG_3166.jpg",
+      "title": "main-hero",
+      "tags": [],
+      "width": 5712,
+      "height": 4284,
+      "format": "jpg",
+      "bytes": 4299974,
+      "createdAt": "2026-07-20T15:59:59.400Z",
+      "updatedAt": "2026-07-20T15:59:59.400Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e466a0ecf293881b8bacb",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784563303/climb-crux/mbiqfztz9ps7jzphueh6.jpg",
+      "publicId": "climb-crux/mbiqfztz9ps7jzphueh6",
+      "originalName": "saif-ud-din-pp.JPG",
+      "title": "Saif",
+      "tags": [
+        "instructors-pp"
+      ],
+      "width": 4000,
+      "height": 6000,
+      "format": "jpg",
+      "bytes": 1366160,
+      "createdAt": "2026-07-20T16:01:46.945Z",
+      "updatedAt": "2026-07-20T16:51:14.392Z",
+      "__v": 1
+    },
+    {
+      "_id": "6a5e53e0d42c54c1f9f72540",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784566749/climb-crux/jvgswzrn3mv97wc8ucwr.jpg",
+      "publicId": "climb-crux/jvgswzrn3mv97wc8ucwr",
+      "originalName": "images.jpg",
+      "title": "Zaheer",
+      "tags": [
+        "instructors-pp"
+      ],
+      "width": 503,
+      "height": 610,
+      "format": "jpg",
+      "bytes": 23823,
+      "createdAt": "2026-07-20T16:59:12.091Z",
+      "updatedAt": "2026-07-20T16:59:12.091Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e540fd42c54c1f9f72542",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784566797/climb-crux/xbtqbpmhqsrqt4sfqoyu.jpg",
+      "publicId": "climb-crux/xbtqbpmhqsrqt4sfqoyu",
+      "originalName": "IMG_8649.JPG",
+      "title": "Abu Zar",
+      "tags": [
+        "instructors-pp"
+      ],
+      "width": 943,
+      "height": 1365,
+      "format": "jpg",
+      "bytes": 80932,
+      "createdAt": "2026-07-20T16:59:59.344Z",
+      "updatedAt": "2026-07-20T16:59:59.344Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a5e6526b3f840820289c595",
+      "url": "https://res.cloudinary.com/ivvx77mg/image/upload/v1784571171/climb-crux/eniogvzctw8p7xabenew.jpg",
+      "publicId": "climb-crux/eniogvzctw8p7xabenew",
+      "originalName": "images.jpg",
+      "title": "Hassan",
+      "tags": [
+        "instructors-pp"
+      ],
+      "width": 225,
+      "height": 225,
+      "format": "jpg",
+      "bytes": 9598,
+      "createdAt": "2026-07-20T18:12:54.396Z",
+      "updatedAt": "2026-07-20T18:12:54.396Z",
+      "__v": 0
+    }
+  ]
+}
