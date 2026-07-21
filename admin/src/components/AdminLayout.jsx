@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext.jsx'
+
 const NAV_SECTIONS = [
   {
     label: 'Main',
@@ -33,6 +34,9 @@ export default function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [pageTitle, setPageTitle] = useState('Dashboard')
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => window.innerWidth > 700
+  )
 
   useEffect(() => {
     const current = NAV_SECTIONS.flatMap((s) => s.links).find(
@@ -41,7 +45,22 @@ export default function AdminLayout() {
     if (current) {
       setPageTitle(current.label)
     }
+    // Close sidebar on nav when on mobile
+    if (window.innerWidth <= 700) {
+      setSidebarOpen(false)
+    }
   }, [location])
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth > 700) {
+        setSidebarOpen(true)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const pageTitles = {
     '/dashboard': 'Dashboard',
@@ -56,7 +75,12 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-layout">
-      <aside className="sidebar">
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && window.innerWidth <= 700 && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`sidebar${sidebarOpen ? '' : ' sidebar--collapsed'}`}>
         <div className="sidebar-brand">
           <img src="/logo.png" alt="Climb Crux" />
           <div className="sidebar-brand-text">
@@ -77,6 +101,9 @@ export default function AdminLayout() {
                     'sidebar-link' + (isActive ? ' is-active' : '')
                   }
                   end={link.to === '/dashboard'}
+                  onClick={() => {
+                    if (window.innerWidth <= 700) setSidebarOpen(false)
+                  }}
                 >
                   <span className="sidebar-icon">{link.icon}</span>
                   <span>{link.label}</span>
@@ -102,6 +129,15 @@ export default function AdminLayout() {
       <div className="admin-main">
         <header className="admin-header">
           <div className="admin-header-left">
+            <button
+              className="admin-menu-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle sidebar menu"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
             <h2 className="admin-header-title">
               {pageTitles[location.pathname] || 'Admin'}
             </h2>
@@ -111,7 +147,7 @@ export default function AdminLayout() {
               href="http://localhost:5173"
               target="_blank"
               rel="noreferrer"
-              className="btn-admin btn-admin-ghost btn-admin-sm"
+              className="btn-admin btn-admin-ghost btn-admin-sm admin-view-site-btn"
             >
               View Site
             </a>
@@ -132,7 +168,6 @@ export default function AdminLayout() {
           <Outlet />
         </div>
       </div>
-
     </div>
   )
 }
