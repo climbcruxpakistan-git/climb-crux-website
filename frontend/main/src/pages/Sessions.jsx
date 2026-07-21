@@ -10,6 +10,7 @@ export default function Sessions() {
   const [included, setIncluded] = useState([])
   const [faqs, setFaqs] = useState([])
   const [sessionsDisabled, setSessionsDisabled] = useState(false)
+  const [pageContent, setPageContent] = useState({})
   const defaultFeatures = [
     { text: '2–3 hour guided session' },
     { text: 'Certified instructor & safety briefing' },
@@ -32,6 +33,7 @@ export default function Sessions() {
         setIncluded(content.includedItems || [])
         setFaqs(content.faqs || [])
         setSessionsDisabled(content.sessionsDisabled || false)
+        setPageContent(content)
         setPricing({
           title: content.pricingTitle || 'Public Session',
           price: content.pricingPrice || '4,500',
@@ -58,19 +60,19 @@ export default function Sessions() {
       .finally(() => setLoading(false))
   }, [])
 
+  const c = pageContent
+
   return (
     <>
-      <PageHeader title="Climb with the group.">
+      <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'}>
         <p>
-          Every other Sunday, we set beginner-friendly routes on the
-          limestone of Margalla Hills and open the wall to the public.
-          No gear, no experience, no problem.
+          {c.sessionsHeaderDesc || 'Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.'}
         </p>
       </PageHeader>
 
       <section className="section schedule-section">
         <div className="wrap">
-          <h2>Upcoming sessions</h2>
+          <h2>{c.sessionsSectionTitle || 'Upcoming sessions'}</h2>
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading sessions…</p>
           ) : sessionsDisabled || upcoming.length === 0 ? (
@@ -105,7 +107,7 @@ export default function Sessions() {
 
       <section className="section pricing-section">
         <div className="wrap">
-          <h2>One flat rate, everything included</h2>
+          <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
           <div className="price-grid">
             <div className="price-card featured">
               <h3>{pricing.title}</h3>
@@ -120,14 +122,16 @@ export default function Sessions() {
 
             {/* Customizable Session card */}
             <div className="price-card">
-              <GradeBadge grade="You decide" label="Fully Custom" />
-              <h3>Customizable Session</h3>
-              <div className="price-amount">On Request <span>Per Person</span></div>
+              <GradeBadge grade={(c.customSession && c.customSession.grade) || 'You decide'} label={(c.customSession && c.customSession.label) || 'Fully Custom'} />
+              <h3>{(c.customSession && c.customSession.title) || 'Customizable Session'}</h3>
+              <div className="price-amount">{(c.customSession && c.customSession.price) || 'On Request'} <span>{(c.customSession && c.customSession.unit) || 'Per Person'}</span></div>
               <ul>
-                <li>Pick your own date, time &amp; group size</li>
-                <li>Choose the grade and climbing focus</li>
-                <li>Solo, small group, or large private group</li>
-                <li>Full gear &amp; certified instructor included</li>
+                {(c.customSession && c.customSession.features && c.customSession.features.length > 0
+                  ? c.customSession.features
+                  : ['Pick your own date, time &amp; group size', 'Choose the grade and climbing focus', 'Solo, small group, or large private group', 'Full gear &amp; certified instructor included']
+                ).map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
               </ul>
               <Link to="/book-now?type=custom-group" className="btn btn-outline">
                 Build your session
@@ -140,7 +144,7 @@ export default function Sessions() {
       <section className="section">
         <div className="wrap">
           <span className="eyebrow">What's included</span>
-          <h2>Everything you need, nothing to bring</h2>
+          <h2>{c.includedSectionTitle || 'Everything you need, nothing to bring'}</h2>
           <div className="info-grid">
             {included.map((i) => (
               <div className="info-card" key={i.h}>
@@ -154,8 +158,8 @@ export default function Sessions() {
 
       <section className="section faq-section">
         <div className="wrap">
-          <span className="eyebrow">Good to know</span>
-          <h2>Frequently asked questions</h2>
+          <span className="eyebrow">{c.faqEyebrow || 'Good to know'}</span>
+          <h2>{c.faqSectionTitle || 'Frequently asked questions'}</h2>
           <div className="faq">
             {faqs.map((f) => (
               <details key={f.q}>

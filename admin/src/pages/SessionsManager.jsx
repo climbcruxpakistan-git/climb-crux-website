@@ -9,6 +9,7 @@ export default function SessionsManager() {
   const [included, setIncluded] = useState([])
   const [faqs, setFaqsState] = useState([])
   const [sessionsDisabled, setSessionsDisabled] = useState(false)
+  const [pageContent, setPageContent] = useState({})
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
   const [showFaq, setShowFaq] = useState(null)
@@ -22,6 +23,8 @@ export default function SessionsManager() {
 
   const [showPricing, setShowPricing] = useState(false)
   const [pricing, setPricing] = useState({ title: 'Public Session', price: '4,500', unit: '/ person', features: defaultFeatures })
+  const [showSessionsContent, setShowSessionsContent] = useState(false)
+  const [showPpContent, setShowPpContent] = useState(false)
   const [form, setForm] = useState({ date: '', time: '', spots: '' })
 
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function SessionsManager() {
         setIncluded(content.includedItems || [])
         setFaqsState(content.faqs || [])
         setSessionsDisabled(content.sessionsDisabled || false)
+        setPageContent(content)
         setPricing({
           title: content.pricingTitle || 'Public Session',
           price: content.pricingPrice || '4,500',
@@ -112,13 +116,15 @@ export default function SessionsManager() {
     )
   }
 
+  const c = pageContent
+
   return (
     <>
       <div className="page-header-admin">
         <div>
           <h1>Public Sessions</h1>
           <p className="page-header-admin-desc">
-            Manage upcoming sessions, pricing card, included features, and FAQs.
+            Manage upcoming sessions, pricing card, included features, FAQs, and page content.
           </p>
         </div>
         <button className="btn-admin btn-admin-primary" onClick={openNew}>
@@ -275,6 +281,28 @@ export default function SessionsManager() {
         </div>
       </div>
 
+      {/* Sessions Page Content */}
+      <div className="card-admin">
+        <div className="card-admin-header">
+          <h2>Sessions Page Content</h2>
+          <button className="btn-admin btn-admin-outline btn-admin-sm" onClick={() => setShowSessionsContent(true)}>Edit</button>
+        </div>
+        <div style={{ padding: '12px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>
+          <p>Edit page header, section headings, and custom session card for the Public Sessions page.</p>
+        </div>
+      </div>
+
+      {/* Private & Premium Page Content */}
+      <div className="card-admin">
+        <div className="card-admin-header">
+          <h2>Private &amp; Premium Page Content</h2>
+          <button className="btn-admin btn-admin-outline btn-admin-sm" onClick={() => setShowPpContent(true)}>Edit</button>
+        </div>
+        <div style={{ padding: '12px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>
+          <p>Edit page header, section headings, custom session card, and customizable items for the Private &amp; Premium page.</p>
+        </div>
+      </div>
+
       {editing && (
         <Modal title={editing === 'new' ? 'Add Session' : 'Edit Session'} onClose={() => setEditing(null)}>
           <div className="admin-form">
@@ -330,6 +358,59 @@ export default function SessionsManager() {
       {showFaq && (
         <Modal title={showFaq === 'new' ? 'Add FAQ' : 'Edit FAQ'} onClose={() => setShowFaq(null)}>
           <FaqForm faq={showFaq === 'new' ? { q: '', a: '' } : faqs.find((f) => f.q === showFaq) || { q: '', a: '' }} onSave={handleFaqSave} onCancel={() => setShowFaq(null)} />
+        </Modal>
+      )}
+
+      {showSessionsContent && (
+        <Modal title="Sessions Page Content" onClose={() => setShowSessionsContent(false)} wide>
+          <SessionsPageContentForm
+            content={{
+              sessionsHeaderTitle: c.sessionsHeaderTitle || '',
+              sessionsHeaderDesc: c.sessionsHeaderDesc || '',
+              sessionsSectionTitle: c.sessionsSectionTitle || '',
+              pricingSectionTitle: c.pricingSectionTitle || '',
+              includedSectionTitle: c.includedSectionTitle || '',
+              faqEyebrow: c.faqEyebrow || '',
+              faqSectionTitle: c.faqSectionTitle || '',
+              customSession: c.customSession || { title: '', grade: '', label: '', price: '', unit: '', features: [''] },
+            }}
+            onSave={async (data) => {
+              const content = await getSessionContent()
+              await saveSessionContent({ ...content, ...data })
+              const updated = await getSessionContent()
+              setPageContent(updated)
+              setShowSessionsContent(false)
+              addToast('Sessions page content updated', 'success')
+            }}
+            onCancel={() => setShowSessionsContent(false)}
+          />
+        </Modal>
+      )}
+
+      {showPpContent && (
+        <Modal title="Private &amp; Premium Page Content" onClose={() => setShowPpContent(false)} wide>
+          <PrivatePremiumContentForm
+            content={{
+              ppHeaderTitle: c.ppHeaderTitle || '',
+              ppHeaderDesc: c.ppHeaderDesc || '',
+              ppEyebrow: c.ppEyebrow || '',
+              ppSectionTitle: c.ppSectionTitle || '',
+              ppSectionDesc: c.ppSectionDesc || '',
+              ppCustomSession: c.ppCustomSession || { title: '', grade: '', label: '', price: '', unit: '', features: [''] },
+              ppCustomEyebrow: c.ppCustomEyebrow || '',
+              ppCustomSectionTitle: c.ppCustomSectionTitle || '',
+              ppCustomItems: c.ppCustomItems || [],
+            }}
+            onSave={async (data) => {
+              const content = await getSessionContent()
+              await saveSessionContent({ ...content, ...data })
+              const updated = await getSessionContent()
+              setPageContent(updated)
+              setShowPpContent(false)
+              addToast('Private & Premium page content updated', 'success')
+            }}
+            onCancel={() => setShowPpContent(false)}
+          />
         </Modal>
       )}
     </>
@@ -428,6 +509,180 @@ function PricingForm({ data, onSave, onCancel }) {
       </div>
       <div className="admin-form-actions">
         <button className="btn-admin btn-admin-primary" onClick={handleSave}>Save</button>
+        <button className="btn-admin btn-admin-outline" onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
+function SessionsPageContentForm({ content, onSave, onCancel }) {
+  const [form, setForm] = useState(content)
+
+  function updateCustom(field, val) {
+    setForm({ ...form, customSession: { ...form.customSession, [field]: val } })
+  }
+
+  function addFeature() {
+    setForm({ ...form, customSession: { ...form.customSession, features: [...(form.customSession?.features || []), ''] } })
+  }
+
+  function updateFeature(idx, val) {
+    const feat = [...(form.customSession?.features || [])]
+    feat[idx] = val
+    setForm({ ...form, customSession: { ...form.customSession, features: feat } })
+  }
+
+  function removeFeature(idx) {
+    const feat = (form.customSession?.features || []).filter((_, i) => i !== idx)
+    setForm({ ...form, customSession: { ...form.customSession, features: feat } })
+  }
+
+  return (
+    <div className="admin-form">
+      <h3 style={{ marginBottom: 12 }}>Page Header</h3>
+      <div className="admin-field">
+        <label>Header Title</label>
+        <input value={form.sessionsHeaderTitle} onChange={(e) => setForm({ ...form, sessionsHeaderTitle: e.target.value })} />
+      </div>
+      <div className="admin-field">
+        <label>Header Description</label>
+        <textarea rows={3} value={form.sessionsHeaderDesc} onChange={(e) => setForm({ ...form, sessionsHeaderDesc: e.target.value })} />
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
+      <h3 style={{ marginBottom: 12 }}>Section Headings</h3>
+      <div className="admin-field"><label>Sessions Section Title</label><input value={form.sessionsSectionTitle} onChange={(e) => setForm({ ...form, sessionsSectionTitle: e.target.value })} /></div>
+      <div className="admin-field"><label>Pricing Section Title</label><input value={form.pricingSectionTitle} onChange={(e) => setForm({ ...form, pricingSectionTitle: e.target.value })} /></div>
+      <div className="admin-field"><label>Included Section Title</label><input value={form.includedSectionTitle} onChange={(e) => setForm({ ...form, includedSectionTitle: e.target.value })} /></div>
+      <div className="admin-field"><label>FAQ Eyebrow</label><input value={form.faqEyebrow} onChange={(e) => setForm({ ...form, faqEyebrow: e.target.value })} /></div>
+      <div className="admin-field"><label>FAQ Section Title</label><input value={form.faqSectionTitle} onChange={(e) => setForm({ ...form, faqSectionTitle: e.target.value })} /></div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
+      <h3 style={{ marginBottom: 12 }}>Customizable Session Card</h3>
+      <div className="admin-form-row">
+        <div className="admin-field"><label>Title</label><input value={form.customSession?.title || ''} onChange={(e) => updateCustom('title', e.target.value)} /></div>
+        <div className="admin-field"><label>Grade</label><input value={form.customSession?.grade || ''} onChange={(e) => updateCustom('grade', e.target.value)} /></div>
+      </div>
+      <div className="admin-form-row">
+        <div className="admin-field"><label>Label</label><input value={form.customSession?.label || ''} onChange={(e) => updateCustom('label', e.target.value)} /></div>
+        <div className="admin-field"><label>Price</label><input value={form.customSession?.price || ''} onChange={(e) => updateCustom('price', e.target.value)} /></div>
+      </div>
+      <div className="admin-field"><label>Unit</label><input value={form.customSession?.unit || ''} onChange={(e) => updateCustom('unit', e.target.value)} /></div>
+      <div className="admin-field">
+        <label>Features</label>
+        {(form.customSession?.features || []).map((f, i) => (
+          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+            <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
+            <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>✕</button>
+          </div>
+        ))}
+        <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start' }}>+ Add Feature</button>
+      </div>
+
+      <div className="admin-form-actions">
+        <button className="btn-admin btn-admin-primary" onClick={() => onSave(form)}>Save All</button>
+        <button className="btn-admin btn-admin-outline" onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
+function PrivatePremiumContentForm({ content, onSave, onCancel }) {
+  const [form, setForm] = useState(content)
+
+  function updateCustom(field, val) {
+    setForm({ ...form, ppCustomSession: { ...form.ppCustomSession, [field]: val } })
+  }
+
+  function addFeature() {
+    setForm({ ...form, ppCustomSession: { ...form.ppCustomSession, features: [...(form.ppCustomSession?.features || []), ''] } })
+  }
+
+  function updateFeature(idx, val) {
+    const feat = [...(form.ppCustomSession?.features || [])]
+    feat[idx] = val
+    setForm({ ...form, ppCustomSession: { ...form.ppCustomSession, features: feat } })
+  }
+
+  function removeFeature(idx) {
+    const feat = (form.ppCustomSession?.features || []).filter((_, i) => i !== idx)
+    setForm({ ...form, ppCustomSession: { ...form.ppCustomSession, features: feat } })
+  }
+
+  function addCustomItem() {
+    setForm({ ...form, ppCustomItems: [...(form.ppCustomItems || []), { h: '', p: '' }] })
+  }
+
+  function updateCustomItem(idx, field, val) {
+    const items = [...(form.ppCustomItems || [])]
+    items[idx] = { ...items[idx], [field]: val }
+    setForm({ ...form, ppCustomItems: items })
+  }
+
+  function removeCustomItem(idx) {
+    setForm({ ...form, ppCustomItems: (form.ppCustomItems || []).filter((_, i) => i !== idx) })
+  }
+
+  return (
+    <div className="admin-form">
+      <h3 style={{ marginBottom: 12 }}>Page Header</h3>
+      <div className="admin-field">
+        <label>Header Title</label>
+        <input value={form.ppHeaderTitle} onChange={(e) => setForm({ ...form, ppHeaderTitle: e.target.value })} />
+      </div>
+      <div className="admin-field">
+        <label>Header Description</label>
+        <textarea rows={3} value={form.ppHeaderDesc} onChange={(e) => setForm({ ...form, ppHeaderDesc: e.target.value })} />
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
+      <h3 style={{ marginBottom: 12 }}>Section Headings</h3>
+      <div className="admin-field"><label>Plans Eyebrow</label><input value={form.ppEyebrow} onChange={(e) => setForm({ ...form, ppEyebrow: e.target.value })} /></div>
+      <div className="admin-field"><label>Plans Section Title</label><input value={form.ppSectionTitle} onChange={(e) => setForm({ ...form, ppSectionTitle: e.target.value })} /></div>
+      <div className="admin-field"><label>Plans Section Description</label><textarea rows={2} value={form.ppSectionDesc} onChange={(e) => setForm({ ...form, ppSectionDesc: e.target.value })} /></div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
+      <h3 style={{ marginBottom: 12 }}>Customizable Session Card</h3>
+      <div className="admin-form-row">
+        <div className="admin-field"><label>Title</label><input value={form.ppCustomSession?.title || ''} onChange={(e) => updateCustom('title', e.target.value)} /></div>
+        <div className="admin-field"><label>Grade</label><input value={form.ppCustomSession?.grade || ''} onChange={(e) => updateCustom('grade', e.target.value)} /></div>
+      </div>
+      <div className="admin-form-row">
+        <div className="admin-field"><label>Label</label><input value={form.ppCustomSession?.label || ''} onChange={(e) => updateCustom('label', e.target.value)} /></div>
+        <div className="admin-field"><label>Price</label><input value={form.ppCustomSession?.price || ''} onChange={(e) => updateCustom('price', e.target.value)} /></div>
+      </div>
+      <div className="admin-field"><label>Unit</label><input value={form.ppCustomSession?.unit || ''} onChange={(e) => updateCustom('unit', e.target.value)} /></div>
+      <div className="admin-field">
+        <label>Features</label>
+        {(form.ppCustomSession?.features || []).map((f, i) => (
+          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+            <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
+            <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>✕</button>
+          </div>
+        ))}
+        <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start' }}>+ Add Feature</button>
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
+      <h3 style={{ marginBottom: 12 }}>"What Gets Customized" Section</h3>
+      <div className="admin-field"><label>Section Eyebrow</label><input value={form.ppCustomEyebrow} onChange={(e) => setForm({ ...form, ppCustomEyebrow: e.target.value })} /></div>
+      <div className="admin-field"><label>Section Title</label><input value={form.ppCustomSectionTitle} onChange={(e) => setForm({ ...form, ppCustomSectionTitle: e.target.value })} /></div>
+      <div className="admin-field">
+        <label>Custom Items</label>
+        {(form.ppCustomItems || []).map((item, i) => (
+          <div key={i} style={{ border: '1px solid #e5e0d4', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
+              <input style={{ flex: 1 }} placeholder="Heading" value={item.h} onChange={(e) => updateCustomItem(i, 'h', e.target.value)} />
+              <button className="btn-admin-icon danger" onClick={() => removeCustomItem(i)}>✕</button>
+            </div>
+            <textarea style={{ width: '100%' }} rows={2} placeholder="Description" value={item.p} onChange={(e) => updateCustomItem(i, 'p', e.target.value)} />
+          </div>
+        ))}
+        <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addCustomItem} style={{ alignSelf: 'flex-start' }}>+ Add Item</button>
+      </div>
+
+      <div className="admin-form-actions">
+        <button className="btn-admin btn-admin-primary" onClick={() => onSave(form)}>Save All</button>
         <button className="btn-admin btn-admin-outline" onClick={onCancel}>Cancel</button>
       </div>
     </div>

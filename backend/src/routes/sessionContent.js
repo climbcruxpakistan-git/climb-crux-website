@@ -50,6 +50,25 @@ router.put('/', async (req, res, next) => {
     if (req.body.pricingPrice !== undefined) content.pricingPrice = req.body.pricingPrice
     if (req.body.pricingUnit !== undefined) content.pricingUnit = req.body.pricingUnit
     if (req.body.pricingFeatures !== undefined) content.pricingFeatures = req.body.pricingFeatures
+    // Sessions page content
+    if (req.body.sessionsHeaderTitle !== undefined) content.sessionsHeaderTitle = req.body.sessionsHeaderTitle
+    if (req.body.sessionsHeaderDesc !== undefined) content.sessionsHeaderDesc = req.body.sessionsHeaderDesc
+    if (req.body.sessionsSectionTitle !== undefined) content.sessionsSectionTitle = req.body.sessionsSectionTitle
+    if (req.body.pricingSectionTitle !== undefined) content.pricingSectionTitle = req.body.pricingSectionTitle
+    if (req.body.includedSectionTitle !== undefined) content.includedSectionTitle = req.body.includedSectionTitle
+    if (req.body.faqEyebrow !== undefined) content.faqEyebrow = req.body.faqEyebrow
+    if (req.body.faqSectionTitle !== undefined) content.faqSectionTitle = req.body.faqSectionTitle
+    if (req.body.customSession !== undefined) content.customSession = req.body.customSession
+    // Private & Premium page content
+    if (req.body.ppHeaderTitle !== undefined) content.ppHeaderTitle = req.body.ppHeaderTitle
+    if (req.body.ppHeaderDesc !== undefined) content.ppHeaderDesc = req.body.ppHeaderDesc
+    if (req.body.ppEyebrow !== undefined) content.ppEyebrow = req.body.ppEyebrow
+    if (req.body.ppSectionTitle !== undefined) content.ppSectionTitle = req.body.ppSectionTitle
+    if (req.body.ppSectionDesc !== undefined) content.ppSectionDesc = req.body.ppSectionDesc
+    if (req.body.ppCustomSession !== undefined) content.ppCustomSession = req.body.ppCustomSession
+    if (req.body.ppCustomEyebrow !== undefined) content.ppCustomEyebrow = req.body.ppCustomEyebrow
+    if (req.body.ppCustomSectionTitle !== undefined) content.ppCustomSectionTitle = req.body.ppCustomSectionTitle
+    if (req.body.ppCustomItems !== undefined) content.ppCustomItems = req.body.ppCustomItems
     await content.save()
     res.json(content)
   } catch (err) { next(err) }

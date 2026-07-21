@@ -740,6 +740,10 @@ tbody tr:hover {
   color: var(--charcoal);
 }
 
+.modal--wide {
+  max-width: 800px;
+}
+
 .modal-body {
   padding: 20px 24px 24px;
 }
