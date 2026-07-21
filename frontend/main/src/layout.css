@@ -6,6 +6,22 @@
   z-index: 50;
   background: var(--chalk);
   border-bottom: 3px solid var(--orange);
+  width: 100%;
+  max-width: 100vw;
+}
+
+.navbar-inner {
+  min-width: 0;
+}
+
+.wrap.navbar-inner {
+  max-width: 100%;
+}
+
+@media (max-width: 860px) {
+  .navbar {
+    position: relative;
+  }
 }
 
 .navbar-inner {
