@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 const teamMemberSchema = new mongoose.Schema({
   name: { type: String, required: true },
   role: { type: String, required: true },
-  tag: { type: String, default: '' },
   bio: { type: String, default: '' },
   photoUrl: { type: String, default: '' },
   experience: { type: String, default: '' },

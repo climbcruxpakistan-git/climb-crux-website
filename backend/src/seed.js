@@ -44,7 +44,6 @@ const seedTeam = [
   {
     name: 'Ahmed Khan',
     role: 'Founder & Head Guide',
-    tag: 'Head Guide',
     bio: 'Runs every public session and designs our premium routes. Certified in rock rescue and high-angle safety with over 12 years of climbing experience.',
     experience: '12+ years of climbing across Pakistan, Nepal, and Turkey. Has led over 200 group sessions on Margalla Hills and designed the grade 7c+ premium route system. Started climbing at age 16 and has since summited over 30 major routes in the Karakoram range.',
     certifications: [
@@ -61,7 +60,6 @@ const seedTeam = [
   {
     name: 'Zara Malik',
     role: 'Private & Premium Coaching',
-    tag: 'Senior Coach',
     bio: 'Focuses on 1-on-1 technique and grade progression for climbers working toward harder routes. Specialist in movement coaching.',
     experience: '8+ years of climbing experience with a focus on technique coaching. Has helped over 50 climbers progress from beginner to advanced grades. Trained under IFMGA-certified guides in the French Alps and regularly updates her coaching methodology.',
     certifications: [
@@ -78,7 +76,6 @@ const seedTeam = [
   {
     name: 'Usman Ali',
     role: 'Public Sessions Lead',
-    tag: 'Lead Guide',
     bio: 'First point of contact for new climbers — patient, safety-first, and great at calming first-timer nerves and making climbing accessible.',
     experience: '6+ years of guiding experience, specializing in beginner and intermediate instruction. Has introduced over 500 first-time climbers to the sport. Known for his patient teaching style and ability to make anyone feel confident on the wall.',
     certifications: [

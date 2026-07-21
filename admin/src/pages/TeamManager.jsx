@@ -3,7 +3,7 @@ import { getTeam, saveTeamMember, deleteTeamMember } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const EMPTY_FORM = { name: '', role: '', tag: '', bio: '', photoUrl: '', experience: '', coachingExperience: '', certifications: [], instagram: '' }
+const EMPTY_FORM = { name: '', role: '', bio: '', photoUrl: '', experience: '', coachingExperience: '', certifications: [], instagram: '' }
 
 export default function TeamManager() {
   const { addToast } = useToast()
@@ -23,7 +23,7 @@ export default function TeamManager() {
 
   function openEdit(m) {
     setForm({
-      name: m.name || '', role: m.role || '', tag: m.tag || '', bio: m.bio || '',
+      name: m.name || '', role: m.role || '', bio: m.bio || '',
       photoUrl: m.photoUrl || '', experience: m.experience || '',
       coachingExperience: m.coachingExperience || '',
       certifications: Array.isArray(m.certifications) ? [...m.certifications] : [],
@@ -80,7 +80,6 @@ export default function TeamManager() {
                     <th>Photo</th>
                     <th>Name</th>
                     <th>Role</th>
-                    <th>Tag</th>
                     <th>Certifications</th>
                     <th style={{ width: 100 }}>Actions</th>
                   </tr>
@@ -97,7 +96,6 @@ export default function TeamManager() {
                       </td>
                       <td><strong>{m.name}</strong></td>
                       <td>{m.role}</td>
-                      <td><span className="badge badge-orange">{m.tag}</span></td>
                       <td className="cell-truncate">{Array.isArray(m.certifications) ? m.certifications.join(', ') : m.certifications}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 4 }}>
@@ -121,7 +119,6 @@ export default function TeamManager() {
               <div className="admin-field"><label>Name *</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" /></div>
               <div className="admin-field"><label>Role</label><input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="e.g. Founder & Head Guide" /></div>
             </div>
-            <div className="admin-field"><label>Tag</label><input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} placeholder="e.g. Head Guide" /></div>
             <div className="admin-field"><label>Short Bio (shown on team card)</label><textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} placeholder="Short biography…" /></div>
             <div className="admin-field">
               <label>Photo URL (Cloudinary)</label>

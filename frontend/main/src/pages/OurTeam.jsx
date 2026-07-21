@@ -36,7 +36,6 @@ export default function OurTeam() {
                       )}
                     </div>
                     <div className="instructor-body">
-                      <span className="instructor-role-tag">{i.tag}</span>
                       <h4>{i.name}</h4>
                       <span className="instructor-subtitle">{i.role}</span>
                       <p>{i.bio}</p>
