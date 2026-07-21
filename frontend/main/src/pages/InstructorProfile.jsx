@@ -58,14 +58,19 @@ export default function InstructorProfile() {
             <p style={{ color: 'var(--orange-light)', fontSize: '1.1rem', fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 20 }}>{instructor.role}</p>
             <p style={{ color: '#c9c4b8', fontSize: '1.02rem', maxWidth: '56ch', lineHeight: 1.7 }}>{instructor.bio}</p>
 
-            {/* Social Links — Instagram only */}
-            {instructor.instagram && (
-              <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+            {/* Social Links — Instagram + Climbing Profile */}
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              {instructor.instagram && (
                 <a href={instructor.instagram} target="_blank" rel="noreferrer" className="btn btn-outline-light" style={{ fontSize: '0.78rem', padding: '0.6em 1.2em' }}>
                   Instagram
                 </a>
-              </div>
-            )}
+              )}
+              {instructor.climbingProfile && (
+                <a href={instructor.climbingProfile} target="_blank" rel="noreferrer" className="btn btn-outline-light" style={{ fontSize: '0.78rem', padding: '0.6em 1.2em' }}>
+                  View climbing profile
+                </a>
+              )}
+            </div>
           </div>
         </div>
         <CliffEdge fill="var(--chalk)" height={40} />

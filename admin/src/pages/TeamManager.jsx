@@ -3,7 +3,7 @@ import { getTeam, saveTeamMember, deleteTeamMember } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const EMPTY_FORM = { name: '', role: '', bio: '', photoUrl: '', experience: '', coachingExperience: '', certifications: [], instagram: '' }
+const EMPTY_FORM = { name: '', role: '', bio: '', photoUrl: '', experience: '', coachingExperience: '', certifications: [], instagram: '', climbingProfile: '' }
 
 export default function TeamManager() {
   const { addToast } = useToast()
@@ -28,6 +28,7 @@ export default function TeamManager() {
       coachingExperience: m.coachingExperience || '',
       certifications: Array.isArray(m.certifications) ? [...m.certifications] : [],
       instagram: m.instagram || '',
+      climbingProfile: m.climbingProfile || '',
     })
     setEditing(m.id)
   }
@@ -161,6 +162,8 @@ export default function TeamManager() {
             </div>
 
             <div className="admin-field"><label>Instagram URL</label><input value={form.instagram} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="https://instagram.com/..." /></div>
+
+            <div className="admin-field"><label>Climbing Profile URL</label><input value={form.climbingProfile} onChange={(e) => setForm({ ...form, climbingProfile: e.target.value })} placeholder="https://thecrag.com/... or https://8a.nu/..." /></div>
 
             <div className="admin-form-actions">
               <button className="btn-admin btn-admin-primary" onClick={handleSave}>Save</button>

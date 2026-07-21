@@ -35,6 +35,7 @@ router.post('/', async (req, res, next) => {
       specialties: req.body.specialties || '',
       instagram: req.body.instagram || '',
       facebook: req.body.facebook || '',
+      climbingProfile: req.body.climbingProfile || '',
     })
     res.status(201).json(member)
   } catch (err) { next(err) }
@@ -42,13 +43,13 @@ router.post('/', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, role, tag, bio, photoUrl, experience, coachingExperience, certifications, specialties, instagram, facebook } = req.body
+    const { name, role, tag, bio, photoUrl, experience, coachingExperience, certifications, specialties, instagram, facebook, climbingProfile } = req.body
     if (!name) return res.status(400).json({ error: 'Name is required' })
     // Ensure certifications is an array
     const certs = Array.isArray(certifications) ? certifications.filter(Boolean) : []
     const member = await TeamMember.findByIdAndUpdate(
       req.params.id,
-      { name, role, tag, bio, photoUrl, experience, coachingExperience, certifications: certs, specialties, instagram, facebook },
+      { name, role, tag, bio, photoUrl, experience, coachingExperience, certifications: certs, specialties, instagram, facebook, climbingProfile },
       { new: true, runValidators: true }
     )
     if (!member) return res.status(404).json({ error: 'Not found' })

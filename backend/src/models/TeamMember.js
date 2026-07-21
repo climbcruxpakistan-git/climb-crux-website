@@ -11,6 +11,7 @@ const teamMemberSchema = new mongoose.Schema({
   specialties: { type: String, default: '' },
   instagram: { type: String, default: '' },
   facebook: { type: String, default: '' },
+  climbingProfile: { type: String, default: '' },
 }, { timestamps: true })
 
 export default mongoose.model('TeamMember', teamMemberSchema)
