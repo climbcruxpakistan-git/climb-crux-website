@@ -73,7 +73,7 @@
 }
 
 .navbar-toggle {
-  display: none;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
@@ -82,6 +82,12 @@
   background: none;
   border: none;
   padding: 0;
+}
+
+@media (min-width: 861px) {
+  .navbar-toggle {
+    display: none;
+  }
 }
 
 .navbar-toggle span {
