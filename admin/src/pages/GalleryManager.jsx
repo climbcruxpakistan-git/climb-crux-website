@@ -3,7 +3,7 @@ import { getGallery, saveGalleryItem, deleteGalleryItem } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const API = '/api'
+const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
 const CATEGORIES = ['Public Sessions', 'Private Sessions']
 
 export default function GalleryManager() {

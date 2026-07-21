@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const API = '/api'
+const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
 
 export default function HomeManager() {
   const { addToast } = useToast()
