@@ -34,18 +34,26 @@ export default function TeamManager() {
 
   async function handleSave() {
     if (!form.name) { addToast('Name is required', 'error'); return }
-    const member = editing === 'new' ? { id: null, ...form } : { id: editing, ...form }
-    await saveTeamMember(member)
-    setMembers(await getTeam())
-    setEditing(null)
-    addToast('Team member saved', 'success')
+    try {
+      const member = editing === 'new' ? { id: null, ...form } : { id: editing, ...form }
+      await saveTeamMember(member)
+      setMembers(await getTeam())
+      setEditing(null)
+      addToast('Team member saved', 'success')
+    } catch (err) {
+      addToast(err?.message || 'Failed to save', 'error')
+    }
   }
 
   async function handleDelete(id) {
     if (!confirm('Delete this team member?')) return
-    await deleteTeamMember(id)
-    setMembers(await getTeam())
-    addToast('Team member deleted', 'success')
+    try {
+      await deleteTeamMember(id)
+      setMembers(await getTeam())
+      addToast('Team member deleted', 'success')
+    } catch (err) {
+      addToast(err?.message || 'Failed to delete', 'error')
+    }
   }
 
   function addCert() { setForm({ ...form, certifications: [...form.certifications, ''] }) }
