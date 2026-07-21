@@ -4,7 +4,8 @@ const AuthContext = createContext(null)
 
 // In development, requests proxy through Vite to localhost:4000.
 // In production (Vercel), set VITE_API_URL to your Render backend URL.
-const API = import.meta.env.VITE_API_URL || '/api'
+// If VITE_API_URL is not set, the PROD fallback uses the Render backend directly.
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
