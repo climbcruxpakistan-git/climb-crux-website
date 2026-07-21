@@ -71,7 +71,8 @@ export default function Gallery() {
     if (slugPhotos.length > 0) return slugPhotos
     // Fallback: use the item's own imageUrl if it has one
     if (item.imageUrl) return [item]
-    return []
+    // Fallback: return the item itself so it shows with a placeholder photo
+    return [item]
   }
 
   // Build folders from unique categories
