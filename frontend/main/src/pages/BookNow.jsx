@@ -48,7 +48,7 @@ function BankTransferForm({ bookingNumber }) {
   )
 }
 
-function EasyPaisaForm() {
+function EasyPaisaForm({ bookingNumber }) {
   return (
     <div className="payment-form-fields">
       <div className="payment-easypaisa-info">
@@ -58,20 +58,27 @@ function EasyPaisaForm() {
           </svg>
         </div>
         <div>
-          <p className="bank-detail-title">Pay via EasyPaisa</p>
+          <p className="bank-detail-title">Pay via EasyPaisa / JazzCash</p>
           <p className="bank-detail-row">Send payment to our EasyPaisa account:</p>
           <p className="bank-detail-row phone-number"><span className="bank-label">Phone:</span> 0300 1234567</p>
           <p className="bank-detail-row"><span className="bank-label">Account:</span> Climb Crux Pakistan</p>
+          <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
+            Send the full booking amount of <strong>PKR 2,500</strong> to the EasyPaisa account above.
+          </p>
         </div>
       </div>
       <div className="field">
         <label htmlFor="easypaisa-phone">Your EasyPaisa / JazzCash number</label>
         <input id="easypaisa-phone" type="tel" inputMode="numeric" placeholder="03XX XXXXXXX" required />
       </div>
-      <div className="field">
-        <label htmlFor="easypaisa-txn">Transaction ID</label>
-        <input id="easypaisa-txn" type="text" placeholder="e.g. TXN123456789" required />
-      </div>
+
+      {bookingNumber && (
+        <div className="bank-booking-ref">
+          <span className="bank-ref-label">Your booking number:</span>
+          <span className="bank-ref-value">{bookingNumber}</span>
+          <p className="bank-ref-note">Use this number when sending your payment proof on WhatsApp.</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -174,21 +181,26 @@ export default function BookNow() {
       return
     } else if (paymentMethod === 'easypaisa') {
       paymentDetails.phone = form['easypaisa-phone']?.value || ''
-      paymentDetails.transactionId = form['easypaisa-txn']?.value || ''
-    }
 
-    try {
-      await updateBooking(bookingId, {
-        paymentMethod,
-        paymentStatus: 'pending',
-        paymentDetails,
-      })
-      setBookingData((prev) => ({ ...prev, payment: { method: paymentMethod, ...paymentDetails } }))
-      setSending(false)
-      setStep(3)
-    } catch (err) {
-      setError('Failed to process payment. Please try again.')
-      setSending(false)
+      // For EasyPaisa, create the booking with payment info and show confirmation page
+      try {
+        await updateBooking(bookingId, {
+          paymentMethod: 'easypaisa',
+          paymentStatus: 'awaiting_confirmation',
+          paymentDetails,
+          status: 'pending',
+        })
+        // Fetch the updated booking to get the booking number
+        const updated = await getBooking(bookingId)
+        setBookingNumber(updated.bookingNumber || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
+        setBookingData((prev) => ({ ...prev, payment: { method: 'easypaisa', ...paymentDetails }, bookingNumber: updated.bookingNumber }))
+        setSending(false)
+        setStep(4) // Go to confirmation page
+      } catch (err) {
+        setError('Failed to process payment. Please try again.')
+        setSending(false)
+      }
+      return
     }
   }
 
@@ -523,7 +535,7 @@ export default function BookNow() {
                       </div>
                     )}
                     {paymentMethod === 'bank' && <BankTransferForm bookingNumber={bookingNumber} />}
-                    {paymentMethod === 'easypaisa' && <EasyPaisaForm />}
+                    {paymentMethod === 'easypaisa' && <EasyPaisaForm bookingNumber={bookingNumber} />}
                   </div>
 
                   <div className="form-actions">
@@ -537,7 +549,7 @@ export default function BookNow() {
                         <><span className="btn-spinner" /> Processing…</>
                       ) : paymentMethod === 'safepay' ? (
                         'Pay Online with SafePay →'
-                      ) : paymentMethod === 'bank' ? (
+                      ) : paymentMethod === 'bank' || paymentMethod === 'easypaisa' ? (
                         'Create Booking & Proceed'
                       ) : (
                         'Confirm & pay'
@@ -548,7 +560,7 @@ export default function BookNow() {
               </div>
             )}
 
-            {/* ---- STEP 4: Bank Transfer Confirmation ---- */}
+            {/* ---- STEP 4: Manual Payment Confirmation (Bank Transfer / EasyPaisa) ---- */}
             {step === 4 && (
               <div className="payment-success">
                 <div className="success-icon" style={{ color: 'var(--orange)' }}>
@@ -578,7 +590,7 @@ export default function BookNow() {
                   </div>
                   <div className="success-detail-row">
                     <span>Payment method</span>
-                    <span>Bank Transfer</span>
+                    <span>{bookingData?.payment?.method === 'easypaisa' ? 'EasyPaisa / JazzCash' : 'Bank Transfer'}</span>
                   </div>
                   <div className="success-detail-row">
                     <span>Status</span>
@@ -612,7 +624,7 @@ export default function BookNow() {
               </div>
             )}
 
-            {/* ---- STEP 3: Success ---- */}
+            {/* ---- STEP 3: SafePay Success ---- */}
             {step === 3 && (
               <div className="payment-success">
                 <div className="success-icon">
@@ -628,11 +640,7 @@ export default function BookNow() {
                 <div className="success-details">
                   <div className="success-detail-row">
                     <span>Payment method</span>
-                    <span>
-                      {bookingData?.payment?.method === 'safepay' && 'Pay Online (SafePay)'}
-                      {bookingData?.payment?.method === 'bank' && 'Bank Transfer'}
-                      {bookingData?.payment?.method === 'easypaisa' && 'EasyPaisa / JazzCash'}
-                    </span>
+                    <span>Pay Online (SafePay)</span>
                   </div>
                   <div className="success-detail-row">
                     <span>Booking reference</span>
@@ -642,57 +650,14 @@ export default function BookNow() {
                   </div>
                   <div className="success-detail-row">
                     <span>Status</span>
-                    {bookingData?.payment?.method === 'safepay' ? (
-                      <span className="status-paid">✓ Paid & Confirmed</span>
-                    ) : (
-                      <span className="status-pending">Pending verification</span>
-                    )}
+                    <span className="status-paid">✓ Paid & Confirmed</span>
                   </div>
                 </div>
-                {bookingData?.payment?.method === 'safepay' ? (
-                  <p className="success-note">
-                    Your payment has been processed successfully and your spot is confirmed!
-                    We've sent a confirmation to your email. See you on the rocks! 🧗
-                  </p>
-                ) : (
-                  <div className="manual-next-steps">
-                    <h4>📱 Next step — send us your payment screenshot</h4>
-                    <div className="manual-steps-list">
-                      <div className="manual-step">
-                        <span className="manual-step-num">1</span>
-                        <div>
-                          <strong>Make the transfer</strong>
-                          <p>Send <strong>PKR 2,500</strong> to our account using your banking app or EasyPaisa.</p>
-                        </div>
-                      </div>
-                      <div className="manual-step">
-                        <span className="manual-step-num">2</span>
-                        <div>
-                          <strong>Take a screenshot</strong>
-                          <p>Capture a screenshot or photo of the successful transaction confirmation.</p>
-                        </div>
-                      </div>
-                      <div className="manual-step">
-                        <span className="manual-step-num">3</span>
-                        <div>
-                          <strong>Send it on WhatsApp</strong>
-                          <p>Send the screenshot to <strong>0300 1234567</strong> and we'll confirm your spot within 24 hours.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <a
-                      href={`https://wa.me/923001234567?text=Hi%20Climb%20Crux!%20I've%20made%20a%20payment%20for%20my%20booking.%20Please%20find%20the%20screenshot%20attached.%20My%20booking%20reference%20is%20CRX-${bookingId ? bookingId.toString().slice(-6).toUpperCase() : ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-primary"
-                      style={{ gap: 8 }}
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                      Send Screenshot on WhatsApp
-                    </a>
-                  </div>
-                )}
-                <a href="/" className="btn btn-outline" style={{ marginTop: bookingData?.payment?.method !== 'safepay' ? 20 : 0 }}>Back to home</a>
+                <p className="success-note">
+                  Your payment has been processed successfully and your spot is confirmed!
+                  We've sent a confirmation to your email. See you on the rocks! 🧗
+                </p>
+                <a href="/" className="btn btn-outline">Back to home</a>
               </div>
             )}
           </div>

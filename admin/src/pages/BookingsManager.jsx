@@ -317,11 +317,12 @@ export default function BookingsManager() {
         </div>
       </div>
 
-      {/* ---- Pending Bank Transfer Confirmations ---- */}
-      {bookings.filter((b) => b.paymentMethod === 'bank' && b.paymentStatus === 'awaiting_confirmation').length > 0 && (
+      {/* ---- Pending Manual Payment Confirmations (Bank Transfer / EasyPaisa) ---- */}
+      {bookings.filter((b) => (b.paymentMethod === 'bank' || b.paymentMethod === 'easypaisa') && b.paymentStatus === 'awaiting_confirmation').length > 0 && (
         <div className="card-admin" style={{ borderLeft: '4px solid #f36f21' }}>
           <div className="card-admin-header">
-            <h2>⏳ Pending Bank Transfer Confirmations</h2>
+            <h2>⏳ Pending Payment Confirmations</h2>
+            <span style={{ fontSize: '0.78rem', color: '#888' }}>Bank Transfer &amp; EasyPaisa</span>
           </div>
           <div className="table-wrap">
             <div className="table-scroll">
@@ -332,14 +333,14 @@ export default function BookingsManager() {
                     <th>Customer</th>
                     <th>Course / Package</th>
                     <th>Amount</th>
-                    <th>Sender Bank</th>
-                    <th>Account Holder</th>
+                    <th>Method</th>
+                    <th>Details</th>
                     <th>Date</th>
                     <th style={{ width: 130 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.filter((b) => b.paymentMethod === 'bank' && b.paymentStatus === 'awaiting_confirmation').map((b) => (
+                  {bookings.filter((b) => (b.paymentMethod === 'bank' || b.paymentMethod === 'easypaisa') && b.paymentStatus === 'awaiting_confirmation').map((b) => (
                     <tr key={b.id || b._id}>
                       <td><strong className="ref-code" style={{ fontSize: '0.78rem' }}>{b.bookingNumber || '—'}</strong></td>
                       <td>
@@ -348,8 +349,22 @@ export default function BookingsManager() {
                       </td>
                       <td>{b.type?.replace(/-/g, ' ') || '—'}</td>
                       <td>PKR 2,500</td>
-                      <td>{b.paymentDetails?.yourBank || '—'}</td>
-                      <td>{b.paymentDetails?.accountHolder || '—'}</td>
+                      <td>
+                        <span className="payment-method-cell">
+                          <span className="payment-method-icon-sm">{methodIcon(b.paymentMethod)}</span>
+                          {formatMethod(b.paymentMethod)}
+                        </span>
+                      </td>
+                      <td>
+                        {b.paymentMethod === 'bank' ? (
+                          <>
+                            <div className="cell-muted" style={{ fontSize: '0.72rem' }}>Bank: {b.paymentDetails?.yourBank || '—'}</div>
+                            <div className="cell-muted" style={{ fontSize: '0.72rem' }}>Holder: {b.paymentDetails?.accountHolder || '—'}</div>
+                          </>
+                        ) : (
+                          <div className="cell-muted" style={{ fontSize: '0.72rem' }}>Phone: {b.paymentDetails?.phone || '—'}</div>
+                        )}
+                      </td>
                       <td className="cell-muted">{b.date || b.createdAt?.split('T')[0] || '—'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 4 }}>
