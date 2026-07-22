@@ -1,16 +1,22 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
-const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev'
+const GMAIL_EMAIL = process.env.GMAIL_EMAIL || ''
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || ''
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || ''
 
-let _resend = null
-function getResend() {
-  if (!_resend) {
-    const key = process.env.RESEND_API_KEY
-    if (!key) return null
-    _resend = new Resend(key)
+let _transporter = null
+function getTransporter() {
+  if (!_transporter) {
+    if (!GMAIL_EMAIL || !GMAIL_APP_PASSWORD) return null
+    _transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: GMAIL_EMAIL,
+        pass: GMAIL_APP_PASSWORD,
+      },
+    })
   }
-  return _resend
+  return _transporter
 }
 
 /* ── Shared helper — booking details table ── */
@@ -65,9 +71,9 @@ function emailWrapper({ headerColor, borderColor, headerTitle, headerDesc, booki
 
 /* ── 1. Booking Received (sent to customer) ── */
 export async function sendBookingReceivedEmail(booking) {
-  const resend = getResend()
-  if (!resend || !booking.customer_email) {
-    console.warn('Cannot send booking received email — missing resend or email')
+  const transporter = getTransporter()
+  if (!transporter || !booking.customer_email) {
+    console.warn('Cannot send booking received email — missing Gmail config or email')
     return
   }
 
@@ -90,8 +96,8 @@ export async function sendBookingReceivedEmail(booking) {
   })
 
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await transporter.sendMail({
+      from: `"Climb Crux" <${GMAIL_EMAIL}>`,
       to: booking.customer_email,
       subject: `🧗 Booking Received — ${booking.booking_number || 'Climb Crux'}`,
       html,
@@ -108,9 +114,9 @@ export async function sendBookingNotification(booking) {
     console.warn('NOTIFICATION_EMAIL not set — skipping email')
     return
   }
-  const resend = getResend()
-  if (!resend) {
-    console.warn('RESEND_API_KEY not set — skipping email')
+  const transporter = getTransporter()
+  if (!transporter) {
+    console.warn('Gmail SMTP not configured — skipping email')
     return
   }
 
@@ -133,8 +139,8 @@ export async function sendBookingNotification(booking) {
   })
 
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await transporter.sendMail({
+      from: `"Climb Crux" <${GMAIL_EMAIL}>`,
       to: NOTIFICATION_EMAIL,
       subject: `🧗 New booking from ${booking.customer_name} — ${sessionLabel || 'Climb Crux'}`,
       html,
@@ -147,9 +153,9 @@ export async function sendBookingNotification(booking) {
 
 /* ── 2. Payment Confirmed (sent to customer) ── */
 export async function sendPaymentConfirmedEmail(booking) {
-  const resend = getResend()
-  if (!resend || !booking.customer_email) {
-    console.warn('Cannot send confirmation email — missing resend or email')
+  const transporter = getTransporter()
+  if (!transporter || !booking.customer_email) {
+    console.warn('Cannot send confirmation email — missing Gmail config or email')
     return
   }
 
@@ -173,8 +179,8 @@ export async function sendPaymentConfirmedEmail(booking) {
   })
 
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await transporter.sendMail({
+      from: `"Climb Crux" <${GMAIL_EMAIL}>`,
       to: booking.customer_email,
       subject: `✅ Payment Confirmed — ${booking.booking_number || 'Climb Crux Booking'}`,
       html,
@@ -187,9 +193,9 @@ export async function sendPaymentConfirmedEmail(booking) {
 
 /* ── 3. Payment Failed (sent to customer) ── */
 export async function sendPaymentRejectedEmail(booking) {
-  const resend = getResend()
-  if (!resend || !booking.customer_email) {
-    console.warn('Cannot send rejection email — missing resend or email')
+  const transporter = getTransporter()
+  if (!transporter || !booking.customer_email) {
+    console.warn('Cannot send rejection email — missing Gmail config or email')
     return
   }
 
@@ -215,8 +221,8 @@ export async function sendPaymentRejectedEmail(booking) {
   })
 
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await transporter.sendMail({
+      from: `"Climb Crux" <${GMAIL_EMAIL}>`,
       to: booking.customer_email,
       subject: `⚠️ Payment Not Confirmed — ${booking.booking_number || 'Climb Crux Booking'}`,
       html,

@@ -22,9 +22,9 @@ services:
         value: "10000"
       - key: FRONTEND_URL
         sync: false
-      - key: RESEND_API_KEY
+      - key: GMAIL_EMAIL
+        value: "climbcruxpakistan@gmail.com"
+      - key: GMAIL_APP_PASSWORD
         sync: false
       - key: NOTIFICATION_EMAIL
-        sync: false
-      - key: EMAIL_FROM
-        value: "onboarding@resend.dev"
+        value: "climbcruxpakistan@gmail.com"
