@@ -191,9 +191,7 @@ export default function GalleryManager() {
         )}
       </div>
 
-      {/* ───────────────────────────────────────────── */}
-      {/* LEVEL 1: Inside a category — show subfolder cards */}
-      {/* ───────────────────────────────────────────── */}
+      // LEVEL 1: Inside a category — show subfolder cards
       {activeFolder ? (
         <div className="card-admin">
           <div className="card-admin-header">
@@ -290,9 +288,7 @@ export default function GalleryManager() {
           )}
         </div>
       ) : (
-        {/* ───────────────────────────────────────────── */}
-        {/* LEVEL 0: Category folder cards               */}
-        {/* ───────────────────────────────────────────── */}
+        // LEVEL 0: Category folder cards
         <>
           {/* Category folder grid */}
           <div className="card-admin">
