@@ -35,6 +35,14 @@ router.post('/', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+router.get('/:id', async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+    if (!booking) return res.status(404).json({ error: 'Not found' })
+    res.json(booking)
+  } catch (err) { next(err) }
+})
+
 router.put('/:id', async (req, res, next) => {
   try {
     const { name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails } = req.body

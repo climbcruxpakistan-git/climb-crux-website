@@ -53,6 +53,10 @@ export async function getAbout() {
   return mapId(await fetchJson('/about'))
 }
 
+export async function getBooking(id) {
+  return mapId(await fetchJson(`/bookings/${id}`))
+}
+
 export async function getSessionContent() {
   return await fetchJson('/session-content')
 }

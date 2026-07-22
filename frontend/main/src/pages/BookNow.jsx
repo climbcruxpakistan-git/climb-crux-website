@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, updateBooking, createCheckoutSession, checkPaymentStatus } from '../api.js'
+import { createBooking, updateBooking, createCheckoutSession, checkPaymentStatus, getBooking } from '../api.js'
 
 function BankTransferForm() {
   return (
@@ -176,50 +176,65 @@ export default function BookNow() {
     // Restore booking context from the redirect
     setBookingId(returnBookingId)
 
-    // Helper to fetch booking name from the API for the success screen
+    // Helper to poll payment status while webhook arrives
     async function pollPaymentStatus(id, maxRetries = 8, interval = 1500) {
       for (let i = 0; i < maxRetries; i++) {
         try {
           const status = await checkPaymentStatus(id)
-          if (status.paymentStatus === 'paid') {
-            return { ...status, resolved: true }
-          }
-          if (status.paymentStatus === 'failed') {
-            return { ...status, resolved: true }
-          }
-        } catch {
-          // Retry on error
-        }
+          if (status.paymentStatus === 'paid') return { ...status, resolved: true }
+          if (status.paymentStatus === 'failed') return { ...status, resolved: true }
+        } catch { /* retry */ }
         await new Promise((r) => setTimeout(r, interval))
       }
       return { paymentStatus: 'pending', resolved: false }
     }
 
+    // Helper to fetch full booking details for the success screen
+    async function fetchFullBooking(id) {
+      try {
+        const booking = await getBooking(id)
+        return {
+          name: booking.name || '',
+          email: booking.email || '',
+          phone: booking.phone || '',
+          type: booking.type || '',
+          date: booking.date || '',
+          groupSize: booking.groupSize || '1',
+          payment: { method: 'safepay' },
+        }
+      } catch {
+        return {
+          name: '', email: '', phone: '', type: '', date: '', groupSize: '1',
+          payment: { method: 'safepay' },
+        }
+      }
+    }
+
     if (paymentParam === 'success') {
-      pollPaymentStatus(returnBookingId).then((status) => {
+      // Start polling and fetch booking data in parallel
+      Promise.all([
+        pollPaymentStatus(returnBookingId),
+        fetchFullBooking(returnBookingId),
+      ]).then(([status, data]) => {
+        setBookingData(data)
         if (status.paymentStatus === 'paid') {
-          setBookingData({
-            name: '', email: '', phone: '', type: '', date: '', groupSize: '1',
-            payment: { method: 'safepay' },
-          })
           setStep(3)
         } else {
-          setBookingData({
-            name: '', email: '', phone: '', type: '', date: '', groupSize: '1',
-            payment: { method: 'safepay' },
-          })
           setStep(3)
           setError('Payment received. Your booking is being confirmed — you will receive a confirmation email shortly.')
         }
       })
     } else {
       // Payment cancelled or failed
-      setStep(2)
-      if (paymentParam === 'cancelled') {
-        setError('Payment was cancelled. You can try again or choose a different payment method.')
-      } else {
-        setError('Payment could not be processed. Please try again.')
-      }
+      fetchFullBooking(returnBookingId).then((data) => {
+        setBookingData(data)
+        setStep(2)
+        if (paymentParam === 'cancelled') {
+          setError('Payment was cancelled. You can try again or choose a different payment method.')
+        } else {
+          setError('Payment could not be processed. Please try again.')
+        }
+      })
     }
   }
 
