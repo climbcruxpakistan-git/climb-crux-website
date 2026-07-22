@@ -48,6 +48,38 @@ router.put('/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+router.patch('/:id/status', async (req, res, next) => {
+  try {
+    const { status } = req.body
+    if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be pending, confirmed, or cancelled' })
+    }
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    )
+    if (!booking) return res.status(404).json({ error: 'Not found' })
+    res.json(booking)
+  } catch (err) { next(err) }
+})
+
+router.patch('/:id/payment-status', async (req, res, next) => {
+  try {
+    const { paymentStatus } = req.body
+    if (!['pending', 'paid', 'failed'].includes(paymentStatus)) {
+      return res.status(400).json({ error: 'Payment status must be pending, paid, or failed' })
+    }
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { paymentStatus },
+      { new: true, runValidators: true }
+    )
+    if (!booking) return res.status(404).json({ error: 'Not found' })
+    res.json(booking)
+  } catch (err) { next(err) }
+})
+
 router.delete('/:id', async (req, res, next) => {
   try {
     const booking = await Booking.findByIdAndDelete(req.params.id)

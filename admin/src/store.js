@@ -166,6 +166,14 @@ export async function deleteBooking(id) {
   return request('DELETE', `/bookings/${id}`)
 }
 
+export async function patchBookingStatus(id, status) {
+  return mapId(await request('PATCH', `/bookings/${id}/status`, { status }))
+}
+
+export async function patchPaymentStatus(id, paymentStatus) {
+  return mapId(await request('PATCH', `/bookings/${id}/payment-status`, { paymentStatus }))
+}
+
 /* ---------- About ---------- */
 
 export async function getAbout() {

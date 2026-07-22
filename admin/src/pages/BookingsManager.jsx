@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getBookings, saveBooking, deleteBooking } from '../store.js'
+import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
@@ -175,20 +175,22 @@ export default function BookingsManager() {
   }
 
   async function updateStatus(id, status) {
-    const booking = bookings.find((b) => b.id === id)
-    if (booking) {
-      await saveBooking({ ...booking, status })
+    try {
+      await patchBookingStatus(id, status)
       setBookings(await getBookings())
       addToast(`Booking ${status}`, 'success')
+    } catch (err) {
+      addToast(`Failed to update status: ${err.message}`, 'error')
     }
   }
 
   async function updatePaymentStatus(id, paymentStatus) {
-    const booking = bookings.find((b) => b.id === id)
-    if (booking) {
-      await saveBooking({ ...booking, paymentStatus })
+    try {
+      await patchPaymentStatus(id, paymentStatus)
       setBookings(await getBookings())
       addToast(`Payment ${paymentStatus}`, 'success')
+    } catch (err) {
+      addToast(`Failed to update payment: ${err.message}`, 'error')
     }
   }
 
