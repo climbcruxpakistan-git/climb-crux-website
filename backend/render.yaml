@@ -22,9 +22,3 @@ services:
         value: "10000"
       - key: FRONTEND_URL
         sync: false
-      - key: SAFEPAY_PUBLIC_KEY
-        sync: false
-      - key: SAFEPAY_SECRET_KEY
-        sync: false
-      - key: SAFEPAY_ENV
-        sync: false

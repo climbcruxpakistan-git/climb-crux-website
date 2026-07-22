@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, updateBooking, createCheckoutSession, getBooking } from '../api.js'
+import { createBooking, updateBooking, getBooking } from '../api.js'
 
 function BankTransferForm({ bookingNumber }) {
   return (
@@ -58,8 +58,7 @@ export default function BookNow() {
   const [bookingData, setBookingData] = useState(null)
   const [bookingId, setBookingId] = useState(null)
   const [bookingNumber, setBookingNumber] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('safepay')
-  const [safepayRedirecting, setSafepayRedirecting] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('bank')
 
   const sessionTypes = [
     { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -102,84 +101,38 @@ export default function BookNow() {
     setError('')
     setSending(true)
 
-    if (paymentMethod === 'safepay') {
-      // SafePay online payment — redirect to hosted checkout
-      try {
-        setSafepayRedirecting(true)
-        const { checkoutUrl } = await createCheckoutSession(bookingId, 2500)
-        window.location.href = checkoutUrl
-      } catch (err) {
-        setError('Failed to initiate payment. Please try again.')
-        setSafepayRedirecting(false)
-        setSending(false)
-      }
-      return
+    const form = e.target
+    const paymentDetails = {
+      yourBank: form['bank-name']?.value || '',
+      accountHolder: form['account-holder']?.value || '',
     }
 
-    // Manual payment methods (bank transfer, easypaisa)
-    const form = e.target
-    const paymentDetails = {}
-
-    if (paymentMethod === 'bank') {
-      paymentDetails.yourBank = form['bank-name']?.value || ''
-      paymentDetails.accountHolder = form['account-holder']?.value || ''
-
-      // For bank transfer, create the booking with payment info and show confirmation page
-      try {
-        // Update the existing booking with payment details
-        await updateBooking(bookingId, {
-          paymentMethod: 'bank',
-          paymentStatus: 'awaiting_confirmation',
-          paymentDetails,
-          status: 'pending',
-        })
-        // Fetch the updated booking to get the booking number
-        const updated = await getBooking(bookingId)
-        setBookingNumber(updated.bookingNumber || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
-        setBookingData((prev) => ({ ...prev, payment: { method: 'bank', ...paymentDetails }, bookingNumber: updated.bookingNumber }))
-        setSending(false)
-        setStep(4) // Go to bank transfer confirmation page
-      } catch (err) {
-        setError('Failed to process payment. Please try again.')
-        setSending(false)
-      }
-      return
+    try {
+      // Update the existing booking with payment info
+      await updateBooking(bookingId, {
+        paymentMethod: 'bank',
+        paymentStatus: 'awaiting_confirmation',
+        paymentDetails,
+        status: 'pending',
+      })
+      // Fetch the updated booking to get the booking number
+      const updated = await getBooking(bookingId)
+      setBookingNumber(updated.bookingNumber || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
+      setBookingData((prev) => ({ ...prev, payment: { method: 'bank', ...paymentDetails }, bookingNumber: updated.bookingNumber }))
+      setSending(false)
+      setStep(4) // Go to bank transfer confirmation page
+    } catch (err) {
+      setError('Failed to process payment. Please try again.')
+      setSending(false)
     }
   }
-
-  // SafePay redirects now go to dedicated /payment/success and /payment/failed pages
-  // (No redirect handling needed here — new pages handle polling and confirmation)
 
   function getSessionTypeLabel(value) {
     const found = sessionTypes.find((t) => t.value === value)
     return found ? found.label : value
   }
 
-  const paymentMethods = [
-    {
-      value: 'safepay',
-      label: 'Credit / Debit Card',
-      desc: 'Secure online payment via SafePay — all major cards accepted',
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="1" y="4" width="22" height="16" rx="2" />
-          <line x1="1" y1="10" x2="23" y2="10" />
-        </svg>
-      ),
-    },
-    {
-      value: 'bank',
-      label: 'Bank Transfer',
-      desc: 'Manual transfer to our HBL account',
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="12 2 2 7 12 12 22 7 12 2" />
-          <polyline points="2 17 12 22 22 17" />
-          <polyline points="2 12 12 17 22 12" />
-        </svg>
-      ),
-    },
-  ]
+
 
   return (
     <>
@@ -328,72 +281,16 @@ export default function BookNow() {
                 <form onSubmit={handlePaymentSubmit} className="payment-form">
                   <h3 className="summary-title">Choose payment method</h3>
 
-                  {/* Payment method selector */}
-                  <div className="payment-method-grid">
-                    {paymentMethods.map((pm) => (
-                      <label
-                        key={pm.value}
-                        className={`payment-method-card ${paymentMethod === pm.value ? 'is-selected' : ''}`}
-                      >
-                        <input
-                          type="radio"
-                          name="payment-method"
-                          value={pm.value}
-                          checked={paymentMethod === pm.value}
-                          onChange={() => setPaymentMethod(pm.value)}
-                        />
-                        <span className="payment-method-icon">{pm.icon}</span>
-                        <span className="payment-method-label">{pm.label}</span>
-                        <span className="payment-method-check">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-
-                  {/* Dynamic payment fields */}
                   <div className="payment-form-section">
-                    {paymentMethod === 'safepay' && (
-                      <div className="payment-form-fields">
-                        <div className="payment-safepay-info">
-                          <div className="safepay-icon">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="3" y="11" width="18" height="11" rx="2" />
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="bank-detail-title">Secure online payment</p>
-                            <p className="bank-detail-row">
-                              You'll be redirected to SafePay's secure checkout page to complete your payment.
-                              We accept all major debit and credit cards.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="safepay-badges">
-                          <span className="safepay-badge">🔒 Secured by SafePay</span>
-                          <span className="safepay-badge">💳 Visa / Mastercard</span>
-                          <span className="safepay-badge">⚡ Instant confirmation</span>
-                        </div>
-                      </div>
-                    )}
-                    {paymentMethod === 'bank' && <BankTransferForm bookingNumber={bookingNumber} />}
+                    <BankTransferForm bookingNumber={bookingNumber} />
                   </div>
 
                   <div className="form-actions">
                     <button type="button" className="btn btn-outline" onClick={() => setStep(1)}>
                       ← Back
                     </button>
-                    <button type="submit" className="btn btn-primary" disabled={sending || safepayRedirecting}>
-                      {safepayRedirecting ? (
-                        <><span className="btn-spinner" /> Redirecting to SafePay…</>
-                      ) : sending ? (
-                        <><span className="btn-spinner" /> Processing…</>
-                      ) : paymentMethod === 'safepay' ? (
-                        'Pay Now with SafePay →'
-                      ) : (
-                        'Create Booking & Proceed'
-                      )}
+                    <button type="submit" className="btn btn-primary" disabled={sending}>
+                      {sending ? <><span className="btn-spinner" /> Processing…</> : 'Create Booking & Proceed'}
                     </button>
                   </div>
                 </form>
@@ -464,42 +361,7 @@ export default function BookNow() {
               </div>
             )}
 
-            {/* ---- STEP 3: SafePay Success ---- */}
-            {step === 3 && (
-              <div className="payment-success">
-                <div className="success-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
-                </div>
-                <h3>Booking confirmed!</h3>
-                <p className="success-desc">
-                  Thank you, <strong>{bookingData?.name}</strong>! Your {getSessionTypeLabel(bookingData?.type).toLowerCase()} session has been received.
-                </p>
-                <div className="success-details">
-                  <div className="success-detail-row">
-                    <span>Payment method</span>
-                    <span>Pay Online (SafePay)</span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span>Booking reference</span>
-                    <span className="ref-code">
-                      CRX-{bookingId ? bookingId.toString().slice(-6).toUpperCase() : Date.now().toString(36).toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span>Status</span>
-                    <span className="status-paid">✓ Paid & Confirmed</span>
-                  </div>
-                </div>
-                <p className="success-note">
-                  Your payment has been processed successfully and your spot is confirmed!
-                  We've sent a confirmation to your email. See you on the rocks! 🧗
-                </p>
-                <a href="/" className="btn btn-outline">Back to home</a>
-              </div>
-            )}
+
           </div>
         </div>
       </section>

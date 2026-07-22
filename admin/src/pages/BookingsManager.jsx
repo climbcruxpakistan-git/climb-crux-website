@@ -20,13 +20,12 @@ function methodIcon(method) {
 function badge(status) {
   const map = {
     pending: 'badge-yellow',
-    payment_pending: 'badge-orange',
     confirmed: 'badge-green',
     cancelled: 'badge-red',
     paid: 'badge-green',
     failed: 'badge-red',
   }
-  const label = status === 'payment_pending' ? 'Payment Pending' : (status || '—')
+  const label = status || '—'
   return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
 }
 

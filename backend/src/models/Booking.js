@@ -8,21 +8,10 @@ const historyEventSchema = new mongoose.Schema({
 }, { _id: false })
 
 const paymentDetailsSchema = new mongoose.Schema({
-  // Card payment
-  cardHolder: { type: String, default: '' },
-  cardLastFour: { type: String, default: '' },
-  cardExpiry: { type: String, default: '' },
-
-  // Bank transfer
   yourBank: { type: String, default: '' },
   accountHolder: { type: String, default: '' },
-  yourAccountNumber: { type: String, default: '' },
-
-  // EasyPaisa
-  phone: { type: String, default: '' },
-
-  // Shared
-  transactionId: { type: String, default: '' },
+  tracker: { type: String, default: '' },
+  amount: { type: Number, default: 0 },
 }, { _id: false })
 
 const bookingSchema = new mongoose.Schema({
@@ -35,12 +24,9 @@ const bookingSchema = new mongoose.Schema({
   groupSize: { type: String, default: '1' },
   experience: { type: String, default: '' },
   message: { type: String, default: '' },
-  status: { type: String, default: 'pending', enum: ['pending', 'payment_pending', 'confirmed', 'cancelled'] },
-  paymentMethod: { type: String, default: '', enum: ['', 'card', 'bank', 'easypaisa', 'safepay'] },
-  paymentStatus: { type: String, default: 'pending', enum: ['pending', 'awaiting_confirmation', 'paid', 'failed'] },
-  paymentGateway: { type: String, default: '' },
-  gatewayTransactionId: { type: String, default: '' },
-  paidAt: { type: Date, default: null },
+  status: { type: String, default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] },
+  paymentMethod: { type: String, default: '' },
+  paymentStatus: { type: String, default: 'pending' },
   paymentDetails: { type: paymentDetailsSchema, default: () => ({}) },
   history: { type: [historyEventSchema], default: [] },
 }, { timestamps: true })

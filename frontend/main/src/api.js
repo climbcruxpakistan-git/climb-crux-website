@@ -79,25 +79,6 @@ export async function updateBooking(id, data) {
   return mapId(await res.json())
 }
 
-export async function createCheckoutSession(bookingId, amount) {
-  const res = await fetch(`${API}/payments/create-checkout`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingId, amount }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Payment gateway error' }))
-    throw new Error(err.error || `API error: ${res.status}`)
-  }
-  return res.json()
-}
-
-export async function checkPaymentStatus(bookingId) {
-  const res = await fetch(`${API}/payments/check-status/${bookingId}`)
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
-  return res.json()
-}
-
 export async function getUploads() {
   return mapId(await fetchJson('/uploads'))
 }
