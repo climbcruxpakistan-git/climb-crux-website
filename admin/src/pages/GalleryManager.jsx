@@ -115,10 +115,10 @@ export default function GalleryManager() {
       return
     }
 
-    // Auto-generate a slug from the album tag
+    // Auto-generate a slug from the subfolder tag
     const tagSlug = form.tag
       ? form.tag.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-      : `album-${Date.now()}`
+      : `subfolder-${Date.now()}`
 
     setUploading(true)
 
@@ -192,7 +192,7 @@ export default function GalleryManager() {
       </div>
 
       {/* ───────────────────────────────────────────── */}
-      {/* LEVEL 1: Inside a category — show album cards */}
+      {/* LEVEL 1: Inside a category — show subfolder cards */}
       {/* ───────────────────────────────────────────── */}
       {activeFolder ? (
         <div className="card-admin">
@@ -392,7 +392,7 @@ export default function GalleryManager() {
             )}
           </div>
 
-          {/* All albums flat list (collapsible) */}
+          {/* All subfolders flat list (collapsible) */}
           {photos.length > 0 && (
             <details style={{ marginTop: 16 }}>
               <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--stone)', padding: '8px 0' }}>
@@ -449,8 +449,8 @@ export default function GalleryManager() {
         <Modal title={editing === 'new' ? (form.cat ? 'Add Subfolder' : 'New Category') : 'Edit Subfolder'} onClose={() => setEditing(null)}>
           <div className="admin-form">
             <div className="admin-field">
-              <label>Tag / Description</label>
-              <input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} placeholder="e.g. Public Session · Belay Practice" />
+              <label>Subfolder name</label>
+              <input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} placeholder="e.g. May 2025, Summer Camp, Advanced Clinic" />
             </div>
             <div className="admin-field">
               <label>Category <span style={{ fontWeight: 400, color: 'var(--stone)', fontSize: '0.75rem' }}>— type a new one or pick existing</span></label>
@@ -467,17 +467,17 @@ export default function GalleryManager() {
               </datalist>
             </div>
 
-            {/* ── Upload photos directly to this album ── */}
+            {/* ── Upload photos directly to this subfolder ── */}
             <div className="card-admin" style={{ border: '2px dashed #d8d0bc', background: dragOver ? 'rgba(243, 111, 33, 0.04)' : '#fefcf9', padding: 16, marginBottom: 16, transition: 'all 0.2s ease' }}
               onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFileDrop(e) }}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
             >
               <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 8, color: 'var(--ink)' }}>
-                📷 Upload photos to this album
+                📷 Upload photos to this subfolder
               </div>
               <p style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 12px' }}>
-                Drag & drop images here, or click to select. They will be uploaded and linked to this album automatically.
+                Drag & drop images here, or click to select. They will be uploaded and linked to this subfolder automatically.
               </p>
               <div
                 onClick={() => fileRef.current?.click()}
@@ -513,7 +513,7 @@ export default function GalleryManager() {
               {form.photoSlug?.trim() && slugPreview.length > 0 && (
                 <div style={{ marginTop: 12 }}>
                   <p style={{ fontSize: '0.72rem', fontWeight: 600, color: '#555', margin: '0 0 6px' }}>
-                    {slugPreview.length} photo{slugPreview.length > 1 ? 's' : ''} in this album:
+                    {slugPreview.length} photo{slugPreview.length > 1 ? 's' : ''} in this subfolder:
                   </p>
                   <div style={{
                     display: 'grid',
