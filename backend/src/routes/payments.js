@@ -51,10 +51,12 @@ router.post('/create-checkout', async (req, res, next) => {
     await booking.save()
 
     // Create SafePay order session with booking_number in metadata
+    // SafePay API expects: client (API key), environment, amount in rupees (float)
     const orderPayload = {
-      merchant_api_key: SAFEPAY_PUBLIC_KEY,
-      amount: Math.round(amount * 100), // Convert to minor units (paisa)
+      client: SAFEPAY_PUBLIC_KEY,
+      amount: Number(amount), // In rupees (e.g. 2500.00)
       currency: 'PKR',
+      environment: SAFEPAY_ENV,
       intent: 'CYBERSOURCE',
       mode: 'payment',
       entry_mode: 'redirect',
@@ -75,19 +77,18 @@ router.post('/create-checkout', async (req, res, next) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${SAFEPAY_SECRET}`,
       },
       body: JSON.stringify(orderPayload),
     })
 
     const orderData = await orderRes.json()
 
-    if (!orderRes.ok) {
+    if (!orderRes.ok || orderData?.status?.message !== 'success') {
       console.error('SafePay order creation failed:', orderData)
-      return res.status(502).json({ error: 'Payment gateway error', details: orderData })
+      return res.status(502).json({ error: 'Payment gateway error', details: orderData?.status?.errors || orderData })
     }
 
-    const tracker = orderData?.data?.tracker?.token || orderData?.data?.token || orderData?.token
+    const tracker = orderData?.data?.token
 
     if (!tracker) {
       console.error('SafePay response missing tracker:', orderData)
@@ -137,9 +138,9 @@ router.post('/safepay/webhook', async (req, res) => {
     console.log('SafePay webhook received:', event?.data?.event || event?.event || 'unknown')
 
     // Extract tracker and booking info
-    const tracker = event?.data?.tracker?.token || event?.tracker || event?.data?.token
+    const tracker = event?.data?.tracker?.token || event?.tracker || event?.data?.token || event?.token
     const eventType = event?.data?.event || event?.event || ''
-    const status = event?.data?.order?.status || event?.order?.status || ''
+    const status = event?.data?.order?.status || event?.order?.status || event?.data?.state || event?.state || ''
     const transactionId = event?.data?.transaction?.id || event?.transaction?.id || event?.data?.id || ''
 
     if (!tracker) {
