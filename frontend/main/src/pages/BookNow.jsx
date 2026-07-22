@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, getSessionContent } from '../api.js'
+import { createBooking, getSessionContent, getPlans } from '../api.js'
 
-const sessionTypes = [
+// Hardcoded options that don't come from the API
+const staticOptions = [
   { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
-  { value: 'private', label: 'Private Session', desc: 'One-on-one or private group coaching tailored to your goals.' },
   { value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' },
 ]
+
+/** Parse a formatted price string like "2,500" or "15000" to a number */
+function parsePrice(val) {
+  if (!val) return 0
+  return Number(String(val).replace(/,/g, '')) || 0
+}
 
 export default function BookNow() {
   const navigate = useNavigate()
@@ -16,27 +22,69 @@ export default function BookNow() {
 
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
-  const [sessionType, setSessionType] = useState(
-    sessionTypes.some(t => t.value === preselected) ? preselected : ''
-  )
+  const [sessionType, setSessionType] = useState('')
   const [participants, setParticipants] = useState(1)
-  const [pricing, setPricing] = useState({ publicPrice: 4500 })
+  const [pricing, setPricing] = useState({ publicPrice: 2500 })
+  const [planOptions, setPlanOptions] = useState([])
+  const [loaded, setLoaded] = useState(false)
 
-  // Fetch pricing info from session content
+  // Fetch pricing info & plans from API
   useEffect(() => {
-    getSessionContent().then((content) => {
-      const price = Number(content.pricingPrice) || 4500
-      setPricing({ publicPrice: price })
-    }).catch(() => {
-      setPricing({ publicPrice: 4500 })
+    Promise.all([getSessionContent(), getPlans()])
+      .then(([content, plans]) => {
+        const publicPrice = parsePrice(content.pricingPrice) || 2500
+        setPricing({ publicPrice })
+
+        // Build private plan options from API data
+        const privatePlans = (plans || [])
+          .filter((p) => p.type === 'private-starter' || p.type === 'private-advanced')
+          .map((p) => ({
+            value: p.type,
+            label: p.title,
+            price: parsePrice(p.price),
+            desc: `${p.title} — PKR ${p.price}/person`,
+          }))
+        setPlanOptions(privatePlans)
+
+        // Set initial session type from URL param if valid
+        const allValues = ['public', 'custom-group', ...privatePlans.map((p) => p.value)]
+        if (preselected && allValues.includes(preselected)) {
+          setSessionType(preselected)
+        }
+        setLoaded(true)
+      })
+      .catch(() => {
+        setPricing({ publicPrice: 2500 })
+        setLoaded(true)
+      })
+  }, [preselected])
+
+  // Combine static + dynamic options for the dropdown
+  const allSessionOptions = (() => {
+    const opts = []
+    // Public first
+    const pub = staticOptions.find((o) => o.value === 'public')
+    if (pub) opts.push(pub)
+    // Private plans (Starter, Advanced)
+    planOptions.forEach((po) => {
+      opts.push({
+        value: po.value,
+        label: po.label,
+        desc: po.desc,
+      })
     })
-  }, [])
+    // Custom last
+    const cust = staticOptions.find((o) => o.value === 'custom-group')
+    if (cust) opts.push(cust)
+    return opts
+  })()
 
   const isCustom = sessionType === 'custom-group'
 
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
-    if (type === 'private') return 8000
+    const plan = planOptions.find((p) => p.value === type)
+    if (plan) return plan.price
     return 0
   }
 
@@ -49,16 +97,14 @@ export default function BookNow() {
     setSending(true)
 
     const form = e.target
-    const sessionId = sessionType
-    const participantCount = participants
 
     const data = {
       customer_name: form['customer-name'].value,
       customer_email: form['customer-email'].value,
       customer_phone: form['customer-phone'].value,
-      session_id: sessionId,
+      session_id: sessionType,
       date: form['preferred-date'].value,
-      participants: participantCount,
+      participants,
       amount: totalAmount,
       booking_status: 'pending_payment',
       payment_status: 'pending',
@@ -99,12 +145,12 @@ export default function BookNow() {
                 <label htmlFor="session-type">Session type</label>
                 <select
                   id="session-type"
-                  defaultValue={sessionTypes.some(t => t.value === preselected) ? preselected : ''}
+                  value={sessionType}
                   onChange={(e) => { setSessionType(e.target.value); setParticipants(1) }}
                   required
                 >
                   <option value="" disabled>Choose a session type</option>
-                  {sessionTypes.map((t) => (
+                  {allSessionOptions.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
@@ -203,7 +249,7 @@ export default function BookNow() {
                   }}>
                     <div>
                       <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>
-                        {sessionTypes.find(t => t.value === sessionType)?.label || sessionType}
+                        {allSessionOptions.find(t => t.value === sessionType)?.label || sessionType}
                       </div>
                       <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>
                         PKR {perPersonPrice(sessionType).toLocaleString()}{' '}
@@ -224,7 +270,7 @@ export default function BookNow() {
 
               {!isCustom && (
                 <div className="form-actions" style={{ flexDirection: 'column' }}>
-                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType} style={{ width: '100%', justifyContent: 'center' }}>
+                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded} style={{ width: '100%', justifyContent: 'center' }}>
                     {sending ? (
                       <><span className="btn-spinner" /> Creating booking…</>
                     ) : (
