@@ -83,6 +83,7 @@ export default function BookNow() {
   const [bookingId, setBookingId] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('safepay')
   const [safepayRedirecting, setSafepayRedirecting] = useState(false)
+  const [confirmingPayment, setConfirmingPayment] = useState(false)
 
   const sessionTypes = [
     { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -172,9 +173,10 @@ export default function BookNow() {
   const paymentParam = searchParams.get('payment')
   const returnBookingId = searchParams.get('booking_id')
 
-  if (paymentParam && returnBookingId && bookingId === null) {
+  if (paymentParam && returnBookingId && bookingId === null && !confirmingPayment) {
     // Restore booking context from the redirect
     setBookingId(returnBookingId)
+    setConfirmingPayment(true)
 
     // Helper to poll payment status while webhook arrives
     async function pollPaymentStatus(id, maxRetries = 8, interval = 1500) {
@@ -217,6 +219,7 @@ export default function BookNow() {
         fetchFullBooking(returnBookingId),
       ]).then(([status, data]) => {
         setBookingData(data)
+        setConfirmingPayment(false)
         if (status.paymentStatus === 'paid') {
           setStep(3)
         } else {
@@ -228,6 +231,7 @@ export default function BookNow() {
       // Payment cancelled or failed
       fetchFullBooking(returnBookingId).then((data) => {
         setBookingData(data)
+        setConfirmingPayment(false)
         setStep(2)
         if (paymentParam === 'cancelled') {
           setError('Payment was cancelled. You can try again or choose a different payment method.')
@@ -313,6 +317,26 @@ export default function BookNow() {
             </div>
           </div>
 
+          {/* ---- Confirming Payment Spinner ---- */}
+          {confirmingPayment && (
+            <div className="form-card confirming-payment" style={{ maxWidth: 780, margin: '0 auto' }}>
+              <div className="confirming-spinner">
+                <div className="spinner-ring">
+                  <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                    <circle cx="28" cy="28" r="24" stroke="var(--chalk-dim)" strokeWidth="4" />
+                    <circle cx="28" cy="28" r="24" stroke="var(--orange)" strokeWidth="4" strokeLinecap="round" strokeDasharray="150" strokeDashoffset="40" />
+                  </svg>
+                </div>
+                <h3>Confirming your payment…</h3>
+                <p>Please wait while we verify your transaction with SafePay.</p>
+                <div className="confirming-dots">
+                  <span /><span /><span />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!confirmingPayment && (
           <div className="form-card" style={{ maxWidth: 780, margin: '0 auto' }}>
             {error && (
               <div className="form-error-banner">
@@ -551,6 +575,7 @@ export default function BookNow() {
               </div>
             )}
           </div>
+          )}
         </div>
       </section>
     </>
