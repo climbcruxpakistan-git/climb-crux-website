@@ -702,6 +702,10 @@ export default function BookingsManager() {
                   <span className="detail-val">{viewing.phone || '—'}</span>
                 </div>
                 <div className="detail-row">
+                  <span className="detail-key">Booking #</span>
+                  <span className="detail-val ref-code" style={{ fontFamily: 'monospace' }}>{viewing.bookingNumber || '—'}</span>
+                </div>
+                <div className="detail-row">
                   <span className="detail-key">Session</span>
                   <span className="detail-val">{viewing.type?.replace(/-/g, ' ') || '—'}</span>
                 </div>
@@ -784,6 +788,60 @@ export default function BookingsManager() {
               >
                 ✎ Edit booking
               </button>
+            </div>
+
+            {/* Bottom row: Timeline */}
+            <div className="booking-timeline-section" style={{ gridColumn: '1 / -1', marginTop: 8 }}>
+              <h4 className="detail-section-title">📋 Booking Timeline</h4>
+              {(viewing.history && viewing.history.length > 0) ? (
+                <div className="timeline">
+                  {[...viewing.history]
+                    .sort((a, b) => new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt))
+                    .map((event, idx) => {
+                      const date = new Date(event.timestamp || event.createdAt)
+                      const timeStr = date.toLocaleString('en-US', {
+                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                      })
+                      const iconMap = {
+                        booking_created: '🆕',
+                        status_changed: '🔄',
+                        payment_status_changed: '💰',
+                        payment_method_set: '💳',
+                        booking_updated: '✎',
+                        email_sent: '📧',
+                      }
+                      return (
+                        <div key={idx} className="timeline-event">
+                          <div className="timeline-dot">
+                            <span className="timeline-icon">{iconMap[event.type] || '📌'}</span>
+                          </div>
+                          <div className="timeline-content">
+                            <div className="timeline-header">
+                              <span className="timeline-desc">{event.description}</span>
+                              <span className="timeline-time">{timeStr}</span>
+                            </div>
+                            {event.details && Object.keys(event.details).length > 0 && (
+                              <div className="timeline-meta">
+                                {event.details.from && event.details.to && (
+                                  <span className="timeline-change">
+                                    {event.details.from} → {event.details.to}
+                                  </span>
+                                )}
+                                {event.details.updated && (
+                                  <span className="cell-muted" style={{ fontSize: '0.75rem' }}>
+                                    {event.details.updated}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              ) : (
+                <p className="cell-muted" style={{ padding: '12px 0' }}>No history recorded yet.</p>
+              )}
             </div>
           </div>
         </Modal>

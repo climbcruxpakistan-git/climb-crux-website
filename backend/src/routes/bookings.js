@@ -35,6 +35,12 @@ router.post('/', async (req, res, next) => {
       paymentMethod: req.body.paymentMethod || '',
       paymentStatus: req.body.paymentStatus || 'pending',
       paymentDetails: req.body.paymentDetails || {},
+      history: [{
+        type: 'booking_created',
+        description: 'Booking created',
+        timestamp: new Date(),
+        details: { type: req.body.type, date: req.body.date, bookingNumber },
+      }],
     })
     // Send email notification (don't block the response)
     sendBookingNotification(booking)
@@ -55,7 +61,17 @@ router.put('/:id', async (req, res, next) => {
     const { name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails } = req.body
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
-      { name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails },
+      { 
+        name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails,
+        $push: {
+          history: {
+            type: 'booking_updated',
+            description: 'Booking details updated by admin',
+            timestamp: new Date(),
+            details: { updated: Object.keys(req.body).filter(k => k !== 'history').join(', ') },
+          },
+        },
+      },
       { new: true, runValidators: true }
     )
     if (!booking) return res.status(404).json({ error: 'Not found' })
@@ -69,12 +85,25 @@ router.patch('/:id/status', async (req, res, next) => {
     if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
       return res.status(400).json({ error: 'Status must be pending, confirmed, or cancelled' })
     }
+    const statusLabels = { pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Cancelled' }
+    // Fetch existing booking first to capture the previous status for history
+    const existing = await Booking.findById(req.params.id)
+    if (!existing) return res.status(404).json({ error: 'Not found' })
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
-      { status },
+      { 
+        status,
+        $push: {
+          history: {
+            type: 'status_changed',
+            description: `Booking status changed to ${statusLabels[status] || status}`,
+            timestamp: new Date(),
+            details: { from: existing.status || 'unknown', to: status },
+          },
+        },
+      },
       { new: true, runValidators: true }
     )
-    if (!booking) return res.status(404).json({ error: 'Not found' })
     // Send confirmation email to customer when booking is confirmed
     if (status === 'confirmed') {
       sendBookingConfirmedEmail(booking)
@@ -89,12 +118,25 @@ router.patch('/:id/payment-status', async (req, res, next) => {
     if (!['pending', 'awaiting_confirmation', 'paid', 'failed'].includes(paymentStatus)) {
       return res.status(400).json({ error: 'Payment status must be pending, awaiting_confirmation, paid, or failed' })
     }
+    const paymentLabels = { pending: 'Pending', awaiting_confirmation: 'Awaiting Confirmation', paid: 'Paid', failed: 'Failed' }
+    // Fetch existing booking first to capture the previous payment status for history
+    const existing = await Booking.findById(req.params.id)
+    if (!existing) return res.status(404).json({ error: 'Not found' })
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
-      { paymentStatus },
+      {
+        paymentStatus,
+        $push: {
+          history: {
+            type: 'payment_status_changed',
+            description: `Payment status changed to ${paymentLabels[paymentStatus] || paymentStatus}`,
+            timestamp: new Date(),
+            details: { from: existing.paymentStatus || 'unknown', to: paymentStatus },
+          },
+        },
+      },
       { new: true, runValidators: true }
     )
-    if (!booking) return res.status(404).json({ error: 'Not found' })
     // Send payment confirmation email to customer when payment is marked as paid
     if (paymentStatus === 'paid') {
       sendPaymentConfirmedEmail(booking)

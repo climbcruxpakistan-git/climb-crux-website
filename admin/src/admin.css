@@ -1547,9 +1547,108 @@ tbody tr:hover {
     justify-content: center;
   }
 
-  .admin-view-site-btn {
-    display: none;
-  }
+.admin-view-site-btn {
+  display: none;
+}
+
+/* =========================== TIMELINE =========================== */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 32px;
+}
+
+/* Vertical line */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: #e5e0d4;
+}
+
+.timeline-event {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  position: relative;
+}
+
+.timeline-event:last-child {
+  padding-bottom: 4px;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -32px;
+  top: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--admin-surface);
+  border: 2px solid #e5e0d4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.timeline-icon {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.timeline-desc {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--charcoal);
+}
+
+.timeline-time {
+  font-size: 0.7rem;
+  color: var(--stone);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.timeline-meta {
+  margin-top: 4px;
+}
+
+.timeline-change {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-family: 'Courier New', 'Consolas', monospace;
+  background: var(--admin-bg);
+  color: var(--stone-dark);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.timeline-section {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
 
   .toast-container {
     top: 10px;
