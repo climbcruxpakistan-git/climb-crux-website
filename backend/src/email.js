@@ -13,6 +13,7 @@ function getTransporter() {
       port: 587,
       secure: false,
       requireTLS: true,
+      family: 4,
       auth: {
         user: GMAIL_EMAIL,
         pass: GMAIL_APP_PASSWORD,
