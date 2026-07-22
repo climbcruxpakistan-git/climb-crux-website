@@ -174,6 +174,33 @@ export async function patchPaymentStatus(id, payment_status) {
   return mapId(await request('PATCH', `/bookings/${id}/payment-status`, { payment_status }))
 }
 
+/* ---------- Payments ---------- */
+
+export async function getPendingPayments() {
+  const data = await request('GET', '/payments/pending')
+  // Normalise populated Payment documents
+  return data.map((p) => ({
+    id: p._id,
+    bookingId: p.booking_id?._id || p.booking_id,
+    method: p.method,
+    status: p.status,
+    payer_name: p.payer_name,
+    payer_bank: p.payer_bank,
+    gateway: p.gateway,
+    transaction_id: p.transaction_id,
+    paid_at: p.paid_at,
+    created_at: p.created_at,
+    // Flatten booking data for convenience
+    booking: p.booking_id
+      ? { id: p.booking_id._id, ...p.booking_id }
+      : null,
+  }))
+}
+
+export async function verifyPayment(bookingId, action) {
+  return await request('POST', '/payments/verify', { booking_id: bookingId, action })
+}
+
 /* ---------- About ---------- */
 
 export async function getAbout() {

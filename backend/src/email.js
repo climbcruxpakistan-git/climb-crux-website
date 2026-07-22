@@ -83,7 +83,123 @@ export async function sendBookingNotification(booking) {
     console.error('Failed to send booking notification email:', err.message)
   }
 }
+export async function sendPaymentConfirmedEmail(booking) {
+  const resend = getResend()
+  if (!resend || !booking.customer_email) {
+    console.warn('Cannot send confirmation email — missing resend or email')
+    return
+  }
 
+  const sessionLabel = (booking.session_id || '').replace(/-/g, ' ')
 
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px">
+    <tr><td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%">
+        <tr>
+          <td style="background:linear-gradient(135deg,#16a34a,#15803d);padding:24px 32px;border-radius:12px 12px 0 0;text-align:center">
+            <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">✅ Payment Confirmed!</h1>
+            <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Your booking has been confirmed.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#fff;border-radius:0 0 12px 12px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+            <div style="border:2px dashed #16a34a;padding:20px;text-align:center;margin-bottom:24px;border-radius:8px">
+              <p style="margin:0 0 4px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:#888">Booking Number</p>
+              <p style="margin:0;font-family:'Courier New',monospace;font-size:1.5rem;font-weight:700;color:#16a34a;letter-spacing:2px">${booking.booking_number || '—'}</p>
+            </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#555;white-space:nowrap;vertical-align:top">Name</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#222">${booking.customer_name}</td></tr>
+              <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#555;white-space:nowrap;vertical-align:top">Session</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#222">${sessionLabel}</td></tr>
+              <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#555;white-space:nowrap;vertical-align:top">Date</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#222">${booking.date || '—'}</td></tr>
+              <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#555;white-space:nowrap;vertical-align:top">Amount Paid</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#222;font-weight:700">PKR ${(booking.amount || 0).toLocaleString()}</td></tr>
+              <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#555;white-space:nowrap;vertical-align:top">Status</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#16a34a;font-weight:700">Confirmed ✓</td></tr>
+            </table>
+            <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #eee;font-size:13px;color:#666;text-align:center">
+              See you on the rocks! 🧗<br>
+              <strong>Climb Crux Pakistan</strong>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: booking.customer_email,
+      subject: `✅ Payment Confirmed — ${booking.booking_number || 'Climb Crux Booking'}`,
+      html,
+    })
+    console.log(`Payment confirmation email sent to ${booking.customer_email}`)
+  } catch (err) {
+    console.error('Failed to send payment confirmation email:', err.message)
+  }
+}
+
+export async function sendPaymentRejectedEmail(booking) {
+  const resend = getResend()
+  if (!resend || !booking.customer_email) {
+    console.warn('Cannot send rejection email — missing resend or email')
+    return
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px">
+    <tr><td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%">
+        <tr>
+          <td style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:24px 32px;border-radius:12px 12px 0 0;text-align:center">
+            <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">⚠️ Payment Not Confirmed</h1>
+            <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">We were unable to verify your payment.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#fff;border-radius:0 0 12px 12px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+            <div style="border:2px dashed #dc2626;padding:20px;text-align:center;margin-bottom:24px;border-radius:8px">
+              <p style="margin:0 0 4px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:#888">Booking Number</p>
+              <p style="margin:0;font-family:'Courier New',monospace;font-size:1.5rem;font-weight:700;color:#dc2626;letter-spacing:2px">${booking.booking_number || '—'}</p>
+            </div>
+            <p style="font-size:15px;line-height:1.6;color:#444;text-align:center;max-width:400px;margin:0 auto 24px">
+              We couldn't verify the payment for your booking. This could be due to an incorrect transfer amount or missing transaction details.
+            </p>
+            <p style="font-size:15px;line-height:1.6;color:#444;text-align:center;max-width:400px;margin:0 auto 24px">
+              Please check your payment and try again, or contact us on WhatsApp for assistance.
+            </p>
+            <p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #eee;font-size:13px;color:#666;text-align:center">
+              <strong>Climb Crux Pakistan</strong><br>
+              WhatsApp: +92 300 1234567
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: booking.customer_email,
+      subject: `⚠️ Payment Not Confirmed — ${booking.booking_number || 'Climb Crux Booking'}`,
+      html,
+    })
+    console.log(`Payment rejection email sent to ${booking.customer_email}`)
+  } catch (err) {
+    console.error('Failed to send payment rejection email:', err.message)
+  }
+}
 
 
