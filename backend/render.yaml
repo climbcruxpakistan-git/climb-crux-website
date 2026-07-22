@@ -28,3 +28,5 @@ services:
         sync: false
       - key: NOTIFICATION_EMAIL
         value: "climbcruxpakistan@gmail.com"
+      - key: DNS_SERVERS
+        value: "8.8.8.8,1.1.1.1"
