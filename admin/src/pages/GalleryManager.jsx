@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { getGallery, saveGalleryItem, deleteGalleryItem } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
@@ -16,6 +16,9 @@ export default function GalleryManager() {
   const [uploadPhotos, setUploadPhotos] = useState([])
   const [slugPreview, setSlugPreview] = useState([])
   const [slugLoading, setSlugLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileRef = useRef()
 
   useEffect(() => {
     getGallery()
@@ -84,6 +87,62 @@ export default function GalleryManager() {
     await deleteGalleryItem(id)
     setPhotos(await getGallery())
     addToast('Gallery item deleted', 'success')
+  }
+
+  /* ── File upload handlers ── */
+  function handleFileSelect(e) {
+    handleFiles(e.target.files)
+    e.target.value = ''
+  }
+
+  function handleFileDrop(e) {
+    handleFiles(e.dataTransfer.files)
+  }
+
+  async function handleFiles(files) {
+    if (!files || files.length === 0) return
+    if (files.length > 20) {
+      addToast(`You can upload up to 20 photos at a time. ${files.length} selected.`, 'error')
+      return
+    }
+
+    // Auto-generate a slug from the album tag
+    const tagSlug = form.tag
+      ? form.tag.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      : `album-${Date.now()}`
+
+    setUploading(true)
+
+    const formData = new FormData()
+    for (const file of files) {
+      formData.append('photos', file)
+    }
+    formData.append('tags', tagSlug)
+    if (form.tag.trim()) formData.append('title', form.tag.trim())
+
+    try {
+      const res = await fetch(`${API}/uploads`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(err.error || 'Upload failed')
+      }
+      const uploaded = await res.json()
+
+      // Update upload photos list
+      setUploadPhotos((prev) => [...uploaded, ...prev])
+
+      // Auto-set the photo slug to match
+      setForm((prev) => ({ ...prev, photoSlug: tagSlug }))
+
+      addToast(`${uploaded.length} photo${uploaded.length > 1 ? 's' : ''} uploaded & linked`, 'success')
+    } catch (err) {
+      addToast(err.message || 'Upload failed', 'error')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const shown = filter === 'All' ? photos : photos.filter((p) => p.cat === filter)
@@ -220,16 +279,90 @@ export default function GalleryManager() {
               </select>
             </div>
 
-            {/* Photo Slug — link to Photos tab */}
-            <div className="card-admin" style={{ border: '2px solid var(--orange)', background: '#fefcf9', padding: 16 }}>
+            {/* ── Upload photos directly to this album ── */}
+            <div className="card-admin" style={{ border: '2px dashed #d8d0bc', background: dragOver ? 'rgba(243, 111, 33, 0.04)' : '#fefcf9', padding: 16, marginBottom: 16, transition: 'all 0.2s ease' }}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFileDrop(e) }}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+            >
               <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 8, color: 'var(--ink)' }}>
-                📸 Link photos from the Photos tab
+                📷 Upload photos to this album
               </div>
               <p style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 12px' }}>
-                Click a tag below to automatically show all photos with that tag in this album.
-                Photos must first be uploaded in the{' '}
-                <a href="/photos" style={{ color: 'var(--orange)', fontWeight: 600 }}>Photos tab</a>.
+                Drag & drop images here, or click to select. They will be uploaded and linked to this album automatically.
               </p>
+              <div
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  cursor: 'pointer', textAlign: 'center', padding: '24px 16px',
+                  borderRadius: 8, border: '2px dashed #d8d0bc',
+                  background: dragOver ? 'rgba(243, 111, 33, 0.08)' : '#f8f6f2',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={handleFileSelect}
+                />
+                <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.3 }}>
+                  {uploading ? '⏳' : dragOver ? '📂' : '📁'}
+                </div>
+                <p style={{ fontSize: '0.82rem', color: 'var(--stone)', margin: 0 }}>
+                  {uploading
+                    ? 'Uploading…'
+                    : dragOver
+                      ? 'Drop images here'
+                      : 'Click or drag & drop up to 20 images'
+                  }
+                </p>
+              </div>
+
+              {/* Preview uploaded images */}
+              {form.photoSlug?.trim() && slugPreview.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 600, color: '#555', margin: '0 0 6px' }}>
+                    {slugPreview.length} photo{slugPreview.length > 1 ? 's' : ''} in this album:
+                  </p>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(65px, 1fr))',
+                    gap: 4, maxHeight: 160, overflowY: 'auto',
+                  }}>
+                    {slugPreview.map((sp) => (
+                      <img
+                        key={sp.id || sp._id}
+                        src={sp.url}
+                        alt={sp.title || ''}
+                        title={sp.title || sp.originalName}
+                        style={{
+                          width: '100%', aspectRatio: '1', objectFit: 'cover',
+                          borderRadius: 4, cursor: 'pointer',
+                          border: '2px solid transparent',
+                          transition: 'border-color 0.15s',
+                        }}
+                        onMouseOver={(e) => e.target.style.borderColor = 'var(--orange)'}
+                        onMouseOut={(e) => e.target.style.borderColor = 'transparent'}
+                        onClick={() => {
+                          navigator.clipboard.writeText(sp.url)
+                          addToast('Photo URL copied to clipboard', 'success')
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Photo Slug — link existing photos from Photos tab */}
+            <details style={{ marginBottom: 16 }}>
+              <summary style={{ cursor: 'pointer', fontSize: '0.8rem', color: 'var(--stone)' }}>
+                Or link existing photos from the Photos tab
+              </summary>
+              <div className="card-admin" style={{ border: '2px solid var(--orange)', background: '#fefcf9', padding: 16, marginTop: 8 }}>
 
               {/* Available photo tags as large clickable cards */}
               {availablePhotoTags.length > 0 ? (
@@ -364,6 +497,7 @@ export default function GalleryManager() {
                 </div>
               )}
             </div>
+            </details>
 
             {/* Manual fallback URL */}
             <details style={{ marginTop: 12 }}>
