@@ -1,33 +1,36 @@
 import { Router } from 'express'
 import crypto from 'crypto'
+import { Safepay } from '@sfpy/node-sdk'
 import Booking from '../models/Booking.js'
 import { sendPaymentConfirmedEmail } from '../email.js'
 
 const router = Router()
 
-const SAFEPAY_PUBLIC_KEY = process.env.SAFEPAY_PUBLIC_KEY || ''
-const SAFEPAY_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
+const SAFEPAY_API_KEY = process.env.SAFEPAY_PUBLIC_KEY || ''
+const SAFEPAY_V1_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
+const SAFEPAY_WEBHOOK_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
 const SAFEPAY_ENV = process.env.SAFEPAY_ENV || 'sandbox'
 
-// SafePay API base URLs
-// The embedded checkout base matches what the SDK generates:
-//   sandbox: https://sandbox.api.getsafepay.com/embedded/
-//   production: https://getsafepay.com/embedded/
-const SAFEPAY_BASE = SAFEPAY_ENV === 'production'
-  ? 'https://api.getsafepay.com'
-  : 'https://sandbox.api.getsafepay.com'
-
-const CHECKOUT_BASE = SAFEPAY_ENV === 'production'
-  ? 'https://getsafepay.com/embedded/'
-  : 'https://sandbox.api.getsafepay.com/embedded/'
-
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
+// Initialize SafePay SDK (high-level SDK that handles TBT internally)
+let safepay = null
+try {
+  if (SAFEPAY_API_KEY && SAFEPAY_V1_SECRET) {
+    safepay = new Safepay({
+      environment: SAFEPAY_ENV,
+      apiKey: SAFEPAY_API_KEY,
+      v1Secret: SAFEPAY_V1_SECRET,
+      webhookSecret: SAFEPAY_WEBHOOK_SECRET,
+    })
+    console.log(`SafePay SDK initialized (${SAFEPAY_ENV})`)
+  }
+} catch (err) {
+  console.error('SafePay SDK initialization failed:', err.message)
+}
 
 /**
  * POST /create-checkout
  * Creates a SafePay payment session and generates a checkout URL.
- * Uses the confirmed-working /order/v1/init endpoint with client + environment fields.
- * The checkout URL is constructed manually matching the @sfpy/node-core SDK format.
+ * Uses @sfpy/node-sdk which handles TBT (temporary bearer token) internally.
  */
 router.post('/create-checkout', async (req, res, next) => {
   try {
@@ -37,7 +40,7 @@ router.post('/create-checkout', async (req, res, next) => {
       return res.status(400).json({ error: 'bookingId and amount are required' })
     }
 
-    if (!SAFEPAY_PUBLIC_KEY || !SAFEPAY_SECRET) {
+    if (!safepay) {
       return res.status(500).json({ error: 'SafePay not configured' })
     }
 
@@ -57,64 +60,29 @@ router.post('/create-checkout', async (req, res, next) => {
     booking.paymentGateway = 'safepay'
     await booking.save()
 
-    // Step 1: Create payment session via /order/v1/init (confirmed working)
-    const sessionPayload = {
-      client: SAFEPAY_PUBLIC_KEY,
+    // Step 1: Create a payment session using the SDK
+    // The SDK handles authentication, session creation, and TBT generation internally
+    const paymentResult = await safepay.payments.create({
       amount: Number(amount),
       currency: 'PKR',
-      environment: SAFEPAY_ENV,
-      intent: 'CYBERSOURCE',
-      mode: 'payment',
-      entry_mode: 'redirect',
-      metadata: {
-        booking_id: bookingId,
-        booking_number: booking.bookingNumber,
-        customer_name: booking.name,
-        customer_email: booking.email,
-      },
-      redirect_urls: {
-        success: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
-        cancel: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
-        failure: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
-      },
-    }
-
-    const sessionRes = await fetch(`${SAFEPAY_BASE}/order/v1/init`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sessionPayload),
     })
 
-    const sessionData = await sessionRes.json()
-
-    if (!sessionRes.ok || sessionData?.status?.message !== 'success') {
-      console.error('SafePay payment session creation failed:', sessionData)
-      return res.status(502).json({
-        error: 'Payment gateway error',
-        details: sessionData?.status?.errors || sessionData,
-      })
-    }
-
-    // Extract tracker token - response format: data.tracker.token
-    const tracker = sessionData?.data?.tracker?.token || sessionData?.data?.token
+    const tracker = paymentResult?.token
     if (!tracker) {
-      console.error('SafePay response missing tracker:', sessionData)
+      console.error('SafePay payment creation returned no token:', paymentResult)
       return res.status(502).json({ error: 'Invalid payment gateway response' })
     }
 
-    // Step 2: Generate the checkout URL
-    // Using the same format as @sfpy/node-core's createCheckoutUrl:
-    //   {CHECKOUT_BASE}?environment={env}&tracker={tracker}&source=hosted&redirect_url=...&cancel_url=...
-    // This is the correct embedded checkout that resolves to sandbox.api.getsafepay.com (not pay.getsafepay.com)
-    const params = new URLSearchParams({
-      environment: SAFEPAY_ENV,
-      tracker,
-      source: 'hosted',
-      redirect_url: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
-      cancel_url: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
+    // Step 2: Generate the checkout URL using the SDK
+    // This generates the correct URL format: sandbox.api.getsafepay.com/checkout/pay?beacon=track_...&env=sandbox&...
+    const checkoutUrl = safepay.checkout.create({
+      token: tracker,
+      orderId: booking.bookingNumber || `CCP-${Date.now()}`,
+      cancelUrl: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
+      redirectUrl: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
+      source: 'custom',
+      webhooks: false,
     })
-
-    const checkoutUrl = `${CHECKOUT_BASE}?${params.toString()}`
 
     // Store the tracker reference on the booking
     booking.paymentDetails.tracker = tracker
@@ -142,9 +110,9 @@ router.post('/safepay/webhook', async (req, res) => {
     const payload = JSON.stringify(req.body)
 
     // Verify webhook signature if secret is available
-    if (SAFEPAY_SECRET && signature) {
+    if (SAFEPAY_WEBHOOK_SECRET && signature) {
       const expectedSig = crypto
-        .createHmac('sha256', SAFEPAY_SECRET)
+        .createHmac('sha256', SAFEPAY_WEBHOOK_SECRET)
         .update(payload)
         .digest('hex')
 
