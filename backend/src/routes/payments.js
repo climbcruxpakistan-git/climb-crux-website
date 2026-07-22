@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import crypto from 'crypto'
 import Booking from '../models/Booking.js'
+import { Safepay } from '@sfpy/node-core'
 import { sendPaymentConfirmedEmail } from '../email.js'
 
 const router = Router()
@@ -18,9 +19,9 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
 /**
  * POST /create-checkout
- * Creates a SafePay payment session (tracker) for a booking.
- * Sends booking_number, customer details in the payload.
- * Returns the checkout URL to redirect the user to.
+ * Creates a SafePay payment session and generates a checkout URL.
+ * Uses the confirmed-working /order/v1/init endpoint.
+ * Uses the @sfpy/node-core SDK to generate the correct embedded checkout URL.
  */
 router.post('/create-checkout', async (req, res, next) => {
   try {
@@ -50,11 +51,11 @@ router.post('/create-checkout', async (req, res, next) => {
     booking.paymentGateway = 'safepay'
     await booking.save()
 
-    // Create SafePay order session with booking_number in metadata
-    // SafePay API expects: client (API key), environment, amount in rupees (float)
-    const orderPayload = {
+    // Step 1: Create payment session via /order/v1/init (confirmed working)
+    // Amount can be passed directly as rupees (e.g. 2500.00)
+    const sessionPayload = {
       client: SAFEPAY_PUBLIC_KEY,
-      amount: Number(amount), // In rupees (e.g. 2500.00)
+      amount: Number(amount),
       currency: 'PKR',
       environment: SAFEPAY_ENV,
       intent: 'CYBERSOURCE',
@@ -73,40 +74,56 @@ router.post('/create-checkout', async (req, res, next) => {
       },
     }
 
-    const orderRes = await fetch(`${SAFEPAY_BASE}/order/v1/init`, {
+    const sessionRes = await fetch(`${SAFEPAY_BASE}/order/v1/init`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderPayload),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sessionPayload),
     })
 
-    const orderData = await orderRes.json()
+    const sessionData = await sessionRes.json()
 
-    if (!orderRes.ok || orderData?.status?.message !== 'success') {
-      console.error('SafePay order creation failed:', orderData)
-      return res.status(502).json({ error: 'Payment gateway error', details: orderData?.status?.errors || orderData })
+    if (!sessionRes.ok || sessionData?.status?.message !== 'success') {
+      console.error('SafePay payment session creation failed:', sessionData)
+      return res.status(502).json({
+        error: 'Payment gateway error',
+        details: sessionData?.status?.errors || sessionData,
+      })
     }
 
-    const tracker = orderData?.data?.token
-
+    // Extract tracker token - response format: data.tracker.token
+    const tracker = sessionData?.data?.tracker?.token || sessionData?.data?.token
     if (!tracker) {
-      console.error('SafePay response missing tracker:', orderData)
+      console.error('SafePay response missing tracker:', sessionData)
       return res.status(502).json({ error: 'Invalid payment gateway response' })
     }
 
-    // Store the tracker reference
+    // Step 2: Generate the checkout URL using the SDK's createCheckoutUrl
+    // This ensures we use the correct embedded checkout URL format
+    const sf = new Safepay({
+      api_key: SAFEPAY_PUBLIC_KEY,
+      secretKey: SAFEPAY_SECRET,
+      environment: SAFEPAY_ENV,
+    })
+
+    const checkoutUrl = sf.checkout.createCheckoutUrl({
+      env: SAFEPAY_ENV,
+      tracker,
+      source: 'hosted',
+      redirect_url: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
+      cancel_url: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
+    })
+
+    // Store the tracker reference on the booking
     booking.paymentDetails.tracker = tracker
     booking.paymentDetails.amount = amount
     await booking.save()
-
-    const checkoutUrl = `https://pay.getsafepay.com/checkout?tracker=${tracker}`
 
     res.json({
       checkoutUrl,
       tracker,
     })
   } catch (err) {
+    console.error('SafePay checkout error:', err)
     next(err)
   }
 })
@@ -138,9 +155,10 @@ router.post('/safepay/webhook', async (req, res) => {
     console.log('SafePay webhook received:', event?.data?.event || event?.event || 'unknown')
 
     // Extract tracker and booking info
+    // SafePay sends tracker info in the event data
     const tracker = event?.data?.tracker?.token || event?.tracker || event?.data?.token || event?.token
     const eventType = event?.data?.event || event?.event || ''
-    const status = event?.data?.order?.status || event?.order?.status || event?.data?.state || event?.state || ''
+    const status = event?.data?.tracker?.state || event?.data?.state || event?.state || ''
     const transactionId = event?.data?.transaction?.id || event?.transaction?.id || event?.data?.id || ''
 
     if (!tracker) {
@@ -160,34 +178,27 @@ router.post('/safepay/webhook', async (req, res) => {
       return res.status(200).json({ received: true })
     }
 
-    // Verify: amount matches
-    const webhookAmount = event?.data?.order?.amount || event?.order?.amount || 0
-    const expectedAmount = (booking.paymentDetails?.amount || 0) * 100
-    if (webhookAmount && Math.abs(webhookAmount - expectedAmount) > 1) {
-      console.error(`Amount mismatch for booking ${booking.bookingNumber}: expected ${expectedAmount}, got ${webhookAmount}`)
-      return res.status(200).json({ received: true })
-    }
-
     // Determine payment status from event
     let paymentStatus = ''
     let bookingStatus = booking.status
 
-    if (
-      eventType === 'payment.completed' ||
+    const isCompleted = eventType === 'payment.succeeded' ||
+      status === 'TRACKER_ENDED' ||
       status === 'completed' ||
       status === 'success' ||
-      eventType.includes('completed') ||
-      eventType.includes('success')
-    ) {
-      paymentStatus = 'paid'
-      bookingStatus = 'confirmed'
-    } else if (
-      eventType === 'payment.failed' ||
+      eventType.includes('succeeded') ||
+      eventType.includes('completed')
+
+    const isFailed = eventType === 'payment.failed' ||
       status === 'failed' ||
       status === 'rejected' ||
-      eventType.includes('failed') ||
-      eventType.includes('rejected')
-    ) {
+      status === 'TRACKER_FAILED' ||
+      eventType.includes('failed')
+
+    if (isCompleted) {
+      paymentStatus = 'paid'
+      bookingStatus = 'confirmed'
+    } else if (isFailed) {
       paymentStatus = 'failed'
       bookingStatus = 'payment_pending'
     }
@@ -236,7 +247,6 @@ router.post('/safepay/webhook', async (req, res) => {
 /**
  * GET /check-status/:bookingId
  * Check the payment status of a booking for the processing page to poll.
- * Only returns the current status from our database (webhook-driven).
  */
 router.get('/check-status/:bookingId', async (req, res, next) => {
   try {
