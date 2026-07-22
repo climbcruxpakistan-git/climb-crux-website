@@ -65,6 +65,16 @@ export async function createBooking(data) {
   return mapId(await postJson('/bookings', data))
 }
 
+export async function updateBooking(id, data) {
+  const res = await fetch(`${API}/bookings/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  return mapId(await res.json())
+}
+
 export async function getUploads() {
   return mapId(await fetchJson('/uploads'))
 }

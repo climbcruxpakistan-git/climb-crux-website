@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking } from '../api.js'
+import { createBooking, updateBooking } from '../api.js'
 
 function CreditCardForm() {
   const [cardHolder, setCardHolder] = useState('')
@@ -163,6 +163,7 @@ export default function BookNow() {
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
   const [bookingData, setBookingData] = useState(null)
+  const [bookingId, setBookingId] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('card')
 
   const sessionTypes = [
@@ -190,8 +191,9 @@ export default function BookNow() {
     }
 
     try {
-      await createBooking(data)
+      const created = await createBooking(data)
       setBookingData(data)
+      setBookingId(created.id)
       setStep(2)
     } catch (err) {
       setError('Failed to submit. Please try again.')
@@ -205,40 +207,40 @@ export default function BookNow() {
     setError('')
     setSending(true)
 
-    // Collect payment details
+    // Collect payment details (only fields matching the backend schema)
     const form = e.target
-    let paymentDetails = {}
+    const paymentDetails = {}
 
     if (paymentMethod === 'card') {
-      paymentDetails = {
-        method: 'card',
-        cardHolder: form['card-name']?.value || '',
-        cardNumber: form['card-number']?.value?.replace(/\s/g, '') || '',
-        cardExpiry: form['card-expiry']?.value || '',
-        cardCvv: form['card-cvv']?.value || '',
-      }
+      const fullCard = form['card-number']?.value?.replace(/\s/g, '') || ''
+      paymentDetails.cardHolder = form['card-name']?.value || ''
+      paymentDetails.cardLastFour = fullCard.slice(-4)
+      paymentDetails.cardExpiry = form['card-expiry']?.value || ''
+      // CVV and full card number intentionally not stored
     } else if (paymentMethod === 'bank') {
-      paymentDetails = {
-        method: 'bank',
-        yourBank: form['bank-name']?.value || '',
-        accountHolder: form['account-holder']?.value || '',
-        yourAccountNumber: form['account-number']?.value || '',
-        transactionId: form['transfer-id']?.value || '',
-      }
+      paymentDetails.yourBank = form['bank-name']?.value || ''
+      paymentDetails.accountHolder = form['account-holder']?.value || ''
+      paymentDetails.yourAccountNumber = form['account-number']?.value || ''
+      paymentDetails.transactionId = form['transfer-id']?.value || ''
     } else if (paymentMethod === 'easypaisa') {
-      paymentDetails = {
-        method: 'easypaisa',
-        phone: form['easypaisa-phone']?.value || '',
-        transactionId: form['easypaisa-txn']?.value || '',
-      }
+      paymentDetails.phone = form['easypaisa-phone']?.value || ''
+      paymentDetails.transactionId = form['easypaisa-txn']?.value || ''
     }
 
-    // In production, you'd send this to a payment API
-    // For now, simulate a brief processing delay
-    await new Promise((r) => setTimeout(r, 1200))
-    setBookingData((prev) => ({ ...prev, payment: paymentDetails }))
-    setSending(false)
-    setStep(3)
+    // Send payment details to the backend
+    try {
+      await updateBooking(bookingId, {
+        paymentMethod,
+        paymentStatus: 'pending',
+        paymentDetails,
+      })
+      setBookingData((prev) => ({ ...prev, payment: { method: paymentMethod, ...paymentDetails } }))
+      setSending(false)
+      setStep(3)
+    } catch (err) {
+      setError('Failed to process payment. Please try again.')
+      setSending(false)
+    }
   }
 
   function getSessionTypeLabel(value) {

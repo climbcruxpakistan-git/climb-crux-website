@@ -25,6 +25,9 @@ router.post('/', async (req, res, next) => {
       experience: req.body.experience || '',
       message: req.body.message || '',
       status: req.body.status || 'pending',
+      paymentMethod: req.body.paymentMethod || '',
+      paymentStatus: req.body.paymentStatus || 'pending',
+      paymentDetails: req.body.paymentDetails || {},
     })
     // Send email notification (don't block the response)
     sendBookingNotification(booking)
@@ -34,10 +37,10 @@ router.post('/', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, email, phone, type, date, groupSize, experience, message, status } = req.body
+    const { name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails } = req.body
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
-      { name, email, phone, type, date, groupSize, experience, message, status },
+      { name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails },
       { new: true, runValidators: true }
     )
     if (!booking) return res.status(404).json({ error: 'Not found' })
