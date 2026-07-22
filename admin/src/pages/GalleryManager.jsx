@@ -4,14 +4,14 @@ import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
 const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
-const CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing']
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing']
 
 export default function GalleryManager() {
   const { addToast } = useToast()
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({ tag: '', cat: CATEGORIES[0], imageUrl: '', caption: '', photoSlug: '' })
+  const [form, setForm] = useState({ tag: '', cat: '', imageUrl: '', caption: '', photoSlug: '' })
   const [filter, setFilter] = useState('All')
   const [uploadPhotos, setUploadPhotos] = useState([])
   const [slugPreview, setSlugPreview] = useState([])
@@ -19,6 +19,13 @@ export default function GalleryManager() {
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const fileRef = useRef()
+
+  // Build unique categories from existing albums + defaults
+  const existingCategories = useMemo(() => {
+    const fromAlbums = [...new Set(photos.map((p) => p.cat).filter(Boolean))]
+    const merged = new Set([...DEFAULT_CATEGORIES, ...fromAlbums])
+    return [...merged].sort()
+  }, [photos])
 
   useEffect(() => {
     getGallery()
@@ -58,7 +65,8 @@ export default function GalleryManager() {
   }, [form.photoSlug, uploadPhotos])
 
   function openNew() {
-    setForm({ tag: '', cat: CATEGORIES[0], imageUrl: '', caption: '', photoSlug: '' })
+    const defaultCat = existingCategories.length > 0 ? existingCategories[0] : ''
+    setForm({ tag: '', cat: defaultCat, imageUrl: '', caption: '', photoSlug: '' })
     setEditing('new')
   }
 
@@ -191,7 +199,7 @@ export default function GalleryManager() {
                 ← All albums
               </button>
             )}
-            {['All', ...CATEGORIES].map((c) => (
+            {['All', ...existingCategories].map((c) => (
               <button key={c} className={`btn-admin btn-admin-sm ${filter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`} onClick={() => setFilter(c)}>{c}</button>
             ))}
           </div>
@@ -273,10 +281,18 @@ export default function GalleryManager() {
               <input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} placeholder="e.g. Public Session · Belay Practice" />
             </div>
             <div className="admin-field">
-              <label>Category</label>
-              <select value={form.cat} onChange={(e) => setForm({ ...form, cat: e.target.value })}>
-                {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
-              </select>
+              <label>Category <span style={{ fontWeight: 400, color: 'var(--stone)', fontSize: '0.75rem' }}>— type a new one or pick existing</span></label>
+              <input
+                value={form.cat}
+                onChange={(e) => setForm({ ...form, cat: e.target.value })}
+                placeholder="e.g. Public Sessions, Workshops, Training…"
+                list="category-suggestions"
+              />
+              <datalist id="category-suggestions">
+                {existingCategories.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
 
             {/* ── Upload photos directly to this album ── */}
