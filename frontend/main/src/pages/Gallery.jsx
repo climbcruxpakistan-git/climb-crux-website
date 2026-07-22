@@ -8,7 +8,8 @@ export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState([])
   const [uploadPhotos, setUploadPhotos] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeFolder, setActiveFolder] = useState(null)
+  const [activeFolder, setActiveFolder] = useState(null)   // category name
+  const [activeAlbum, setActiveAlbum] = useState(null)     // gallery item (album)
 
   useEffect(() => {
     Promise.all([
@@ -38,14 +39,13 @@ export default function Gallery() {
     return map
   }, [galleryItems, uploadPhotos])
 
-  // Get all photos (both from imageUrl and from slug matches) for a folder item
-  function getItemPhotos(item) {
+  // Get all photos for a specific gallery item (album)
+  function getAlbumPhotos(item) {
+    if (!item) return []
     const slug = (item.photoSlug || '').trim().toLowerCase()
     const slugPhotos = slugPhotoMap[slug] || []
     if (slugPhotos.length > 0) return slugPhotos
-    // Fallback: use the item's own imageUrl if it has one
     if (item.imageUrl) return [item]
-    // Fallback: return the item itself so it shows with a placeholder photo
     return [item]
   }
 
@@ -55,36 +55,14 @@ export default function Gallery() {
     [galleryItems]
   )
 
-  // Get all displayable photos for a category (deduplicated by id)
-  function getCategoryPhotos(cat) {
-    const items = galleryItems.filter((p) => p.cat === cat)
-    const seen = new Set()
-    const all = []
-    for (const item of items) {
-      const photos = getItemPhotos(item)
-      for (const p of photos) {
-        const key = p.id || p.url || p._id
-        if (key && seen.has(key)) continue
-        if (key) seen.add(key)
-        all.push({
-          ...p,
-          _folderTag: item.tag,
-          _folderCaption: item.caption,
-        })
-      }
-    }
-    return all
+  // Get albums (gallery items) within a category
+  function getAlbumsInCategory(cat) {
+    return galleryItems.filter((p) => p.cat === cat)
   }
 
-  // Total count across all items in a category (including slug-matched)
-  function getCategoryCount(cat) {
-    return getCategoryPhotos(cat).length
-  }
-
-  // Preview images for a folder card
-  function folderPreview(cat) {
-    const all = getCategoryPhotos(cat)
-    const preview = all.slice(0, 4)
+  // Render a 2×2 preview grid from an array of photo objects (shared helper)
+  function renderPreviewGrid(photos) {
+    const preview = photos.slice(0, 4)
     const emptySlots = 4 - preview.length
     return (
       <div className="gallery-folder-previews">
@@ -103,10 +81,42 @@ export default function Gallery() {
     )
   }
 
-  // All displayable photos in the active folder
-  const folderPhotos = activeFolder
-    ? getCategoryPhotos(activeFolder)
-    : []
+  // 2×2 preview grid for a single album
+  function albumPreview(item) {
+    return renderPreviewGrid(getAlbumPhotos(item))
+  }
+
+  // 2×2 preview grid for a whole category (gathers up to 4 photos from all albums)
+  function categoryPreview(cat) {
+    const albums = getAlbumsInCategory(cat)
+    const allPhotos = []
+    for (const album of albums) {
+      const photos = getAlbumPhotos(album)
+      for (const p of photos) {
+        if (allPhotos.length >= 4) break
+        allPhotos.push(p)
+      }
+      if (allPhotos.length >= 4) break
+    }
+    return renderPreviewGrid(allPhotos)
+  }
+
+  // Albums in the selected category
+  const currentAlbums = activeFolder ? getAlbumsInCategory(activeFolder) : []
+
+  // Photos for the active album
+  const albumPhotos = activeAlbum ? getAlbumPhotos(activeAlbum) : []
+
+  // Navigate back to album list within the current category
+  function backToAlbums() {
+    setActiveAlbum(null)
+  }
+
+  // Navigate back to category list
+  function backToCategories() {
+    setActiveFolder(null)
+    setActiveAlbum(null)
+  }
 
   const totalItems = galleryItems.length
 
@@ -123,24 +133,24 @@ export default function Gallery() {
         <div className="wrap">
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading gallery…</p>
-          ) : activeFolder ? (
+          ) : activeAlbum ? (
+            /* ── Level 2: Photos inside an album ── */
             <>
-              {/* Inside a category folder */}
               <div className="gallery-folder-header">
-                <button className="btn btn-outline btn-sm" onClick={() => setActiveFolder(null)}>
-                  ← Back to albums
+                <button className="btn btn-outline btn-sm" onClick={backToAlbums}>
+                  ← Back to {activeFolder}
                 </button>
-                <h2 className="gallery-folder-title">{activeFolder}</h2>
-                <span className="gallery-folder-count">{folderPhotos.length} photo{folderPhotos.length !== 1 ? 's' : ''}</span>
+                <h2 className="gallery-folder-title">{activeAlbum.tag}</h2>
+                <span className="gallery-folder-count">{albumPhotos.length} photo{albumPhotos.length !== 1 ? 's' : ''}</span>
               </div>
-              {folderPhotos.length === 0 ? (
+              {albumPhotos.length === 0 ? (
                 <p style={{ textAlign: 'center', color: 'var(--stone)', marginTop: 40 }}>No photos in this album yet.</p>
               ) : (
                 <div className="gallery-photo-grid">
-                  {folderPhotos.map((p, i) => {
+                  {albumPhotos.map((p, i) => {
                     const url = p.url || p.imageUrl
-                    const label = p._folderTag || p.tag || p.title || 'Photo'
-                    const caption = p._folderCaption || p.caption || ''
+                    const label = p.tag || p.title || 'Photo'
+                    const caption = activeAlbum.caption || ''
                     return (
                       <div key={p.id || i} className="gallery-photo-card">
                         {url ? (
@@ -158,23 +168,59 @@ export default function Gallery() {
                 </div>
               )}
             </>
+          ) : activeFolder ? (
+            /* ── Level 1: Album subfolders within a category ── */
+            <>
+              <div className="gallery-folder-header">
+                <button className="btn btn-outline btn-sm" onClick={backToCategories}>
+                  ← Back to albums
+                </button>
+                <h2 className="gallery-folder-title">{activeFolder}</h2>
+                <span className="gallery-folder-count">{currentAlbums.length} album{currentAlbums.length !== 1 ? 's' : ''}</span>
+              </div>
+              {currentAlbums.length === 0 ? (
+                <p style={{ textAlign: 'center', color: 'var(--stone)', marginTop: 40 }}>No albums in this category yet.</p>
+              ) : (
+                <div className="gallery-folder-grid">
+                  {currentAlbums.map((item) => {
+                    const photos = getAlbumPhotos(item)
+                    return (
+                      <button
+                        key={item.id}
+                        className="gallery-folder-card"
+                        onClick={() => setActiveAlbum(item)}
+                      >
+                        {albumPreview(item)}
+                        <div className="gallery-folder-info">
+                          <h3 className="gallery-folder-name">{item.tag}</h3>
+                          <span className="gallery-folder-count">{photos.length} photo{photos.length !== 1 ? 's' : ''}</span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </>
           ) : totalItems === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>No photos yet. Check back soon!</p>
           ) : (
+            /* ── Level 0: Category folders ── */
             <>
-              {/* Folder grid */}                <h2 style={{ marginBottom: 32 }}>Albums</h2>
-              <div className="gallery-folder-grid">                  {categories.map((cat) => {
-                  const count = getCategoryCount(cat)
+              <h2 style={{ marginBottom: 32 }}>Albums</h2>
+              <div className="gallery-folder-grid">
+                {categories.map((cat) => {
+                  const albums = getAlbumsInCategory(cat)
+                  const totalPhotos = albums.reduce((sum, a) => sum + getAlbumPhotos(a).length, 0)
                   return (
                     <button
                       key={cat}
                       className="gallery-folder-card"
                       onClick={() => setActiveFolder(cat)}
                     >
-                      {folderPreview(cat)}
+                      {categoryPreview(cat)}
                       <div className="gallery-folder-info">
                         <h3 className="gallery-folder-name">{cat}</h3>
-                        <span className="gallery-folder-count">{count} photo{count !== 1 ? 's' : ''}</span>
+                        <span className="gallery-folder-count">{albums.length} album{albums.length !== 1 ? 's' : ''} · {totalPhotos} photo{totalPhotos !== 1 ? 's' : ''}</span>
                       </div>
                     </button>
                   )

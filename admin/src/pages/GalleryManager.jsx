@@ -106,8 +106,32 @@ export default function GalleryManager() {
       {/* Browse existing gallery items */}
       <div className="card-admin">
         <div className="card-admin-header">
-          <h2>All Albums ({photos.length})</h2>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <h2>
+            {filter === 'All' ? (
+              <>All Albums ({photos.length})</>
+            ) : (
+              <>
+                <span
+                  onClick={() => setFilter('All')}
+                  style={{ cursor: 'pointer', color: 'var(--stone)', fontWeight: 400 }}
+                  title="View all categories"
+                >
+                  Albums
+                </span>
+                <span style={{ margin: '0 8px', color: 'var(--stone)', fontSize: '0.75rem' }}>›</span>
+                <span style={{ color: 'var(--orange)' }}>{filter}</span>
+                <span style={{ fontWeight: 400, color: 'var(--stone)', marginLeft: 8, fontSize: '0.85rem' }}>
+                  ({shown.length})
+                </span>
+              </>
+            )}
+          </h2>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {filter !== 'All' && (
+              <button className="btn-admin btn-admin-sm btn-admin-ghost" onClick={() => setFilter('All')}>
+                ← All albums
+              </button>
+            )}
             {['All', ...CATEGORIES].map((c) => (
               <button key={c} className={`btn-admin btn-admin-sm ${filter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`} onClick={() => setFilter(c)}>{c}</button>
             ))}
