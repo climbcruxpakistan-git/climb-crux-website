@@ -56,6 +56,14 @@ router.get('/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+router.get('/by-number/:bookingNumber', async (req, res, next) => {
+  try {
+    const booking = await Booking.findOne({ bookingNumber: req.params.bookingNumber })
+    if (!booking) return res.status(404).json({ error: 'Not found' })
+    res.json(booking)
+  } catch (err) { next(err) }
+})
+
 router.put('/:id', async (req, res, next) => {
   try {
     const { name, email, phone, type, date, groupSize, experience, message, status, paymentMethod, paymentStatus, paymentDetails } = req.body
@@ -82,8 +90,8 @@ router.put('/:id', async (req, res, next) => {
 router.patch('/:id/status', async (req, res, next) => {
   try {
     const { status } = req.body
-    if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
-      return res.status(400).json({ error: 'Status must be pending, confirmed, or cancelled' })
+    if (!['pending', 'payment_pending', 'confirmed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be pending, payment_pending, confirmed, or cancelled' })
     }
     const statusLabels = { pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Cancelled' }
     // Fetch existing booking first to capture the previous status for history

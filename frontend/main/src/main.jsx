@@ -14,6 +14,9 @@ import OurTeam from './pages/OurTeam.jsx'
 import InstructorProfile from './pages/InstructorProfile.jsx'
 import Gallery from './pages/Gallery.jsx'
 import BookNow from './pages/BookNow.jsx'
+import PaymentSuccess from './pages/PaymentSuccess.jsx'
+import PaymentFailed from './pages/PaymentFailed.jsx'
+import BookingConfirmed from './pages/BookingConfirmed.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -28,6 +31,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/our-team/:id" element={<InstructorProfile />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/book-now" element={<BookNow />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/failed" element={<PaymentFailed />} />
+          <Route path="/booking/confirmed/:bookingNumber" element={<BookingConfirmed />} />
         </Route>
       </Routes>
     </BrowserRouter>

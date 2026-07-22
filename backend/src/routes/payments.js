@@ -5,15 +5,21 @@ import { sendPaymentConfirmedEmail } from '../email.js'
 
 const router = Router()
 
+const SAFEPAY_PUBLIC_KEY = process.env.SAFEPAY_PUBLIC_KEY || ''
 const SAFEPAY_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
-const SAFEPAY_API_KEY = process.env.SAFEPAY_API_KEY || ''
-const SAFEPAY_BASE = process.env.SAFEPAY_BASE || 'https://sandbox.api.getsafepay.com'
+const SAFEPAY_ENV = process.env.SAFEPAY_ENV || 'sandbox'
+
+// Determine SafePay API base from environment
+const SAFEPAY_BASE = SAFEPAY_ENV === 'production'
+  ? 'https://api.getsafepay.com'
+  : 'https://sandbox.api.getsafepay.com'
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
 /**
  * POST /create-checkout
  * Creates a SafePay payment session (tracker) for a booking.
+ * Sends booking_number, customer details in the payload.
  * Returns the checkout URL to redirect the user to.
  */
 router.post('/create-checkout', async (req, res, next) => {
@@ -24,19 +30,29 @@ router.post('/create-checkout', async (req, res, next) => {
       return res.status(400).json({ error: 'bookingId and amount are required' })
     }
 
-    if (!SAFEPAY_SECRET || !SAFEPAY_API_KEY) {
+    if (!SAFEPAY_PUBLIC_KEY || !SAFEPAY_SECRET) {
       return res.status(500).json({ error: 'SafePay not configured' })
     }
 
-    // Fetch the booking to validate it exists
+    // Fetch the booking to validate it exists and not already paid
     const booking = await Booking.findById(bookingId)
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' })
     }
+    if (booking.paymentStatus === 'paid') {
+      return res.status(400).json({ error: 'Booking already paid' })
+    }
 
-    // Create SafePay order session
+    // Update booking status to Payment Pending before redirect
+    booking.status = 'payment_pending'
+    booking.paymentMethod = 'safepay'
+    booking.paymentStatus = 'pending'
+    booking.paymentGateway = 'safepay'
+    await booking.save()
+
+    // Create SafePay order session with booking_number in metadata
     const orderPayload = {
-      merchant_api_key: SAFEPAY_API_KEY,
+      merchant_api_key: SAFEPAY_PUBLIC_KEY,
       amount: Math.round(amount * 100), // Convert to minor units (paisa)
       currency: 'PKR',
       intent: 'CYBERSOURCE',
@@ -44,12 +60,14 @@ router.post('/create-checkout', async (req, res, next) => {
       entry_mode: 'redirect',
       metadata: {
         booking_id: bookingId,
+        booking_number: booking.bookingNumber,
         customer_name: booking.name,
         customer_email: booking.email,
       },
       redirect_urls: {
-        success: `${FRONTEND_URL}/book-now?payment=success&booking_id=${bookingId}`,
-        cancel: `${FRONTEND_URL}/book-now?payment=cancelled&booking_id=${bookingId}`,
+        success: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
+        cancel: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
+        failure: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
       },
     }
 
@@ -76,13 +94,10 @@ router.post('/create-checkout', async (req, res, next) => {
       return res.status(502).json({ error: 'Invalid payment gateway response' })
     }
 
-    // Update the booking with SafePay tracker reference
-    await Booking.findByIdAndUpdate(bookingId, {
-      paymentMethod: 'safepay',
-      paymentStatus: 'pending',
-      'paymentDetails.tracker': tracker,
-      'paymentDetails.amount': amount,
-    })
+    // Store the tracker reference
+    booking.paymentDetails.tracker = tracker
+    booking.paymentDetails.amount = amount
+    await booking.save()
 
     const checkoutUrl = `https://pay.getsafepay.com/checkout?tracker=${tracker}`
 
@@ -96,10 +111,11 @@ router.post('/create-checkout', async (req, res, next) => {
 })
 
 /**
- * POST /webhook
+ * POST /safepay/webhook
  * Receives SafePay webhook events to update booking payment status.
+ * Only confirms booking after verifying the webhook (never trust redirect alone).
  */
-router.post('/webhook', async (req, res) => {
+router.post('/safepay/webhook', async (req, res) => {
   try {
     const signature = req.headers['x-signature']
     const payload = JSON.stringify(req.body)
@@ -124,6 +140,7 @@ router.post('/webhook', async (req, res) => {
     const tracker = event?.data?.tracker?.token || event?.tracker || event?.data?.token
     const eventType = event?.data?.event || event?.event || ''
     const status = event?.data?.order?.status || event?.order?.status || ''
+    const transactionId = event?.data?.transaction?.id || event?.transaction?.id || event?.data?.id || ''
 
     if (!tracker) {
       return res.status(200).json({ received: true })
@@ -133,6 +150,20 @@ router.post('/webhook', async (req, res) => {
     const booking = await Booking.findOne({ 'paymentDetails.tracker': tracker })
     if (!booking) {
       console.warn(`No booking found for tracker: ${tracker}`)
+      return res.status(200).json({ received: true })
+    }
+
+    // Verify: payment has not already been processed
+    if (booking.paymentStatus === 'paid') {
+      console.log(`Booking ${booking.bookingNumber} already marked as paid, skipping`)
+      return res.status(200).json({ received: true })
+    }
+
+    // Verify: amount matches
+    const webhookAmount = event?.data?.order?.amount || event?.order?.amount || 0
+    const expectedAmount = (booking.paymentDetails?.amount || 0) * 100
+    if (webhookAmount && Math.abs(webhookAmount - expectedAmount) > 1) {
+      console.error(`Amount mismatch for booking ${booking.bookingNumber}: expected ${expectedAmount}, got ${webhookAmount}`)
       return res.status(200).json({ received: true })
     }
 
@@ -157,14 +188,36 @@ router.post('/webhook', async (req, res) => {
       eventType.includes('rejected')
     ) {
       paymentStatus = 'failed'
+      bookingStatus = 'payment_pending'
     }
 
     if (paymentStatus) {
-      booking.paymentStatus = paymentStatus
-      booking.status = bookingStatus
-      await booking.save()
+      const updateFields = {
+        paymentStatus,
+        status: bookingStatus,
+        paymentGateway: 'safepay',
+      }
 
-      console.log(`Booking ${booking._id} payment status updated to ${paymentStatus}`)
+      if (paymentStatus === 'paid') {
+        updateFields.gatewayTransactionId = transactionId
+        updateFields.paidAt = new Date()
+      }
+
+      await Booking.findByIdAndUpdate(booking._id, {
+        ...updateFields,
+        $push: {
+          history: {
+            type: 'payment_status_changed',
+            description: paymentStatus === 'paid'
+              ? `Payment confirmed via SafePay (${transactionId ? `TXN: ${transactionId}` : 'webhook'})`
+              : 'Payment failed via SafePay',
+            timestamp: new Date(),
+            details: { from: booking.paymentStatus, to: paymentStatus, gateway: 'safepay', transactionId },
+          },
+        },
+      })
+
+      console.log(`Booking ${booking.bookingNumber} payment status updated to ${paymentStatus}`)
 
       // Send email notification for successful payment
       if (paymentStatus === 'paid') {
@@ -181,46 +234,20 @@ router.post('/webhook', async (req, res) => {
 
 /**
  * GET /check-status/:bookingId
- * Check the payment status of a booking.
- * If the status is still 'pending' and we have a SafePay tracker,
- * proactively query the SafePay API for the actual order status.
+ * Check the payment status of a booking for the processing page to poll.
+ * Only returns the current status from our database (webhook-driven).
  */
 router.get('/check-status/:bookingId', async (req, res, next) => {
   try {
     const booking = await Booking.findById(req.params.bookingId)
     if (!booking) return res.status(404).json({ error: 'Not found' })
 
-    // If still pending and has a SafePay tracker, check SafePay directly
-    if (booking.paymentStatus === 'pending' && booking.paymentDetails?.tracker && SAFEPAY_SECRET) {
-      try {
-        const trackerRes = await fetch(`${SAFEPAY_BASE}/order/v1/tracker/${booking.paymentDetails.tracker}`, {
-          headers: {
-            Authorization: `Bearer ${SAFEPAY_SECRET}`,
-          },
-        })
-        if (trackerRes.ok) {
-          const trackerData = await trackerRes.json()
-          const remoteStatus = trackerData?.data?.order?.status || trackerData?.order?.status || ''
-
-          if (remoteStatus === 'completed' || remoteStatus === 'success') {
-            booking.paymentStatus = 'paid'
-            booking.status = 'confirmed'
-            await booking.save()
-            sendPaymentConfirmedEmail(booking)
-          } else if (remoteStatus === 'failed' || remoteStatus === 'rejected') {
-            booking.paymentStatus = 'failed'
-            await booking.save()
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to query SafePay tracker status:', err.message)
-      }
-    }
-
     res.json({
       paymentStatus: booking.paymentStatus,
       status: booking.status,
-      tracker: booking.paymentDetails?.tracker || null,
+      bookingNumber: booking.bookingNumber,
+      name: booking.name,
+      gatewayTransactionId: booking.gatewayTransactionId,
     })
   } catch (err) {
     next(err)

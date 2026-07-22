@@ -101,3 +101,9 @@ export async function checkPaymentStatus(bookingId) {
 export async function getUploads() {
   return mapId(await fetchJson('/uploads'))
 }
+
+export async function getBookingByNumber(bookingNumber) {
+  const res = await fetch(`${API}/bookings/by-number/${encodeURIComponent(bookingNumber)}`)
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  return mapId(await res.json())
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, updateBooking, createCheckoutSession, checkPaymentStatus, getBooking } from '../api.js'
+import { createBooking, updateBooking, createCheckoutSession, getBooking } from '../api.js'
 
 function BankTransferForm({ bookingNumber }) {
   return (
@@ -48,40 +48,6 @@ function BankTransferForm({ bookingNumber }) {
   )
 }
 
-function EasyPaisaForm({ bookingNumber }) {
-  return (
-    <div className="payment-form-fields">
-      <div className="payment-easypaisa-info">
-        <div className="easypaisa-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-          </svg>
-        </div>
-        <div>
-          <p className="bank-detail-title">Pay via EasyPaisa / JazzCash</p>
-          <p className="bank-detail-row">Send payment to our EasyPaisa account:</p>
-          <p className="bank-detail-row phone-number"><span className="bank-label">Phone:</span> 0300 1234567</p>
-          <p className="bank-detail-row"><span className="bank-label">Account:</span> Climb Crux Pakistan</p>
-          <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
-            Send the full booking amount of <strong>PKR 2,500</strong> to the EasyPaisa account above.
-          </p>
-        </div>
-      </div>
-      <div className="field">
-        <label htmlFor="easypaisa-phone">Your EasyPaisa / JazzCash number</label>
-        <input id="easypaisa-phone" type="tel" inputMode="numeric" placeholder="03XX XXXXXXX" required />
-      </div>
-
-      {bookingNumber && (
-        <div className="bank-booking-ref">
-          <span className="bank-ref-label">Your booking number:</span>
-          <span className="bank-ref-value">{bookingNumber}</span>
-          <p className="bank-ref-note">Use this number when sending your payment proof on WhatsApp.</p>
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default function BookNow() {
   const [searchParams] = useSearchParams()
@@ -94,7 +60,6 @@ export default function BookNow() {
   const [bookingNumber, setBookingNumber] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('safepay')
   const [safepayRedirecting, setSafepayRedirecting] = useState(false)
-  const [confirmingPayment, setConfirmingPayment] = useState(false)
 
   const sessionTypes = [
     { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -179,103 +144,11 @@ export default function BookNow() {
         setSending(false)
       }
       return
-    } else if (paymentMethod === 'easypaisa') {
-      paymentDetails.phone = form['easypaisa-phone']?.value || ''
-
-      // For EasyPaisa, create the booking with payment info and show confirmation page
-      try {
-        await updateBooking(bookingId, {
-          paymentMethod: 'easypaisa',
-          paymentStatus: 'awaiting_confirmation',
-          paymentDetails,
-          status: 'pending',
-        })
-        // Fetch the updated booking to get the booking number
-        const updated = await getBooking(bookingId)
-        setBookingNumber(updated.bookingNumber || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
-        setBookingData((prev) => ({ ...prev, payment: { method: 'easypaisa', ...paymentDetails }, bookingNumber: updated.bookingNumber }))
-        setSending(false)
-        setStep(4) // Go to confirmation page
-      } catch (err) {
-        setError('Failed to process payment. Please try again.')
-        setSending(false)
-      }
-      return
     }
   }
 
-  // Check for SafePay redirect back params with polling
-  const paymentParam = searchParams.get('payment')
-  const returnBookingId = searchParams.get('booking_id')
-
-  if (paymentParam && returnBookingId && bookingId === null && !confirmingPayment) {
-    // Restore booking context from the redirect
-    setBookingId(returnBookingId)
-    setConfirmingPayment(true)
-
-    // Helper to poll payment status while webhook arrives
-    async function pollPaymentStatus(id, maxRetries = 8, interval = 1500) {
-      for (let i = 0; i < maxRetries; i++) {
-        try {
-          const status = await checkPaymentStatus(id)
-          if (status.paymentStatus === 'paid') return { ...status, resolved: true }
-          if (status.paymentStatus === 'failed') return { ...status, resolved: true }
-        } catch { /* retry */ }
-        await new Promise((r) => setTimeout(r, interval))
-      }
-      return { paymentStatus: 'pending', resolved: false }
-    }
-
-    // Helper to fetch full booking details for the success screen
-    async function fetchFullBooking(id) {
-      try {
-        const booking = await getBooking(id)
-        return {
-          name: booking.name || '',
-          email: booking.email || '',
-          phone: booking.phone || '',
-          type: booking.type || '',
-          date: booking.date || '',
-          groupSize: booking.groupSize || '1',
-          payment: { method: 'safepay' },
-        }
-      } catch {
-        return {
-          name: '', email: '', phone: '', type: '', date: '', groupSize: '1',
-          payment: { method: 'safepay' },
-        }
-      }
-    }
-
-    if (paymentParam === 'success') {
-      // Start polling and fetch booking data in parallel
-      Promise.all([
-        pollPaymentStatus(returnBookingId),
-        fetchFullBooking(returnBookingId),
-      ]).then(([status, data]) => {
-        setBookingData(data)
-        setConfirmingPayment(false)
-        if (status.paymentStatus === 'paid') {
-          setStep(3)
-        } else {
-          setStep(3)
-          setError('Payment received. Your booking is being confirmed — you will receive a confirmation email shortly.')
-        }
-      })
-    } else {
-      // Payment cancelled or failed
-      fetchFullBooking(returnBookingId).then((data) => {
-        setBookingData(data)
-        setConfirmingPayment(false)
-        setStep(2)
-        if (paymentParam === 'cancelled') {
-          setError('Payment was cancelled. You can try again or choose a different payment method.')
-        } else {
-          setError('Payment could not be processed. Please try again.')
-        }
-      })
-    }
-  }
+  // SafePay redirects now go to dedicated /payment/success and /payment/failed pages
+  // (No redirect handling needed here — new pages handle polling and confirmation)
 
   function getSessionTypeLabel(value) {
     const found = sessionTypes.find((t) => t.value === value)
@@ -285,8 +158,8 @@ export default function BookNow() {
   const paymentMethods = [
     {
       value: 'safepay',
-      label: 'Pay Online (Card)',
-      desc: 'Secure payment via SafePay — debit/credit cards accepted',
+      label: 'Credit / Debit Card',
+      desc: 'Secure online payment via SafePay — all major cards accepted',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="1" y="4" width="22" height="16" rx="2" />
@@ -303,16 +176,6 @@ export default function BookNow() {
           <polygon points="12 2 2 7 12 12 22 7 12 2" />
           <polyline points="2 17 12 22 22 17" />
           <polyline points="2 12 12 17 22 12" />
-        </svg>
-      ),
-    },
-    {
-      value: 'easypaisa',
-      label: 'EasyPaisa / JazzCash',
-      desc: 'Manual transfer to our EasyPaisa account',
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
         </svg>
       ),
     },
@@ -352,26 +215,6 @@ export default function BookNow() {
             </div>
           </div>
 
-          {/* ---- Confirming Payment Spinner ---- */}
-          {confirmingPayment && (
-            <div className="form-card confirming-payment" style={{ maxWidth: 780, margin: '0 auto' }}>
-              <div className="confirming-spinner">
-                <div className="spinner-ring">
-                  <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                    <circle cx="28" cy="28" r="24" stroke="var(--chalk-dim)" strokeWidth="4" />
-                    <circle cx="28" cy="28" r="24" stroke="var(--orange)" strokeWidth="4" strokeLinecap="round" strokeDasharray="150" strokeDashoffset="40" />
-                  </svg>
-                </div>
-                <h3>Confirming your payment…</h3>
-                <p>Please wait while we verify your transaction with SafePay.</p>
-                <div className="confirming-dots">
-                  <span /><span /><span />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!confirmingPayment && (
           <div className="form-card" style={{ maxWidth: 780, margin: '0 auto' }}>
             {error && (
               <div className="form-error-banner">
@@ -535,7 +378,6 @@ export default function BookNow() {
                       </div>
                     )}
                     {paymentMethod === 'bank' && <BankTransferForm bookingNumber={bookingNumber} />}
-                    {paymentMethod === 'easypaisa' && <EasyPaisaForm bookingNumber={bookingNumber} />}
                   </div>
 
                   <div className="form-actions">
@@ -548,11 +390,9 @@ export default function BookNow() {
                       ) : sending ? (
                         <><span className="btn-spinner" /> Processing…</>
                       ) : paymentMethod === 'safepay' ? (
-                        'Pay Online with SafePay →'
-                      ) : paymentMethod === 'bank' || paymentMethod === 'easypaisa' ? (
-                        'Create Booking & Proceed'
+                        'Pay Now with SafePay →'
                       ) : (
-                        'Confirm & pay'
+                        'Create Booking & Proceed'
                       )}
                     </button>
                   </div>
@@ -661,7 +501,6 @@ export default function BookNow() {
               </div>
             )}
           </div>
-          )}
         </div>
       </section>
     </>

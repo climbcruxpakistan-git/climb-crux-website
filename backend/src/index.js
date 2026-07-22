@@ -40,6 +40,7 @@ app.use('/api/uploads', uploadRoutes)
 app.use('/api/session-content', sessionContentRoutes)
 app.use('/api/home', homeContentRoutes)
 app.use('/api/auth', authRoutes)
+// Mount payment routes — webhook lives at /api/payments/safepay/webhook
 app.use('/api/payments', paymentRoutes)
 
 app.get('/api/health', (_req, res) => {
