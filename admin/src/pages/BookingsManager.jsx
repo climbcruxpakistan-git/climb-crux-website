@@ -52,7 +52,7 @@ function paymentBadge(status) {
   return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
 }
 
-function PaymentDetailCard({ paymentMethod, paymentDetails }) {
+function PaymentDetailCard({ paymentMethod, paymentDetails, payerBank, payerName }) {
   if (!paymentMethod) {
     return <p className="payment-no-info">No payment information.</p>
   }
@@ -68,11 +68,11 @@ function PaymentDetailCard({ paymentMethod, paymentDetails }) {
         <div className="payment-detail-fields">
           <div className="payment-detail-row">
             <span className="payment-detail-key">Sender bank</span>
-            <span className="payment-detail-val">{paymentDetails?.payer_bank || paymentDetails?.yourBank || '—'}</span>
+            <span className="payment-detail-val">{payerBank || paymentDetails?.payer_bank || paymentDetails?.yourBank || '—'}</span>
           </div>
           <div className="payment-detail-row">
             <span className="payment-detail-key">Account holder</span>
-            <span className="payment-detail-val">{paymentDetails?.payer_name || paymentDetails?.accountHolder || '—'}</span>
+            <span className="payment-detail-val">{payerName || paymentDetails?.payer_name || paymentDetails?.accountHolder || '—'}</span>
           </div>
         </div>
       )}
@@ -322,8 +322,8 @@ export default function BookingsManager() {
                       </td>
                       <td>{b.session_id?.replace(/-/g, ' ') || '—'}</td>
                       <td>PKR {(b.amount || 2500).toLocaleString()}</td>
-                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payment_details?.payer_bank || b.payment_details?.yourBank || '—'}</td>
-                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payment_details?.payer_name || b.payment_details?.accountHolder || '—'}</td>
+                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payer_bank || '—'}</td>
+                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payer_name || '—'}</td>
                       <td className="cell-muted">{b.date || b.created_at?.split('T')[0] || '—'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 4 }}>
@@ -721,6 +721,8 @@ export default function BookingsManager() {
               <PaymentDetailCard
                 paymentMethod={viewing.payment_method}
                 paymentDetails={viewing.payment_details || viewing.paymentDetails}
+                payerBank={viewing.payer_bank}
+                payerName={viewing.payer_name}
               />
               {viewing.payment_status === 'paid' && (
                 <div className="payment-verified-badge">

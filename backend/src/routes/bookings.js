@@ -66,6 +66,7 @@ router.put('/:id', async (req, res, next) => {
       customer_name, customer_email, customer_phone,
       session_id, date, participants, amount,
       booking_status, payment_method, payment_status,
+      payer_bank, payer_name,
     } = req.body
 
     const booking = await Booking.findByIdAndUpdate(
@@ -74,6 +75,7 @@ router.put('/:id', async (req, res, next) => {
         customer_name, customer_email, customer_phone,
         session_id, date, participants, amount,
         booking_status, payment_method, payment_status,
+        payer_bank, payer_name,
       },
       { new: true, runValidators: true }
     )

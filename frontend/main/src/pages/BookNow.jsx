@@ -1,61 +1,26 @@
-import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, updateBooking, getBooking } from '../api.js'
-
-function BankTransferForm({ bookingNumber }) {
-  return (
-    <div className="payment-form-fields">
-      {/* Bank Account Details */}
-      <div className="payment-bank-info">
-        <div className="bank-info-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-            <line x1="7" y1="15" x2="7.01" y2="15" />
-            <line x1="11" y1="15" x2="13" y2="15" />
-          </svg>
-        </div>
-        <div>
-          <p className="bank-detail-title">Transfer to our bank account</p>
-          <p className="bank-detail-row"><span className="bank-label">Bank:</span> Habib Bank Limited (HBL)</p>
-          <p className="bank-detail-row"><span className="bank-label">Account title:</span> Climb Crux Pakistan</p>
-          <p className="bank-detail-row"><span className="bank-label">Account # / IBAN:</span> PK36 HABB 1234 5678 9012 3456</p>
-          <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
-            Please transfer the full booking amount of <strong>PKR 2,500</strong> to the account above.
-          </p>
-        </div>
-      </div>
-
-      <div className="field">
-        <label htmlFor="bank-name">Sender bank name</label>
-        <input id="bank-name" type="text" placeholder="e.g. HBL, Meezan Bank, UBL" required />
-      </div>
-      <div className="field">
-        <label htmlFor="account-holder">Account holder name</label>
-        <input id="account-holder" type="text" placeholder="Name on the account used for payment" required />
-      </div>
-
-      {bookingNumber && (
-        <div className="bank-booking-ref">
-          <span className="bank-ref-label">Your booking number:</span>
-          <span className="bank-ref-value">{bookingNumber}</span>
-          <p className="bank-ref-note">Use this number when sending your payment proof on WhatsApp.</p>
-        </div>
-      )}
-    </div>
-  )
-}
+import { createBooking, getSessionContent } from '../api.js'
 
 export default function BookNow() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const preselected = searchParams.get('type') || ''
-  const [step, setStep] = useState(1) // 1 = details, 2 = checkout/payment, 4 = bank transfer confirm
+
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
-  const [bookingData, setBookingData] = useState(null)
-  const [bookingId, setBookingId] = useState(null)
-  const [bookingNumber, setBookingNumber] = useState('')
+  const [pricing, setPricing] = useState({ publicPrice: 4500 })
+
+  // Fetch pricing info from session content
+  useEffect(() => {
+    getSessionContent().then((content) => {
+      const price = Number(content.pricingPrice) || 4500
+      setPricing({ publicPrice: price })
+    }).catch(() => {
+      setPricing({ publicPrice: 4500 })
+    })
+  }, [])
 
   const sessionTypes = [
     { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -63,62 +28,43 @@ export default function BookNow() {
     { value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' },
   ]
 
-  async function handleDetailsSubmit(e) {
+  function calcAmount(type, participants) {
+    if (type === 'public') return pricing.publicPrice * participants
+    if (type === 'private') return 8000 * participants
+    return 6000 * participants
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     setSending(true)
 
     const form = e.target
+    const sessionType = form['session-type'].value
+    const participants = Number(form['group-size'].value) || 1
+    const amount = calcAmount(sessionType, participants)
+
     const data = {
       customer_name: form.name.value,
       customer_email: form.email.value,
       customer_phone: form.phone.value,
-      session_id: form['session-type'].value,
+      session_id: sessionType,
       date: form['preferred-date'].value,
-      participants: Number(form['group-size'].value) || 1,
-      amount: 2500,
+      participants,
+      amount,
       booking_status: 'pending_payment',
+      payment_status: 'pending',
     }
 
     try {
       const created = await createBooking(data)
-      setBookingData(data)
-      setBookingId(created.id)
-      setStep(2)
+      const bookingNumber = created.booking_number || `CCP-${new Date().getFullYear()}-${(created.id || '').slice(-5)}`
+      navigate(`/booking/${encodeURIComponent(bookingNumber)}/payment`)
     } catch (err) {
-      setError('Failed to submit. Please try again.')
+      setError('Failed to create booking. Please try again.')
     } finally {
       setSending(false)
     }
-  }
-
-  async function handlePaymentSubmit(e) {
-    e.preventDefault()
-    setError('')
-    setSending(true)
-
-    const form = e.target
-
-    try {
-      await updateBooking(bookingId, {
-        payment_method: 'bank',
-        payment_status: 'verification_required',
-        booking_status: 'pending_verification',
-      })
-      const updated = await getBooking(bookingId)
-      setBookingNumber(updated.booking_number || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
-      setBookingData((prev) => ({ ...prev, payment_method: 'bank', payment_status: 'verification_required', booking_number: updated.booking_number }))
-      setSending(false)
-      setStep(4)
-    } catch (err) {
-      setError('Failed to process payment. Please try again.')
-      setSending(false)
-    }
-  }
-
-  function getSessionTypeLabel(value) {
-    const found = sessionTypes.find((t) => t.value === value)
-    return found ? found.label : value
   }
 
   return (
@@ -127,35 +73,12 @@ export default function BookNow() {
         <p>
           Pick the session that fits — a public group climb, a private
           experience, or a fully customized session for your own group.
-          Complete your booking with a secure payment.
         </p>
       </PageHeader>
 
       <section className="section">
         <div className="wrap">
-          {/* ---- Step progress ---- */}
-          <div className="checkout-steps">
-            <div className={`checkout-step ${step >= 1 ? 'is-active' : ''} ${step > 1 ? 'is-done' : ''}`}>
-              <span className="step-number">{step > 1 ? '✓' : '1'}</span>
-              <span className="step-label">Details</span>
-            </div>
-            <div className="step-connector">
-              <div className="step-connector-fill" style={{ width: step >= 2 ? '100%' : '0%' }} />
-            </div>
-            <div className={`checkout-step ${step >= 2 ? 'is-active' : ''} ${step > 2 ? 'is-done' : ''}`}>
-              <span className="step-number">{step > 2 ? '✓' : '2'}</span>
-              <span className="step-label">Payment</span>
-            </div>
-            <div className="step-connector">
-              <div className="step-connector-fill" style={{ width: step >= 4 ? '100%' : '0%' }} />
-            </div>
-            <div className={`checkout-step ${step >= 4 ? 'is-active' : ''}`}>
-              <span className="step-number">3</span>
-              <span className="step-label">Confirm</span>
-            </div>
-          </div>
-
-          <div className="form-card" style={{ maxWidth: 780, margin: '0 auto' }}>
+          <div className="form-card" style={{ maxWidth: 680, margin: '0 auto' }}>
             {error && (
               <div className="form-error-banner">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
@@ -163,173 +86,54 @@ export default function BookNow() {
               </div>
             )}
 
-            {/* ---- STEP 1: Booking details ---- */}
-            {step === 1 && (
-              <form onSubmit={handleDetailsSubmit}>
-                <div className="field">
-                  <label htmlFor="session-type">Session type</label>
-                  <select id="session-type" defaultValue={sessionTypes.some(t => t.value === preselected) ? preselected : ''} required>
-                    <option value="" disabled>Choose a session type</option>
-                    {sessionTypes.map((t) => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row">
-                  <div className="field">
-                    <label htmlFor="name">Full name</label>
-                    <input id="name" type="text" required />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="phone">Phone / WhatsApp</label>
-                    <input id="phone" type="tel" required />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="field">
-                    <label htmlFor="email">Email</label>
-                    <input id="email" type="email" required />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="group-size">Number of people</label>
-                    <input id="group-size" type="number" min="1" defaultValue="1" />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label htmlFor="preferred-date">Preferred date</label>
-                  <input id="preferred-date" type="date" />
-                </div>
-
-                <div className="form-actions">
-                  <button type="submit" className="btn btn-primary" disabled={sending}>
-                    {sending ? 'Saving…' : 'Continue to payment →'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* ---- STEP 2: Checkout / Payment ---- */}
-            {step === 2 && (
-              <div className="checkout-container">
-                <div className="booking-summary">
-                  <h3 className="summary-title">Booking summary</h3>
-                  <div className="summary-grid">
-                    <div className="summary-item">
-                      <span className="summary-key">Session</span>
-                      <span className="summary-val">{getSessionTypeLabel(bookingData?.session_id)}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-key">Name</span>
-                      <span className="summary-val">{bookingData?.customer_name}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-key">Email</span>
-                      <span className="summary-val">{bookingData?.customer_email}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-key">Phone</span>
-                      <span className="summary-val">{bookingData?.customer_phone}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-key">People</span>
-                      <span className="summary-val">{bookingData?.participants}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-key">Date</span>
-                      <span className="summary-val">{bookingData?.date || 'To be confirmed'}</span>
-                    </div>
-                  </div>
-                  <div className="summary-total">
-                    <span>Total to pay</span>
-                    <span className="summary-amount">PKR 2,500</span>
-                  </div>
-                </div>
-
-                <form onSubmit={handlePaymentSubmit} className="payment-form">
-                  <h3 className="summary-title">Choose payment method</h3>
-
-                  <div className="payment-form-section">
-                    <BankTransferForm bookingNumber={bookingNumber} />
-                  </div>
-
-                  <div className="form-actions">
-                    <button type="button" className="btn btn-outline" onClick={() => setStep(1)}>
-                      ← Back
-                    </button>
-                    <button type="submit" className="btn btn-primary" disabled={sending}>
-                      {sending ? <><span className="btn-spinner" /> Processing…</> : 'Create Booking & Proceed'}
-                    </button>
-                  </div>
-                </form>
+            <form onSubmit={handleSubmit}>
+              <div className="field">
+                <label htmlFor="session-type">Session type</label>
+                <select id="session-type" defaultValue={sessionTypes.some(t => t.value === preselected) ? preselected : ''} required>
+                  <option value="" disabled>Choose a session type</option>
+                  {sessionTypes.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
               </div>
-            )}
 
-            {/* ---- STEP 4: Bank Transfer Confirmation ---- */}
-            {step === 4 && (
-              <div className="payment-success">
-                <div className="success-icon" style={{ color: 'var(--orange)' }}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
+              <div className="form-row">
+                <div className="field">
+                  <label htmlFor="name">Full name</label>
+                  <input id="name" type="text" required />
                 </div>
-                <h3 style={{ color: 'var(--orange)' }}>Payment Verification Required</h3>
-                <p className="success-desc">
-                  Your booking has been created successfully, <strong>{bookingData?.customer_name}</strong>!
-                </p>
-
-                <div className="bank-confirm-card">
-                  <div className="bank-confirm-label">Booking Number</div>
-                  <div className="bank-confirm-number">{bookingNumber || `CCP-${new Date().getFullYear()}-${(bookingId || '').slice(-5)}`}</div>
+                <div className="field">
+                  <label htmlFor="phone">Phone / WhatsApp</label>
+                  <input id="phone" type="tel" required />
                 </div>
-
-                <div className="success-details">
-                  <div className="success-detail-row">
-                    <span>Session</span>
-                    <span>{getSessionTypeLabel(bookingData?.session_id) || '—'}</span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span>Amount</span>
-                    <span><strong>PKR 2,500</strong></span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span>Payment method</span>
-                    <span>Bank Transfer</span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span>Status</span>
-                    <span className="status-pending">Awaiting Confirmation</span>
-                  </div>
-                </div>
-
-                <p className="success-note" style={{ textAlign: 'center', maxWidth: '44ch' }}>
-                  Please send the payment screenshot on WhatsApp along with your booking number for verification.
-                  Your booking will be confirmed after payment verification.
-                </p>
-
-                <div className="bank-whatsapp-section">
-                  <div className="bank-whatsapp-number">
-                    <span className="bank-whatsapp-label">WhatsApp Number</span>
-                    <span className="bank-whatsapp-value">+92 300 1234567</span>
-                  </div>
-                  <a
-                    href={`https://wa.me/923001234567?text=Hello%20Climb%20Crux%2C%0A%0AI%20have%20made%20the%20payment%20for%20my%20booking.%0A%0ABooking%20Number%3A%20${encodeURIComponent(bookingNumber || `CCP-${new Date().getFullYear()}-${(bookingId || '').slice(-5)}`)}%0AName%3A%20${encodeURIComponent(bookingData?.customer_name || '')}%0A%0APlease%20find%20my%20payment%20screenshot%20attached%20for%20verification.`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{ gap: 10, fontSize: '1rem', padding: '1em 2em', width: '100%', justifyContent: 'center' }}
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    Send Payment Proof on WhatsApp
-                  </a>
-                </div>
-
-                <a href="/" className="btn btn-outline" style={{ marginTop: 20 }}>Back to home</a>
               </div>
-            )}
+
+              <div className="form-row">
+                <div className="field">
+                  <label htmlFor="email">Email</label>
+                  <input id="email" type="email" required />
+                </div>
+                <div className="field">
+                  <label htmlFor="group-size">Number of people</label>
+                  <input id="group-size" type="number" min="1" defaultValue="1" />
+                </div>
+              </div>
+
+              <div className="field">
+                <label htmlFor="preferred-date">Preferred date</label>
+                <input id="preferred-date" type="date" />
+              </div>
+
+              <div className="form-actions" style={{ flexDirection: 'column' }}>
+                <button type="submit" className="btn btn-primary" disabled={sending} style={{ width: '100%', justifyContent: 'center' }}>
+                  {sending ? (
+                    <><span className="btn-spinner" /> Creating booking…</>
+                  ) : (
+                    'Continue to payment →'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </section>

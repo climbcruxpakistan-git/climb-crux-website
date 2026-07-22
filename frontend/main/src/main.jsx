@@ -14,7 +14,7 @@ import OurTeam from './pages/OurTeam.jsx'
 import InstructorProfile from './pages/InstructorProfile.jsx'
 import Gallery from './pages/Gallery.jsx'
 import BookNow from './pages/BookNow.jsx'
-
+import PaymentPage from './pages/PaymentPage.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -29,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/our-team/:id" element={<InstructorProfile />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/book-now" element={<BookNow />} />
+          <Route path="/booking/:bookingNumber/payment" element={<PaymentPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
