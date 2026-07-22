@@ -632,6 +632,10 @@ tbody tr:hover {
   gap: 20px;
 }
 
+.admin-form-row--triple {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 .admin-field {
   display: flex;
   flex-direction: column;
@@ -978,6 +982,217 @@ tbody tr:hover {
 .activity-time {
   font-size: 0.72rem;
   color: var(--stone);
+}
+
+/* =========================== PAYMENT DETAILS =========================== */
+
+.payment-method-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.payment-method-icon-sm {
+  font-size: 1rem;
+}
+
+.cell-muted {
+  color: var(--stone);
+  font-size: 0.82rem;
+}
+
+.cell-type {
+  display: block;
+  font-weight: 500;
+  color: var(--charcoal);
+  text-transform: capitalize;
+}
+
+.cell-date {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--stone);
+  margin-top: 2px;
+}
+
+/* Payment detail card inside modal */
+.payment-detail-card {
+  background: var(--admin-bg);
+  border: 1px solid #e5e0d4;
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+
+.payment-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e0d4;
+}
+
+.payment-detail-method-icon {
+  font-size: 1.5rem;
+}
+
+.payment-detail-method-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+.payment-detail-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.payment-detail-key {
+  color: var(--stone-dark);
+}
+
+.payment-detail-val {
+  font-weight: 500;
+  color: var(--charcoal);
+}
+
+.payment-detail-val.mono {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+}
+
+.payment-no-info {
+  color: var(--stone);
+  font-size: 0.88rem;
+  padding: 12px 0;
+}
+
+.payment-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.verified-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+/* Booking detail modal grid */
+.booking-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.booking-detail-section {
+  min-width: 0;
+}
+
+.detail-section-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--orange-dark);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--orange);
+}
+
+.detail-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 0.88rem;
+}
+
+.detail-key {
+  color: var(--stone);
+  white-space: nowrap;
+  min-width: 100px;
+  flex-shrink: 0;
+  font-size: 0.82rem;
+}
+
+.detail-val {
+  font-weight: 500;
+  color: var(--charcoal);
+  text-align: right;
+  word-break: break-all;
+}
+
+.detail-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0ede6;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .booking-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .detail-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .detail-key {
+    min-width: auto;
+  }
+  .detail-val {
+    text-align: left;
+  }
+  .payment-detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
 }
 
 /* =========================== RECENT BOOKINGS =========================== */
