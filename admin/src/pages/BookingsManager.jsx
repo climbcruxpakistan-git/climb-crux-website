@@ -221,6 +221,36 @@ export default function BookingsManager() {
         <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Booking</button>
       </div>
 
+      {/* ---- Stats Cards ---- */}
+      <div className="stats-grid">
+        <div className="stat-card purple">
+          <div className="stat-card-icon">📋</div>
+          <span className="stat-card-value">{bookings.length}</span>
+          <span className="stat-card-label">Total Bookings</span>
+          <span className="stat-card-change up">{bookings.filter((b) => b.status === 'pending').length} pending</span>
+        </div>
+        <div className="stat-card green">
+          <div className="stat-card-icon">✓</div>
+          <span className="stat-card-value">{bookings.filter((b) => b.paymentStatus === 'paid').length}</span>
+          <span className="stat-card-label">Paid Bookings</span>
+          <span className="stat-card-change up">
+            {bookings.filter((b) => b.paymentStatus === 'paid' && b.paymentMethod).length} with payment
+          </span>
+        </div>
+        <div className="stat-card orange">
+          <div className="stat-card-icon">⏳</div>
+          <span className="stat-card-value">{bookings.filter((b) => (b.paymentStatus || 'pending') === 'pending' && b.paymentMethod).length}</span>
+          <span className="stat-card-label">Pending Payments</span>
+          <span className="stat-card-change down">{bookings.filter((b) => b.paymentStatus === 'failed').length} failed</span>
+        </div>
+        <div className="stat-card blue">
+          <div className="stat-card-icon">💰</div>
+          <span className="stat-card-value">PKR {((bookings.filter((b) => b.paymentStatus === 'paid').length) * 2500).toLocaleString()}</span>
+          <span className="stat-card-label">Estimated Revenue</span>
+          <span className="stat-card-change up">{bookings.filter((b) => b.paymentStatus === 'paid').length} × PKR 2,500</span>
+        </div>
+      </div>
+
       <div className="card-admin">
         <div className="card-admin-header">
           <h2>All Bookings ({bookings.length})</h2>
