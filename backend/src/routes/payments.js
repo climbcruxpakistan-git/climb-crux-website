@@ -10,6 +10,7 @@ const SAFEPAY_API_KEY = process.env.SAFEPAY_PUBLIC_KEY || ''
 const SAFEPAY_V1_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
 const SAFEPAY_WEBHOOK_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
 const SAFEPAY_ENV = process.env.SAFEPAY_ENV || 'sandbox'
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
 // Initialize SafePay SDK (high-level SDK that handles TBT internally)
 let safepay = null
