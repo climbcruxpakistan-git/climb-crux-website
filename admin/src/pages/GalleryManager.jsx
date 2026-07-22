@@ -65,8 +65,8 @@ export default function GalleryManager() {
   }, [form.photoSlug, uploadPhotos])
 
   function openNew() {
-    const defaultCat = existingCategories.length > 0 ? existingCategories[0] : ''
-    setForm({ tag: '', cat: defaultCat, imageUrl: '', caption: '', photoSlug: '' })
+    // At category level: create a new category — leave category field empty for the admin to type
+    setForm({ tag: '', cat: '', imageUrl: '', caption: '', photoSlug: '' })
     setEditing('new')
   }
 
@@ -153,24 +153,19 @@ export default function GalleryManager() {
     }
   }
 
-  // Helper: get photo count for an album
-  function getAlbumPhotoCount(item) {
+  // Helper: get photo count for a subfolder
+  function getSubfolderPhotoCount(item) {
     const slug = item.photoSlug?.trim().toLowerCase()
     if (!slug) return 0
     return uploadPhotos.filter((up) => (up.tags || []).some((t) => t.toLowerCase() === slug)).length
   }
 
-  // Albums visible in the current folder view
+  // Subfolders visible in the current folder view
   const shown = activeFolder
     ? photos.filter((p) => p.cat === activeFolder)
     : []
 
-  // Helper: open edit modal for an album
-  function openEditFromFolder(item) {
-    openEdit(item)
-  }
-
-  // Helper: add album from within a folder — pre-select its category
+  // Helper: add subfolder from within a category folder — pre-selects its category
   function openNewInFolder() {
     const cat = activeFolder || (existingCategories.length > 0 ? existingCategories[0] : '')
     setForm({ tag: '', cat, imageUrl: '', caption: '', photoSlug: '' })
@@ -185,13 +180,13 @@ export default function GalleryManager() {
         <div>
           <h1>Gallery</h1>
           <p className="page-header-admin-desc">
-            Manage folders and albums. Each category folder contains album subfolders with photos.
+            Browse category folders. Click into a folder to see its subfolders (sessions).
           </p>
         </div>
         {activeFolder ? (
-          <button className="btn-admin btn-admin-primary" onClick={openNewInFolder}>+ Add Album</button>
+          <button className="btn-admin btn-admin-primary" onClick={openNewInFolder}>+ Add Subfolder</button>
         ) : (
-          <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Album</button>
+          <button className="btn-admin btn-admin-primary" onClick={openNew}>+ New Category</button>
         )}
       </div>
 
@@ -212,7 +207,7 @@ export default function GalleryManager() {
               <span style={{ margin: '0 8px', color: 'var(--stone)', fontSize: '0.75rem' }}>›</span>
               <span style={{ color: 'var(--orange)' }}>{activeFolder}</span>
               <span style={{ fontWeight: 400, color: 'var(--stone)', marginLeft: 8, fontSize: '0.85rem' }}>
-                ({shown.length} album{shown.length !== 1 ? 's' : ''})
+                ({shown.length} subfolder{shown.length !== 1 ? 's' : ''})
               </span>
             </h2>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -225,8 +220,8 @@ export default function GalleryManager() {
           {shown.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📁</div>
-              <h3>No albums in this folder</h3>
-              <p>Click "+ Add Album" to create your first album in {activeFolder}.</p>
+              <h3>No subfolders yet</h3>
+              <p>Click "+ Add Subfolder" to create your first subfolder in {activeFolder}.</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
@@ -245,7 +240,7 @@ export default function GalleryManager() {
                   }}
                     onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
                     onMouseOut={(e) => e.currentTarget.style.boxShadow = 'none'}
-                    onClick={() => openEditFromFolder(p)}
+                    onClick={() => openEdit(p)}
                   >
                     {/* Image preview */}
                     <div style={{ aspectRatio: '1', overflow: 'hidden', background: 'linear-gradient(155deg, #383839, #2c2b2d, #cf5711)', position: 'relative' }}>
@@ -308,13 +303,13 @@ export default function GalleryManager() {
               <div className="empty-state">
                 <div className="empty-state-icon">📁</div>
                 <h3>No categories yet</h3>
-                <p>Create your first album and it will appear here.</p>
+                <p>Click "+ New Category" to create your first category folder.</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
                 {existingCategories.map((cat) => {
                   const albums = photos.filter((p) => p.cat === cat)
-                  const totalPhotos = albums.reduce((sum, a) => sum + getAlbumPhotoCount(a), 0)
+                  const totalPhotos = albums.reduce((sum, a) => sum + getSubfolderPhotoCount(a), 0)
 
                   // Gather up to 4 preview images from albums in this category
                   const previews = []
@@ -386,7 +381,7 @@ export default function GalleryManager() {
                         </div>
                         <div style={{ textAlign: 'right', fontSize: '0.75rem', color: 'var(--stone)' }}>
                           <div style={{ fontWeight: 600, color: 'var(--orange)' }}>{albums.length}</div>
-                          <div>album{albums.length !== 1 ? 's' : ''}</div>
+                          <div>subfolder{albums.length !== 1 ? 's' : ''}</div>
                         </div>
                       </div>
                     </button>
@@ -400,11 +395,11 @@ export default function GalleryManager() {
           {photos.length > 0 && (
             <details style={{ marginTop: 16 }}>
               <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--stone)', padding: '8px 0' }}>
-                View all {photos.length} albums as list
+                View all {photos.length} subfolders as list
               </summary>
               <div className="card-admin" style={{ marginTop: 8 }}>
                 <div className="card-admin-header">
-                  <h2>All Albums</h2>
+                  <h2>All Subfolders</h2>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {['All', ...existingCategories].map((c) => {
                       const isActive = c === 'All' ? !activeFolder : activeFolder === c
@@ -450,7 +445,7 @@ export default function GalleryManager() {
       )}
 
       {editing && (
-        <Modal title={editing === 'new' ? 'Add Album' : 'Edit Album'} onClose={() => setEditing(null)}>
+        <Modal title={editing === 'new' ? (form.cat ? 'Add Subfolder' : 'New Category') : 'Edit Subfolder'} onClose={() => setEditing(null)}>
           <div className="admin-form">
             <div className="admin-field">
               <label>Tag / Description</label>
