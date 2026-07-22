@@ -109,6 +109,9 @@ export default function BookingsManager() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('All')
   const [paymentFilter, setPaymentFilter] = useState('All')
+  const [datePreset, setDatePreset] = useState('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
 
@@ -122,6 +125,55 @@ export default function BookingsManager() {
 
   const paymentStatusOptions = ['All', 'pending', 'paid', 'failed']
   const bookingStatusOptions = ['All', 'Pending', 'Confirmed', 'Cancelled']
+  const datePresets = [
+    { value: 'all', label: 'All time' },
+    { value: 'today', label: 'Today' },
+    { value: 'week', label: 'This week' },
+    { value: 'month', label: 'This month' },
+    { value: 'custom', label: 'Custom' },
+  ]
+
+  function getDateRange(preset) {
+    const now = new Date()
+    const to = now.toISOString().split('T')[0]
+    let from
+    switch (preset) {
+      case 'today':
+        from = to
+        break
+      case 'week': {
+        const startOfWeek = new Date(now)
+        startOfWeek.setDate(now.getDate() - now.getDay())
+        from = startOfWeek.toISOString().split('T')[0]
+        break
+      }
+      case 'month': {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        from = startOfMonth.toISOString().split('T')[0]
+        break
+      }
+      default:
+        return { from: '', to: '' }
+    }
+    return { from, to }
+  }
+
+  function handleDatePreset(preset) {
+    setDatePreset(preset)
+    if (preset !== 'custom') {
+      const range = getDateRange(preset)
+      setDateFrom(range.from)
+      setDateTo(range.to)
+    }
+  }
+
+  function isBookingInRange(b) {
+    if (!b.date) return datePreset === 'all' && !dateFrom && !dateTo
+    const bookingDate = b.date
+    if (dateFrom && bookingDate < dateFrom) return false
+    if (dateTo && bookingDate > dateTo) return false
+    return true
+  }
 
   useEffect(() => {
     getBookings()
@@ -194,13 +246,27 @@ export default function BookingsManager() {
     }
   }
 
-  // Apply filters
+  // Apply filters (status + payment + date range)
   let shown = bookings
   if (statusFilter !== 'All') {
     shown = shown.filter((b) => b.status === statusFilter.toLowerCase())
   }
   if (paymentFilter !== 'All') {
     shown = shown.filter((b) => (b.paymentStatus || 'pending') === paymentFilter)
+  }
+  if (datePreset !== 'all' || dateFrom || dateTo) {
+    shown = shown.filter(isBookingInRange)
+  }
+
+  // Stats computed from filtered bookings
+  const stats = {
+    total: shown.length,
+    pending: shown.filter((b) => b.status === 'pending').length,
+    paid: shown.filter((b) => b.paymentStatus === 'paid').length,
+    paidWithMethod: shown.filter((b) => b.paymentStatus === 'paid' && b.paymentMethod).length,
+    pendingPayments: shown.filter((b) => (b.paymentStatus || 'pending') === 'pending' && b.paymentMethod).length,
+    failed: shown.filter((b) => b.paymentStatus === 'failed').length,
+    revenue: shown.filter((b) => b.paymentStatus === 'paid').length * 2500,
   }
 
   if (loading) {
@@ -221,39 +287,77 @@ export default function BookingsManager() {
         <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Booking</button>
       </div>
 
-      {/* ---- Stats Cards ---- */}
+      {/* ---- Stats Cards (filtered) ---- */}
       <div className="stats-grid">
         <div className="stat-card purple">
           <div className="stat-card-icon">📋</div>
-          <span className="stat-card-value">{bookings.length}</span>
+          <span className="stat-card-value">{stats.total}</span>
           <span className="stat-card-label">Total Bookings</span>
-          <span className="stat-card-change up">{bookings.filter((b) => b.status === 'pending').length} pending</span>
+          <span className="stat-card-change up">{stats.pending} pending</span>
         </div>
         <div className="stat-card green">
           <div className="stat-card-icon">✓</div>
-          <span className="stat-card-value">{bookings.filter((b) => b.paymentStatus === 'paid').length}</span>
+          <span className="stat-card-value">{stats.paid}</span>
           <span className="stat-card-label">Paid Bookings</span>
-          <span className="stat-card-change up">
-            {bookings.filter((b) => b.paymentStatus === 'paid' && b.paymentMethod).length} with payment
-          </span>
+          <span className="stat-card-change up">{stats.paidWithMethod} with payment</span>
         </div>
         <div className="stat-card orange">
           <div className="stat-card-icon">⏳</div>
-          <span className="stat-card-value">{bookings.filter((b) => (b.paymentStatus || 'pending') === 'pending' && b.paymentMethod).length}</span>
+          <span className="stat-card-value">{stats.pendingPayments}</span>
           <span className="stat-card-label">Pending Payments</span>
-          <span className="stat-card-change down">{bookings.filter((b) => b.paymentStatus === 'failed').length} failed</span>
+          <span className="stat-card-change down">{stats.failed} failed</span>
         </div>
         <div className="stat-card blue">
           <div className="stat-card-icon">💰</div>
-          <span className="stat-card-value">PKR {((bookings.filter((b) => b.paymentStatus === 'paid').length) * 2500).toLocaleString()}</span>
+          <span className="stat-card-value">PKR {stats.revenue.toLocaleString()}</span>
           <span className="stat-card-label">Estimated Revenue</span>
-          <span className="stat-card-change up">{bookings.filter((b) => b.paymentStatus === 'paid').length} × PKR 2,500</span>
+          <span className="stat-card-change up">{stats.paid} × PKR 2,500</span>
         </div>
+      </div>
+
+      {/* ---- Date Range Filter ---- */}
+      <div className="date-range-bar">
+        <div className="date-range-presets">
+          {datePresets.map((p) => (
+            <button
+              key={p.value}
+              className={`btn-admin btn-admin-sm ${datePreset === p.value ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
+              onClick={() => handleDatePreset(p.value)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {datePreset === 'custom' && (
+          <div className="date-range-inputs">
+            <label>
+              <span>From</span>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
+            </label>
+            <label>
+              <span>To</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
+            </label>
+          </div>
+        )}
+        {(datePreset !== 'all' || dateFrom || dateTo) && (
+          <span className="date-range-summary">
+            {shown.length} of {bookings.length} bookings
+          </span>
+        )}
       </div>
 
       <div className="card-admin">
         <div className="card-admin-header">
-          <h2>All Bookings ({bookings.length})</h2>
+          <h2>All Bookings ({shown.length})</h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {/* Booking status filters */}
             {bookingStatusOptions.map((c) => (

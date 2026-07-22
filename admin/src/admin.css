@@ -1195,6 +1195,63 @@ tbody tr:hover {
   }
 }
 
+/* =========================== DATE RANGE FILTER =========================== */
+
+.date-range-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.date-range-presets {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.date-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date-range-inputs label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--stone-dark);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.date-range-inputs input[type="date"] {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  padding: 0.45em 0.6em;
+  border: 1px solid #d8d0bc;
+  border-radius: 6px;
+  background: var(--admin-surface);
+  color: var(--ink);
+  transition: border-color 0.15s ease;
+}
+
+.date-range-inputs input[type="date"]:focus {
+  border-color: var(--orange);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.1);
+}
+
+.date-range-summary {
+  font-size: 0.78rem;
+  color: var(--stone);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 /* =========================== RECENT BOOKINGS =========================== */
 
 .booking-item {
