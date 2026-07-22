@@ -22,3 +22,9 @@ services:
         value: "10000"
       - key: FRONTEND_URL
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NOTIFICATION_EMAIL
+        sync: false
+      - key: EMAIL_FROM
+        value: "onboarding@resend.dev"
