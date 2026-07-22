@@ -45,9 +45,9 @@ export default function BookNow() {
     const amount = calcAmount(sessionType, participants)
 
     const data = {
-      customer_name: form.name.value,
-      customer_email: form.email.value,
-      customer_phone: form.phone.value,
+      customer_name: form['customer-name'].value,
+      customer_email: form['customer-email'].value,
+      customer_phone: form['customer-phone'].value,
       session_id: sessionType,
       date: form['preferred-date'].value,
       participants,
@@ -99,19 +99,19 @@ export default function BookNow() {
 
               <div className="form-row">
                 <div className="field">
-                  <label htmlFor="name">Full name</label>
-                  <input id="name" type="text" required />
+                  <label htmlFor="customer-name">Full name</label>
+                  <input id="customer-name" type="text" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="phone">Phone / WhatsApp</label>
-                  <input id="phone" type="tel" required />
+                  <label htmlFor="customer-phone">Phone / WhatsApp</label>
+                  <input id="customer-phone" type="tel" required />
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="field">
-                  <label htmlFor="email">Email</label>
-                  <input id="email" type="email" required />
+                  <label htmlFor="customer-email">Email</label>
+                  <input id="customer-email" type="email" required />
                 </div>
                 <div className="field">
                   <label htmlFor="group-size">Number of people</label>
