@@ -3,6 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { createBooking, getSessionContent } from '../api.js'
 
+const sessionTypes = [
+  { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
+  { value: 'private', label: 'Private Session', desc: 'One-on-one or private group coaching tailored to your goals.' },
+  { value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' },
+]
+
 export default function BookNow() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -10,6 +16,10 @@ export default function BookNow() {
 
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
+  const [sessionType, setSessionType] = useState(
+    sessionTypes.some(t => t.value === preselected) ? preselected : ''
+  )
+  const [participants, setParticipants] = useState(1)
   const [pricing, setPricing] = useState({ publicPrice: 4500 })
 
   // Fetch pricing info from session content
@@ -22,17 +32,14 @@ export default function BookNow() {
     })
   }, [])
 
-  const sessionTypes = [
-    { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
-    { value: 'private', label: 'Private Session', desc: 'One-on-one or private group coaching tailored to your goals.' },
-    { value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' },
-  ]
-
-  function calcAmount(type, participants) {
-    if (type === 'public') return pricing.publicPrice * participants
-    if (type === 'private') return 8000 * participants
-    return 6000 * participants
+  const perPersonPrice = (type) => {
+    if (type === 'public') return pricing.publicPrice
+    if (type === 'private') return 8000
+    if (type === 'custom-group') return 6000
+    return 0
   }
+
+  const totalAmount = sessionType ? perPersonPrice(sessionType) * participants : 0
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -40,18 +47,17 @@ export default function BookNow() {
     setSending(true)
 
     const form = e.target
-    const sessionType = form['session-type'].value
-    const participants = Number(form['group-size'].value) || 1
-    const amount = calcAmount(sessionType, participants)
+    const sessionId = sessionType
+    const participantCount = participants
 
     const data = {
       customer_name: form['customer-name'].value,
       customer_email: form['customer-email'].value,
       customer_phone: form['customer-phone'].value,
-      session_id: sessionType,
+      session_id: sessionId,
       date: form['preferred-date'].value,
-      participants,
-      amount,
+      participants: participantCount,
+      amount: totalAmount,
       booking_status: 'pending_payment',
       payment_status: 'pending',
     }
@@ -89,7 +95,12 @@ export default function BookNow() {
             <form onSubmit={handleSubmit}>
               <div className="field">
                 <label htmlFor="session-type">Session type</label>
-                <select id="session-type" defaultValue={sessionTypes.some(t => t.value === preselected) ? preselected : ''} required>
+                <select
+                  id="session-type"
+                  defaultValue={sessionTypes.some(t => t.value === preselected) ? preselected : ''}
+                  onChange={(e) => { setSessionType(e.target.value); setParticipants(1) }}
+                  required
+                >
                   <option value="" disabled>Choose a session type</option>
                   {sessionTypes.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -115,7 +126,13 @@ export default function BookNow() {
                 </div>
                 <div className="field">
                   <label htmlFor="group-size">Number of people</label>
-                  <input id="group-size" type="number" min="1" defaultValue="1" />
+                  <input
+                    id="group-size"
+                    type="number"
+                    min="1"
+                    defaultValue="1"
+                    onChange={(e) => setParticipants(Math.max(1, Number(e.target.value)))}
+                  />
                 </div>
               </div>
 
@@ -124,8 +141,45 @@ export default function BookNow() {
                 <input id="preferred-date" type="date" />
               </div>
 
+              {/* ── Live price summary ── */}
+              {sessionType && (
+                <div style={{
+                  background: 'var(--chalk-dim)',
+                  borderRadius: 12,
+                  padding: '20px 24px',
+                  marginBottom: 20,
+                  border: '1px solid var(--sand)',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    flexWrap: 'wrap',
+                    gap: 8,
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>
+                        {sessionTypes.find(t => t.value === sessionType)?.label || sessionType}
+                      </div>
+                      <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>
+                        PKR {perPersonPrice(sessionType).toLocaleString()}{' '}
+                        <span style={{ color: 'var(--stone)' }}>× {participants} {participants === 1 ? 'person' : 'people'}</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 12, color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Total
+                      </div>
+                      <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2 }}>
+                        PKR {totalAmount.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="form-actions" style={{ flexDirection: 'column' }}>
-                <button type="submit" className="btn btn-primary" disabled={sending} style={{ width: '100%', justifyContent: 'center' }}>
+                <button type="submit" className="btn btn-primary" disabled={sending || !sessionType} style={{ width: '100%', justifyContent: 'center' }}>
                   {sending ? (
                     <><span className="btn-spinner" /> Creating booking…</>
                   ) : (
