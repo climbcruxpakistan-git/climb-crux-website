@@ -166,12 +166,12 @@ export async function deleteBooking(id) {
   return request('DELETE', `/bookings/${id}`)
 }
 
-export async function patchBookingStatus(id, status) {
-  return mapId(await request('PATCH', `/bookings/${id}/status`, { status }))
+export async function patchBookingStatus(id, booking_status) {
+  return mapId(await request('PATCH', `/bookings/${id}/booking-status`, { booking_status }))
 }
 
-export async function patchPaymentStatus(id, paymentStatus) {
-  return mapId(await request('PATCH', `/bookings/${id}/payment-status`, { paymentStatus }))
+export async function patchPaymentStatus(id, payment_status) {
+  return mapId(await request('PATCH', `/bookings/${id}/payment-status`, { payment_status }))
 }
 
 /* ---------- About ---------- */

@@ -6,37 +6,49 @@ import Modal from '../components/Modal.jsx'
 function formatMethod(method) {
   if (method === 'card') return 'Card'
   if (method === 'bank') return 'Bank Transfer'
-  if (method === 'easypaisa') return 'EasyPaisa'
   return '—'
 }
 
 function methodIcon(method) {
   if (method === 'card') return '💳'
   if (method === 'bank') return '🏦'
-  if (method === 'easypaisa') return '📱'
   return '—'
 }
 
 function badge(status) {
   const map = {
-    pending: 'badge-yellow',
+    pending_payment: 'badge-yellow',
+    pending_verification: 'badge-orange',
     confirmed: 'badge-green',
     cancelled: 'badge-red',
     paid: 'badge-green',
     failed: 'badge-red',
   }
-  const label = status || '—'
+  const display = {
+    pending_payment: 'Pending Payment',
+    pending_verification: 'Verifying',
+    confirmed: 'Confirmed',
+    cancelled: 'Cancelled',
+  }
+  const label = display[status] || status || '—'
   return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
 }
 
 function paymentBadge(status) {
   const map = {
     pending: 'badge-yellow',
-    awaiting_confirmation: 'badge-orange',
+    verification_required: 'badge-orange',
     paid: 'badge-green',
     failed: 'badge-red',
+    refunded: 'badge-gray',
   }
-  const label = status === 'awaiting_confirmation' ? 'Awaiting Confirm' : (status || '—')
+  const display = {
+    verification_required: 'Verification Required',
+    paid: 'Paid',
+    failed: 'Failed',
+    refunded: 'Refunded',
+  }
+  const label = display[status] || status || '—'
   return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
 }
 
@@ -52,53 +64,15 @@ function PaymentDetailCard({ paymentMethod, paymentDetails }) {
         <span className="payment-detail-method-name">{formatMethod(paymentMethod)}</span>
       </div>
 
-      {paymentMethod === 'card' && (
-        <div className="payment-detail-fields">
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Cardholder</span>
-            <span className="payment-detail-val">{paymentDetails?.cardHolder || '—'}</span>
-          </div>
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Card ending in</span>
-            <span className="payment-detail-val mono">•••• {paymentDetails?.cardLastFour || '—'}</span>
-          </div>
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Expiry</span>
-            <span className="payment-detail-val">{paymentDetails?.cardExpiry || '—'}</span>
-          </div>
-        </div>
-      )}
-
       {paymentMethod === 'bank' && (
         <div className="payment-detail-fields">
           <div className="payment-detail-row">
-            <span className="payment-detail-key">Your bank</span>
-            <span className="payment-detail-val">{paymentDetails?.yourBank || '—'}</span>
+            <span className="payment-detail-key">Sender bank</span>
+            <span className="payment-detail-val">{paymentDetails?.payer_bank || paymentDetails?.yourBank || '—'}</span>
           </div>
           <div className="payment-detail-row">
             <span className="payment-detail-key">Account holder</span>
-            <span className="payment-detail-val">{paymentDetails?.accountHolder || '—'}</span>
-          </div>
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Account number</span>
-            <span className="payment-detail-val mono">{paymentDetails?.yourAccountNumber || '—'}</span>
-          </div>
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Transaction ID</span>
-            <span className="payment-detail-val mono">{paymentDetails?.transactionId || '—'}</span>
-          </div>
-        </div>
-      )}
-
-      {paymentMethod === 'easypaisa' && (
-        <div className="payment-detail-fields">
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Phone number</span>
-            <span className="payment-detail-val mono">{paymentDetails?.phone || '—'}</span>
-          </div>
-          <div className="payment-detail-row">
-            <span className="payment-detail-key">Transaction ID</span>
-            <span className="payment-detail-val mono">{paymentDetails?.transactionId || '—'}</span>
+            <span className="payment-detail-val">{paymentDetails?.payer_name || paymentDetails?.accountHolder || '—'}</span>
           </div>
         </div>
       )}
@@ -119,15 +93,15 @@ export default function BookingsManager() {
   const [viewing, setViewing] = useState(null)
 
   const emptyForm = {
-    name: '', email: '', phone: '', type: '', date: '',
-    groupSize: '1', experience: '', message: '', status: 'pending',
-    paymentMethod: '', paymentStatus: 'pending',
-    paymentDetails: {},
+    customer_name: '', customer_email: '', customer_phone: '',
+    session_id: '', date: '', participants: 1, amount: 2500,
+    booking_status: 'pending_payment',
+    payment_method: '', payment_status: 'pending',
   }
   const [form, setForm] = useState(emptyForm)
 
-  const paymentStatusOptions = ['All', 'pending', 'awaiting_confirmation', 'paid', 'failed']
-  const bookingStatusOptions = ['All', 'Pending', 'Confirmed', 'Cancelled']
+  const paymentStatusOptions = ['All', 'pending', 'verification_required', 'paid', 'failed']
+  const bookingStatusOptions = ['All', 'pending_payment', 'pending_verification', 'confirmed', 'cancelled']
   const datePresets = [
     { value: 'all', label: 'All time' },
     { value: 'today', label: 'Today' },
@@ -192,24 +166,22 @@ export default function BookingsManager() {
 
   function openEdit(b) {
     setForm({
-      name: b.name || '',
-      email: b.email || '',
-      phone: b.phone || '',
-      type: b.type || '',
+      customer_name: b.customer_name || '',
+      customer_email: b.customer_email || '',
+      customer_phone: b.customer_phone || '',
+      session_id: b.session_id || '',
       date: b.date || '',
-      groupSize: b.groupSize || '1',
-      experience: b.experience || '',
-      message: b.message || '',
-      status: b.status || 'pending',
-      paymentMethod: b.paymentMethod || '',
-      paymentStatus: b.paymentStatus || 'pending',
-      paymentDetails: b.paymentDetails || {},
+      participants: b.participants || 1,
+      amount: b.amount || 2500,
+      booking_status: b.booking_status || 'pending_payment',
+      payment_method: b.payment_method || '',
+      payment_status: b.payment_status || 'pending',
     })
     setEditing(b.id)
   }
 
   async function handleSave() {
-    if (!form.name || !form.email) {
+    if (!form.customer_name || !form.customer_email) {
       addToast('Name and email are required', 'error')
       return
     }
@@ -252,10 +224,10 @@ export default function BookingsManager() {
   // Apply filters (status + payment + date range)
   let shown = bookings
   if (statusFilter !== 'All') {
-    shown = shown.filter((b) => b.status === statusFilter.toLowerCase())
+    shown = shown.filter((b) => b.booking_status === statusFilter)
   }
   if (paymentFilter !== 'All') {
-    shown = shown.filter((b) => (b.paymentStatus || 'pending') === paymentFilter)
+    shown = shown.filter((b) => (b.payment_status || 'pending') === paymentFilter)
   }
   if (datePreset !== 'all' || dateFrom || dateTo) {
     shown = shown.filter(isBookingInRange)
@@ -264,12 +236,12 @@ export default function BookingsManager() {
   // Stats computed from filtered bookings
   const stats = {
     total: shown.length,
-    pending: shown.filter((b) => b.status === 'pending').length,
-    paid: shown.filter((b) => b.paymentStatus === 'paid').length,
-    paidWithMethod: shown.filter((b) => b.paymentStatus === 'paid' && b.paymentMethod).length,
-    pendingPayments: shown.filter((b) => (b.paymentStatus || 'pending') === 'pending' && b.paymentMethod).length,
-    failed: shown.filter((b) => b.paymentStatus === 'failed').length,
-    revenue: shown.filter((b) => b.paymentStatus === 'paid').length * 2500,
+    pendingPayment: shown.filter((b) => b.booking_status === 'pending_payment').length,
+    pendingVerification: shown.filter((b) => b.booking_status === 'pending_verification').length,
+    paid: shown.filter((b) => b.payment_status === 'paid').length,
+    pendingPayments: shown.filter((b) => (b.payment_status || 'pending') === 'pending' && b.payment_method).length,
+    failed: shown.filter((b) => b.payment_status === 'failed').length,
+    revenue: shown.reduce((sum, b) => sum + (b.payment_status === 'paid' ? (b.amount || 2500) : 0), 0),
   }
 
   if (loading) {
@@ -296,13 +268,13 @@ export default function BookingsManager() {
           <div className="stat-card-icon">📋</div>
           <span className="stat-card-value">{stats.total}</span>
           <span className="stat-card-label">Total Bookings</span>
-          <span className="stat-card-change up">{stats.pending} pending</span>
+          <span className="stat-card-change up">{stats.pendingPayment} awaiting payment</span>
         </div>
         <div className="stat-card green">
           <div className="stat-card-icon">✓</div>
           <span className="stat-card-value">{stats.paid}</span>
           <span className="stat-card-label">Paid Bookings</span>
-          <span className="stat-card-change up">{stats.paidWithMethod} with payment</span>
+          <span className="stat-card-change up">{stats.pendingVerification} verifying</span>
         </div>
         <div className="stat-card orange">
           <div className="stat-card-icon">⏳</div>
@@ -313,17 +285,17 @@ export default function BookingsManager() {
         <div className="stat-card blue">
           <div className="stat-card-icon">💰</div>
           <span className="stat-card-value">PKR {stats.revenue.toLocaleString()}</span>
-          <span className="stat-card-label">Estimated Revenue</span>
-          <span className="stat-card-change up">{stats.paid} × PKR 2,500</span>
+          <span className="stat-card-label">Total Revenue</span>
+          <span className="stat-card-change up">{stats.paid} paid bookings</span>
         </div>
       </div>
 
-      {/* ---- Pending Manual Payment Confirmations (Bank Transfer / EasyPaisa) ---- */}
-      {bookings.filter((b) => (b.paymentMethod === 'bank' || b.paymentMethod === 'easypaisa') && b.paymentStatus === 'awaiting_confirmation').length > 0 && (
+      {/* ---- Pending Payment Confirmations (Bank Transfer) ---- */}
+      {bookings.filter((b) => b.payment_method === 'bank' && b.payment_status === 'verification_required').length > 0 && (
         <div className="card-admin" style={{ borderLeft: '4px solid #f36f21' }}>
           <div className="card-admin-header">
-            <h2>⏳ Pending Payment Confirmations</h2>
-            <span style={{ fontSize: '0.78rem', color: '#888' }}>Bank Transfer &amp; EasyPaisa</span>
+            <h2>⏳ Pending Bank Transfer Confirmations</h2>
+            <span style={{ fontSize: '0.78rem', color: '#888' }}>Awaiting payment verification</span>
           </div>
           <div className="table-wrap">
             <div className="table-scroll">
@@ -334,39 +306,25 @@ export default function BookingsManager() {
                     <th>Customer</th>
                     <th>Course / Package</th>
                     <th>Amount</th>
-                    <th>Method</th>
-                    <th>Details</th>
+                    <th>Sender Bank</th>
+                    <th>Account Holder</th>
                     <th>Date</th>
                     <th style={{ width: 130 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.filter((b) => (b.paymentMethod === 'bank' || b.paymentMethod === 'easypaisa') && b.paymentStatus === 'awaiting_confirmation').map((b) => (
+                  {bookings.filter((b) => b.payment_method === 'bank' && b.payment_status === 'verification_required').map((b) => (
                     <tr key={b.id || b._id}>
-                      <td><strong className="ref-code" style={{ fontSize: '0.78rem' }}>{b.bookingNumber || '—'}</strong></td>
+                      <td><strong className="ref-code" style={{ fontSize: '0.78rem' }}>{b.booking_number || '—'}</strong></td>
                       <td>
-                        <strong>{b.name}</strong>
-                        <div className="cell-muted">{b.email}</div>
+                        <strong>{b.customer_name}</strong>
+                        <div className="cell-muted">{b.customer_email}</div>
                       </td>
-                      <td>{b.type?.replace(/-/g, ' ') || '—'}</td>
-                      <td>PKR 2,500</td>
-                      <td>
-                        <span className="payment-method-cell">
-                          <span className="payment-method-icon-sm">{methodIcon(b.paymentMethod)}</span>
-                          {formatMethod(b.paymentMethod)}
-                        </span>
-                      </td>
-                      <td>
-                        {b.paymentMethod === 'bank' ? (
-                          <>
-                            <div className="cell-muted" style={{ fontSize: '0.72rem' }}>Bank: {b.paymentDetails?.yourBank || '—'}</div>
-                            <div className="cell-muted" style={{ fontSize: '0.72rem' }}>Holder: {b.paymentDetails?.accountHolder || '—'}</div>
-                          </>
-                        ) : (
-                          <div className="cell-muted" style={{ fontSize: '0.72rem' }}>Phone: {b.paymentDetails?.phone || '—'}</div>
-                        )}
-                      </td>
-                      <td className="cell-muted">{b.date || b.createdAt?.split('T')[0] || '—'}</td>
+                      <td>{b.session_id?.replace(/-/g, ' ') || '—'}</td>
+                      <td>PKR {(b.amount || 2500).toLocaleString()}</td>
+                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payment_details?.payer_bank || b.payment_details?.yourBank || '—'}</td>
+                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payment_details?.payer_name || b.payment_details?.accountHolder || '—'}</td>
+                      <td className="cell-muted">{b.date || b.created_at?.split('T')[0] || '—'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 4 }}>
                           <button
@@ -463,7 +421,7 @@ export default function BookingsManager() {
                 className={`btn-admin btn-admin-sm ${statusFilter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
                 onClick={() => setStatusFilter(c)}
               >
-                {c}
+                {c.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
               </button>
             ))}
             <span style={{ width: 1, height: 24, background: '#e5e0d4', margin: '0 4px' }} />
@@ -477,7 +435,7 @@ export default function BookingsManager() {
                 className={`btn-admin btn-admin-sm ${paymentFilter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
                 onClick={() => setPaymentFilter(c)}
               >
-                {c.charAt(0).toUpperCase() + c.slice(1)}
+                {c.charAt(0).toUpperCase() + c.slice(1).replace(/_/g, ' ')}
               </button>
             ))}
           </div>
@@ -508,27 +466,27 @@ export default function BookingsManager() {
                 <tbody>
                   {shown.map((b) => (
                     <tr key={b.id || b._id}>
-                      <td><strong>{b.name}</strong></td>
+                      <td><strong>{b.customer_name}</strong></td>
                       <td className="cell-truncate">
-                        {b.email}
-                        {b.phone ? <span className="cell-muted"> · {b.phone}</span> : ''}
+                        {b.customer_email}
+                        {b.customer_phone ? <span className="cell-muted"> · {b.customer_phone}</span> : ''}
                       </td>
                       <td>
-                        <span className="cell-type">{b.type?.replace(/-/g, ' ') || '—'}</span>
+                        <span className="cell-type">{b.session_id?.replace(/-/g, ' ') || '—'}</span>
                         {b.date ? <span className="cell-date">{b.date}</span> : ''}
                       </td>
-                      <td>{badge(b.status)}</td>
+                      <td>{badge(b.booking_status)}</td>
                       <td>
-                        {b.paymentMethod ? (
+                        {b.payment_method ? (
                           <span className="payment-method-cell">
-                            <span className="payment-method-icon-sm">{methodIcon(b.paymentMethod)}</span>
-                            {formatMethod(b.paymentMethod)}
+                            <span className="payment-method-icon-sm">{methodIcon(b.payment_method)}</span>
+                            {formatMethod(b.payment_method)}
                           </span>
                         ) : (
                           <span className="cell-muted">—</span>
                         )}
                       </td>
-                      <td>{paymentBadge(b.paymentStatus || 'pending')}</td>
+                      <td>{paymentBadge(b.payment_status || 'pending')}</td>
                       <td>
                         <button
                           className="btn-admin-icon"
@@ -541,7 +499,7 @@ export default function BookingsManager() {
                       <td>
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                           <button className="btn-admin-icon" onClick={() => openEdit(b)} title="Edit">✎</button>
-                          {b.status !== 'confirmed' && (
+                          {b.booking_status !== 'confirmed' && (
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
@@ -551,7 +509,7 @@ export default function BookingsManager() {
                               ✓
                             </button>
                           )}
-                          {b.status !== 'cancelled' && (
+                          {b.booking_status !== 'cancelled' && (
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
@@ -561,7 +519,7 @@ export default function BookingsManager() {
                               ✕
                             </button>
                           )}
-                          {(b.paymentStatus || 'pending') !== 'paid' && b.paymentMethod && (
+                          {(b.payment_status || 'pending') !== 'paid' && b.payment_method && (
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
@@ -571,7 +529,7 @@ export default function BookingsManager() {
                               💰
                             </button>
                           )}
-                          {(b.paymentStatus || 'pending') !== 'failed' && b.paymentMethod && (
+                          {(b.payment_status || 'pending') !== 'failed' && b.payment_method && (
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
@@ -601,21 +559,21 @@ export default function BookingsManager() {
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Name</label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                <input value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} />
               </div>
               <div className="admin-field">
                 <label>Email</label>
-                <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                <input value={form.customer_email} onChange={(e) => setForm({ ...form, customer_email: e.target.value })} />
               </div>
             </div>
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Phone</label>
-                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                <input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} />
               </div>
               <div className="admin-field">
-                <label>Group Size</label>
-                <input type="number" min="1" value={form.groupSize} onChange={(e) => setForm({ ...form, groupSize: e.target.value })} />
+                <label>Participants</label>
+                <input type="number" min="1" value={form.participants} onChange={(e) => setForm({ ...form, participants: Number(e.target.value) })} />
               </div>
             </div>
 
@@ -623,7 +581,7 @@ export default function BookingsManager() {
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Session Type</label>
-                <input value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} placeholder="e.g. public" />
+                <input value={form.session_id} onChange={(e) => setForm({ ...form, session_id: e.target.value })} placeholder="e.g. public" />
               </div>
               <div className="admin-field">
                 <label>Date</label>
@@ -631,45 +589,36 @@ export default function BookingsManager() {
               </div>
             </div>
             <div className="admin-field">
-              <label>Experience</label>
-              <select value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value })}>
-                <option value="">Select</option>
-                <option value="beginner">First time</option>
-                <option value="some">A few times</option>
-                <option value="intermediate">Regular climber</option>
-                <option value="advanced">Experienced</option>
-              </select>
-            </div>
-            <div className="admin-field">
-              <label>Message</label>
-              <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={3} />
+              <label>Amount (PKR)</label>
+              <input type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} />
             </div>
 
             <h3 className="card-admin-header" style={{ margin: '12px 0 0', fontSize: '0.85rem' }}>Status</h3>
             <div className="admin-form-row admin-form-row--triple">
               <div className="admin-field">
                 <label>Booking Status</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                  <option value="pending">Pending</option>
+                <select value={form.booking_status} onChange={(e) => setForm({ ...form, booking_status: e.target.value })}>
+                  <option value="pending_payment">Pending Payment</option>
+                  <option value="pending_verification">Pending Verification</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
               <div className="admin-field">
                 <label>Payment Method</label>
-                <select value={form.paymentMethod} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}>
+                <select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
                   <option value="">None</option>
-                  <option value="card">Credit / Debit Card</option>
                   <option value="bank">Bank Transfer</option>
-                  <option value="easypaisa">EasyPaisa / JazzCash</option>
                 </select>
               </div>
               <div className="admin-field">
                 <label>Payment Status</label>
-                <select value={form.paymentStatus} onChange={(e) => setForm({ ...form, paymentStatus: e.target.value })}>
+                <select value={form.payment_status} onChange={(e) => setForm({ ...form, payment_status: e.target.value })}>
                   <option value="pending">Pending</option>
+                  <option value="verification_required">Verification Required</option>
                   <option value="paid">Paid</option>
                   <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
                 </select>
               </div>
             </div>
@@ -684,7 +633,7 @@ export default function BookingsManager() {
 
       {/* ---- View Details Modal ---- */}
       {viewing && (
-        <Modal title={viewing.name || 'Booking Details'} onClose={() => setViewing(null)} wide>
+        <Modal title={viewing.customer_name || 'Booking Details'} onClose={() => setViewing(null)} wide>
           <div className="booking-detail-grid">
             {/* Left column: Booking info */}
             <div className="booking-detail-section">
@@ -692,55 +641,51 @@ export default function BookingsManager() {
               <div className="detail-fields">
                 <div className="detail-row">
                   <span className="detail-key">Name</span>
-                  <span className="detail-val">{viewing.name}</span>
+                  <span className="detail-val">{viewing.customer_name}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Email</span>
-                  <span className="detail-val">{viewing.email || '—'}</span>
+                  <span className="detail-val">{viewing.customer_email || '—'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Phone</span>
-                  <span className="detail-val">{viewing.phone || '—'}</span>
+                  <span className="detail-val">{viewing.customer_phone || '—'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Booking #</span>
-                  <span className="detail-val ref-code" style={{ fontFamily: 'monospace' }}>{viewing.bookingNumber || '—'}</span>
+                  <span className="detail-val ref-code" style={{ fontFamily: 'monospace' }}>{viewing.booking_number || '—'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Session</span>
-                  <span className="detail-val">{viewing.type?.replace(/-/g, ' ') || '—'}</span>
+                  <span className="detail-val">{viewing.session_id?.replace(/-/g, ' ') || '—'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Date</span>
                   <span className="detail-val">{viewing.date || '—'}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="detail-key">Group size</span>
-                  <span className="detail-val">{viewing.groupSize || '1'}</span>
+                  <span className="detail-key">Participants</span>
+                  <span className="detail-val">{viewing.participants || '1'}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="detail-key">Experience</span>
-                  <span className="detail-val">{viewing.experience || '—'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-key">Message</span>
-                  <span className="detail-val">{viewing.message || '—'}</span>
+                  <span className="detail-key">Amount</span>
+                  <span className="detail-val">PKR {(viewing.amount || 0).toLocaleString()}</span>
                 </div>
               </div>
 
               <h4 className="detail-section-title" style={{ marginTop: 24 }}>Status</h4>
               <div className="detail-status-row">
                 <span className="detail-key">Booking</span>
-                {badge(viewing.status)}
+                {badge(viewing.booking_status)}
               </div>
               <div className="detail-status-row">
                 <span className="detail-key">Payment</span>
-                {paymentBadge(viewing.paymentStatus || 'pending')}
+                {paymentBadge(viewing.payment_status || 'pending')}
               </div>
 
               <div className="detail-actions" style={{ marginTop: 24 }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {viewing.status === 'pending' && (
+                  {viewing.booking_status !== 'confirmed' && (
                     <button
                       className="btn-admin btn-admin-sm"
                       style={{ background: '#16a34a', color: '#fff', border: 'none' }}
@@ -749,7 +694,7 @@ export default function BookingsManager() {
                       ✓ Confirm booking
                     </button>
                   )}
-                  {viewing.status !== 'cancelled' && (
+                  {viewing.booking_status !== 'cancelled' && (
                     <button
                       className="btn-admin btn-admin-sm btn-admin-danger"
                       onClick={() => { updateStatus(viewing.id, 'cancelled'); setViewing(null) }}
@@ -757,7 +702,7 @@ export default function BookingsManager() {
                       ✕ Cancel booking
                     </button>
                   )}
-                  {(viewing.paymentStatus || 'pending') !== 'paid' && viewing.paymentMethod && (
+                  {(viewing.payment_status || 'pending') !== 'paid' && viewing.payment_method && (
                     <button
                       className="btn-admin btn-admin-sm"
                       style={{ background: '#2563eb', color: '#fff', border: 'none' }}
@@ -774,10 +719,10 @@ export default function BookingsManager() {
             <div className="booking-detail-section">
               <h4 className="detail-section-title">Payment Information</h4>
               <PaymentDetailCard
-                paymentMethod={viewing.paymentMethod}
-                paymentDetails={viewing.paymentDetails}
+                paymentMethod={viewing.payment_method}
+                paymentDetails={viewing.payment_details || viewing.paymentDetails}
               />
-              {viewing.paymentStatus === 'paid' && (
+              {viewing.payment_status === 'paid' && (
                 <div className="payment-verified-badge">
                   <span className="verified-icon">✓</span> Payment verified
                 </div>

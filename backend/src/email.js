@@ -24,23 +24,16 @@ export async function sendBookingNotification(booking) {
     return
   }
 
-  const typeLabel = (booking.type || '').replace(/-/g, ' ')
-  const experienceLabel = {
-    beginner: 'First time — never climbed before',
-    some: 'A few times — knows the basics',
-    intermediate: 'Regular climber — working on grades',
-    advanced: 'Experienced — training for harder routes',
-  }[booking.experience] || booking.experience || 'Not specified'
+  const sessionLabel = (booking.session_id || '').replace(/-/g, ' ')
 
   const items = [
-    ['Name', booking.name],
-    ['Email', booking.email],
-    ['Phone', booking.phone || '—'],
-    ['Session Type', typeLabel || '—'],
+    ['Name', booking.customer_name],
+    ['Email', booking.customer_email],
+    ['Phone', booking.customer_phone || '—'],
+    ['Session Type', sessionLabel || '—'],
     ['Preferred Date', booking.date || '—'],
-    ['Group Size', booking.groupSize || '1'],
-    ['Experience', experienceLabel],
-    ['Message', booking.message || '—'],
+    ['Participants', String(booking.participants || '1')],
+    ['Amount', booking.amount ? `PKR ${booking.amount.toLocaleString()}` : '—'],
   ]
 
   const rows = items
@@ -82,7 +75,7 @@ export async function sendBookingNotification(booking) {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: NOTIFICATION_EMAIL,
-      subject: `🧗 New booking from ${booking.name} — ${typeLabel || 'Climb Crux'}`,
+      subject: `🧗 New booking from ${booking.customer_name} — ${sessionLabel || 'Climb Crux'}`,
       html,
     })
     console.log(`Booking notification sent to ${NOTIFICATION_EMAIL}`)

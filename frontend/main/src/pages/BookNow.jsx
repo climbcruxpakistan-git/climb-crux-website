@@ -27,7 +27,6 @@ function BankTransferForm({ bookingNumber }) {
         </div>
       </div>
 
-      {/* Customer's bank info */}
       <div className="field">
         <label htmlFor="bank-name">Sender bank name</label>
         <input id="bank-name" type="text" placeholder="e.g. HBL, Meezan Bank, UBL" required />
@@ -48,17 +47,15 @@ function BankTransferForm({ bookingNumber }) {
   )
 }
 
-
 export default function BookNow() {
   const [searchParams] = useSearchParams()
   const preselected = searchParams.get('type') || ''
-  const [step, setStep] = useState(1)              // 1 = details, 2 = checkout, 3 = success, 4 = bank transfer confirm
+  const [step, setStep] = useState(1) // 1 = details, 2 = checkout/payment, 4 = bank transfer confirm
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
   const [bookingData, setBookingData] = useState(null)
   const [bookingId, setBookingId] = useState(null)
   const [bookingNumber, setBookingNumber] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('bank')
 
   const sessionTypes = [
     { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -73,15 +70,14 @@ export default function BookNow() {
 
     const form = e.target
     const data = {
-      name: form.name.value,
-      email: form.email.value,
-      phone: form.phone.value,
-      type: form['session-type'].value,
+      customer_name: form.name.value,
+      customer_email: form.email.value,
+      customer_phone: form.phone.value,
+      session_id: form['session-type'].value,
       date: form['preferred-date'].value,
-      groupSize: form['group-size'].value,
-      experience: form.experience.value,
-      message: form.message.value,
-      status: 'pending',
+      participants: Number(form['group-size'].value) || 1,
+      amount: 2500,
+      booking_status: 'pending_payment',
     }
 
     try {
@@ -102,25 +98,18 @@ export default function BookNow() {
     setSending(true)
 
     const form = e.target
-    const paymentDetails = {
-      yourBank: form['bank-name']?.value || '',
-      accountHolder: form['account-holder']?.value || '',
-    }
 
     try {
-      // Update the existing booking with payment info
       await updateBooking(bookingId, {
-        paymentMethod: 'bank',
-        paymentStatus: 'awaiting_confirmation',
-        paymentDetails,
-        status: 'pending',
+        payment_method: 'bank',
+        payment_status: 'verification_required',
+        booking_status: 'pending_verification',
       })
-      // Fetch the updated booking to get the booking number
       const updated = await getBooking(bookingId)
-      setBookingNumber(updated.bookingNumber || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
-      setBookingData((prev) => ({ ...prev, payment: { method: 'bank', ...paymentDetails }, bookingNumber: updated.bookingNumber }))
+      setBookingNumber(updated.booking_number || `CCP-${new Date().getFullYear()}-${bookingId.slice(-5)}`)
+      setBookingData((prev) => ({ ...prev, payment_method: 'bank', payment_status: 'verification_required', booking_number: updated.booking_number }))
       setSending(false)
-      setStep(4) // Go to bank transfer confirmation page
+      setStep(4)
     } catch (err) {
       setError('Failed to process payment. Please try again.')
       setSending(false)
@@ -131,8 +120,6 @@ export default function BookNow() {
     const found = sessionTypes.find((t) => t.value === value)
     return found ? found.label : value
   }
-
-
 
   return (
     <>
@@ -160,9 +147,9 @@ export default function BookNow() {
               <span className="step-label">Payment</span>
             </div>
             <div className="step-connector">
-              <div className="step-connector-fill" style={{ width: step >= 3 ? '100%' : '0%' }} />
+              <div className="step-connector-fill" style={{ width: step >= 4 ? '100%' : '0%' }} />
             </div>
-            <div className={`checkout-step ${step >= 3 ? 'is-active' : ''}`}>
+            <div className={`checkout-step ${step >= 4 ? 'is-active' : ''}`}>
               <span className="step-number">3</span>
               <span className="step-label">Confirm</span>
             </div>
@@ -216,22 +203,6 @@ export default function BookNow() {
                   <input id="preferred-date" type="date" />
                 </div>
 
-                <div className="field">
-                  <label htmlFor="experience">Experience level</label>
-                  <select id="experience" defaultValue="">
-                    <option value="" disabled>Select your experience</option>
-                    <option value="beginner">First time — never climbed before</option>
-                    <option value="some">A few times — know the basics</option>
-                    <option value="intermediate">Regular climber — working on grades</option>
-                    <option value="advanced">Experienced — training for harder routes</option>
-                  </select>
-                </div>
-
-                <div className="field">
-                  <label htmlFor="message">Anything we should know?</label>
-                  <textarea id="message" rows="3" placeholder="Goals, injuries, group preferences, or questions…"></textarea>
-                </div>
-
                 <div className="form-actions">
                   <button type="submit" className="btn btn-primary" disabled={sending}>
                     {sending ? 'Saving…' : 'Continue to payment →'}
@@ -243,29 +214,28 @@ export default function BookNow() {
             {/* ---- STEP 2: Checkout / Payment ---- */}
             {step === 2 && (
               <div className="checkout-container">
-                {/* Booking summary */}
                 <div className="booking-summary">
                   <h3 className="summary-title">Booking summary</h3>
                   <div className="summary-grid">
                     <div className="summary-item">
                       <span className="summary-key">Session</span>
-                      <span className="summary-val">{getSessionTypeLabel(bookingData?.type)}</span>
+                      <span className="summary-val">{getSessionTypeLabel(bookingData?.session_id)}</span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-key">Name</span>
-                      <span className="summary-val">{bookingData?.name}</span>
+                      <span className="summary-val">{bookingData?.customer_name}</span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-key">Email</span>
-                      <span className="summary-val">{bookingData?.email}</span>
+                      <span className="summary-val">{bookingData?.customer_email}</span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-key">Phone</span>
-                      <span className="summary-val">{bookingData?.phone}</span>
+                      <span className="summary-val">{bookingData?.customer_phone}</span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-key">People</span>
-                      <span className="summary-val">{bookingData?.groupSize}</span>
+                      <span className="summary-val">{bookingData?.participants}</span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-key">Date</span>
@@ -297,7 +267,7 @@ export default function BookNow() {
               </div>
             )}
 
-            {/* ---- STEP 4: Manual Payment Confirmation (Bank Transfer / EasyPaisa) ---- */}
+            {/* ---- STEP 4: Bank Transfer Confirmation ---- */}
             {step === 4 && (
               <div className="payment-success">
                 <div className="success-icon" style={{ color: 'var(--orange)' }}>
@@ -308,7 +278,7 @@ export default function BookNow() {
                 </div>
                 <h3 style={{ color: 'var(--orange)' }}>Payment Verification Required</h3>
                 <p className="success-desc">
-                  Your booking has been created successfully, <strong>{bookingData?.name}</strong>!
+                  Your booking has been created successfully, <strong>{bookingData?.customer_name}</strong>!
                 </p>
 
                 <div className="bank-confirm-card">
@@ -319,7 +289,7 @@ export default function BookNow() {
                 <div className="success-details">
                   <div className="success-detail-row">
                     <span>Session</span>
-                    <span>{getSessionTypeLabel(bookingData?.type) || '—'}</span>
+                    <span>{getSessionTypeLabel(bookingData?.session_id) || '—'}</span>
                   </div>
                   <div className="success-detail-row">
                     <span>Amount</span>
@@ -327,7 +297,7 @@ export default function BookNow() {
                   </div>
                   <div className="success-detail-row">
                     <span>Payment method</span>
-                    <span>{bookingData?.payment?.method === 'easypaisa' ? 'EasyPaisa / JazzCash' : 'Bank Transfer'}</span>
+                    <span>Bank Transfer</span>
                   </div>
                   <div className="success-detail-row">
                     <span>Status</span>
@@ -346,7 +316,7 @@ export default function BookNow() {
                     <span className="bank-whatsapp-value">+92 300 1234567</span>
                   </div>
                   <a
-                    href={`https://wa.me/923001234567?text=Hello%20Climb%20Crux%2C%0A%0AI%20have%20made%20the%20payment%20for%20my%20booking.%0A%0ABooking%20Number%3A%20${encodeURIComponent(bookingNumber || `CCP-${new Date().getFullYear()}-${(bookingId || '').slice(-5)}`)}%0AName%3A%20${encodeURIComponent(bookingData?.name || '')}%0A%0APlease%20find%20my%20payment%20screenshot%20attached%20for%20verification.`}
+                    href={`https://wa.me/923001234567?text=Hello%20Climb%20Crux%2C%0A%0AI%20have%20made%20the%20payment%20for%20my%20booking.%0A%0ABooking%20Number%3A%20${encodeURIComponent(bookingNumber || `CCP-${new Date().getFullYear()}-${(bookingId || '').slice(-5)}`)}%0AName%3A%20${encodeURIComponent(bookingData?.customer_name || '')}%0A%0APlease%20find%20my%20payment%20screenshot%20attached%20for%20verification.`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-primary"
@@ -360,8 +330,6 @@ export default function BookNow() {
                 <a href="/" className="btn btn-outline" style={{ marginTop: 20 }}>Back to home</a>
               </div>
             )}
-
-
           </div>
         </div>
       </section>
