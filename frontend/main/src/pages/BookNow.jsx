@@ -32,17 +32,19 @@ export default function BookNow() {
     })
   }, [])
 
+  const isCustom = sessionType === 'custom-group'
+
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
     if (type === 'private') return 8000
-    if (type === 'custom-group') return 6000
     return 0
   }
 
-  const totalAmount = sessionType ? perPersonPrice(sessionType) * participants : 0
+  const totalAmount = sessionType && !isCustom ? perPersonPrice(sessionType) * participants : 0
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (isCustom) return  // custom sessions are booked via email
     setError('')
     setSending(true)
 
@@ -141,8 +143,50 @@ export default function BookNow() {
                 <input id="preferred-date" type="date" />
               </div>
 
-              {/* ── Live price summary ── */}
-              {sessionType && (
+              {/* ── Custom Session: Contact card ── */}
+              {isCustom && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #f8f4ef, #f0ebe3)',
+                  borderRadius: 12,
+                  padding: '28px 24px',
+                  marginBottom: 20,
+                  border: '1px solid var(--sand)',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>✉️</div>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 18, color: 'var(--ink)' }}>
+                    Custom sessions are built on request
+                  </h3>
+                  <p style={{ fontSize: 14, color: 'var(--text-dim)', margin: '0 0 16px', lineHeight: 1.6 }}>
+                    Tell us your group size, preferred grade, and ideal date — we'll design a session around you.
+                    Reach out and we'll respond within 24 hours.
+                  </p>
+                  <a
+                    href="mailto:climbcruxpakistan@gmail.com"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      background: 'var(--ink)',
+                      color: '#fff',
+                      padding: '12px 24px',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      fontSize: 15,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>
+                    climbcruxpakistan@gmail.com
+                  </a>
+                  <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>
+                    Or call / WhatsApp: <strong>+92 300 1234567</strong>
+                  </p>
+                </div>
+              )}
+
+              {/* ── Live price summary (not for custom) ── */}
+              {sessionType && !isCustom && (
                 <div style={{
                   background: 'var(--chalk-dim)',
                   borderRadius: 12,
@@ -178,15 +222,17 @@ export default function BookNow() {
                 </div>
               )}
 
-              <div className="form-actions" style={{ flexDirection: 'column' }}>
-                <button type="submit" className="btn btn-primary" disabled={sending || !sessionType} style={{ width: '100%', justifyContent: 'center' }}>
-                  {sending ? (
-                    <><span className="btn-spinner" /> Creating booking…</>
-                  ) : (
-                    'Continue to payment →'
-                  )}
-                </button>
-              </div>
+              {!isCustom && (
+                <div className="form-actions" style={{ flexDirection: 'column' }}>
+                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType} style={{ width: '100%', justifyContent: 'center' }}>
+                    {sending ? (
+                      <><span className="btn-spinner" /> Creating booking…</>
+                    ) : (
+                      'Continue to payment →'
+                    )}
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         </div>
