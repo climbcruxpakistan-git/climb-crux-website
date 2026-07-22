@@ -1,90 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, updateBooking } from '../api.js'
-
-function CreditCardForm() {
-  const [cardHolder, setCardHolder] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
-  const [expiry, setExpiry] = useState('')
-  const [cvv, setCvv] = useState('')
-
-  function formatCardNumber(value) {
-    const digits = value.replace(/\D/g, '').slice(0, 16)
-    return digits.replace(/(\d{4})(?=\d)/g, '$1 ')
-  }
-
-  function formatExpiry(value) {
-    const digits = value.replace(/\D/g, '').slice(0, 4)
-    if (digits.length > 2) return digits.slice(0, 2) + '/' + digits.slice(2)
-    return digits
-  }
-
-  return (
-    <div className="payment-form-fields">
-      <div className="field">
-        <label htmlFor="card-name">Cardholder name</label>
-        <input
-          id="card-name"
-          type="text"
-          placeholder="e.g. Muhammad Ali"
-          value={cardHolder}
-          onChange={(e) => setCardHolder(e.target.value)}
-          required
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="card-number">Card number</label>
-        <input
-          id="card-number"
-          type="text"
-          inputMode="numeric"
-          placeholder="1234 5678 9012 3456"
-          value={cardNumber}
-          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-          required
-        />
-      </div>
-      <div className="form-row">
-        <div className="field">
-          <label htmlFor="card-expiry">Expiry date</label>
-          <input
-            id="card-expiry"
-            type="text"
-            inputMode="numeric"
-            placeholder="MM/YY"
-            value={expiry}
-            onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-            required
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="card-cvv">CVV / CVC</label>
-          <input
-            id="card-cvv"
-            type="text"
-            inputMode="numeric"
-            placeholder="123"
-            maxLength={4}
-            value={cvv}
-            onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            required
-          />
-        </div>
-      </div>
-      <div className="payment-card-preview">
-        <div className="payment-card-preview-inner">
-          <div className="card-chip" />
-          <div className="card-number-display">{cardNumber || '••••  ••••  ••••  ••••'}</div>
-          <div className="card-footer">
-            <span className="card-holder">{cardHolder || 'CARDHOLDER'}</span>
-            <span className="card-expiry-display">{expiry || 'MM/YY'}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+import { createBooking, updateBooking, createCheckoutSession, checkPaymentStatus } from '../api.js'
 
 function BankTransferForm() {
   return (
@@ -164,7 +81,8 @@ export default function BookNow() {
   const [sending, setSending] = useState(false)
   const [bookingData, setBookingData] = useState(null)
   const [bookingId, setBookingId] = useState(null)
-  const [paymentMethod, setPaymentMethod] = useState('card')
+  const [paymentMethod, setPaymentMethod] = useState('safepay')
+  const [safepayRedirecting, setSafepayRedirecting] = useState(false)
 
   const sessionTypes = [
     { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -207,17 +125,25 @@ export default function BookNow() {
     setError('')
     setSending(true)
 
-    // Collect payment details (only fields matching the backend schema)
+    if (paymentMethod === 'safepay') {
+      // SafePay online payment — redirect to hosted checkout
+      try {
+        setSafepayRedirecting(true)
+        const { checkoutUrl } = await createCheckoutSession(bookingId, 2500)
+        window.location.href = checkoutUrl
+      } catch (err) {
+        setError('Failed to initiate payment. Please try again.')
+        setSafepayRedirecting(false)
+        setSending(false)
+      }
+      return
+    }
+
+    // Manual payment methods (bank transfer, easypaisa)
     const form = e.target
     const paymentDetails = {}
 
-    if (paymentMethod === 'card') {
-      const fullCard = form['card-number']?.value?.replace(/\s/g, '') || ''
-      paymentDetails.cardHolder = form['card-name']?.value || ''
-      paymentDetails.cardLastFour = fullCard.slice(-4)
-      paymentDetails.cardExpiry = form['card-expiry']?.value || ''
-      // CVV and full card number intentionally not stored
-    } else if (paymentMethod === 'bank') {
+    if (paymentMethod === 'bank') {
       paymentDetails.yourBank = form['bank-name']?.value || ''
       paymentDetails.accountHolder = form['account-holder']?.value || ''
       paymentDetails.yourAccountNumber = form['account-number']?.value || ''
@@ -227,7 +153,6 @@ export default function BookNow() {
       paymentDetails.transactionId = form['easypaisa-txn']?.value || ''
     }
 
-    // Send payment details to the backend
     try {
       await updateBooking(bookingId, {
         paymentMethod,
@@ -243,6 +168,61 @@ export default function BookNow() {
     }
   }
 
+  // Check for SafePay redirect back params with polling
+  const paymentParam = searchParams.get('payment')
+  const returnBookingId = searchParams.get('booking_id')
+
+  if (paymentParam && returnBookingId && bookingId === null) {
+    // Restore booking context from the redirect
+    setBookingId(returnBookingId)
+
+    // Helper to fetch booking name from the API for the success screen
+    async function pollPaymentStatus(id, maxRetries = 8, interval = 1500) {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const status = await checkPaymentStatus(id)
+          if (status.paymentStatus === 'paid') {
+            return { ...status, resolved: true }
+          }
+          if (status.paymentStatus === 'failed') {
+            return { ...status, resolved: true }
+          }
+        } catch {
+          // Retry on error
+        }
+        await new Promise((r) => setTimeout(r, interval))
+      }
+      return { paymentStatus: 'pending', resolved: false }
+    }
+
+    if (paymentParam === 'success') {
+      pollPaymentStatus(returnBookingId).then((status) => {
+        if (status.paymentStatus === 'paid') {
+          setBookingData({
+            name: '', email: '', phone: '', type: '', date: '', groupSize: '1',
+            payment: { method: 'safepay' },
+          })
+          setStep(3)
+        } else {
+          setBookingData({
+            name: '', email: '', phone: '', type: '', date: '', groupSize: '1',
+            payment: { method: 'safepay' },
+          })
+          setStep(3)
+          setError('Payment received. Your booking is being confirmed — you will receive a confirmation email shortly.')
+        }
+      })
+    } else {
+      // Payment cancelled or failed
+      setStep(2)
+      if (paymentParam === 'cancelled') {
+        setError('Payment was cancelled. You can try again or choose a different payment method.')
+      } else {
+        setError('Payment could not be processed. Please try again.')
+      }
+    }
+  }
+
   function getSessionTypeLabel(value) {
     const found = sessionTypes.find((t) => t.value === value)
     return found ? found.label : value
@@ -250,8 +230,9 @@ export default function BookNow() {
 
   const paymentMethods = [
     {
-      value: 'card',
-      label: 'Debit / Credit Card',
+      value: 'safepay',
+      label: 'Pay Online (Card)',
+      desc: 'Secure payment via SafePay — debit/credit cards accepted',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="1" y="4" width="22" height="16" rx="2" />
@@ -262,6 +243,7 @@ export default function BookNow() {
     {
       value: 'bank',
       label: 'Bank Transfer',
+      desc: 'Manual transfer to our HBL account',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -273,6 +255,7 @@ export default function BookNow() {
     {
       value: 'easypaisa',
       label: 'EasyPaisa / JazzCash',
+      desc: 'Manual transfer to our EasyPaisa account',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
@@ -453,7 +436,30 @@ export default function BookNow() {
 
                   {/* Dynamic payment fields */}
                   <div className="payment-form-section">
-                    {paymentMethod === 'card' && <CreditCardForm />}
+                    {paymentMethod === 'safepay' && (
+                      <div className="payment-form-fields">
+                        <div className="payment-safepay-info">
+                          <div className="safepay-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="11" width="18" height="11" rx="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="bank-detail-title">Secure online payment</p>
+                            <p className="bank-detail-row">
+                              You'll be redirected to SafePay's secure checkout page to complete your payment.
+                              We accept all major debit and credit cards.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="safepay-badges">
+                          <span className="safepay-badge">🔒 Secured by SafePay</span>
+                          <span className="safepay-badge">💳 Visa / Mastercard</span>
+                          <span className="safepay-badge">⚡ Instant confirmation</span>
+                        </div>
+                      </div>
+                    )}
                     {paymentMethod === 'bank' && <BankTransferForm />}
                     {paymentMethod === 'easypaisa' && <EasyPaisaForm />}
                   </div>
@@ -462,9 +468,13 @@ export default function BookNow() {
                     <button type="button" className="btn btn-outline" onClick={() => setStep(1)}>
                       ← Back
                     </button>
-                    <button type="submit" className="btn btn-primary" disabled={sending}>
-                      {sending ? (
+                    <button type="submit" className="btn btn-primary" disabled={sending || safepayRedirecting}>
+                      {safepayRedirecting ? (
+                        <><span className="btn-spinner" /> Redirecting to SafePay…</>
+                      ) : sending ? (
                         <><span className="btn-spinner" /> Processing…</>
+                      ) : paymentMethod === 'safepay' ? (
+                        'Pay Online with SafePay →'
                       ) : (
                         'Confirm & pay'
                       )}
@@ -491,24 +501,37 @@ export default function BookNow() {
                   <div className="success-detail-row">
                     <span>Payment method</span>
                     <span>
-                      {bookingData?.payment?.method === 'card' && 'Debit / Credit Card'}
+                      {bookingData?.payment?.method === 'safepay' && 'Pay Online (SafePay)'}
                       {bookingData?.payment?.method === 'bank' && 'Bank Transfer'}
                       {bookingData?.payment?.method === 'easypaisa' && 'EasyPaisa / JazzCash'}
                     </span>
                   </div>
                   <div className="success-detail-row">
                     <span>Booking reference</span>
-                    <span className="ref-code">CRX-{Date.now().toString(36).toUpperCase()}</span>
+                    <span className="ref-code">
+                      CRX-{bookingId ? bookingId.toString().slice(-6).toUpperCase() : Date.now().toString(36).toUpperCase()}
+                    </span>
                   </div>
                   <div className="success-detail-row">
                     <span>Status</span>
-                    <span className="status-pending">Pending verification</span>
+                    {bookingData?.payment?.method === 'safepay' ? (
+                      <span className="status-paid">✓ Paid & Confirmed</span>
+                    ) : (
+                      <span className="status-pending">Pending verification</span>
+                    )}
                   </div>
                 </div>
-                <p className="success-note">
-                  We'll verify your payment and confirm your spot over WhatsApp or email within 24 hours.
-                  If you have any questions, reach out to us at <strong>info@climbcrux.com</strong>.
-                </p>
+                {bookingData?.payment?.method === 'safepay' ? (
+                  <p className="success-note">
+                    Your payment has been processed successfully and your spot is confirmed!
+                    We've sent a confirmation to your email. See you on the rocks! 🧗
+                  </p>
+                ) : (
+                  <p className="success-note">
+                    We'll verify your payment and confirm your spot over WhatsApp or email within 24 hours.
+                    If you have any questions, reach out to us at <strong>info@climbcrux.com</strong>.
+                  </p>
+                )}
                 <a href="/" className="btn btn-outline">Back to home</a>
               </div>
             )}

@@ -904,6 +904,49 @@
   color: var(--orange-dark);
 }
 
+/* SafePay section */
+.payment-safepay-info {
+  display: flex;
+  gap: 16px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--orange);
+}
+
+.safepay-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--charcoal);
+  color: var(--chalk);
+  border-radius: 8px;
+}
+
+.safepay-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.safepay-badge {
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-radius: 20px;
+  color: var(--stone-dark);
+}
+
+.status-paid {
+  color: #16a34a !important;
+  font-weight: 600;
+}
+
 /* Success state */
 .payment-success {
   display: flex;

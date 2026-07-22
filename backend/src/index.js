@@ -20,6 +20,7 @@ import uploadRoutes from './routes/uploads.js'
 import sessionContentRoutes from './routes/sessionContent.js'
 import homeContentRoutes from './routes/homeContent.js'
 import authRoutes from './routes/auth.js'
+import paymentRoutes from './routes/payments.js'
 
 const PORT = process.env.PORT || 4000
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/climb-crux'
@@ -39,6 +40,7 @@ app.use('/api/uploads', uploadRoutes)
 app.use('/api/session-content', sessionContentRoutes)
 app.use('/api/home', homeContentRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/payments', paymentRoutes)
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' })

@@ -28,7 +28,7 @@ const bookingSchema = new mongoose.Schema({
   experience: { type: String, default: '' },
   message: { type: String, default: '' },
   status: { type: String, default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] },
-  paymentMethod: { type: String, default: '', enum: ['', 'card', 'bank', 'easypaisa'] },
+  paymentMethod: { type: String, default: '', enum: ['', 'card', 'bank', 'easypaisa', 'safepay'] },
   paymentStatus: { type: String, default: 'pending', enum: ['pending', 'paid', 'failed'] },
   paymentDetails: { type: paymentDetailsSchema, default: () => ({}) },
 }, { timestamps: true })
