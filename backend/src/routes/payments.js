@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import crypto from 'crypto'
 import Booking from '../models/Booking.js'
-import { Safepay } from '@sfpy/node-core'
 import { sendPaymentConfirmedEmail } from '../email.js'
 
 const router = Router()
@@ -10,18 +9,25 @@ const SAFEPAY_PUBLIC_KEY = process.env.SAFEPAY_PUBLIC_KEY || ''
 const SAFEPAY_SECRET = process.env.SAFEPAY_SECRET_KEY || ''
 const SAFEPAY_ENV = process.env.SAFEPAY_ENV || 'sandbox'
 
-// Determine SafePay API base from environment
+// SafePay API base URLs
+// The embedded checkout base matches what the SDK generates:
+//   sandbox: https://sandbox.api.getsafepay.com/embedded/
+//   production: https://getsafepay.com/embedded/
 const SAFEPAY_BASE = SAFEPAY_ENV === 'production'
   ? 'https://api.getsafepay.com'
   : 'https://sandbox.api.getsafepay.com'
+
+const CHECKOUT_BASE = SAFEPAY_ENV === 'production'
+  ? 'https://getsafepay.com/embedded/'
+  : 'https://sandbox.api.getsafepay.com/embedded/'
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
 /**
  * POST /create-checkout
  * Creates a SafePay payment session and generates a checkout URL.
- * Uses the confirmed-working /order/v1/init endpoint.
- * Uses the @sfpy/node-core SDK to generate the correct embedded checkout URL.
+ * Uses the confirmed-working /order/v1/init endpoint with client + environment fields.
+ * The checkout URL is constructed manually matching the @sfpy/node-core SDK format.
  */
 router.post('/create-checkout', async (req, res, next) => {
   try {
@@ -52,7 +58,6 @@ router.post('/create-checkout', async (req, res, next) => {
     await booking.save()
 
     // Step 1: Create payment session via /order/v1/init (confirmed working)
-    // Amount can be passed directly as rupees (e.g. 2500.00)
     const sessionPayload = {
       client: SAFEPAY_PUBLIC_KEY,
       amount: Number(amount),
@@ -97,21 +102,19 @@ router.post('/create-checkout', async (req, res, next) => {
       return res.status(502).json({ error: 'Invalid payment gateway response' })
     }
 
-    // Step 2: Generate the checkout URL using the SDK's createCheckoutUrl
-    // This ensures we use the correct embedded checkout URL format
-    const sf = new Safepay({
-      api_key: SAFEPAY_PUBLIC_KEY,
-      secretKey: SAFEPAY_SECRET,
+    // Step 2: Generate the checkout URL
+    // Using the same format as @sfpy/node-core's createCheckoutUrl:
+    //   {CHECKOUT_BASE}?environment={env}&tracker={tracker}&source=hosted&redirect_url=...&cancel_url=...
+    // This is the correct embedded checkout that resolves to sandbox.api.getsafepay.com (not pay.getsafepay.com)
+    const params = new URLSearchParams({
       environment: SAFEPAY_ENV,
-    })
-
-    const checkoutUrl = sf.checkout.createCheckoutUrl({
-      env: SAFEPAY_ENV,
       tracker,
       source: 'hosted',
       redirect_url: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
       cancel_url: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
     })
+
+    const checkoutUrl = `${CHECKOUT_BASE}?${params.toString()}`
 
     // Store the tracker reference on the booking
     booking.paymentDetails.tracker = tracker
@@ -155,7 +158,6 @@ router.post('/safepay/webhook', async (req, res) => {
     console.log('SafePay webhook received:', event?.data?.event || event?.event || 'unknown')
 
     // Extract tracker and booking info
-    // SafePay sends tracker info in the event data
     const tracker = event?.data?.tracker?.token || event?.tracker || event?.data?.token || event?.token
     const eventType = event?.data?.event || event?.event || ''
     const status = event?.data?.tracker?.state || event?.data?.state || event?.state || ''
@@ -233,7 +235,11 @@ router.post('/safepay/webhook', async (req, res) => {
 
       // Send email notification for successful payment
       if (paymentStatus === 'paid') {
-        sendPaymentConfirmedEmail(booking)
+        // Re-fetch the updated booking so the email has the latest status
+        const updatedBooking = await Booking.findById(booking._id)
+        if (updatedBooking) {
+          sendPaymentConfirmedEmail(updatedBooking)
+        }
       }
     }
 
