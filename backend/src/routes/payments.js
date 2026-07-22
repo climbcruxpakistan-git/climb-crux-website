@@ -82,7 +82,7 @@ router.post('/create-checkout', async (req, res, next) => {
       cancelUrl: `${FRONTEND_URL}/payment/failed?booking_id=${bookingId}`,
       redirectUrl: `${FRONTEND_URL}/payment/success?booking_id=${bookingId}`,
       source: 'custom',
-      webhooks: false,
+      webhooks: true,
     })
 
     // Store the tracker reference on the booking

@@ -70,9 +70,13 @@ export default function BookingConfirmed() {
                 </svg>
               </div>
 
-              <h3 style={{ color: 'var(--charcoal)' }}>Booking Confirmed!</h3>
+              <h3 style={{ color: 'var(--charcoal)', marginBottom: 4 }}>Payment Successful!</h3>
+              <p style={{ color: 'var(--stone-dark)', margin: '0 0 20px', fontSize: '0.95rem' }}>
+                Your booking is confirmed and your spot is secured.
+              </p>
 
-              <div className="bank-confirm-card" style={{ marginTop: 20 }}>
+              {/* Booking Number - prominently displayed */}
+              <div className="bank-confirm-card" style={{ marginTop: 0, marginBottom: 24 }}>
                 <div className="bank-confirm-label">Booking Number</div>
                 <div className="bank-confirm-number">{booking.bookingNumber || bookingNumber}</div>
               </div>
@@ -106,14 +110,25 @@ export default function BookingConfirmed() {
                 )}
               </div>
 
-              <p className="success-note" style={{ textAlign: 'center' }}>
-                A confirmation email has been sent to <strong>{booking.email}</strong>.
-                We look forward to seeing you on the rocks! 🧗
-              </p>
+              <div style={{ background: '#f8f6f2', borderRadius: 8, padding: '16px 20px', margin: '20px 0' }}>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--stone-dark)' }}>
+                  📧 A confirmation email with your booking details has been sent to <strong>{booking.email}</strong>.
+                  Please save your booking number for reference.
+                </p>
+              </div>
 
-              <a href="/" className="btn btn-primary" style={{ marginTop: 8 }}>
-                Back to home
-              </a>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+                <a href="/" className="btn btn-primary" style={{ justifyContent: 'center', fontSize: '1rem', padding: '1em 2em' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                  Back to Home
+                </a>
+                <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: '#aaa', textAlign: 'center' }}>
+                  Climb Crux — Islamabad's premium rock climbing experience
+                </p>
+              </div>
             </div>
           </div>
         </div>
