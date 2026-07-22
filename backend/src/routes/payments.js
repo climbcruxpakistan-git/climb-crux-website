@@ -2,7 +2,7 @@ import { Router } from 'express'
 import crypto from 'crypto'
 import { Safepay } from '@sfpy/node-sdk'
 import Booking from '../models/Booking.js'
-import { sendPaymentConfirmedEmail, sendBookingConfirmedEmail } from '../email.js'
+import { sendBookingConfirmedEmail } from '../email.js'
 
 const router = Router()
 
@@ -202,14 +202,11 @@ router.post('/safepay/webhook', async (req, res) => {
 
       console.log(`Booking ${booking.bookingNumber} payment status updated to ${paymentStatus}`)
 
-      // Send email notifications for successful payment + booking confirmation
+      // Send comprehensive confirmation email with booking + payment details
       if (paymentStatus === 'paid') {
-        // Re-fetch the updated booking so emails have the latest status
+        // Re-fetch the updated booking so the email has the latest status
         const updatedBooking = await Booking.findById(booking._id)
         if (updatedBooking) {
-          // 1) Payment receipt — shows amount, payment method, status
-          sendPaymentConfirmedEmail(updatedBooking)
-          // 2) Booking confirmation — shows session type, date, location, what to bring
           sendBookingConfirmedEmail(updatedBooking)
         }
       }

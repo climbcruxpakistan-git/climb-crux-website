@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import Booking from '../models/Booking.js'
-import { sendBookingNotification, sendBookingConfirmedEmail, sendPaymentConfirmedEmail } from '../email.js'
+import { sendBookingNotification, sendBookingConfirmedEmail } from '../email.js'
 
 const router = Router()
 
@@ -145,9 +145,9 @@ router.patch('/:id/payment-status', async (req, res, next) => {
       },
       { new: true, runValidators: true }
     )
-    // Send payment confirmation email to customer when payment is marked as paid
+    // Send comprehensive confirmation email when payment is marked as paid
     if (paymentStatus === 'paid') {
-      sendPaymentConfirmedEmail(booking)
+      sendBookingConfirmedEmail(booking)
     }
     res.json(booking)
   } catch (err) { next(err) }

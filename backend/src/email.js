@@ -91,7 +91,7 @@ export async function sendBookingNotification(booking) {
   }
 }
 
-/* ---------- Booking confirmed email (to customer) ---------- */
+/* ---------- Comprehensive booking & payment confirmation email (to customer) ---------- */
 
 export async function sendBookingConfirmedEmail(booking) {
   if (!booking.email) {
@@ -106,6 +106,20 @@ export async function sendBookingConfirmedEmail(booking) {
 
   const typeLabel = (booking.type || '').replace(/-/g, ' ')
   const sessionDate = booking.date || 'To be confirmed'
+  const bookingNumber = booking.bookingNumber || ''
+  const isPaid = booking.paymentStatus === 'paid'
+
+  // Payment info (may be missing if booking confirmed before payment)
+  const methodLabel = {
+    safepay: 'Credit / Debit Card (SafePay)',
+    bank: 'Bank Transfer',
+    easypaisa: 'EasyPaisa / JazzCash',
+    card: 'Debit / Credit Card',
+  }[booking.paymentMethod] || booking.paymentMethod || '—'
+
+  const paymentStatusLabel = isPaid
+    ? '<span style="color:#16a34a;font-weight:600">✓ Paid</span>'
+    : '<span style="color:#d97706;font-weight:600">⏳ Pending</span>'
 
   const html = `
 <!DOCTYPE html>
@@ -114,39 +128,87 @@ export async function sendBookingConfirmedEmail(booking) {
 <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px">
     <tr><td align="center">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%">
+        <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#383839,#201f21);padding:32px 32px 24px;border-radius:12px 12px 0 0;text-align:center">
-            <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700">Booking Confirmed! ✓</h1>
+            <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">Booking Confirmed! ✓</h1>
             <p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:14px">Your climb with <strong style="color:#f36f21">Climb Crux</strong> is locked in.</p>
           </td>
         </tr>
+        <!-- Body -->
         <tr>
           <td style="background:#fff;border-radius:0 0 12px 12px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
-            <p style="margin:0 0 20px;font-size:15px;color:#333">Hi <strong>${booking.name}</strong>,</p>
-            <p style="margin:0 0 20px;font-size:15px;color:#555">Great news — your session has been confirmed! Here's a recap of your booking:</p>
+            <!-- Booking number badge -->
+            ${bookingNumber ? `
+            <div style="text-align:center;margin-bottom:24px">
+              <div style="display:inline-block;background:#f8f6f2;border:2px dashed #d4cfc7;padding:10px 28px;border-radius:8px">
+                <span style="display:block;font-size:11px;color:#9c9484;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Booking Number</span>
+                <span style="display:block;font-size:20px;font-weight:700;color:#383839;letter-spacing:0.5px">${bookingNumber}</span>
+              </div>
+            </div>` : ''}
 
+            <!-- Greeting -->
+            <p style="margin:0 0 8px;font-size:15px;color:#333">Hi <strong>${booking.name}</strong>,</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#555">
+              ${isPaid
+                ? 'Great news — your payment has been received and your spot is fully secured! Here\'s everything you need to know:'
+                : 'Your booking has been created successfully. Here\'s a recap of your session:'
+              }
+            </p>
+
+            <!-- Two-column layout for Session + Payment -->
             <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin-bottom:20px">
-              <tr><td style="padding:10px 14px;background:#f8f6f2;font-weight:600;color:#383839;font-size:14px;border-radius:6px 6px 0 0" colspan="2">Session Details</td></tr>
-              <tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px">Type</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#333;font-weight:500">${typeLabel || '—'}</td></tr>
-              <tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px">Date</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#333;font-weight:500">${sessionDate}</td></tr>
-              <tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px">Group size</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#333;font-weight:500">${booking.groupSize || '1'}</td></tr>
-              <tr><td style="padding:8px 14px;color:#888;font-size:13px">Location</td><td style="padding:8px 14px;color:#333;font-weight:500">Margalla Hills, Islamabad</td></tr>
+              <!-- Session Details -->
+              <tr>
+                <td style="padding:0;width:50%;vertical-align:top">
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">
+                    <tr><td style="padding:10px 14px;background:#f8f6f2;font-weight:600;color:#383839;font-size:13px;border-radius:6px 6px 0 0">🧗 Session Details</td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid #eee"><span style="color:#888;font-size:12px;display:block">Type</span><span style="color:#333;font-weight:500;font-size:14px">${typeLabel || '—'}</span></td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid #eee"><span style="color:#888;font-size:12px;display:block">Date</span><span style="color:#333;font-weight:500;font-size:14px">${sessionDate}</span></td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid #eee"><span style="color:#888;font-size:12px;display:block">Group size</span><span style="color:#333;font-weight:500;font-size:14px">${booking.groupSize || '1'} person${booking.groupSize > 1 ? 's' : ''}</span></td></tr>
+                    <tr><td style="padding:8px 14px"><span style="color:#888;font-size:12px;display:block">Location</span><span style="color:#333;font-weight:500;font-size:14px">Margalla Hills, Islamabad</span></td></tr>
+                  </table>
+                </td>
+                <td style="padding:0;width:20px"></td>
+                <!-- Payment Summary -->
+                <td style="padding:0;width:50%;vertical-align:top">
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">
+                    <tr><td style="padding:10px 14px;background:#f8f6f2;font-weight:600;color:#383839;font-size:13px;border-radius:6px 6px 0 0">💰 Payment Summary</td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid #eee"><span style="color:#888;font-size:12px;display:block">Amount</span><span style="color:#333;font-weight:600;font-size:14px">PKR 2,500</span></td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid #eee"><span style="color:#888;font-size:12px;display:block">Method</span><span style="color:#333;font-weight:500;font-size:14px">${methodLabel}</span></td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid #eee"><span style="color:#888;font-size:12px;display:block">Status</span><span style="font-size:14px">${paymentStatusLabel}</span></td></tr>
+                    ${booking.gatewayTransactionId ? `
+                    <tr><td style="padding:8px 14px"><span style="color:#888;font-size:12px;display:block">Transaction ID</span><span style="color:#555;font-size:12px;word-break:break-all">${booking.gatewayTransactionId}</span></td></tr>
+                    ` : ''}
+                  </table>
+                </td>
+              </tr>
             </table>
 
+            <!-- What to bring tip -->
             <div style="background:#fef7ed;border-left:4px solid #f36f21;padding:16px 18px;border-radius:4px;margin-bottom:24px">
               <p style="margin:0;font-size:13px;color:#8c8578">
-                🧗 <strong>What to bring:</strong> Comfortable athletic clothing, closed-toe shoes, water, and a sense of adventure! We provide all climbing gear.
+                🧗 <strong>What to bring:</strong> Comfortable athletic clothing, closed-toe shoes, water, and a sense of adventure! We provide all climbing gear — just show up ready to climb.
               </p>
             </div>
 
-            <p style="margin:0 0 8px;font-size:13px;color:#999;text-align:center">
-              Questions? Reply to this email or contact us on
-              <a href="https://wa.me/923001234567" style="color:#f36f21;text-decoration:none;font-weight:600">WhatsApp</a>.
-            </p>
-            <p style="margin:0;font-size:12px;color:#bbb;text-align:center">
-              Climb Crux — Islamabad's premium rock climbing experience
-            </p>
+            <!-- Footer -->
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%">
+              <tr>
+                <td style="text-align:center;padding-top:8px;border-top:1px solid #eee">
+                  <p style="margin:0 0 12px;font-size:13px;color:#999">
+                    Questions? Reply to this email or reach us on WhatsApp:
+                  </p>
+                  <a href="https://wa.me/923001234567" style="display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:10px 24px;border-radius:6px;font-weight:600;font-size:13px">
+                    💬 Chat on WhatsApp
+                  </a>
+                  <p style="margin:16px 0 0;font-size:12px;color:#bbb">
+                    Climb Crux — Islamabad's premium rock climbing experience
+                  </p>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
@@ -155,90 +217,20 @@ export async function sendBookingConfirmedEmail(booking) {
 </body>
 </html>`
 
+  const paymentEmoji = isPaid ? '💰' : '✓'
+  const subjectPrefix = isPaid ? '✓ Booking Confirmed & Paid' : '✓ Booking Confirmed'
+
   try {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: booking.email,
-      subject: `✓ Booking Confirmed — ${typeLabel || 'Climb Crux'} on ${sessionDate}`,
+      subject: `${subjectPrefix} — ${typeLabel || 'Climb Crux'} on ${sessionDate}`,
       html,
     })
-    console.log(`Booking confirmed email sent to ${booking.email}`)
+    console.log(`Comprehensive confirmation email sent to ${booking.email}`)
   } catch (err) {
     console.error('Failed to send booking confirmed email:', err.message)
   }
 }
 
-/* ---------- Payment confirmed email (to customer) ---------- */
 
-export async function sendPaymentConfirmedEmail(booking) {
-  if (!booking.email) {
-    console.warn('No customer email — skipping payment confirmed email')
-    return
-  }
-  const resend = getResend()
-  if (!resend) {
-    console.warn('RESEND_API_KEY not set — skipping payment confirmed email')
-    return
-  }
-
-  const typeLabel = (booking.type || '').replace(/-/g, ' ')
-  const methodLabel = {
-    card: 'Debit / Credit Card',
-    bank: 'Bank Transfer',
-    easypaisa: 'EasyPaisa / JazzCash',
-  }[booking.paymentMethod] || booking.paymentMethod || '—'
-
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px">
-    <tr><td align="center">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%">
-        <tr>
-          <td style="background:linear-gradient(135deg,#16a34a,#15803d);padding:32px 32px 24px;border-radius:12px 12px 0 0;text-align:center">
-            <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700">Payment Received! 💰</h1>
-            <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px">Your payment for <strong style="color:#fff">${typeLabel || 'Climb Crux'}</strong> is confirmed.</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="background:#fff;border-radius:0 0 12px 12px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
-            <p style="margin:0 0 20px;font-size:15px;color:#333">Hi <strong>${booking.name}</strong>,</p>
-            <p style="margin:0 0 20px;font-size:15px;color:#555">We've received your payment. Your spot is fully secured! 🎉</p>
-
-            <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin-bottom:20px">
-              <tr><td style="padding:10px 14px;background:#f8f6f2;font-weight:600;color:#383839;font-size:14px;border-radius:6px 6px 0 0" colspan="2">Payment Summary</td></tr>
-              <tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px">Session</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#333;font-weight:500">${typeLabel || '—'}</td></tr>
-              <tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px">Amount</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#333;font-weight:500">PKR 2,500</td></tr>
-              <tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px">Payment method</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#333;font-weight:500">${methodLabel}</td></tr>
-              <tr><td style="padding:8px 14px;color:#888;font-size:13px">Status</td><td style="padding:8px 14px;color:#16a34a;font-weight:600">✓ Paid</td></tr>
-            </table>
-
-            <p style="margin:0 0 8px;font-size:13px;color:#999;text-align:center">
-              See you on the rocks! If you have any questions, reply to this email or
-              <a href="https://wa.me/923001234567" style="color:#f36f21;text-decoration:none;font-weight:600">WhatsApp us</a>.
-            </p>
-            <p style="margin:0;font-size:12px;color:#bbb;text-align:center">
-              Climb Crux — Islamabad's premium rock climbing experience
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`
-
-  try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to: booking.email,
-      subject: `💰 Payment Confirmed — ${typeLabel || 'Climb Crux'}`,
-      html,
-    })
-    console.log(`Payment confirmed email sent to ${booking.email}`)
-  } catch (err) {
-    console.error('Failed to send payment confirmed email:', err.message)
-  }
-}
