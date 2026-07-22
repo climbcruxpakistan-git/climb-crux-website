@@ -10,8 +10,8 @@ export default function BankTransferConfirmation() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const WHATSAPP_NUMBER = '+92 300 1234567'
-  const WHATSAPP_NUMBER_CLEAN = '923001234567'
+  const WHATSAPP_NUMBER = '+92 313 2690377'
+  const WHATSAPP_NUMBER_CLEAN = '923132690377'
 
   useEffect(() => {
     if (!bookingNumber) return

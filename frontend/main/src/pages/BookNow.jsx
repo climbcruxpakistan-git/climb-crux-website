@@ -156,38 +156,42 @@ export default function BookNow() {
                 </select>
               </div>
 
-              <div className="form-row">
-                <div className="field">
-                  <label htmlFor="customer-name">Full name</label>
-                  <input id="customer-name" type="text" required />
-                </div>
-                <div className="field">
-                  <label htmlFor="customer-phone">Phone / WhatsApp</label>
-                  <input id="customer-phone" type="tel" required />
-                </div>
-              </div>
+              {!isCustom && (
+                <>
+                  <div className="form-row">
+                    <div className="field">
+                      <label htmlFor="customer-name">Full name</label>
+                      <input id="customer-name" type="text" required />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="customer-phone">Phone / WhatsApp</label>
+                      <input id="customer-phone" type="tel" required />
+                    </div>
+                  </div>
 
-              <div className="form-row">
-                <div className="field">
-                  <label htmlFor="customer-email">Email</label>
-                  <input id="customer-email" type="email" required />
-                </div>
-                <div className="field">
-                  <label htmlFor="group-size">Number of people</label>
-                  <input
-                    id="group-size"
-                    type="number"
-                    min="1"
-                    defaultValue="1"
-                    onChange={(e) => setParticipants(Math.max(1, Number(e.target.value)))}
-                  />
-                </div>
-              </div>
+                  <div className="form-row">
+                    <div className="field">
+                      <label htmlFor="customer-email">Email</label>
+                      <input id="customer-email" type="email" required />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="group-size">Number of people</label>
+                      <input
+                        id="group-size"
+                        type="number"
+                        min="1"
+                        defaultValue="1"
+                        onChange={(e) => setParticipants(Math.max(1, Number(e.target.value)))}
+                      />
+                    </div>
+                  </div>
 
-              <div className="field">
-                <label htmlFor="preferred-date">Preferred date</label>
-                <input id="preferred-date" type="date" />
-              </div>
+                  <div className="field">
+                    <label htmlFor="preferred-date">Preferred date</label>
+                    <input id="preferred-date" type="date" />
+                  </div>
+                </>
+              )}
 
               {/* ── Custom Session: Contact card ── */}
               {isCustom && (
@@ -226,7 +230,7 @@ export default function BookNow() {
                     climbcruxpakistan@gmail.com
                   </a>
                   <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>
-                    Or call / WhatsApp: <strong>+92 300 1234567</strong>
+                    Or call / WhatsApp: <strong>+92 313 2690377</strong>
                   </p>
                 </div>
               )}
