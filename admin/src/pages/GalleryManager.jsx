@@ -83,6 +83,7 @@ export default function GalleryManager() {
 
   async function handleSave() {
     if (!form.tag) { addToast('Tag/description is required', 'error'); return }
+    if (!form.cat) { addToast('Category is required', 'error'); return }
     const item = editing === 'new' ? { id: null, ...form } : { id: editing, ...form }
     await saveGalleryItem(item)
     setPhotos(await getGallery())
