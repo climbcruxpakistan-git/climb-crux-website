@@ -12,7 +12,7 @@ export default function GalleryManager() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ tag: '', cat: '', imageUrl: '', caption: '', photoSlug: '' })
-  const [filter, setFilter] = useState('All')
+  const [activeFolder, setActiveFolder] = useState(null)
   const [uploadPhotos, setUploadPhotos] = useState([])
   const [slugPreview, setSlugPreview] = useState([])
   const [slugLoading, setSlugLoading] = useState(false)
@@ -153,7 +153,29 @@ export default function GalleryManager() {
     }
   }
 
-  const shown = filter === 'All' ? photos : photos.filter((p) => p.cat === filter)
+  // Helper: get photo count for an album
+  function getAlbumPhotoCount(item) {
+    const slug = item.photoSlug?.trim().toLowerCase()
+    if (!slug) return 0
+    return uploadPhotos.filter((up) => (up.tags || []).some((t) => t.toLowerCase() === slug)).length
+  }
+
+  // Albums visible in the current folder view
+  const shown = activeFolder
+    ? photos.filter((p) => p.cat === activeFolder)
+    : []
+
+  // Helper: open edit modal for an album
+  function openEditFromFolder(item) {
+    openEdit(item)
+  }
+
+  // Helper: add album from within a folder — pre-select its category
+  function openNewInFolder() {
+    const cat = activeFolder || (existingCategories.length > 0 ? existingCategories[0] : '')
+    setForm({ tag: '', cat, imageUrl: '', caption: '', photoSlug: '' })
+    setEditing('new')
+  }
 
   if (loading) return <div className="empty-state"><h3>Loading gallery…</h3></div>
 
@@ -163,115 +185,269 @@ export default function GalleryManager() {
         <div>
           <h1>Gallery</h1>
           <p className="page-header-admin-desc">
-            Manage gallery photos. Connect a photo slug to automatically show all images with that tag from the{' '}
-            <a href="/photos" style={{ color: 'var(--orange)' }}>Photos tab</a>.
+            Manage folders and albums. Each category folder contains album subfolders with photos.
           </p>
         </div>
-        <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Album</button>
-      </div>
-
-      {/* Browse existing gallery items */}
-      <div className="card-admin">
-        <div className="card-admin-header">
-          <h2>
-            {filter === 'All' ? (
-              <>All Albums ({photos.length})</>
-            ) : (
-              <>
-                <span
-                  onClick={() => setFilter('All')}
-                  style={{ cursor: 'pointer', color: 'var(--stone)', fontWeight: 400 }}
-                  title="View all categories"
-                >
-                  Albums
-                </span>
-                <span style={{ margin: '0 8px', color: 'var(--stone)', fontSize: '0.75rem' }}>›</span>
-                <span style={{ color: 'var(--orange)' }}>{filter}</span>
-                <span style={{ fontWeight: 400, color: 'var(--stone)', marginLeft: 8, fontSize: '0.85rem' }}>
-                  ({shown.length})
-                </span>
-              </>
-            )}
-          </h2>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {filter !== 'All' && (
-              <button className="btn-admin btn-admin-sm btn-admin-ghost" onClick={() => setFilter('All')}>
-                ← All albums
-              </button>
-            )}
-            {['All', ...existingCategories].map((c) => (
-              <button key={c} className={`btn-admin btn-admin-sm ${filter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`} onClick={() => setFilter(c)}>{c}</button>
-            ))}
-          </div>
-        </div>
-
-        {shown.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">▦</div>
-            <h3>No albums</h3>
-            <p>No albums in this category yet.</p>
-          </div>
+        {activeFolder ? (
+          <button className="btn-admin btn-admin-primary" onClick={openNewInFolder}>+ Add Album</button>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
-            {shown.map((p) => {
-              // Count photos from this album's slug
-              const slug = p.photoSlug?.trim().toLowerCase()
-              const matchedPhotos = slug
-                ? uploadPhotos.filter((up) => (up.tags || []).some((t) => t.toLowerCase() === slug))
-                : []
-              const hasSlug = slug && matchedPhotos.length > 0
-
-              return (
-                <div key={p.id} style={{
-                  borderRadius: 8, overflow: 'hidden', background: '#fff',
-                  border: '1px solid #e5e0d4', display: 'flex', flexDirection: 'column',
-                }}>
-                  {/* Image — show slug preview if available, else fallback to imageUrl */}
-                  <div style={{ aspectRatio: '1', overflow: 'hidden', background: 'linear-gradient(155deg, #383839, #2c2b2d, #cf5711)', position: 'relative' }}>
-                    {hasSlug ? (
-                      <div style={{
-                        display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr',
-                        width: '100%', height: '100%', gap: 1,
-                      }}>
-                        {matchedPhotos.slice(0, 4).map((mp, i) => (
-                          <img key={i} src={mp.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ))}
-                      </div>
-                    ) : p.imageUrl ? (
-                      <img src={p.imageUrl} alt={p.tag} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ padding: 16, color: '#f6f2e9', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
-                        <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)' }}>{p.cat}</span>
-                        <span style={{ fontSize: '0.82rem', fontFamily: 'Oswald, sans-serif', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{p.tag}</span>
-                      </div>
-                    )}
-                    {p.photoSlug && (
-                      <span style={{
-                        position: 'absolute', top: 6, right: 6,
-                        background: 'rgba(0,0,0,0.6)', color: '#fff',
-                        fontSize: '0.6rem', padding: '2px 8px', borderRadius: 4,
-                        fontFamily: 'monospace',
-                      }}>
-                        slug: {p.photoSlug}
-                      </span>
-                    )}
-                  </div>
-                  {/* Actions */}
-                  <div style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--stone)' }}>
-                      {matchedPhotos.length > 0 ? `${matchedPhotos.length} photo${matchedPhotos.length > 1 ? 's' : ''}` : p.cat}
-                    </span>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <button className="btn-admin-icon" onClick={() => openEdit(p)} title="Edit">✎</button>
-                      <button className="btn-admin-icon danger" onClick={() => handleDelete(p.id)} title="Delete">✕</button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Album</button>
         )}
       </div>
+
+      {/* ───────────────────────────────────────────── */}
+      {/* LEVEL 1: Inside a category — show album cards */}
+      {/* ───────────────────────────────────────────── */}
+      {activeFolder ? (
+        <div className="card-admin">
+          <div className="card-admin-header">
+            <h2>
+              <span
+                onClick={() => setActiveFolder(null)}
+                style={{ cursor: 'pointer', color: 'var(--stone)', fontWeight: 400 }}
+                title="Back to all categories"
+              >
+                Categories
+              </span>
+              <span style={{ margin: '0 8px', color: 'var(--stone)', fontSize: '0.75rem' }}>›</span>
+              <span style={{ color: 'var(--orange)' }}>{activeFolder}</span>
+              <span style={{ fontWeight: 400, color: 'var(--stone)', marginLeft: 8, fontSize: '0.85rem' }}>
+                ({shown.length} album{shown.length !== 1 ? 's' : ''})
+              </span>
+            </h2>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn-admin btn-admin-sm btn-admin-ghost" onClick={() => setActiveFolder(null)}>
+                ← All categories
+              </button>
+            </div>
+          </div>
+
+          {shown.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">📁</div>
+              <h3>No albums in this folder</h3>
+              <p>Click "+ Add Album" to create your first album in {activeFolder}.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+              {shown.map((p) => {
+                const slug = p.photoSlug?.trim().toLowerCase()
+                const matchedPhotos = slug
+                  ? uploadPhotos.filter((up) => (up.tags || []).some((t) => t.toLowerCase() === slug))
+                  : []
+                const hasSlug = slug && matchedPhotos.length > 0
+
+                return (
+                  <div key={p.id} style={{
+                    borderRadius: 8, overflow: 'hidden', background: '#fff',
+                    border: '1px solid #e5e0d4', display: 'flex', flexDirection: 'column',
+                    cursor: 'pointer', transition: 'box-shadow 0.2s',
+                  }}
+                    onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
+                    onMouseOut={(e) => e.currentTarget.style.boxShadow = 'none'}
+                    onClick={() => openEditFromFolder(p)}
+                  >
+                    {/* Image preview */}
+                    <div style={{ aspectRatio: '1', overflow: 'hidden', background: 'linear-gradient(155deg, #383839, #2c2b2d, #cf5711)', position: 'relative' }}>
+                      {hasSlug ? (
+                        <div style={{
+                          display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr',
+                          width: '100%', height: '100%', gap: 1,
+                        }}>
+                          {matchedPhotos.slice(0, 4).map((mp, i) => (
+                            <img key={i} src={mp.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ))}
+                        </div>
+                      ) : p.imageUrl ? (
+                        <img src={p.imageUrl} alt={p.tag} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ padding: 16, color: '#f6f2e9', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
+                          <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', fontFamily: 'Oswald, sans-serif', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)' }}>{p.cat}</span>
+                          <span style={{ fontSize: '0.82rem', fontFamily: 'Oswald, sans-serif', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{p.tag}</span>
+                        </div>
+                      )}
+                      {p.photoSlug && (
+                        <span style={{
+                          position: 'absolute', top: 6, right: 6,
+                          background: 'rgba(0,0,0,0.6)', color: '#fff',
+                          fontSize: '0.6rem', padding: '2px 8px', borderRadius: 4,
+                          fontFamily: 'monospace',
+                        }}>
+                          slug: {p.photoSlug}
+                        </span>
+                      )}
+                    </div>
+                    {/* Actions */}
+                    <div style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--stone)' }}>
+                        {matchedPhotos.length > 0 ? `${matchedPhotos.length} photo${matchedPhotos.length > 1 ? 's' : ''}` : '0 photos'}
+                      </span>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button className="btn-admin-icon" onClick={() => openEdit(p)} title="Edit">✎</button>
+                        <button className="btn-admin-icon danger" onClick={() => handleDelete(p.id)} title="Delete">✕</button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        {/* ───────────────────────────────────────────── */}
+        {/* LEVEL 0: Category folder cards               */}
+        {/* ───────────────────────────────────────────── */}
+        <>
+          {/* Category folder grid */}
+          <div className="card-admin">
+            <div className="card-admin-header">
+              <h2>All Categories ({existingCategories.length})</h2>
+            </div>
+
+            {existingCategories.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">📁</div>
+                <h3>No categories yet</h3>
+                <p>Create your first album and it will appear here.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+                {existingCategories.map((cat) => {
+                  const albums = photos.filter((p) => p.cat === cat)
+                  const totalPhotos = albums.reduce((sum, a) => sum + getAlbumPhotoCount(a), 0)
+
+                  // Gather up to 4 preview images from albums in this category
+                  const previews = []
+                  for (const album of albums) {
+                    const slug = album.photoSlug?.trim().toLowerCase()
+                    const matched = slug
+                      ? uploadPhotos.filter((up) => (up.tags || []).some((t) => t.toLowerCase() === slug))
+                      : []
+                    for (const p of matched) {
+                      if (previews.length >= 4) break
+                      previews.push(p)
+                    }
+                    if (previews.length >= 4) break
+                  }
+
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveFolder(cat)}
+                      style={{
+                        borderRadius: 12, overflow: 'hidden',
+                        border: '2px solid #e5e0d4',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        width: '100%',
+                        padding: 0,
+                        fontFamily: 'inherit',
+                        color: 'inherit',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--orange)'
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(243,111,33,0.15)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.borderColor = '#e5e0d4'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
+                      {/* 2×2 preview grid */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateRows: '1fr 1fr',
+                        aspectRatio: '1',
+                        gap: 2,
+                        background: 'linear-gradient(155deg, #383839, #2c2b2d, #cf5711)',
+                      }}>
+                        {previews.slice(0, 4).map((p, i) => (
+                          <img key={i} src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ))}
+                        {Array.from({ length: 4 - Math.min(previews.length, 4) }).map((_, i) => (
+                          <div key={`e-${i}`} style={{ background: 'transparent' }} />
+                        ))}
+                      </div>
+                      {/* Info */}
+                      <div style={{
+                        padding: '14px 18px',
+                        borderTop: '2px solid rgba(243,111,33,0.12)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--ink)' }}>
+                            {cat}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', fontSize: '0.75rem', color: 'var(--stone)' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--orange)' }}>{albums.length}</div>
+                          <div>album{albums.length !== 1 ? 's' : ''}</div>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* All albums flat list (collapsible) */}
+          {photos.length > 0 && (
+            <details style={{ marginTop: 16 }}>
+              <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--stone)', padding: '8px 0' }}>
+                View all {photos.length} albums as list
+              </summary>
+              <div className="card-admin" style={{ marginTop: 8 }}>
+                <div className="card-admin-header">
+                  <h2>All Albums</h2>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {['All', ...existingCategories].map((c) => {
+                      const isActive = c === 'All' ? !activeFolder : activeFolder === c
+                      return (
+                        <button
+                          key={c}
+                          className={`btn-admin btn-admin-sm ${isActive ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
+                          onClick={() => {
+                            if (c === 'All') setActiveFolder(null)
+                            else setActiveFolder(c)
+                          }}
+                        >
+                          {c === 'All' ? `All (${photos.length})` : c}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+                  {photos.map((p) => (
+                    <div key={p.id} style={{
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      background: '#f8f6f2',
+                      border: '1px solid #e8e4da',
+                      fontSize: '0.78rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                    }}
+                      onClick={() => { openEdit(p); setActiveFolder(p.cat) }}
+                    >
+                      <span style={{ fontWeight: 500 }}>{p.tag}</span>
+                      <span style={{ color: 'var(--stone)', fontSize: '0.68rem' }}>{p.cat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </details>
+          )}
+        </>
+      )}
 
       {editing && (
         <Modal title={editing === 'new' ? 'Add Album' : 'Edit Album'} onClose={() => setEditing(null)}>
