@@ -453,18 +453,47 @@ export default function GalleryManager() {
               <input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} placeholder="e.g. May 2025, Summer Camp, Advanced Clinic" />
             </div>
             <div className="admin-field">
-              <label>Category <span style={{ fontWeight: 400, color: 'var(--stone)', fontSize: '0.75rem' }}>— type a new one or pick existing</span></label>
+              <label>Category — click one or type a new one</label>
               <input
                 value={form.cat}
                 onChange={(e) => setForm({ ...form, cat: e.target.value })}
                 placeholder="e.g. Public Sessions, Workshops, Training…"
-                list="category-suggestions"
+                style={{ marginBottom: 8 }}
               />
-              <datalist id="category-suggestions">
-                {existingCategories.map((c) => (
-                  <option key={c} value={c} />
-                ))}
-              </datalist>
+              {existingCategories.length > 0 && (
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {existingCategories.map((c) => {
+                    const isActive = form.cat?.trim().toLowerCase() === c.toLowerCase()
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setForm({ ...form, cat: isActive ? '' : c })}
+                        style={{
+                          padding: '5px 14px',
+                          borderRadius: 20,
+                          border: isActive ? '2px solid var(--orange)' : '2px solid #e0dbcf',
+                          background: isActive ? '#fff4ed' : '#f8f6f2',
+                          cursor: 'pointer',
+                          fontSize: '0.78rem',
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? 'var(--orange)' : 'var(--ink)',
+                          fontFamily: 'inherit',
+                          transition: 'all 0.15s ease',
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isActive) e.currentTarget.style.borderColor = '#cf5711'
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isActive) e.currentTarget.style.borderColor = '#e0dbcf'
+                        }}
+                      >
+                        {c}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* ── Upload photos directly to this subfolder ── */}
