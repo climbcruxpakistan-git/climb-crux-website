@@ -15,6 +15,8 @@ import InstructorProfile from './pages/InstructorProfile.jsx'
 import Gallery from './pages/Gallery.jsx'
 import BookNow from './pages/BookNow.jsx'
 import PaymentPage from './pages/PaymentPage.jsx'
+import BankTransferConfirmation from './pages/BankTransferConfirmation.jsx'
+import EasyPaisaConfirmation from './pages/EasyPaisaConfirmation.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -30,6 +32,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/book-now" element={<BookNow />} />
           <Route path="/booking/:bookingNumber/payment" element={<PaymentPage />} />
+          <Route path="/booking/:bookingNumber/bank-transfer-confirmation" element={<BankTransferConfirmation />} />
+          <Route path="/booking/:bookingNumber/easypaisa-confirmation" element={<EasyPaisaConfirmation />} />
         </Route>
       </Routes>
     </BrowserRouter>

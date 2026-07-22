@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import Booking from '../models/Booking.js'
+import Payment from '../models/Payment.js'
 import { sendBookingNotification } from '../email.js'
 
 const router = Router()
@@ -66,7 +67,7 @@ router.put('/:id', async (req, res, next) => {
       customer_name, customer_email, customer_phone,
       session_id, date, participants, amount,
       booking_status, payment_method, payment_status,
-      payer_bank, payer_name,
+      payer_bank, payer_name, payer_phone,
     } = req.body
 
     const booking = await Booking.findByIdAndUpdate(
@@ -75,7 +76,7 @@ router.put('/:id', async (req, res, next) => {
         customer_name, customer_email, customer_phone,
         session_id, date, participants, amount,
         booking_status, payment_method, payment_status,
-        payer_bank, payer_name,
+        payer_bank, payer_name, payer_phone,
       },
       { new: true, runValidators: true }
     )
@@ -119,6 +120,46 @@ router.patch('/:id/payment-status', async (req, res, next) => {
       { new: true, runValidators: true }
     )
     res.json(booking)
+  } catch (err) { next(err) }
+})
+
+router.post('/:id/create-payment', async (req, res, next) => {
+  try {
+    const { method, payer_name, payer_bank, payer_phone } = req.body
+    if (!method) {
+      return res.status(400).json({ error: 'Payment method is required' })
+    }
+
+    const booking = await Booking.findById(req.params.id)
+    if (!booking) return res.status(404).json({ error: 'Booking not found' })
+
+    // Create Payment record
+    const payment = await Payment.create({
+      booking_id: booking._id,
+      method,
+      status: 'verification_required',
+      payer_name: payer_name || '',
+      payer_bank: payer_bank || '',
+      metadata: { payer_phone: payer_phone || '' },
+    })
+
+    // Update booking
+    booking.payment_method = method
+    booking.payment_status = 'verification_required'
+    booking.booking_status = 'pending_verification'
+    if (payer_name) booking.payer_name = payer_name
+    if (payer_bank) booking.payer_bank = payer_bank
+    if (payer_phone) booking.payer_phone = payer_phone
+    await booking.save()
+
+    res.json({
+      booking,
+      payment: {
+        id: payment._id,
+        method: payment.method,
+        status: payment.status,
+      },
+    })
   } catch (err) { next(err) }
 })
 

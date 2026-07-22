@@ -4,14 +4,14 @@ import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
 function formatMethod(method) {
-  if (method === 'card') return 'Card'
-  if (method === 'bank') return 'Bank Transfer'
+  if (method === 'bank_transfer' || method === 'bank') return 'Bank Transfer'
+  if (method === 'easypaisa') return 'EasyPaisa'
   return '—'
 }
 
 function methodIcon(method) {
-  if (method === 'card') return '💳'
-  if (method === 'bank') return '🏦'
+  if (method === 'bank_transfer' || method === 'bank') return '🏦'
+  if (method === 'easypaisa') return '📱'
   return '—'
 }
 
@@ -52,7 +52,7 @@ function paymentBadge(status) {
   return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
 }
 
-function PaymentDetailCard({ paymentMethod, paymentDetails, payerBank, payerName }) {
+function PaymentDetailCard({ paymentMethod, paymentDetails, payerBank, payerName, payerPhone }) {
   if (!paymentMethod) {
     return <p className="payment-no-info">No payment information.</p>
   }
@@ -64,7 +64,7 @@ function PaymentDetailCard({ paymentMethod, paymentDetails, payerBank, payerName
         <span className="payment-detail-method-name">{formatMethod(paymentMethod)}</span>
       </div>
 
-      {paymentMethod === 'bank' && (
+      {(paymentMethod === 'bank_transfer' || paymentMethod === 'bank') && (
         <div className="payment-detail-fields">
           <div className="payment-detail-row">
             <span className="payment-detail-key">Sender bank</span>
@@ -73,6 +73,18 @@ function PaymentDetailCard({ paymentMethod, paymentDetails, payerBank, payerName
           <div className="payment-detail-row">
             <span className="payment-detail-key">Account holder</span>
             <span className="payment-detail-val">{payerName || paymentDetails?.payer_name || paymentDetails?.accountHolder || '—'}</span>
+          </div>
+        </div>
+      )}
+      {paymentMethod === 'easypaisa' && (
+        <div className="payment-detail-fields">
+          <div className="payment-detail-row">
+            <span className="payment-detail-key">Sender name</span>
+            <span className="payment-detail-val">{payerName || paymentDetails?.payer_name || '—'}</span>
+          </div>
+          <div className="payment-detail-row">
+            <span className="payment-detail-key">Phone</span>
+            <span className="payment-detail-val mono">{payerPhone || paymentDetails?.metadata?.payer_phone || '—'}</span>
           </div>
         </div>
       )}
@@ -290,85 +302,108 @@ export default function BookingsManager() {
         </div>
       </div>
 
-      {/* ---- Pending Payment Confirmations (Bank Transfer) ---- */}
-      {bookings.filter((b) => b.payment_method === 'bank' && b.payment_status === 'verification_required').length > 0 && (
-        <div className="card-admin" style={{ borderLeft: '4px solid #f36f21' }}>
-          <div className="card-admin-header">
-            <h2>⏳ Pending Bank Transfer Confirmations</h2>
-            <span style={{ fontSize: '0.78rem', color: '#888' }}>Awaiting payment verification</span>
-          </div>
-          <div className="table-wrap">
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Booking #</th>
-                    <th>Customer</th>
-                    <th>Course / Package</th>
-                    <th>Amount</th>
-                    <th>Sender Bank</th>
-                    <th>Account Holder</th>
-                    <th>Date</th>
-                    <th style={{ width: 130 }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.filter((b) => b.payment_method === 'bank' && b.payment_status === 'verification_required').map((b) => (
-                    <tr key={b.id || b._id}>
-                      <td><strong className="ref-code" style={{ fontSize: '0.78rem' }}>{b.booking_number || '—'}</strong></td>
-                      <td>
-                        <strong>{b.customer_name}</strong>
-                        <div className="cell-muted">{b.customer_email}</div>
-                      </td>
-                      <td>{b.session_id?.replace(/-/g, ' ') || '—'}</td>
-                      <td>PKR {(b.amount || 2500).toLocaleString()}</td>
-                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payer_bank || '—'}</td>
-                      <td className="cell-muted" style={{ fontSize: '0.78rem' }}>{b.payer_name || '—'}</td>
-                      <td className="cell-muted">{b.date || b.created_at?.split('T')[0] || '—'}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <button
-                            className="btn-admin btn-admin-sm"
-                            style={{ background: '#16a34a', color: '#fff', border: 'none' }}
-                            onClick={async () => {
-                              try {
-                                await Promise.all([
-                                  patchBookingStatus(b.id, 'confirmed'),
-                                  patchPaymentStatus(b.id, 'paid'),
-                                ])
-                                setBookings(await getBookings())
-                                addToast('Payment confirmed ✓', 'success')
-                              } catch (err) {
-                                addToast('Failed to confirm payment', 'error')
-                              }
-                            }}
-                          >
-                            ✓ Confirm
-                          </button>
-                          <button
-                            className="btn-admin btn-admin-sm btn-admin-danger"
-                            onClick={async () => {
-                              try {
-                                await patchPaymentStatus(b.id, 'failed')
-                                setBookings(await getBookings())
-                                addToast('Payment rejected', 'error')
-                              } catch (err) {
-                                addToast('Failed to reject payment', 'error')
-                              }
-                            }}
-                          >
-                            ✕ Reject
-                          </button>
-                        </div>
-                      </td>
+      {/* ---- Pending Manual Payment Confirmations ── */}
+      {(() => {
+        const pending = bookings.filter((b) =>
+          (b.payment_method === 'bank_transfer' || b.payment_method === 'bank' || b.payment_method === 'easypaisa') &&
+          b.payment_status === 'verification_required'
+        )
+        if (pending.length === 0) return null
+        return (
+          <div className="card-admin" style={{ borderLeft: '4px solid #f36f21' }}>
+            <div className="card-admin-header">
+              <h2>⏳ Pending Payment Confirmations</h2>
+              <span style={{ fontSize: '0.78rem', color: '#888' }}>Bank Transfer &amp; EasyPaisa</span>
+            </div>
+            <div className="table-wrap">
+              <div className="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Booking #</th>
+                      <th>Customer</th>
+                      <th>Method</th>
+                      <th>Amount</th>
+                      <th>Sender Details</th>
+                      <th>Date</th>
+                      <th style={{ width: 130 }}>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {pending.map((b) => (
+                      <tr key={b.id || b._id}>
+                        <td><strong className="ref-code" style={{ fontSize: '0.78rem' }}>{b.booking_number || '—'}</strong></td>
+                        <td>
+                          <strong>{b.customer_name}</strong>
+                          <div className="cell-muted">{b.customer_email}</div>
+                        </td>
+                        <td>
+                          <span className="payment-method-cell">
+                            <span className="payment-method-icon-sm">{methodIcon(b.payment_method)}</span>
+                            {formatMethod(b.payment_method)}
+                          </span>
+                        </td>
+                        <td>PKR {(b.amount || 2500).toLocaleString()}</td>
+                        <td style={{ fontSize: '0.78rem' }}>
+                          {b.payment_method === 'easypaisa' ? (
+                            <>
+                              <div className="cell-muted">Name: {b.payer_name || '—'}</div>
+                              <div className="cell-muted">Phone: {b.payer_phone || '—'}</div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="cell-muted">Bank: {b.payer_bank || '—'}</div>
+                              <div className="cell-muted">Holder: {b.payer_name || '—'}</div>
+                            </>
+                          )}
+                        </td>
+                        <td className="cell-muted">{b.date || b.created_at?.split('T')[0] || '—'}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <button
+                              className="btn-admin btn-admin-sm"
+                              style={{ background: '#16a34a', color: '#fff', border: 'none' }}
+                              onClick={async () => {
+                                try {
+                                  await Promise.all([
+                                    patchBookingStatus(b.id, 'confirmed'),
+                                    patchPaymentStatus(b.id, 'paid'),
+                                  ])
+                                  setBookings(await getBookings())
+                                  addToast('Payment confirmed ✓', 'success')
+                                } catch (err) {
+                                  addToast('Failed to confirm payment', 'error')
+                                }
+                              }}
+                            >
+                              ✓ Confirm
+                            </button>
+                            <button
+                              className="btn-admin btn-admin-sm btn-admin-danger"
+                              onClick={async () => {
+                                try {
+                                  await patchPaymentStatus(b.id, 'failed')
+                                  setBookings(await getBookings())
+                                  addToast('Payment rejected', 'error')
+                                } catch (err) {
+                                  addToast('Failed to reject payment', 'error')
+                                }
+                              }}
+                            >
+                              ✕ Reject
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
+      {/* ---- End pending confirmations ---- */}
 
       {/* ---- Date Range Filter ---- */}
       <div className="date-range-bar">
@@ -608,7 +643,8 @@ export default function BookingsManager() {
                 <label>Payment Method</label>
                 <select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
                   <option value="">None</option>
-                  <option value="bank">Bank Transfer</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="easypaisa">EasyPaisa</option>
                 </select>
               </div>
               <div className="admin-field">
@@ -723,6 +759,7 @@ export default function BookingsManager() {
                 paymentDetails={viewing.payment_details || viewing.paymentDetails}
                 payerBank={viewing.payer_bank}
                 payerName={viewing.payer_name}
+                payerPhone={viewing.payer_phone}
               />
               {viewing.payment_status === 'paid' && (
                 <div className="payment-verified-badge">

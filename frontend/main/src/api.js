@@ -88,3 +88,7 @@ export async function getBookingByNumber(bookingNumber) {
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   return mapId(await res.json())
 }
+
+export async function createPayment(bookingId, data) {
+  return mapId(await postJson(`/bookings/${bookingId}/create-payment`, data))
+}

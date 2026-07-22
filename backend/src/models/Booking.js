@@ -23,6 +23,7 @@ const bookingSchema = new mongoose.Schema({
   payment_method: { type: String, default: '' },
   payer_bank: { type: String, default: '' },
   payer_name: { type: String, default: '' },
+  payer_phone: { type: String, default: '' },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
 export default mongoose.model('Booking', bookingSchema)
