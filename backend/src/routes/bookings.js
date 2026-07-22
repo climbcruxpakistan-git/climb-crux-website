@@ -16,7 +16,14 @@ router.post('/', async (req, res, next) => {
   try {
     const { name, email } = req.body
     if (!name || !email) return res.status(400).json({ error: 'Name and email are required' })
+
+    // Auto-generate booking number: CCP-YYYY-XXXXX (sequential)
+    const year = new Date().getFullYear()
+    const count = await Booking.countDocuments()
+    const bookingNumber = `CCP-${year}-${String(count + 1).padStart(5, '0')}`
+
     const booking = await Booking.create({
+      bookingNumber,
       name, email,
       phone: req.body.phone || '',
       type: req.body.type || '',
@@ -79,8 +86,8 @@ router.patch('/:id/status', async (req, res, next) => {
 router.patch('/:id/payment-status', async (req, res, next) => {
   try {
     const { paymentStatus } = req.body
-    if (!['pending', 'paid', 'failed'].includes(paymentStatus)) {
-      return res.status(400).json({ error: 'Payment status must be pending, paid, or failed' })
+    if (!['pending', 'awaiting_confirmation', 'paid', 'failed'].includes(paymentStatus)) {
+      return res.status(400).json({ error: 'Payment status must be pending, awaiting_confirmation, paid, or failed' })
     }
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,

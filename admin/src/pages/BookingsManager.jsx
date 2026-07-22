@@ -31,10 +31,12 @@ function badge(status) {
 function paymentBadge(status) {
   const map = {
     pending: 'badge-yellow',
+    awaiting_confirmation: 'badge-orange',
     paid: 'badge-green',
     failed: 'badge-red',
   }
-  return <span className={`badge ${map[status] || 'badge-gray'}`}>{status || '—'}</span>
+  const label = status === 'awaiting_confirmation' ? 'Awaiting Confirm' : (status || '—')
+  return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
 }
 
 function PaymentDetailCard({ paymentMethod, paymentDetails }) {
@@ -123,7 +125,7 @@ export default function BookingsManager() {
   }
   const [form, setForm] = useState(emptyForm)
 
-  const paymentStatusOptions = ['All', 'pending', 'paid', 'failed']
+  const paymentStatusOptions = ['All', 'pending', 'awaiting_confirmation', 'paid', 'failed']
   const bookingStatusOptions = ['All', 'Pending', 'Confirmed', 'Cancelled']
   const datePresets = [
     { value: 'all', label: 'All time' },
@@ -314,6 +316,85 @@ export default function BookingsManager() {
           <span className="stat-card-change up">{stats.paid} × PKR 2,500</span>
         </div>
       </div>
+
+      {/* ---- Pending Bank Transfer Confirmations ---- */}
+      {bookings.filter((b) => b.paymentMethod === 'bank' && b.paymentStatus === 'awaiting_confirmation').length > 0 && (
+        <div className="card-admin" style={{ borderLeft: '4px solid #f36f21' }}>
+          <div className="card-admin-header">
+            <h2>⏳ Pending Bank Transfer Confirmations</h2>
+          </div>
+          <div className="table-wrap">
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Booking #</th>
+                    <th>Customer</th>
+                    <th>Course / Package</th>
+                    <th>Amount</th>
+                    <th>Sender Bank</th>
+                    <th>Account Holder</th>
+                    <th>Date</th>
+                    <th style={{ width: 130 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.filter((b) => b.paymentMethod === 'bank' && b.paymentStatus === 'awaiting_confirmation').map((b) => (
+                    <tr key={b.id || b._id}>
+                      <td><strong className="ref-code" style={{ fontSize: '0.78rem' }}>{b.bookingNumber || '—'}</strong></td>
+                      <td>
+                        <strong>{b.name}</strong>
+                        <div className="cell-muted">{b.email}</div>
+                      </td>
+                      <td>{b.type?.replace(/-/g, ' ') || '—'}</td>
+                      <td>PKR 2,500</td>
+                      <td>{b.paymentDetails?.yourBank || '—'}</td>
+                      <td>{b.paymentDetails?.accountHolder || '—'}</td>
+                      <td className="cell-muted">{b.date || b.createdAt?.split('T')[0] || '—'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button
+                            className="btn-admin btn-admin-sm"
+                            style={{ background: '#16a34a', color: '#fff', border: 'none' }}
+                            onClick={async () => {
+                              try {
+                                await Promise.all([
+                                  patchBookingStatus(b.id, 'confirmed'),
+                                  patchPaymentStatus(b.id, 'paid'),
+                                ])
+                                setBookings(await getBookings())
+                                addToast('Payment confirmed ✓', 'success')
+                              } catch (err) {
+                                addToast('Failed to confirm payment', 'error')
+                              }
+                            }}
+                          >
+                            ✓ Confirm
+                          </button>
+                          <button
+                            className="btn-admin btn-admin-sm btn-admin-danger"
+                            onClick={async () => {
+                              try {
+                                await patchPaymentStatus(b.id, 'failed')
+                                setBookings(await getBookings())
+                                addToast('Payment rejected', 'error')
+                              } catch (err) {
+                                addToast('Failed to reject payment', 'error')
+                              }
+                            }}
+                          >
+                            ✕ Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ---- Date Range Filter ---- */}
       <div className="date-range-bar">

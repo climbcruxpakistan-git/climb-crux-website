@@ -19,6 +19,7 @@ const paymentDetailsSchema = new mongoose.Schema({
 }, { _id: false })
 
 const bookingSchema = new mongoose.Schema({
+  bookingNumber: { type: String, default: '' },
   name: { type: String, required: true },
   email: { type: String, default: '' },
   phone: { type: String, default: '' },
@@ -29,7 +30,7 @@ const bookingSchema = new mongoose.Schema({
   message: { type: String, default: '' },
   status: { type: String, default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] },
   paymentMethod: { type: String, default: '', enum: ['', 'card', 'bank', 'easypaisa', 'safepay'] },
-  paymentStatus: { type: String, default: 'pending', enum: ['pending', 'paid', 'failed'] },
+  paymentStatus: { type: String, default: 'pending', enum: ['pending', 'awaiting_confirmation', 'paid', 'failed'] },
   paymentDetails: { type: paymentDetailsSchema, default: () => ({}) },
 }, { timestamps: true })
 
