@@ -20,11 +20,5 @@ services:
         value: "10000"
       - key: FRONTEND_URL
         sync: false
-      - key: GMAIL_EMAIL
-        value: "climbcruxpakistan@gmail.com"
-      - key: GMAIL_APP_PASSWORD
-        sync: false
-      - key: NOTIFICATION_EMAIL
-        value: "climbcruxpakistan@gmail.com"
       - key: DNS_SERVERS
         value: "8.8.8.8,1.1.1.1"

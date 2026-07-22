@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import Booking from '../models/Booking.js'
 import Payment from '../models/Payment.js'
-import { sendBookingNotification, sendBookingReceivedEmail } from '../email.js'
 
 const router = Router()
 
@@ -39,10 +38,7 @@ router.post('/', async (req, res, next) => {
       payment_status: req.body.payment_status || 'pending',
     })
 
-    // Send email notifications (don't block the response)
-    sendBookingNotification(booking)  // admin notification
-    sendBookingReceivedEmail(booking)  // customer confirmation
-    res.status(201).json(booking)
+res.status(201).json(booking)
   } catch (err) { next(err) }
 })
 

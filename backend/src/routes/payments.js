@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import Payment from '../models/Payment.js'
 import Booking from '../models/Booking.js'
-import { sendPaymentConfirmedEmail, sendPaymentRejectedEmail } from '../email.js'
 
 const router = Router()
 
@@ -51,10 +50,7 @@ router.post('/verify', async (req, res, next) => {
       booking.booking_status = 'confirmed'
       await booking.save()
 
-      // Send confirmation email (don't block)
-      sendPaymentConfirmedEmail(booking)
-
-      res.json({
+res.json({
         success: true,
         message: 'Payment approved and booking confirmed',
         booking,
@@ -72,10 +68,7 @@ router.post('/verify', async (req, res, next) => {
       booking.booking_status = 'pending_payment'
       await booking.save()
 
-      // Send rejection email (don't block)
-      sendPaymentRejectedEmail(booking)
-
-      res.json({
+res.json({
         success: true,
         message: 'Payment rejected',
         booking,
