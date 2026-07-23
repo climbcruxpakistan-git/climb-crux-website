@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getPendingPayments, verifyPayment, getBookings } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
-import Modal from '../components/Modal.jsx'
 
 function methodLabel(method) {
   if (method === 'bank_transfer' || method === 'bank') return 'Bank Transfer'
@@ -21,7 +20,6 @@ export default function PaymentsManager() {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(null) // id being processed
-  const [confirmAction, setConfirmAction] = useState(null) // { payment, action }
 
   function loadData() {
     setLoading(true)
@@ -38,7 +36,6 @@ export default function PaymentsManager() {
 
   async function handleVerify(bookingId, action) {
     setProcessing(bookingId)
-    setConfirmAction(null)
     try {
       await verifyPayment(bookingId, action)
       addToast(
@@ -247,7 +244,7 @@ export default function PaymentsManager() {
                                 opacity: isProcessing ? 0.6 : 1,
                               }}
                               disabled={isProcessing}
-                              onClick={() => setConfirmAction({ payment: p, action: 'approve' })}
+                              onClick={() => handleVerify(bookingId, 'approve')}
                             >
                               {isProcessing ? '…' : '✓ Approve'}
                             </button>
@@ -263,7 +260,7 @@ export default function PaymentsManager() {
                                 opacity: isProcessing ? 0.6 : 1,
                               }}
                               disabled={isProcessing}
-                              onClick={() => setConfirmAction({ payment: p, action: 'reject' })}
+                              onClick={() => handleVerify(bookingId, 'reject')}
                             >
                               {isProcessing ? '…' : '✕ Reject'}
                             </button>
@@ -279,79 +276,7 @@ export default function PaymentsManager() {
         </div>
       )}
 
-      {/* Confirm Dialog */}
-      {confirmAction && (
-        <Modal
-          title={confirmAction.action === 'approve' ? 'Confirm Payment' : 'Reject Payment'}
-          onClose={() => setConfirmAction(null)}
-        >
-          {confirmAction.action === 'approve' ? (
-            <>
-              <p style={{ margin: '0 0 16px', lineHeight: 1.6, color: '#444' }}>
-                This will mark the payment as <strong>Paid</strong> and confirm the booking.
-                A <strong>confirmation email</strong> will be sent to the customer.
-              </p>
-              <div style={{
-                background: '#f0fdf4',
-                border: '1px solid #bbf7d0',
-                borderRadius: 6,
-                padding: '12px 16px',
-                marginBottom: 20,
-                fontSize: '0.85rem',
-                color: '#166534',
-              }}>
-                ✓ Payment status: Paid<br />
-                ✓ Booking status: Confirmed<br />
-                ✓ Email sent to customer
-              </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button className="btn-admin btn-admin-outline" onClick={() => setConfirmAction(null)}>
-                  Cancel
-                </button>
-                <button
-                  className="btn-admin"
-                  style={{ background: '#16a34a', color: '#fff', border: 'none' }}
-                  onClick={() => handleVerify(confirmAction.payment.bookingId || confirmAction.payment.id, 'approve')}
-                >
-                  ✓ Confirm Payment
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p style={{ margin: '0 0 16px', lineHeight: 1.6, color: '#444' }}>
-                This will mark the payment as <strong>Failed</strong> and set the booking back to
-                <strong> Pending Payment</strong>. A notification email will be sent to the customer.
-              </p>
-              <div style={{
-                background: '#fef2f2',
-                border: '1px solid #fca5a5',
-                borderRadius: 6,
-                padding: '12px 16px',
-                marginBottom: 20,
-                fontSize: '0.85rem',
-                color: '#991b1b',
-              }}>
-                ✕ Payment status: Failed<br />
-                ✕ Booking status: Pending Payment<br />
-                ✕ Email sent to customer
-              </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button className="btn-admin btn-admin-outline" onClick={() => setConfirmAction(null)}>
-                  Cancel
-                </button>
-                <button
-                  className="btn-admin"
-                  style={{ background: '#dc2626', color: '#fff', border: 'none' }}
-                  onClick={() => handleVerify(confirmAction.payment.bookingId || confirmAction.payment.id, 'reject')}
-                >
-                  ✕ Reject Payment
-                </button>
-              </div>
-            </>
-          )}
-        </Modal>
-      )}
+
     </>
   )
 }
