@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getPendingPayments, verifyPayment, getBookings } from '../store.js'
+import { getPendingPayments, getBookings, patchBookingStatus, patchPaymentStatus } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 
 function methodLabel(method) {
@@ -37,11 +37,19 @@ export default function PaymentsManager() {
   async function handleVerify(bookingId, action) {
     setProcessing(bookingId)
     try {
-      await verifyPayment(bookingId, action)
-      addToast(
-        action === 'approve' ? 'Payment approved ✓ Booking confirmed' : 'Payment rejected',
-        action === 'approve' ? 'success' : 'error',
-      )
+      if (action === 'approve') {
+        await Promise.all([
+          patchBookingStatus(bookingId, 'confirmed'),
+          patchPaymentStatus(bookingId, 'paid'),
+        ])
+        addToast('Payment approved ✓ Booking confirmed', 'success')
+      } else {
+        await Promise.all([
+          patchBookingStatus(bookingId, 'pending_payment'),
+          patchPaymentStatus(bookingId, 'failed'),
+        ])
+        addToast('Payment rejected', 'error')
+      }
       loadData()
     } catch (err) {
       addToast(`Failed: ${err.message}`, 'error')

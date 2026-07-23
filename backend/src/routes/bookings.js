@@ -164,6 +164,8 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const booking = await Booking.findByIdAndDelete(req.params.id)
     if (!booking) return res.status(404).json({ error: 'Not found' })
+    // Also delete any associated payment records
+    await Payment.deleteMany({ booking_id: req.params.id })
     res.json({ success: true })
   } catch (err) { next(err) }
 })
