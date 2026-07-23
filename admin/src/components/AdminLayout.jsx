@@ -25,7 +25,6 @@ const NAV_SECTIONS = [
     label: 'Operations',
     links: [
       { to: '/bookings', label: 'Bookings', icon: '☰' },
-      { to: '/payments', label: 'Payments', icon: '⏳' },
     ],
   },
 ]

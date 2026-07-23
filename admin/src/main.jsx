@@ -17,7 +17,6 @@ import GalleryManager from './pages/GalleryManager.jsx'
 import PhotosManager from './pages/PhotosManager.jsx'
 import AboutManager from './pages/AboutManager.jsx'
 import BookingsManager from './pages/BookingsManager.jsx'
-import PaymentsManager from './pages/PaymentsManager.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -38,7 +37,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/photos" element={<PhotosManager />} />
                 <Route path="/about" element={<AboutManager />} />
                 <Route path="/bookings" element={<BookingsManager />} />
-                <Route path="/payments" element={<PaymentsManager />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
