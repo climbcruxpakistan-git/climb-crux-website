@@ -1325,6 +1325,148 @@
   padding: 0.9em 1.5em;
 }
 
+/* Custom session contact card */
+.custom-session-card {
+  background: linear-gradient(135deg, #f8f4ef, #f0ebe3);
+  border-radius: 12px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--chalk-dim);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .custom-session-card {
+    padding: 20px 16px;
+  }
+  .custom-session-card h3 {
+    font-size: 1rem;
+  }
+  .custom-session-card a {
+    font-size: 0.82rem;
+    padding: 10px 16px;
+    word-break: break-all;
+  }
+}
+
+/* Price summary card (Book Now page) */
+.price-summary-card {
+  background: var(--chalk-dim);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--chalk-dim);
+}
+
+.price-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .price-summary-card {
+    padding: 16px;
+  }
+  .price-summary-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .price-summary-row > div:last-child {
+    text-align: left;
+    width: 100%;
+  }
+}
+
+/* Mobile: stack bank info icon on top */
+@media (max-width: 480px) {
+  .payment-bank-info {
+    flex-direction: column;
+    padding: 14px 16px;
+  }
+  .bank-info-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .bank-info-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .bank-detail-title {
+    font-size: 0.72rem;
+  }
+  .bank-detail-row {
+    font-size: 0.78rem;
+  }
+}
+
+/* Mobile: stack WhatsApp number section */
+@media (max-width: 480px) {
+  .bank-whatsapp-number {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+  .bank-whatsapp-label {
+    font-size: 0.65rem;
+  }
+  .bank-whatsapp-value {
+    font-size: 0.9rem;
+  }
+  .bank-confirm-card {
+    padding: 18px 20px;
+  }
+  .bank-confirm-number {
+    font-size: 1.15rem;
+  }
+}
+
+/* Mobile: booking summary tweaks */
+@media (max-width: 420px) {
+  .summary-total {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+  .summary-total span:first-child {
+    font-size: 0.78rem;
+  }
+  .summary-amount {
+    font-size: 1.1rem;
+  }
+}
+
+/* Mobile: payment method cards spacing */
+@media (max-width: 420px) {
+  .payment-method-grid {
+    gap: 8px;
+  }
+  .payment-method-card {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .payment-method-label {
+    font-size: 0.65rem;
+  }
+}
+
+/* Mobile: booking detail grid (payment page) */
+@media (max-width: 420px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .summary-item[style*="gridColumn"] {
+    grid-column: 1 !important;
+  }
+  .summary-val {
+    font-size: 0.85rem;
+  }
+}
+
 /* ============================== CONTACT ============================== */
 
 .contact-grid {

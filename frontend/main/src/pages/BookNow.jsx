@@ -3,6 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { createBooking, getSessionContent, getPlans } from '../api.js'
 
+/** Get today's date as YYYY-MM-DD for the min attribute on date input */
+function getTodayString() {
+  const d = new Date()
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // Hardcoded options that don't come from the API
 const staticOptions = [
   { value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' },
@@ -188,21 +197,14 @@ export default function BookNow() {
 
                   <div className="field">
                     <label htmlFor="preferred-date">Preferred date</label>
-                    <input id="preferred-date" type="date" />
+                    <input id="preferred-date" type="date" min={getTodayString()} />
                   </div>
                 </>
               )}
 
               {/* ── Custom Session: Contact card ── */}
               {isCustom && (
-                <div style={{
-                  background: 'linear-gradient(135deg, #f8f4ef, #f0ebe3)',
-                  borderRadius: 12,
-                  padding: '28px 24px',
-                  marginBottom: 20,
-                  border: '1px solid var(--sand)',
-                  textAlign: 'center',
-                }}>
+                <div className="custom-session-card">
                   <div style={{ fontSize: 32, marginBottom: 8 }}>✉️</div>
                   <h3 style={{ margin: '0 0 8px', fontSize: 18, color: 'var(--ink)' }}>
                     Custom sessions are built on request
@@ -237,20 +239,8 @@ export default function BookNow() {
 
               {/* ── Live price summary (not for custom) ── */}
               {sessionType && !isCustom && (
-                <div style={{
-                  background: 'var(--chalk-dim)',
-                  borderRadius: 12,
-                  padding: '20px 24px',
-                  marginBottom: 20,
-                  border: '1px solid var(--sand)',
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                    flexWrap: 'wrap',
-                    gap: 8,
-                  }}>
+                <div className="price-summary-card">
+                  <div className="price-summary-row">
                     <div>
                       <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>
                         {allSessionOptions.find(t => t.value === sessionType)?.label || sessionType}
