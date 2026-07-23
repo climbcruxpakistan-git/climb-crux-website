@@ -761,6 +761,53 @@ export default function BookingsManager() {
                 payerName={viewing.payer_name}
                 payerPhone={viewing.payer_phone}
               />
+
+              {/* Reference: Our account details (shown for reference) */}
+              {(viewing.payment_method === 'bank_transfer' || viewing.payment_method === 'bank') && (
+                <div className="payment-detail-card" style={{ marginTop: 16 }}>
+                  <div className="payment-detail-header">
+                    <span className="payment-detail-method-icon">🏦</span>
+                    <span className="payment-detail-method-name">Our Bank Account</span>
+                  </div>
+                  <div className="payment-detail-fields">
+                    <div className="payment-detail-row">
+                      <span className="payment-detail-key">Bank:</span>
+                      <span className="payment-detail-val">Bank Al Habib Limited</span>
+                    </div>
+                    <div className="payment-detail-row">
+                      <span className="payment-detail-key">Account:</span>
+                      <span className="payment-detail-val">CLIMB CRUX</span>
+                    </div>
+                    <div className="payment-detail-row">
+                      <span className="payment-detail-key">IBAN:</span>
+                      <span className="payment-detail-val" style={{ fontFamily: 'monospace', fontSize: '0.72rem', wordBreak: 'break-all' }}>PK93 BAHL 5742 0081 0003 9501</span>
+                    </div>
+                    <div className="payment-detail-row">
+                      <span className="payment-detail-key">Branch Code:</span>
+                      <span className="payment-detail-val">5742</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {viewing.payment_method === 'easypaisa' && (
+                <div className="payment-detail-card" style={{ marginTop: 16 }}>
+                  <div className="payment-detail-header">
+                    <span className="payment-detail-method-icon">📱</span>
+                    <span className="payment-detail-method-name">Our EasyPaisa</span>
+                  </div>
+                  <div className="payment-detail-fields">
+                    <div className="payment-detail-row">
+                      <span className="payment-detail-key">Account:</span>
+                      <span className="payment-detail-val">Saif Ud Din</span>
+                    </div>
+                    <div className="payment-detail-row">
+                      <span className="payment-detail-key">Number:</span>
+                      <span className="payment-detail-val mono">0313 2690377</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {viewing.payment_status === 'paid' && (
                 <div className="payment-verified-badge">
                   <span className="verified-icon">✓</span> Payment verified

@@ -73,6 +73,23 @@ export default function BankTransferConfirmation() {
                 </div>
               </div>
 
+              {/* Our Bank Account reference */}
+              <div className="payment-bank-info" style={{ marginBottom: 24, textAlign: 'left' }}>
+                <div className="bank-info-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="bank-detail-title">You sent your payment to</p>
+                  <p className="bank-detail-row"><span className="bank-label">Bank:</span> Bank Al Habib Limited</p>
+                  <p className="bank-detail-row"><span className="bank-label">Account:</span> CLIMB CRUX</p>
+                  <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK93 BAHL 5742 0081 0003 9501</p>
+                  <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
+                </div>
+              </div>
+
               {/* Instructions */}
               <p className="success-note" style={{ textAlign: 'center', maxWidth: '44ch' }}>
                 Please send the payment screenshot on WhatsApp along with your booking number for verification.

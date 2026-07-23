@@ -269,9 +269,10 @@ export default function PaymentPage() {
                   </div>
                   <div>
                     <p className="bank-detail-title">Transfer to our bank account</p>
-                    <p className="bank-detail-row"><span className="bank-label">Bank:</span> Habib Bank Limited (HBL)</p>
-                    <p className="bank-detail-row"><span className="bank-label">Account title:</span> Climb Crux Pakistan</p>
-                    <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK36 HABB 1234 5678 9012 3456</p>
+                    <p className="bank-detail-row"><span className="bank-label">Bank:</span> Bank Al Habib Limited</p>
+                    <p className="bank-detail-row"><span className="bank-label">Account name:</span> CLIMB CRUX</p>
+                    <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK93 BAHL 5742 0081 0003 9501</p>
+                    <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
                     <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
                       Please transfer <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the account above.
                     </p>
@@ -316,8 +317,8 @@ export default function PaymentPage() {
                   </div>
                   <div>
                     <p className="bank-detail-title">Send payment via EasyPaisa</p>
-                    <p className="bank-detail-row"><span className="bank-label">EasyPaisa number:</span> 03XX-XXXXXXX</p>
-                    <p className="bank-detail-row"><span className="bank-label">Account name:</span> Climb Crux Pakistan</p>
+                    <p className="bank-detail-row"><span className="bank-label">EasyPaisa number:</span> 0313 2690377</p>
+                    <p className="bank-detail-row"><span className="bank-label">Account name:</span> Saif Ud Din</p>
                     <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
                       Please send <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the EasyPaisa account above.
                     </p>

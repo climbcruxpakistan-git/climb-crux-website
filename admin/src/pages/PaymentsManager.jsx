@@ -116,6 +116,52 @@ export default function PaymentsManager() {
         </div>
       </div>
 
+      {/* Reference: Our account details */}
+      <div className="card-admin" style={{ padding: '18px 24px', borderLeft: '4px solid #f36f21' }}>
+        <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div className="payment-detail-card" style={{ border: 'none', background: 'transparent', padding: 0 }}>
+            <div className="payment-detail-header" style={{ borderBottom: 'none', marginBottom: 10, paddingBottom: 0 }}>
+              <span className="payment-detail-method-icon">🏦</span>
+              <span className="payment-detail-method-name">Our Bank Account</span>
+            </div>
+            <div className="payment-detail-fields">
+              <div className="payment-detail-row">
+                <span className="payment-detail-key">Bank:</span>
+                <span className="payment-detail-val">Bank Al Habib Limited</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-key">Account:</span>
+                <span className="payment-detail-val">CLIMB CRUX</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-key">IBAN:</span>
+                <span className="payment-detail-val" style={{ fontFamily: 'monospace', fontSize: '0.72rem', wordBreak: 'break-all' }}>PK93 BAHL 5742 0081 0003 9501</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-key">Branch Code:</span>
+                <span className="payment-detail-val">5742</span>
+              </div>
+            </div>
+          </div>
+          <div className="payment-detail-card" style={{ border: 'none', background: 'transparent', padding: 0 }}>
+            <div className="payment-detail-header" style={{ borderBottom: 'none', marginBottom: 10, paddingBottom: 0 }}>
+              <span className="payment-detail-method-icon">📱</span>
+              <span className="payment-detail-method-name">Our EasyPaisa</span>
+            </div>
+            <div className="payment-detail-fields">
+              <div className="payment-detail-row">
+                <span className="payment-detail-key">Account:</span>
+                <span className="payment-detail-val">Saif Ud Din</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-key">Number:</span>
+                <span className="payment-detail-val mono">0313 2690377</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {processedPayments.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">✓</div>

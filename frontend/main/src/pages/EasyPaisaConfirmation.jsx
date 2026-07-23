@@ -73,6 +73,21 @@ export default function EasyPaisaConfirmation() {
                 </div>
               </div>
 
+              {/* Our EasyPaisa reference */}
+              <div className="payment-bank-info" style={{ marginBottom: 24, textAlign: 'left' }}>
+                <div className="bank-info-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="bank-detail-title">You sent your payment to</p>
+                  <p className="bank-detail-row"><span className="bank-label">Account:</span> Saif Ud Din</p>
+                  <p className="bank-detail-row"><span className="bank-label">EasyPaisa number:</span> 0313 2690377</p>
+                </div>
+              </div>
+
               {/* Instructions */}
               <p className="success-note" style={{ textAlign: 'center', maxWidth: '44ch' }}>
                 Please send the payment screenshot on WhatsApp along with your booking number for verification.
