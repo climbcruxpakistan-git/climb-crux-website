@@ -20,5 +20,13 @@ services:
         value: "10000"
       - key: FRONTEND_URL
         sync: false
+      - key: ADMIN_URL
+        sync: false
+      - key: GMAIL_EMAIL
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: NOTIFICATION_EMAIL
+        sync: false
       - key: DNS_SERVERS
         value: "8.8.8.8,1.1.1.1"

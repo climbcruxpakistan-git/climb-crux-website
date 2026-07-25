@@ -5,7 +5,7 @@
 
 // In development, requests proxy through Vite to localhost:4000.
 // In production (Vercel), we use the Render backend URL directly.
-const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
 
 async function fetchJson(url) {
   const res = await fetch(`${API}${url}`)

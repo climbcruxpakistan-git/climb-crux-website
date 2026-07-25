@@ -3,9 +3,15 @@ import jwt from 'jsonwebtoken'
 
 const router = Router()
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@climbcrux'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'climbcrux@admin'
-const JWT_SECRET = process.env.JWT_SECRET || 'climb-crux-admin-secret-change-in-production'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+const JWT_SECRET = process.env.JWT_SECRET
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !JWT_SECRET) {
+  console.error('❌ Missing required env vars: ADMIN_EMAIL, ADMIN_PASSWORD, JWT_SECRET')
+  console.error('   Set these in your Render dashboard or .env file before starting the server.')
+  process.exit(1)
+}
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {

@@ -1,11 +1,25 @@
 import { Router } from 'express'
+import jwt from 'jsonwebtoken'
 import Payment from '../models/Payment.js'
 import Booking from '../models/Booking.js'
+import { sendAdminNotification } from '../email.js'
 
 const router = Router()
 
+const JWT_SECRET = process.env.JWT_SECRET
+
 // GET /api/payments/pending — returns payments awaiting verification with booking data
-router.get('/pending', async (_req, res, next) => {
+// Requires admin auth (unlike public GET endpoints, this exposes customer & payment data)
+router.get('/pending', async (req, res, next) => {
+  const header = req.headers.authorization
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' })
+  }
+  try {
+    jwt.verify(header.split(' ')[1], JWT_SECRET)
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired token' })
+  }
   try {
     const payments = await Payment.find({ status: 'verification_required' })
       .populate('booking_id')
@@ -49,6 +63,14 @@ router.post('/verify', async (req, res, next) => {
       booking.payment_status = 'paid'
       booking.booking_status = 'confirmed'
       await booking.save()
+
+    // Send admin notification (don't block response on failure)
+    sendAdminNotification({
+      subject: `✅ Payment Confirmed — ${booking.customer_name} (${booking.booking_number})`,
+      title: '✅ Payment Confirmed',
+      description: `${booking.customer_name} paid PKR ${(booking.amount || 0).toLocaleString()} via ${booking.payment_method || 'bank transfer'}`,
+      booking,
+    })
 
 res.json({
         success: true,

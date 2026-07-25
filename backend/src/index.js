@@ -21,25 +21,68 @@ import sessionContentRoutes from './routes/sessionContent.js'
 import homeContentRoutes from './routes/homeContent.js'
 import authRoutes from './routes/auth.js'
 import paymentRoutes from './routes/payments.js'
+
+import { requireAdmin } from './middleware/auth.js'
+import { authLimiter, bookingLimiter, apiLimiter } from './middleware/rateLimiter.js'
+
 const PORT = process.env.PORT || 4000
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/climb-crux'
 
 const app = express()
 
-app.use(cors())
+// CORS: allow specific frontend origins + localhost for development
+const FRONTEND_URL = process.env.FRONTEND_URL
+const ADMIN_URL = process.env.ADMIN_URL
+
+const allowedOrigins = [
+  // Local development
+  'http://localhost:5173',
+  'http://localhost:5174',
+  // Production (set via Render env vars)
+  ...(FRONTEND_URL ? [FRONTEND_URL] : []),
+  ...(ADMIN_URL ? [ADMIN_URL] : []),
+]
+
+// If no production origins are configured, allow all (backward compat for dev)
+const corsOrigin = (FRONTEND_URL || ADMIN_URL)
+  ? allowedOrigins
+  : '*'
+
+app.use(cors({ origin: corsOrigin }))
+
+if (corsOrigin !== '*') {
+  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`)
+} else {
+  console.log('CORS: permissive mode (all origins allowed)')
+}
+
 app.use(express.json({ strict: false }))
 
-app.use('/api/sessions', sessionRoutes)
-app.use('/api/plans', planRoutes)
-app.use('/api/team', teamRoutes)
-app.use('/api/gallery', galleryRoutes)
-app.use('/api/bookings', bookingRoutes)
-app.use('/api/about', aboutRoutes)
-app.use('/api/uploads', uploadRoutes)
-app.use('/api/session-content', sessionContentRoutes)
-app.use('/api/home', homeContentRoutes)
+// ── Rate limiting ──────────────────────────────────────────────────────
+// Apply standard rate limit to all /api routes by default
+app.use('/api', apiLimiter)
+
+// Override with stricter limits on sensitive endpoints
+app.use('/api/auth/login', authLimiter)
+app.use('/api/bookings', bookingLimiter)
+
+// ── Routes ─────────────────────────────────────────────────────────────
+// Auth routes are public (login & verify)
 app.use('/api/auth', authRoutes)
-app.use('/api/payments', paymentRoutes)
+
+// Protected admin routes — require JWT for write operations (POST, PUT, PATCH, DELETE)
+app.use('/api/sessions', requireAdmin, sessionRoutes)
+app.use('/api/plans', requireAdmin, planRoutes)
+app.use('/api/team', requireAdmin, teamRoutes)
+app.use('/api/gallery', requireAdmin, galleryRoutes)
+// Bookings has mixed public (create, lookup) and admin (patch, delete) endpoints.
+// Auth is applied selectively within the bookings route file.
+app.use('/api/bookings', bookingRoutes)
+app.use('/api/about', requireAdmin, aboutRoutes)
+app.use('/api/uploads', requireAdmin, uploadRoutes)
+app.use('/api/session-content', requireAdmin, sessionContentRoutes)
+app.use('/api/home', requireAdmin, homeContentRoutes)
+app.use('/api/payments', requireAdmin, paymentRoutes)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' })
 })
@@ -52,6 +95,10 @@ app.use((err, _req, res, _next) => {
   }
   res.status(500).json({ error: err.message || 'Internal server error' })
 })
+
+// Startup status
+const gmailConfigured = process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD
+console.log(`Gmail notifications: ${gmailConfigured ? '✓ configured' : '✗ not configured (set GMAIL_EMAIL + GMAIL_APP_PASSWORD)'}`)
 
 mongoose
   .connect(MONGODB_URI)

@@ -6,12 +6,17 @@
 
 // In development, requests proxy through Vite to localhost:4000.
 // In production (Vercel), we use the Render backend URL directly.
-const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('admin_token')
+  return token ? { 'Authorization': `Bearer ${token}` } : {}
+}
 
 async function request(method, path, body) {
   const opts = {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
   }
   if (body !== undefined) opts.body = JSON.stringify(body)
 

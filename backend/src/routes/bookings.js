@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import Booking from '../models/Booking.js'
 import Payment from '../models/Payment.js'
+import { requireAdmin } from '../middleware/auth.js'
+import { sendAdminNotification } from '../email.js'
 
 const router = Router()
 
@@ -36,6 +38,14 @@ router.post('/', async (req, res, next) => {
       booking_status: req.body.booking_status || 'pending_payment',
       payment_method: req.body.payment_method || '',
       payment_status: req.body.payment_status || 'pending',
+    })
+
+    // Send admin notification (don't block response on failure)
+    sendAdminNotification({
+      subject: `🧗 New Booking — ${booking.customer_name}`,
+      title: '🧗 New Booking Request',
+      description: `${booking.customer_name} just booked a session`,
+      booking,
     })
 
 res.status(201).json(booking)
@@ -82,7 +92,7 @@ router.put('/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-router.patch('/:id/booking-status', async (req, res, next) => {
+router.patch('/:id/booking-status', requireAdmin, async (req, res, next) => {
   try {
     const { booking_status } = req.body
     if (!['pending_payment', 'pending_verification', 'confirmed', 'cancelled'].includes(booking_status)) {
@@ -101,7 +111,7 @@ router.patch('/:id/booking-status', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-router.patch('/:id/payment-status', async (req, res, next) => {
+router.patch('/:id/payment-status', requireAdmin, async (req, res, next) => {
   try {
     const { payment_status } = req.body
     if (!['pending', 'verification_required', 'paid', 'failed', 'refunded'].includes(payment_status)) {
@@ -160,7 +170,7 @@ router.post('/:id/create-payment', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAdmin, async (req, res, next) => {
   try {
     const booking = await Booking.findByIdAndDelete(req.params.id)
     if (!booking) return res.status(404).json({ error: 'Not found' })

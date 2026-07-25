@@ -3,7 +3,12 @@ import { getGallery, saveGalleryItem, deleteGalleryItem } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
+
+function authHeaders() {
+  const token = localStorage.getItem('admin_token')
+  return token ? { 'Authorization': `Bearer ${token}` } : {}
+}
 const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing']
 
 export default function GalleryManager() {
@@ -132,6 +137,7 @@ export default function GalleryManager() {
     try {
       const res = await fetch(`${API}/uploads`, {
         method: 'POST',
+        headers: { ...authHeaders() },
         body: formData,
       })
       if (!res.ok) {

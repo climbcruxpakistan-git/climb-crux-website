@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
+
+function authHeaders() {
+  const token = localStorage.getItem('admin_token')
+  return token ? { 'Authorization': `Bearer ${token}` } : {}
+}
 
 export default function HomeManager() {
   const { addToast } = useToast()
@@ -36,7 +41,7 @@ export default function HomeManager() {
     try {
       const res = await fetch(`${API}/home`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(updated),
       })
       if (!res.ok) throw new Error()

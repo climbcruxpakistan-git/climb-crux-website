@@ -2,7 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const API = import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api'
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
+
+function authHeaders() {
+  const token = localStorage.getItem('admin_token')
+  return token ? { 'Authorization': `Bearer ${token}` } : {}
+}
 
 export default function PhotosManager() {
   const { addToast } = useToast()
@@ -70,6 +75,7 @@ export default function PhotosManager() {
     try {
       const res = await fetch(`${API}/uploads`, {
         method: 'POST',
+        headers: { ...authHeaders() },
         body: formData,
       })
       if (!res.ok) {
@@ -91,7 +97,7 @@ export default function PhotosManager() {
   async function handleDelete(id) {
     if (!confirm('Delete this photo from Cloudinary?')) return
     try {
-      const res = await fetch(`${API}/uploads/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API}/uploads/${id}`, { method: 'DELETE', headers: { ...authHeaders() } })
       if (!res.ok) throw new Error('Delete failed')
       setPhotos((prev) => prev.filter((p) => (p.id || p._id) !== id))
       addToast('Photo deleted', 'success')
@@ -139,7 +145,7 @@ export default function PhotosManager() {
 
       const res = await fetch(`${API}/uploads/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
           title: editForm.title,
           tags,
