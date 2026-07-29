@@ -92,3 +92,17 @@ export async function getBookingByNumber(bookingNumber) {
 export async function createPayment(bookingId, data) {
   return mapId(await postJson(`/bookings/${bookingId}/create-payment`, data))
 }
+
+/* ---------- Shop / Products ---------- */
+
+export async function getProducts() {
+  return mapId(await fetchJson('/products'))
+}
+
+export async function getFeaturedProducts() {
+  return mapId(await fetchJson('/products/featured'))
+}
+
+export async function placeOrder(data) {
+  return mapId(await postJson('/products/order', data))
+}

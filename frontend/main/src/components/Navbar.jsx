@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/private-premium', label: 'Private & Premium' },
   { to: '/our-team', label: 'Our Team' },
   { to: '/about', label: 'About' },
+  { to: '/shop', label: 'Shop' },
   { to: '/gallery', label: 'Gallery' },
 ]
 

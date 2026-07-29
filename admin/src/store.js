@@ -206,6 +206,37 @@ export async function verifyPayment(bookingId, action) {
   return await request('POST', '/payments/verify', { booking_id: bookingId, action })
 }
 
+/* ---------- Shop / Products ---------- */
+
+export async function getProducts() {
+  return mapId(await request('GET', '/products'))
+}
+
+export async function saveProduct(product) {
+  const body = { ...product }
+  delete body.id
+  if (product.id) {
+    return mapId(await request('PUT', `/products/${product.id}`, body))
+  }
+  return mapId(await request('POST', '/products', body))
+}
+
+export async function deleteProduct(id) {
+  return request('DELETE', `/products/${id}`)
+}
+
+export async function getProductOrders() {
+  return mapId(await request('GET', '/products/orders'))
+}
+
+export async function patchOrderStatus(id, status) {
+  return mapId(await request('PATCH', `/products/orders/${id}/status`, { status }))
+}
+
+export async function patchOrderPayment(id, paymentData) {
+  return mapId(await request('PATCH', `/products/orders/${id}/payment`, paymentData))
+}
+
 /* ---------- About ---------- */
 
 export async function getAbout() {

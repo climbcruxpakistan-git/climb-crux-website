@@ -21,6 +21,7 @@ import sessionContentRoutes from './routes/sessionContent.js'
 import homeContentRoutes from './routes/homeContent.js'
 import authRoutes from './routes/auth.js'
 import paymentRoutes from './routes/payments.js'
+import productRoutes from './routes/products.js'
 
 import { requireAdmin } from './middleware/auth.js'
 import { authLimiter, bookingLimiter, apiLimiter } from './middleware/rateLimiter.js'
@@ -89,6 +90,7 @@ app.use('/api/uploads', requireAdmin, uploadRoutes)
 app.use('/api/session-content', requireAdmin, sessionContentRoutes)
 app.use('/api/home', requireAdmin, homeContentRoutes)
 app.use('/api/payments', requireAdmin, paymentRoutes)
+app.use('/api/products', productRoutes)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' })
 })
