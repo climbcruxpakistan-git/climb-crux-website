@@ -43,7 +43,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="wrap footer-bottom-inner">
-          <span>© {new Date().getFullYear()} Climb Crux. All rights reserved.</span>
+          <span>© 2025 Climb Crux. All rights reserved.</span>
           <span>Islamabad, Pakistan</span>
         </div>
       </div>

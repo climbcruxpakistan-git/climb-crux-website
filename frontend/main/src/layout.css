@@ -176,6 +176,28 @@
   width: 100%;
 }
 
+/* Crest line glow animation — a subtle pulse along the peak route */
+.cliff-edge-crest {
+  stroke-dasharray: 4 8;
+  animation: crest-pulse 4s ease-in-out infinite;
+}
+
+@keyframes crest-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    stroke-width: 1.5;
+  }
+  50% {
+    opacity: 1;
+    stroke-width: 2;
+  }
+}
+
+/* On dark backgrounds the crest pops more */
+.footer .cliff-edge-crest {
+  stroke-width: 2;
+}
+
 .footer {
   background: var(--charcoal);
   color: var(--chalk-dim);
