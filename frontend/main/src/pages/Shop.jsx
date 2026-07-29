@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { getProducts, placeOrder } from '../api.js'
 import './Shop.css'
@@ -162,14 +163,20 @@ export default function Shop() {
                       )}
                     </div>
 
-                    {/* Buy button */}
-                    <button
-                      className="btn btn-primary shop-card-btn"
-                      disabled={!product.inStock}
-                      onClick={() => openCheckout(product)}
-                    >
-                      {product.inStock ? 'Buy Now' : 'Sold Out'}
-                    </button>
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <Link to={`/shop/${product.id}`} className="btn btn-outline shop-card-btn" style={{ flex: 1, textAlign: 'center', fontSize: '0.78rem', padding: '0.7em 0.6em' }}>
+                        View Details
+                      </Link>
+                      <button
+                        className="btn btn-primary shop-card-btn"
+                        style={{ flex: 1 }}
+                        disabled={!product.inStock}
+                        onClick={() => openCheckout(product)}
+                      >
+                        {product.inStock ? 'Buy Now' : 'Sold Out'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

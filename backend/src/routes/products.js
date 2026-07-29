@@ -23,6 +23,15 @@ router.get('/featured', async (_req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/products/:id — public, single product
+router.get('/:id', async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) return res.status(404).json({ error: 'Product not found' })
+    res.json(product)
+  } catch (err) { next(err) }
+})
+
 // POST /api/products — admin create
 router.post('/', requireAdmin, async (req, res, next) => {
   try {
@@ -37,6 +46,7 @@ router.post('/', requireAdmin, async (req, res, next) => {
       category: req.body.category || 'Uncategorized',
       originalPrice: req.body.originalPrice || null,
       imageUrl: req.body.imageUrl || '',
+      images: req.body.images || [],
       description: req.body.description || '',
       features: req.body.features || [],
       inStock: req.body.inStock !== false,
@@ -51,7 +61,7 @@ router.post('/', requireAdmin, async (req, res, next) => {
 router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
-    const fields = ['name', 'brand', 'price', 'category', 'originalPrice', 'imageUrl', 'description', 'features', 'inStock', 'featured', 'sortOrder']
+    const fields = ['name', 'brand', 'price', 'category', 'originalPrice', 'imageUrl', 'images', 'description', 'features', 'inStock', 'featured', 'sortOrder']
     for (const f of fields) {
       if (req.body[f] !== undefined) update[f] = req.body[f]
     }

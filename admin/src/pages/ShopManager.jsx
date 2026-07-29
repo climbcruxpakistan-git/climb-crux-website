@@ -12,7 +12,7 @@ export default function ShopManager() {
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
     name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '',
-    imageUrl: '', description: '', features: [''], inStock: true, featured: false, sortOrder: 0,
+    imageUrl: '', images: [''], description: '', features: [''], inStock: true, featured: false, sortOrder: 0,
   })
 
   // Order detail modal
@@ -33,14 +33,14 @@ export default function ShopManager() {
   }
 
   function openNew() {
-    setForm({ name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '', imageUrl: '', description: '', features: [''], inStock: true, featured: false, sortOrder: 0 })
+    setForm({ name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '', imageUrl: '', images: [''], description: '', features: [''], inStock: true, featured: false, sortOrder: 0 })
     setEditing('new')
   }
 
   function openEdit(p) {
     setForm({
       name: p.name, brand: p.brand || '', category: p.category || 'Uncategorized', price: p.price?.toString() || '',
-      originalPrice: p.originalPrice?.toString() || '', imageUrl: p.imageUrl || '',
+      originalPrice: p.originalPrice?.toString() || '',      imageUrl: p.imageUrl || '', images: p.images?.length ? p.images : [''],
       description: p.description || '', features: p.features?.length ? p.features : [''],
       inStock: p.inStock !== false, featured: p.featured || false, sortOrder: p.sortOrder || 0,
     })
@@ -57,6 +57,7 @@ export default function ShopManager() {
       price: parseFloat(form.price),
       originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
       features: form.features.filter((f) => f.trim()),
+      images: form.images.filter((img) => img.trim()),
     }
     if (editing !== 'new') data.id = editing
     await saveProduct(data)
@@ -326,9 +327,19 @@ export default function ShopManager() {
               </div>
             </div>
             <div className="admin-field">
-              <label>Image URL (Cloudinary)</label>
+              <label>Main Image URL (Cloudinary)</label>
               <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://res.cloudinary.com/..." />
               {form.imageUrl && <img src={form.imageUrl} alt="" style={{ marginTop: 4, maxHeight: 80, borderRadius: 6 }} />}
+            </div>
+            <div className="admin-field">
+              <label>Additional Images (URLs)</label>
+              {form.images.map((img, i) => (
+                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                  <input style={{ flex: 1 }} value={img} onChange={(e) => setForm({ ...form, images: form.images.map((x, j) => j === i ? e.target.value : x) })} placeholder={`Additional image ${i + 1} URL`} />
+                  <button className="btn-admin-icon danger" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })} title="Remove">✕</button>
+                </div>
+              ))}
+              <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, ''] })} style={{ alignSelf: 'flex-start' }}>+ Add Image</button>
             </div>
             <div className="admin-field">
               <label>Description</label>

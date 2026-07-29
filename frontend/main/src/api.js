@@ -99,6 +99,10 @@ export async function getProducts() {
   return mapId(await fetchJson('/products'))
 }
 
+export async function getProduct(id) {
+  return mapId(await fetchJson(`/products/${id}`))
+}
+
 export async function getFeaturedProducts() {
   return mapId(await fetchJson('/products/featured'))
 }
