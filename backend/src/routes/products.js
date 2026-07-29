@@ -85,7 +85,7 @@ router.delete('/:id', requireAdmin, async (req, res, next) => {
 // POST /api/products/order — public: place an order
 router.post('/order', async (req, res, next) => {
   try {
-    const { product_id, product_name, product_price, quantity, customer_name, customer_email, customer_phone, customer_address } = req.body
+    const { product_id, product_name, product_price, quantity, customer_name, customer_email, customer_phone, customer_address, payment_method, payer_bank, payer_name, payer_phone } = req.body
     if (!product_name || !customer_name) {
       return res.status(400).json({ error: 'Product name and customer name are required' })
     }
@@ -103,6 +103,10 @@ router.post('/order', async (req, res, next) => {
       customer_email: customer_email || '',
       customer_phone: customer_phone || '',
       customer_address: customer_address || '',
+      payment_method: payment_method || '',
+      payer_bank: payer_bank || '',
+      payer_name: payer_name || '',
+      payer_phone: payer_phone || '',
     })
     res.status(201).json(order)
   } catch (err) { next(err) }

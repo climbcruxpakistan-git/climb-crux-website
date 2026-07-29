@@ -87,7 +87,7 @@ export default function ProductDetail() {
     }
     setOrdering(true)
     try {
-      const result = await placeOrder({
+      const orderData = {
         product_id: product.id,
         product_name: product.name,
         product_price: product.price,
@@ -97,7 +97,18 @@ export default function ProductDetail() {
         customer_email: form.customer_email,
         customer_phone: form.customer_phone,
         customer_address: form.customer_address,
-      })
+      }
+      // Attach payment details based on selected method
+      if (paymentMethod === 'bank_transfer') {
+        orderData.payment_method = 'bank_transfer'
+        orderData.payer_bank = bankName
+        orderData.payer_name = accountHolder
+      } else if (paymentMethod === 'easypaisa') {
+        orderData.payment_method = 'easypaisa'
+        orderData.payer_name = easypaisaSender
+        orderData.payer_phone = easypaisaPhone
+      }
+      const result = await placeOrder(orderData)
       setOrderResult(result)
       setFlow(null)
     } catch {
