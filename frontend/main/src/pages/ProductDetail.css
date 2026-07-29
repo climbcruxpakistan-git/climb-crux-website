@@ -304,13 +304,97 @@
   font-weight: 700;
 }
 
+/* ── Quantity Selector ── */
+.pd-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--chalk-dim);
+}
+
+.pd-qty-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--stone-dark);
+  font-weight: 600;
+}
+
+.pd-qty-selector {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid var(--chalk-dim);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pd-qty-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--chalk);
+  color: var(--charcoal);
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pd-qty-btn:hover {
+  background: var(--chalk-dim);
+}
+
+.pd-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pd-qty-value {
+  width: 48px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  font-family: var(--font-display);
+}
+
+/* ── Total Price Row ── */
+.pd-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-top: 2px solid var(--charcoal);
+  margin-top: 4px;
+}
+
+.pd-total-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+.pd-total-amount {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+}
+
 /* Buy button */
 .pd-buy-btn {
   width: 100%;
   justify-content: center;
   padding: 1.1em;
   font-size: 1.05rem;
-  margin-top: 8px;
 }
 
 .pd-buy-btn:disabled {
@@ -421,6 +505,11 @@
   font-weight: 700;
   color: var(--charcoal);
   margin-top: auto;
+}
+
+/* ── Wide checkout modal ── */
+.shop-modal--wide {
+  max-width: 620px;
 }
 
 /* ── Responsive ── */
