@@ -41,6 +41,9 @@ const allowedOrigins = [
   // Production — always include known Vercel deployments
   'https://climb-crux-admin.vercel.app',
   'https://climb-crux-frontend.vercel.app',
+  // Production — custom domain
+  'https://climbcruxpakistan.com',
+  'https://www.climbcruxpakistan.com',
   // Production (set via Render env vars for custom domains)
   ...(FRONTEND_URL ? [FRONTEND_URL] : []),
   ...(ADMIN_URL ? [ADMIN_URL] : []),
