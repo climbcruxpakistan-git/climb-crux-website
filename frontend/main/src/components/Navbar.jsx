@@ -50,7 +50,7 @@ export default function Navbar() {
           <NavLink to="/shop" className="btn btn-primary navbar-cta">
             Shop Now
           </NavLink>
-          <NavLink to="/book-now" className="btn btn-outline navbar-cta">
+          <NavLink to="/book-now" className="btn btn-gray navbar-cta">
             Book Now
           </NavLink>
         </nav>

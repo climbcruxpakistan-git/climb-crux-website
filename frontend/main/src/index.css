@@ -175,6 +175,15 @@ p {
   color: var(--charcoal);
 }
 
+.btn-gray {
+  background: var(--stone-dark);
+  color: var(--chalk);
+}
+
+.btn-gray:hover {
+  background: var(--stone);
+}
+
 /* Grade badge — the site's signature recurring element.
    Mirrors real climbing route grades, used wherever a session/plan
    needs to communicate its difficulty at a glance. */
