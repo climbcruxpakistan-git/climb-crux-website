@@ -11,7 +11,7 @@ export default function ShopManager() {
   const [tab, setTab] = useState('products')
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
-    name: '', category: 'Uncategorized', price: '', originalPrice: '',
+    name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '',
     imageUrl: '', description: '', features: [''], inStock: true, featured: false, sortOrder: 0,
   })
 
@@ -33,13 +33,13 @@ export default function ShopManager() {
   }
 
   function openNew() {
-    setForm({ name: '', category: 'Uncategorized', price: '', originalPrice: '', imageUrl: '', description: '', features: [''], inStock: true, featured: false, sortOrder: 0 })
+    setForm({ name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '', imageUrl: '', description: '', features: [''], inStock: true, featured: false, sortOrder: 0 })
     setEditing('new')
   }
 
   function openEdit(p) {
     setForm({
-      name: p.name, category: p.category || 'Uncategorized', price: p.price?.toString() || '',
+      name: p.name, brand: p.brand || '', category: p.category || 'Uncategorized', price: p.price?.toString() || '',
       originalPrice: p.originalPrice?.toString() || '', imageUrl: p.imageUrl || '',
       description: p.description || '', features: p.features?.length ? p.features : [''],
       inStock: p.inStock !== false, featured: p.featured || false, sortOrder: p.sortOrder || 0,
@@ -198,6 +198,7 @@ export default function ShopManager() {
                     <tr>
                       <th style={{ width: 50 }}>Img</th>
                       <th>Name</th>
+                      <th>Brand</th>
                       <th>Category</th>
                       <th>Price</th>
                       <th>Stock</th>
@@ -216,6 +217,7 @@ export default function ShopManager() {
                           )}
                         </td>
                         <td><strong>{p.name}</strong></td>
+                        <td>{p.brand ? <span className="badge badge-blue">{p.brand}</span> : '—'}</td>
                         <td><span className="badge badge-gray">{p.category}</span></td>
                         <td>PKR {p.price?.toLocaleString()}</td>
                         <td>
@@ -301,13 +303,18 @@ export default function ShopManager() {
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Product name *</label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Petzl Grigri+" />
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Grigri+" />
               </div>
+              <div className="admin-field">
+                <label>Brand</label>
+                <input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="e.g. Petzl" />
+              </div>
+            </div>
+            <div className="admin-form-row">
               <div className="admin-field">
                 <label>Category</label>
                 <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Harnesses & Belay" />
               </div>
-            </div>
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Price (PKR) *</label>

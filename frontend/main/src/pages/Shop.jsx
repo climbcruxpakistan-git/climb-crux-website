@@ -128,7 +128,9 @@ export default function Shop() {
 
                   {/* Info */}
                   <div className="shop-card-body">
-                    <span className="shop-card-category">{product.category}</span>
+                    <span className="shop-card-category">
+                      {product.brand ? `${product.brand} · ` : ''}{product.category}
+                    </span>
                     <h3 className="shop-card-title">{product.name}</h3>
 
                     {product.description && (

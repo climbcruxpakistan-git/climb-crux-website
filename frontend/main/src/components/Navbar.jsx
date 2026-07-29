@@ -7,7 +7,6 @@ const LINKS = [
   { to: '/private-premium', label: 'Private & Premium' },
   { to: '/our-team', label: 'Our Team' },
   { to: '/about', label: 'About' },
-  { to: '/shop', label: 'Shop' },
   { to: '/gallery', label: 'Gallery' },
 ]
 
@@ -48,7 +47,10 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
-          <NavLink to="/book-now" className="btn btn-primary navbar-cta">
+          <NavLink to="/shop" className="btn btn-primary navbar-cta">
+            Shop Now
+          </NavLink>
+          <NavLink to="/book-now" className="btn btn-outline navbar-cta">
             Book Now
           </NavLink>
         </nav>

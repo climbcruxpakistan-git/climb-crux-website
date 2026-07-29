@@ -12,6 +12,8 @@ export default function PaymentPage() {
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
 
+  const WHATSAPP_NUMBER = '+92 313 2690377'
+
   // Flow: 'select' | 'bank-form' | 'easypaisa-form'
   const [flow, setFlow] = useState('select')
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -276,6 +278,13 @@ export default function PaymentPage() {
                     <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
                       Please transfer <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the account above.
                     </p>
+                    <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}>
+                        <strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, please send the payment proof/screenshot to
+                        our WhatsApp at <strong style={{ color: 'var(--orange-dark)' }}>{WHATSAPP_NUMBER}</strong> for verification along with your booking number.
+                        Your booking will only be confirmed once the payment is verified.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -322,6 +331,13 @@ export default function PaymentPage() {
                     <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
                       Please send <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the EasyPaisa account above.
                     </p>
+                    <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}>
+                        <strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, please send the payment proof/screenshot to
+                        our WhatsApp at <strong style={{ color: 'var(--orange-dark)' }}>{WHATSAPP_NUMBER}</strong> for verification along with your booking number.
+                        Your booking will only be confirmed once the payment is verified.
+                      </p>
+                    </div>
                   </div>
                 </div>
 

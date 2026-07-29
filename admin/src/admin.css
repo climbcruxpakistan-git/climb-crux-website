@@ -496,6 +496,11 @@ tbody tr:hover {
   color: #c2410c;
 }
 
+.badge-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
 /* =========================== BUTTONS =========================== */
 
 .btn-admin {

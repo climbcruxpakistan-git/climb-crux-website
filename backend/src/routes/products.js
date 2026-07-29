@@ -33,6 +33,7 @@ router.post('/', requireAdmin, async (req, res, next) => {
     const product = await Product.create({
       name,
       price,
+      brand: req.body.brand || '',
       category: req.body.category || 'Uncategorized',
       originalPrice: req.body.originalPrice || null,
       imageUrl: req.body.imageUrl || '',
@@ -50,7 +51,7 @@ router.post('/', requireAdmin, async (req, res, next) => {
 router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
-    const fields = ['name', 'price', 'category', 'originalPrice', 'imageUrl', 'description', 'features', 'inStock', 'featured', 'sortOrder']
+    const fields = ['name', 'brand', 'price', 'category', 'originalPrice', 'imageUrl', 'description', 'features', 'inStock', 'featured', 'sortOrder']
     for (const f of fields) {
       if (req.body[f] !== undefined) update[f] = req.body[f]
     }
