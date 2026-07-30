@@ -179,6 +179,7 @@ export default function ProductDetail() {
             <div className="pd-meta">
               {product.brand && <span className="pd-brand">{product.brand}</span>}
               <span className="pd-category">{product.category}</span>
+              {product.sku && <span className="pd-sku">SKU: {product.sku}</span>}
             </div>
 
             <h1 className="pd-title">{product.name}</h1>
@@ -195,9 +196,20 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <div className={`pd-stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
-              {product.inStock ? '✅ In Stock' : '❌ Out of Stock'}
-            </div>
+            {/* ── Stock Status ── */}
+            {(() => {
+              const status = product.stockStatus || (product.inStock ? 'in_stock' : 'out_of_stock')
+              const labels = { in_stock: 'In Stock', low_stock: 'Low Stock', out_of_stock: 'Out of Stock', backorder: 'Backorder' }
+              const icons = { in_stock: '✅', low_stock: '⚠️', out_of_stock: '❌', backorder: '📦' }
+              return (
+                <div className={`pd-stock pd-stock-${status}`}>
+                  <span>{icons[status] || '❓'} {labels[status]}</span>
+                  {product.stockQuantity !== undefined && status !== 'out_of_stock' && (
+                    <span className="pd-stock-qty">{product.stockQuantity} available</span>
+                  )}
+                </div>
+              )
+            })()}
 
             {product.description && (
               <div className="pd-description">
@@ -212,6 +224,86 @@ export default function ProductDetail() {
                 <ul>
                   {product.features.map((f, i) => <li key={i}>{f}</li>)}
                 </ul>
+              </div>
+            )}
+
+            {/* ── Variants ── */}
+            {product.variants?.length > 0 && (
+              <div className="pd-variants-section">
+                <h3>Available Options</h3>
+                {Object.entries(
+                  product.variants.reduce((groups, v) => {
+                    if (!groups[v.name]) groups[v.name] = []
+                    groups[v.name].push(v)
+                    return groups
+                  }, {})
+                ).map(([groupName, options]) => (
+                  <div key={groupName} className="pd-variant-group">
+                    <span className="pd-variant-label">{groupName}</span>
+                    <div className="pd-variant-options">
+                      {options.map((v, i) => (
+                        <span key={i} className="pd-variant-chip" title={v.sku ? `SKU: ${v.sku}` : ''}>
+                          {v.value}
+                          {v.price && <span className="pd-variant-price">+PKR {v.price.toLocaleString()}</span>}
+                          {v.stockQuantity <= 0 && <span className="pd-variant-oos">(unavailable)</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Specifications ── */}
+            {product.specifications?.length > 0 && (
+              <div className="pd-specs">
+                <h3>Specifications</h3>
+                <table className="pd-specs-table">
+                  <tbody>
+                    {product.specifications.map((s, i) => (
+                      <tr key={i}>
+                        <td className="pd-spec-key">{s.key}</td>
+                        <td className="pd-spec-value">{s.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ── Shipping, Warranty, Returns Cards ── */}
+            {(product.shipping?.deliveryTime || product.warranty?.period || product.returns?.window) && (
+              <div className="pd-policy-cards">
+                {product.shipping?.deliveryTime && (
+                  <div className="pd-policy-card">
+                    <div className="pd-policy-icon">🚚</div>
+                    <div className="pd-policy-text">
+                      <span className="pd-policy-label">Shipping</span>
+                      <span className="pd-policy-value">{product.shipping.deliveryTime}</span>
+                      {product.shipping.freeShipping && <span className="pd-policy-badge">Free</span>}
+                    </div>
+                  </div>
+                )}
+                {product.warranty?.period && (
+                  <div className="pd-policy-card">
+                    <div className="pd-policy-icon">🛡️</div>
+                    <div className="pd-policy-text">
+                      <span className="pd-policy-label">Warranty</span>
+                      <span className="pd-policy-value">{product.warranty.period}</span>
+                      {product.warranty.details && <span className="pd-policy-detail">{product.warranty.details}</span>}
+                    </div>
+                  </div>
+                )}
+                {product.returns?.window && (
+                  <div className="pd-policy-card">
+                    <div className="pd-policy-icon">↩️</div>
+                    <div className="pd-policy-text">
+                      <span className="pd-policy-label">Returns</span>
+                      <span className="pd-policy-value">{product.returns.window}</span>
+                      {product.returns.policy && <span className="pd-policy-detail">{product.returns.policy}</span>}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

@@ -158,6 +158,13 @@
   color: var(--ink);
 }
 
+.shop-card-sku {
+  font-size: 0.68rem;
+  font-family: monospace;
+  color: var(--stone);
+  letter-spacing: 0.02em;
+}
+
 .shop-card-desc {
   font-size: 0.82rem;
   color: var(--stone);
@@ -225,10 +232,33 @@
 }
 
 .shop-card-out {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #dc2626;
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.shop-card-out.badge-green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.shop-card-out.badge-yellow {
+  background: rgba(234, 179, 8, 0.1);
+  color: #a16207;
+}
+
+.shop-card-out.badge-red {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.shop-card-out.badge-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
 }
 
 /* Discount percentage chip */

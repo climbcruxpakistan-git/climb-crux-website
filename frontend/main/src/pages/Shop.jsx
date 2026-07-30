@@ -98,6 +98,9 @@ export default function Shop() {
                       {product.brand ? `${product.brand} · ` : ''}{product.category}
                     </span>
                     <h3 className="shop-card-title">{product.name}</h3>
+                    {product.sku && (
+                      <span className="shop-card-sku">{product.sku}</span>
+                    )}
 
                     {product.description && (
                       <p className="shop-card-desc">{product.description}</p>
@@ -128,9 +131,15 @@ export default function Shop() {
                           </>
                         )}
                       </div>
-                      {!product.inStock && (
-                        <span className="shop-card-out">Out of stock</span>
-                      )}
+                      {(() => {
+                        const status = product.stockStatus || (product.inStock ? 'in_stock' : 'out_of_stock')
+                        const labels = { in_stock: 'In Stock', low_stock: 'Low Stock', out_of_stock: 'Out of Stock', backorder: 'Backorder' }
+                        const colors = { in_stock: 'badge-green', low_stock: 'badge-yellow', out_of_stock: 'badge-red', backorder: 'badge-blue' }
+                        if (status === 'in_stock' && !product.lowStockThreshold) return null
+                        return (
+                          <span className={`shop-card-out ${colors[status] || ''}`}>{labels[status] || (product.inStock ? 'In Stock' : 'Out')}</span>
+                        )
+                      })()}
                     </div>
 
                     {/* Buy button navigates to detail page */}
