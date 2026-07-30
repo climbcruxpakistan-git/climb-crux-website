@@ -199,13 +199,6 @@
   letter-spacing: 0.02em;
 }
 
-.shop-card-desc {
-  font-size: 0.82rem;
-  color: var(--stone);
-  line-height: 1.5;
-  margin: 0;
-}
-
 /* Features */
 .shop-card-features {
   list-style: none;

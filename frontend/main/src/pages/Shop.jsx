@@ -111,9 +111,6 @@ export default function Shop() {
                     <h3 className="shop-card-title">{product.name}</h3>
 
 
-                    {product.description && (
-                      <p className="shop-card-desc">{product.description}</p>
-                    )}
 
                     {/* Features */}
                     {product.features?.length > 0 && (

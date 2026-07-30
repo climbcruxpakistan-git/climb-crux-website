@@ -80,7 +80,6 @@ export default function Shop() {
                   </div>
                   <div className="shop-card-body">
                     <h3 className="shop-card-title">{product.name}</h3>
-                    {product.description && <p className="shop-card-desc">{product.description}</p>}
                     {product.features?.length > 0 && (
                       <ul className="shop-card-features">
                         {product.features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
