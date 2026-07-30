@@ -93,6 +93,25 @@ export async function createPayment(bookingId, data) {
   return mapId(await postJson(`/bookings/${bookingId}/create-payment`, data))
 }
 
+/* ── Cloudinary Image Optimization ── */
+
+/**
+ * Optimizes a Cloudinary image URL with auto-format, auto-quality, and optional width.
+ * Falls back to the original URL for non-Cloudinary images.
+ */
+export function optimizeImage(url, width) {
+  if (!url || !url.includes('cloudinary.com')) return url
+  const parts = ['q_auto', 'f_auto']
+  if (width) parts.unshift(`w_${width}`)
+  return url.replace('/upload/', `/upload/${parts.join(',')}/`)
+}
+
+/** Build a slug-based product URL (prefer slug, fall back to ID) */
+export function productUrl(product) {
+  if (product.slug) return `/shop/${encodeURIComponent(product.slug)}`
+  return `/shop/${product.id}`
+}
+
 /* ---------- Shop / Products ---------- */
 
 export async function getProducts() {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { getProduct, getProducts, placeOrder, getProductReviews, submitProductReview } from '../api.js'
+import { getProduct, getProducts, placeOrder, getProductReviews, submitProductReview, optimizeImage, productUrl } from '../api.js'
 import './ProductDetail.css'
 
 const WHATSAPP_NUMBER = '+92 313 2690377'
@@ -118,6 +118,8 @@ export default function ProductDetail() {
         setReviewData(reviews)
         trackRecentlyViewed(p)
         setRecentlyViewed(getRecentlyViewed(id))
+        // SEO: update document title
+        document.title = `${p.name} — Climb Crux Pakistan`
       })
       .catch(() => navigate('/shop'))
       .finally(() => setLoading(false))
@@ -263,8 +265,44 @@ export default function ProductDetail() {
   const stockLabels = { in_stock: 'In Stock', low_stock: 'Low Stock', out_of_stock: 'Out of Stock', backorder: 'Backorder' }
   const stockIcons = { in_stock: '✅', low_stock: '⚠️', out_of_stock: '❌', backorder: '📦' }
 
+  /* ── Structured Data (JSON-LD) ── */
+  const jsonLd = {
+    '@context': 'https://schema.org/',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description ? product.description.slice(0, 300) : `${product.name} from Climb Crux Pakistan`,
+    sku: product.sku || undefined,
+    brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+    category: product.category || undefined,
+    image: [product.imageUrl, ...(product.images || [])].filter(Boolean),
+    offers: {
+      '@type': 'Offer',
+      url: window.location.href,
+      priceCurrency: 'PKR',
+      price: product.price,
+      availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    },
+    ...(reviewData.total > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: reviewData.avgRating,
+        reviewCount: reviewData.total,
+      },
+    } : {}),
+    ...(product.shipping?.deliveryTime ? {
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'PK' },
+        deliveryTime: product.shipping.deliveryTime,
+      },
+    } : {}),
+  }
+
   return (
     <>
+      {/* JSON-LD Structured Data */}
+      <script type="application/ld+json">{JSON.stringify(jsonLd, null, 2)}</script>
       {/* ─────────────────────────────────────────────────────────────
            MAIN SECTION — Two Column Layout
            ───────────────────────────────────────────────────────────── */}
@@ -293,7 +331,7 @@ export default function ProductDetail() {
                     </button>
                   </>
                 )}
-                <img className="pd-main-image" src={allImages[activeImg]} alt={`${product.name} — image ${activeImg + 1}`} />
+                <img className="pd-main-image" src={optimizeImage(allImages[activeImg])} alt={`${product.name} — image ${activeImg + 1}`} loading={activeImg === 0 ? 'eager' : 'lazy'} />
                 <div className="pd-img-counter">{activeImg + 1} / {allImages.length}</div>
                 <div className="pd-zoom-hint">Click to zoom</div>
               </div>
@@ -306,7 +344,7 @@ export default function ProductDetail() {
               <div className="pd-thumbnails">
                 {allImages.map((img, i) => (
                   <button key={i} className={`pd-thumb ${i === activeImg ? 'is-active' : ''}`} onClick={() => setActiveImg(i)}>
-                    <img src={img} alt={`Thumbnail ${i + 1}`} />
+                    <img src={optimizeImage(img, 150)} alt={`${product.name} — thumbnail ${i + 1}`} loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -598,9 +636,9 @@ export default function ProductDetail() {
             <h2 className="pd-section-title">You might also like</h2>
             <div className="pd-suggestions-grid">
               {relatedProducts.map((sp) => (
-                <Link to={`/shop/${sp.id}`} key={sp.id} className="pd-suggestion-card">
+                <Link to={productUrl(sp)} key={sp.id} className="pd-suggestion-card">
                   <div className="pd-suggestion-img">
-                    {sp.imageUrl ? <img src={sp.imageUrl} alt={sp.name} /> : <div className="pd-suggestion-placeholder">📦</div>}
+                    {sp.imageUrl ? <img src={optimizeImage(sp.imageUrl, 300)} alt={sp.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
                   </div>
                   <div className="pd-suggestion-body">
                     <span className="pd-suggestion-brand">{sp.brand ? `${sp.brand} · ` : ''}{sp.category}</span>
@@ -623,9 +661,9 @@ export default function ProductDetail() {
             <h2 className="pd-section-title">Recently viewed</h2>
             <div className="pd-suggestions-grid">
               {recentlyViewed.map((rv) => (
-                <Link to={`/shop/${rv.id}`} key={rv.id} className="pd-suggestion-card">
+                <Link to={rv.slug ? `/shop/${encodeURIComponent(rv.slug)}` : `/shop/${rv.id}`} key={rv.id} className="pd-suggestion-card">
                   <div className="pd-suggestion-img">
-                    {rv.imageUrl ? <img src={rv.imageUrl} alt={rv.name} /> : <div className="pd-suggestion-placeholder">📦</div>}
+                    {rv.imageUrl ? <img src={optimizeImage(rv.imageUrl, 300)} alt={rv.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
                   </div>
                   <div className="pd-suggestion-body">
                     <h4 className="pd-suggestion-name">{rv.name}</h4>
@@ -646,7 +684,7 @@ export default function ProductDetail() {
           <button className="pd-zoom-close" onClick={() => setZoomOpen(false)}>✕</button>
           <img
             className="pd-zoom-image"
-            src={allImages[activeImg]}
+            src={optimizeImage(allImages[activeImg])}
             alt={`${product.name} enlarged`}
             onClick={(e) => e.stopPropagation()}
             style={{ transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` }}

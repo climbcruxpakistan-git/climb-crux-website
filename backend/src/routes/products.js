@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import Product from '../models/Product.js'
 import ProductOrder from '../models/ProductOrder.js'
 import { requireAdmin, requireAdminStrict } from '../middleware/auth.js'
@@ -100,10 +101,20 @@ router.patch('/orders/:id/payment', requireAdmin, async (req, res, next) => {
 
 // ── Parameterized routes (keep after static routes) ─────────────────
 
-// GET /api/products/:id — public, single product
+// GET /api/products/:id — public, single product (supports both MongoDB _id and slug)
 router.get('/:id', async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id)
+    const { id } = req.params
+    let product
+
+    // Try finding by slug first (for SEO-friendly URLs)
+    product = await Product.findOne({ slug: id })
+
+    // Fall back to MongoDB _id lookup if slug didn't match
+    if (!product && mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findById(id)
+    }
+
     if (!product) return res.status(404).json({ error: 'Product not found' })
     res.json(product)
   } catch (err) { next(err) }

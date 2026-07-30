@@ -3,6 +3,48 @@
   padding-bottom: 0;
 }
 
+/* ── Low Stock Badge ── */
+.shop-badge-low-stock {
+  background: #ca8a04;
+  color: #fff;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+/* ── Estimated Delivery ── */
+.shop-card-delivery {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--stone);
+  padding: 6px 0;
+  border-top: 1px solid var(--chalk-dim);
+  margin-top: 4px;
+}
+
+.shop-card-delivery span {
+  flex-shrink: 0;
+}
+
+/* ── Section Title (shared with ProductDetail) ── */
+.pd-section-title {
+  font-size: 1.15rem; text-align: center; margin-bottom: 28px; color: var(--charcoal);
+  position: relative;
+}
+.pd-section-title::after {
+  content: ''; display: block; width: 40px; height: 3px; background: var(--orange);
+  margin: 10px auto 0; border-radius: 2px;
+}
+
+@media (max-width: 480px) {
+  .pd-section-title { font-size: 1rem; }
+}
+
 .shop-categories {
   display: flex;
   gap: 8px;
@@ -14,7 +56,7 @@
 .shop-cat-btn {
   padding: 8px 20px;
   border-radius: 100px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--chalk-dim);
   background: transparent;
   font-family: inherit;
   font-size: 0.82rem;
@@ -68,7 +110,7 @@
   position: relative;
   border-radius: 14px;
   background: #fff;
-  border: 1px solid var(--border);
+  border: 1px solid var(--chalk-dim);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
@@ -346,7 +388,7 @@
   gap: 16px;
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--chalk-dim);
 }
 
 .shop-modal-product-img {
@@ -394,7 +436,7 @@
 .shop-field input,
 .shop-field textarea {
   padding: 10px 14px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--chalk-dim);
   border-radius: 8px;
   font-family: inherit;
   font-size: 0.9rem;
