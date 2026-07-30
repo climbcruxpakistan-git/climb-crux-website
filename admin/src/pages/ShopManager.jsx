@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getProducts, saveProduct, deleteProduct, getProductOrders, patchOrderStatus, patchOrderPayment } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
+
+function authHeaders() {
+  const token = localStorage.getItem('admin_token')
+  return token ? { 'Authorization': `Bearer ${token}` } : {}
+}
 
 export default function ShopManager() {
   const { addToast } = useToast()
@@ -14,6 +21,10 @@ export default function ShopManager() {
     name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '',
     imageUrl: '', images: [''], description: '', features: [''], inStock: true, featured: false, sortOrder: 0,
   })
+  const [uploadingMain, setUploadingMain] = useState(false)
+  const [uploadingAdditional, setUploadingAdditional] = useState(false)
+  const mainFileRef = useRef()
+  const additionalFileRef = useRef()
 
   // Order detail modal
   const [viewOrder, setViewOrder] = useState(null)
@@ -103,6 +114,87 @@ export default function ShopManager() {
   }
   function removeFeature(idx) {
     setForm({ ...form, features: form.features.filter((_, i) => i !== idx) })
+  }
+
+  /* ── Image Upload Handlers ── */
+
+  /** Upload a single file for the main product image */
+  async function uploadMainImage(file) {
+    if (!file) return
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']
+    if (!allowed.includes(file.type)) {
+      addToast('Only JPG, PNG, GIF, WebP & AVIF images are allowed', 'error')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      addToast('Image must be under 10MB', 'error')
+      return
+    }
+
+    setUploadingMain(true)
+    const formData = new FormData()
+    formData.append('photos', file)
+
+    try {
+      const res = await fetch(`${API}/uploads`, {
+        method: 'POST',
+        headers: { ...authHeaders() },
+        body: formData,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(err.error || 'Upload failed')
+      }
+      const uploaded = await res.json()
+      if (uploaded && uploaded.length > 0) {
+        setForm({ ...form, imageUrl: uploaded[0].url })
+        addToast('Main image uploaded', 'success')
+      }
+    } catch (err) {
+      addToast(err.message || 'Upload failed', 'error')
+    } finally {
+      setUploadingMain(false)
+      if (mainFileRef.current) mainFileRef.current.value = ''
+    }
+  }
+
+  /** Upload multiple files for additional product images */
+  async function uploadAdditionalImages(files) {
+    if (!files || files.length === 0) return
+    if (files.length > 10) {
+      addToast('You can upload up to 10 additional images at once', 'error')
+      return
+    }
+
+    setUploadingAdditional(true)
+    const formData = new FormData()
+    for (const file of files) {
+      formData.append('photos', file)
+    }
+
+    try {
+      const res = await fetch(`${API}/uploads`, {
+        method: 'POST',
+        headers: { ...authHeaders() },
+        body: formData,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(err.error || 'Upload failed')
+      }
+      const uploaded = await res.json()
+      if (uploaded && uploaded.length > 0) {
+        const urls = uploaded.map((p) => p.url)
+        const existing = form.images.filter((img) => img.trim())
+        setForm({ ...form, images: [...existing, ...urls, ''] })
+        addToast(`${urls.length} image${urls.length > 1 ? 's' : ''} uploaded`, 'success')
+      }
+    } catch (err) {
+      addToast(err.message || 'Upload failed', 'error')
+    } finally {
+      setUploadingAdditional(false)
+      if (additionalFileRef.current) additionalFileRef.current.value = ''
+    }
   }
 
   if (loading) return <div className="empty-state"><h3>Loading shop…</h3></div>
@@ -316,6 +408,7 @@ export default function ShopManager() {
                 <label>Category</label>
                 <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Harnesses & Belay" />
               </div>
+            </div>
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Price (PKR) *</label>
@@ -327,19 +420,150 @@ export default function ShopManager() {
               </div>
             </div>
             <div className="admin-field">
-              <label>Main Image URL (Cloudinary)</label>
-              <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://res.cloudinary.com/..." />
-              {form.imageUrl && <img src={form.imageUrl} alt="" style={{ marginTop: 4, maxHeight: 80, borderRadius: 6 }} />}
+              <label>Main Image</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                    <input
+                      style={{ flex: 1 }}
+                      value={form.imageUrl}
+                      onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                      placeholder="Paste Cloudinary URL…"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input
+                      ref={mainFileRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
+                      style={{ display: 'none' }}
+                      onChange={(e) => { if (e.target.files?.[0]) uploadMainImage(e.target.files[0]) }}
+                    />
+                    <button
+                      className="btn-admin btn-admin-sm btn-admin-outline"
+                      type="button"
+                      disabled={uploadingMain}
+                      onClick={() => mainFileRef.current?.click()}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    >
+                      {uploadingMain ? (
+                        <>
+                          <span style={{
+                            width: 14, height: 14,
+                            border: '2px solid var(--chalk-dim)',
+                            borderTop: '2px solid var(--orange)',
+                            borderRadius: '50%',
+                            display: 'inline-block',
+                            animation: 'spin 0.8s linear infinite',
+                          }} /> Uploading…
+                        </>
+                      ) : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                          Upload from device
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {form.imageUrl && (
+                <div style={{ marginTop: 8, position: 'relative', display: 'inline-block' }}>
+                  <img src={form.imageUrl} alt="" style={{ maxHeight: 100, borderRadius: 6, border: '1px solid var(--border)' }} />
+                  <button
+                    className="btn-admin-icon danger"
+                    onClick={() => setForm({ ...form, imageUrl: '' })}
+                    title="Remove image"
+                    style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}
+                  >✕</button>
+                </div>
+              )}
+              <p style={{ fontSize: '0.73rem', color: 'var(--stone)', marginTop: 4 }}>
+                Paste a Cloudinary URL or upload a new image from your device.
+              </p>
             </div>
+
             <div className="admin-field">
-              <label>Additional Images (URLs)</label>
+              <label>Additional Images</label>
+              {form.images.length > 0 && form.images.some((img) => img.trim()) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                  {form.images.filter((img) => img.trim()).map((img, i) => (
+                    <div key={i} style={{ position: 'relative', display: 'inline-block' }}>
+                      <img
+                        src={img}
+                        alt={`Additional ${i + 1}`}
+                        style={{ width: 80, height: 80, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--border)' }}
+                      />
+                      <button
+                        className="btn-admin-icon danger"
+                        onClick={() => {
+                          const filled = form.images.filter((x) => x.trim())
+                          const updated = filled.filter((_, j) => j !== i)
+                          setForm({ ...form, images: updated.length > 0 ? [...updated, ''] : [''] })
+                        }}
+                        title="Remove image"
+                        style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', cursor: 'pointer', border: '1px solid #e5e0d4' }}
+                      >✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* File upload button */}
+                <input
+                  ref={additionalFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={(e) => { if (e.target.files?.length > 0) uploadAdditionalImages(e.target.files) }}
+                />
+                <button
+                  className="btn-admin btn-admin-sm btn-admin-outline"
+                  type="button"
+                  disabled={uploadingAdditional}
+                  onClick={() => additionalFileRef.current?.click()}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
+                  {uploadingAdditional ? (
+                    <>
+                      <span style={{
+                        width: 14, height: 14,
+                        border: '2px solid var(--chalk-dim)',
+                        borderTop: '2px solid var(--orange)',
+                        borderRadius: '50%',
+                        display: 'inline-block',
+                        animation: 'spin 0.8s linear infinite',
+                      }} /> Uploading…
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                      Upload images
+                    </>
+                  )}
+                </button>
+
+                <span style={{ color: 'var(--stone)', fontSize: '0.78rem' }}>or</span>
+
+                <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, ''] })} style={{ alignSelf: 'flex-start' }}>
+                  + Add URL field
+                </button>
+              </div>
+
+              {/* URL inputs for additional images */}
               {form.images.map((img, i) => (
-                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, marginTop: i === 0 ? 8 : 0 }}>
                   <input style={{ flex: 1 }} value={img} onChange={(e) => setForm({ ...form, images: form.images.map((x, j) => j === i ? e.target.value : x) })} placeholder={`Additional image ${i + 1} URL`} />
-                  <button className="btn-admin-icon danger" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })} title="Remove">✕</button>
+                  {!img.trim() && (
+                    <button className="btn-admin-icon danger" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })} title="Remove">✕</button>
+                  )}
                 </div>
               ))}
-              <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, ''] })} style={{ alignSelf: 'flex-start' }}>+ Add Image</button>
+              <p style={{ fontSize: '0.73rem', color: 'var(--stone)', marginTop: 4 }}>
+                Upload images from your device, or paste Cloudinary URLs to add more.
+              </p>
             </div>
             <div className="admin-field">
               <label>Description</label>
@@ -478,6 +702,13 @@ export default function ShopManager() {
           </div>
         </Modal>
       )}
+
+      {/* Spin animation for upload spinners */}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </>
   )
 }
