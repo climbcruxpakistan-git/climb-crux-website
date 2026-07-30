@@ -97,8 +97,8 @@ export default function Shop() {
 
                   {/* Image */}
                   <div className="shop-card-image">
-                    {product.imageUrl ? (
-                      <img src={optimizeImage(product.imageUrl, 400)} alt={product.name} loading="lazy" />
+                    {product.imageUrl || product.images?.[0] ? (
+                      <img src={optimizeImage(product.imageUrl || product.images[0], 400)} alt={product.name} loading="lazy" />
                     ) : (
                       <div className="shop-card-image-placeholder">
                         <span>📦</span>
@@ -193,8 +193,8 @@ export default function Shop() {
                     <span className="shop-badge shop-badge-low-stock">Low Stock</span>
                   )}
                   <div className="shop-card-image">
-                    {product.imageUrl ? (
-                      <img src={optimizeImage(product.imageUrl, 400)} alt={product.name} loading="lazy" />
+                    {product.imageUrl || product.images?.[0] ? (
+                      <img src={optimizeImage(product.imageUrl || product.images[0], 400)} alt={product.name} loading="lazy" />
                     ) : (
                       <div className="shop-card-image-placeholder"><span>📦</span></div>
                     )}

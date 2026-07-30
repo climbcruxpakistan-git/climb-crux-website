@@ -72,8 +72,8 @@ export default function Shop() {
                     <span className="shop-badge shop-badge-featured">Featured</span>
                   )}
                   <div className="shop-card-image">
-                    {product.imageUrl ? (
-                      <img src={optimizeImage(product.imageUrl, 400)} alt={product.name} loading="lazy" />
+                    {product.imageUrl || product.images?.[0] ? (
+                      <img src={optimizeImage(product.imageUrl || product.images[0], 400)} alt={product.name} loading="lazy" />
                     ) : (
                       <div className="shop-card-image-placeholder"><span>📦</span></div>
                     )}
@@ -129,7 +129,7 @@ export default function Shop() {
                   onKeyDown={(e) => { if (e.key === 'Enter') navigate(product.id) }}>
                   {(product.stockStatus === 'low_stock') && <span className="shop-badge shop-badge-low-stock">Low Stock</span>}
                   <div className="shop-card-image">
-                    {product.imageUrl ? <img src={optimizeImage(product.imageUrl, 400)} alt={product.name} loading="lazy" /> : <div className="shop-card-image-placeholder"><span>📦</span></div>}
+                    {product.imageUrl || product.images?.[0] ? <img src={optimizeImage(product.imageUrl || product.images[0], 400)} alt={product.name} loading="lazy" /> : <div className="shop-card-image-placeholder"><span>📦</span></div>}
                   </div>
                   <div className="shop-card-body">
                     <h3 className="shop-card-title">{product.name}</h3>
