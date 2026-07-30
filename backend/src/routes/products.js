@@ -18,14 +18,6 @@ router.get('/', async (_req, res, next) => {
 
 // ── Static routes (MUST be before /:id) ─────────────────────────────
 
-// GET /api/products/featured — public, only featured products
-router.get('/featured', async (_req, res, next) => {
-  try {
-    const products = await Product.find({ featured: true, inStock: true }).sort({ sortOrder: 1 })
-    res.json(products)
-  } catch (err) { next(err) }
-})
-
 // GET /api/products/orders — admin only: list all orders
 router.get('/orders', requireAdminStrict, async (_req, res, next) => {
   try {
@@ -132,7 +124,6 @@ router.post('/', requireAdmin, async (req, res, next) => {
       price,
       slug: req.body.slug || '',
       sku: req.body.sku || '',
-      brand: req.body.brand || '',
       category: req.body.category || 'Uncategorized',
       compareAtPrice: req.body.compareAtPrice || null,
       originalPrice: req.body.originalPrice || null,
@@ -165,7 +156,7 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
     const fields = [
-      'name', 'slug', 'sku', 'brand', 'category',
+      'name', 'slug', 'sku', 'category',
       'price', 'compareAtPrice', 'originalPrice',
       'description',
       'imageUrl', 'images',

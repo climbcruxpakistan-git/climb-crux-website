@@ -5,7 +5,6 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { type: String, default: '' },
   sku: { type: String, default: '' },
-  brand: { type: String, default: '' },
   category: { type: String, default: 'Uncategorized' },
 
   // ── Pricing ──

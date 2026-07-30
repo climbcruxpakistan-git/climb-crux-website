@@ -108,13 +108,8 @@ export default function Shop() {
 
                   {/* Info */}
                   <div className="shop-card-body">
-                    <span className="shop-card-category">
-                      {product.brand ? `${product.brand} · ` : ''}{product.category}
-                    </span>
                     <h3 className="shop-card-title">{product.name}</h3>
-                    {product.sku && (
-                      <span className="shop-card-sku">{product.sku}</span>
-                    )}
+
 
                     {product.description && (
                       <p className="shop-card-desc">{product.description}</p>
@@ -189,10 +184,10 @@ export default function Shop() {
                 <div
                   key={product.id}
                   className="shop-card"
-                  onClick={() => navigate(product.slug ? `/shop/${encodeURIComponent(product.slug)}` : `/shop/${product.id}`)}
+                  onClick={() => navigate(`/shop/${product.id}`)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter') navigate(product.slug ? `/shop/${encodeURIComponent(product.slug)}` : `/shop/${product.id}`) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/shop/${product.id}`) }}
                 >
                   {(product.stockStatus === 'low_stock') && (
                     <span className="shop-badge shop-badge-low-stock">Low Stock</span>
@@ -205,9 +200,6 @@ export default function Shop() {
                     )}
                   </div>
                   <div className="shop-card-body">
-                    <span className="shop-card-category">
-                      {product.brand ? `${product.brand} · ` : ''}{product.category}
-                    </span>
                     <h3 className="shop-card-title">{product.name}</h3>
                     <div className="shop-card-price">
                       <span className="shop-card-price-current">PKR {product.price.toLocaleString()}</span>

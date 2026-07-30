@@ -185,14 +185,6 @@
   flex: 1;
 }
 
-.shop-card-category {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--orange);
-}
-
 .shop-card-title {
   font-family: var(--font-display);
   font-size: 1.05rem;

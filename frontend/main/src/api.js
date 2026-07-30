@@ -106,12 +106,6 @@ export function optimizeImage(url, width) {
   return url.replace('/upload/', `/upload/${parts.join(',')}/`)
 }
 
-/** Build a slug-based product URL (prefer slug, fall back to ID) */
-export function productUrl(product) {
-  if (product.slug) return `/shop/${encodeURIComponent(product.slug)}`
-  return `/shop/${product.id}`
-}
-
 /* ---------- Shop / Products ---------- */
 
 export async function getProducts() {
@@ -120,10 +114,6 @@ export async function getProducts() {
 
 export async function getProduct(id) {
   return mapId(await fetchJson(`/products/${id}`))
-}
-
-export async function getFeaturedProducts() {
-  return mapId(await fetchJson('/products/featured'))
 }
 
 export async function placeOrder(data) {

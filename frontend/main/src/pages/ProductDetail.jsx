@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { getProduct, getProducts, placeOrder, getProductReviews, submitProductReview, optimizeImage, productUrl } from '../api.js'
+import { getProduct, getProducts, placeOrder, getProductReviews, submitProductReview, optimizeImage } from '../api.js'
 import './ProductDetail.css'
 
 const WHATSAPP_NUMBER = '+92 313 2690377'
@@ -33,7 +33,7 @@ function trackRecentlyViewed(product) {
     const key = 'shop_recently_viewed'
     let list = JSON.parse(localStorage.getItem(key) || '[]')
     list = list.filter((p) => p.id !== product.id)
-    list.unshift({ id: product.id, name: product.name, imageUrl: product.imageUrl, price: product.price, slug: product.slug })
+    list.unshift({ id: product.id, name: product.name, imageUrl: product.imageUrl, price: product.price })
     if (list.length > 10) list = list.slice(0, 10)
     localStorage.setItem(key, JSON.stringify(list))
   } catch { /* ignore */ }
@@ -272,7 +272,7 @@ export default function ProductDetail() {
     name: product.name,
     description: product.description ? product.description.slice(0, 300) : `${product.name} from Climb Crux Pakistan`,
     sku: product.sku || undefined,
-    brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+
     category: product.category || undefined,
     image: [product.imageUrl, ...(product.images || [])].filter(Boolean),
     offers: {
@@ -353,12 +353,6 @@ export default function ProductDetail() {
 
           {/* ══════ RIGHT COLUMN: Product Info ══════ */}
           <div className="pd-info">
-            {/* Header: brand, category, SKU */}
-            <div className="pd-meta">
-              {product.brand && <span className="pd-brand">{product.brand}</span>}
-              <span className="pd-category">{product.category}</span>
-              {product.sku && <span className="pd-sku">SKU: {product.sku}</span>}
-            </div>
 
             <h1 className="pd-title">{product.name}</h1>
 
@@ -448,7 +442,7 @@ export default function ProductDetail() {
                     <span className="pd-variant-label">{groupName}</span>
                     <div className="pd-variant-options">
                       {options.map((v, i) => (
-                        <span key={i} className="pd-variant-chip" title={v.sku ? `SKU: ${v.sku}` : ''}>
+                        <span key={i} className="pd-variant-chip">
                           {v.value}
                           {v.price && <span className="pd-variant-price">+PKR {v.price.toLocaleString()}</span>}
                           {v.stockQuantity <= 0 && <span className="pd-variant-oos">(unavailable)</span>}
@@ -636,12 +630,12 @@ export default function ProductDetail() {
             <h2 className="pd-section-title">You might also like</h2>
             <div className="pd-suggestions-grid">
               {relatedProducts.map((sp) => (
-                <Link to={productUrl(sp)} key={sp.id} className="pd-suggestion-card">
+                <Link to={`/shop/${sp.id}`} key={sp.id} className="pd-suggestion-card">
                   <div className="pd-suggestion-img">
                     {sp.imageUrl ? <img src={optimizeImage(sp.imageUrl, 300)} alt={sp.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
                   </div>
                   <div className="pd-suggestion-body">
-                    <span className="pd-suggestion-brand">{sp.brand ? `${sp.brand} · ` : ''}{sp.category}</span>
+                    <span className="pd-suggestion-meta">{sp.category}</span>
                     <h4 className="pd-suggestion-name">{sp.name}</h4>
                     <span className="pd-suggestion-price">PKR {sp.price.toLocaleString()}</span>
                   </div>
@@ -661,7 +655,7 @@ export default function ProductDetail() {
             <h2 className="pd-section-title">Recently viewed</h2>
             <div className="pd-suggestions-grid">
               {recentlyViewed.map((rv) => (
-                <Link to={rv.slug ? `/shop/${encodeURIComponent(rv.slug)}` : `/shop/${rv.id}`} key={rv.id} className="pd-suggestion-card">
+                <Link to={`/shop/${rv.id}`} key={rv.id} className="pd-suggestion-card">
                   <div className="pd-suggestion-img">
                     {rv.imageUrl ? <img src={optimizeImage(rv.imageUrl, 300)} alt={rv.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
                   </div>
