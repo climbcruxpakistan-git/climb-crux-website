@@ -110,3 +110,17 @@ export async function getFeaturedProducts() {
 export async function placeOrder(data) {
   return mapId(await postJson('/products/order', data))
 }
+
+export async function getProductReviews(productId) {
+  const data = await fetchJson(`/products/${productId}/reviews`)
+  // Map _id to id inside reviews array
+  if (data.reviews) data.reviews = data.reviews.map((r) => {
+    const { _id, __v, ...rest } = r
+    return { id: _id, ...rest }
+  })
+  return data
+}
+
+export async function submitProductReview(productId, review) {
+  return await postJson(`/products/${productId}/reviews`, review)
+}

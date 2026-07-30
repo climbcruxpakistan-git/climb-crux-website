@@ -52,6 +52,15 @@ const productSchema = new mongoose.Schema({
 
   // ── Features ──
   features: [{ type: String }],
+  featureIcons: [{ type: String }], // icon emoji for each feature, e.g. "✓", "⚡", "🛡️"
+
+  // ── FAQs ──
+  faqs: [
+    {
+      question: { type: String, default: '' },
+      answer: { type: String, default: '' },
+    },
+  ],
 
   // ── Shipping ──
   shipping: {
