@@ -10,6 +10,24 @@ function authHeaders() {
   return token ? { 'Authorization': `Bearer ${token}` } : {}
 }
 
+/** Normalise an image entry — accept string or { url, alt, sortOrder } */
+function toImageObj(img) {
+  if (!img) return { url: '', alt: '', sortOrder: 0 }
+  if (typeof img === 'string') return { url: img, alt: '', sortOrder: 0 }
+  return { url: img.url || '', alt: img.alt || '', sortOrder: img.sortOrder || 0 }
+}
+
+function emptyImages() {
+  return [{ url: '', alt: '', sortOrder: 0 }]
+}
+
+const STOCK_OPTIONS = [
+  { value: 'in_stock', label: 'In Stock' },
+  { value: 'low_stock', label: 'Low Stock' },
+  { value: 'out_of_stock', label: 'Out of Stock' },
+  { value: 'backorder', label: 'Backorder' },
+]
+
 export default function ShopManager() {
   const { addToast } = useToast()
   const [products, setProducts] = useState([])
@@ -18,8 +36,32 @@ export default function ShopManager() {
   const [tab, setTab] = useState('products')
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
-    name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '',
-    imageUrl: '', images: [''], description: '', features: [''], inStock: true, featured: false, sortOrder: 0,
+    // Basic
+    name: '', slug: '', sku: '', brand: '', category: 'Uncategorized',
+    // Pricing
+    price: '', compareAtPrice: '',
+    // Description
+    description: '',
+    // Images
+    imageUrl: '', featuredImageAlt: '', images: emptyImages(),
+    // Inventory
+    stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
+    // Variants
+    variants: [],
+    // Specs
+    specifications: [],
+    // Features
+    features: [''],
+    // Shipping
+    deliveryTime: '', freeShipping: false,
+    // Warranty
+    warrantyPeriod: '', warrantyDetails: '',
+    // Returns
+    returnWindow: '', returnPolicy: '',
+    // SEO
+    seoTitle: '', metaDescription: '', canonicalUrl: '',
+    // Flags
+    featured: false, sortOrder: 0,
   })
   const [uploadingMain, setUploadingMain] = useState(false)
   const [uploadingAdditional, setUploadingAdditional] = useState(false)
@@ -43,17 +85,62 @@ export default function ShopManager() {
       .catch(console.error)
   }
 
+  function emptyForm() {
+    setForm({
+      name: '', slug: '', sku: '', brand: '', category: 'Uncategorized',
+      price: '', compareAtPrice: '',
+      description: '',
+      imageUrl: '', imageAlt: '', images: emptyImages(),
+      stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
+      variants: [],
+      specifications: [],
+      features: [''],
+      deliveryTime: '', freeShipping: false,
+      warrantyPeriod: '', warrantyDetails: '',
+      returnWindow: '', returnPolicy: '',
+      seoTitle: '', metaDescription: '', canonicalUrl: '',
+      featured: false, sortOrder: 0,
+    })
+  }
+
   function openNew() {
-    setForm({ name: '', brand: '', category: 'Uncategorized', price: '', originalPrice: '', imageUrl: '', images: [''], description: '', features: [''], inStock: true, featured: false, sortOrder: 0 })
+    emptyForm()
     setEditing('new')
   }
 
   function openEdit(p) {
+    const imgs = (p.images || []).length > 0
+      ? (p.images || []).map(toImageObj).concat([{ url: '', alt: '', sortOrder: 0 }])
+      : emptyImages()
     setForm({
-      name: p.name, brand: p.brand || '', category: p.category || 'Uncategorized', price: p.price?.toString() || '',
-      originalPrice: p.originalPrice?.toString() || '',      imageUrl: p.imageUrl || '', images: p.images?.length ? p.images : [''],
-      description: p.description || '', features: p.features?.length ? p.features : [''],
-      inStock: p.inStock !== false, featured: p.featured || false, sortOrder: p.sortOrder || 0,
+      name: p.name || '',
+      slug: p.slug || '',
+      sku: p.sku || '',
+      brand: p.brand || '',
+      category: p.category || 'Uncategorized',
+      price: p.price?.toString() || '',
+      compareAtPrice: (p.compareAtPrice ?? p.originalPrice)?.toString() || '',
+      description: p.description || '',
+      imageUrl: p.imageUrl || '',
+      featuredImageAlt: (p.images?.[0] && typeof p.images[0] === 'object' ? p.images[0].alt : '') || '',
+      images: imgs,
+      stockQuantity: p.stockQuantity ?? 0,
+      lowStockThreshold: p.lowStockThreshold ?? 5,
+      stockStatus: p.stockStatus || 'in_stock',
+      variants: (p.variants || []).length > 0 ? p.variants : [],
+      specifications: (p.specifications || []).length > 0 ? p.specifications : [],
+      features: (p.features || []).length > 0 ? p.features : [''],
+      deliveryTime: p.shipping?.deliveryTime || '',
+      freeShipping: p.shipping?.freeShipping || false,
+      warrantyPeriod: p.warranty?.period || '',
+      warrantyDetails: p.warranty?.details || '',
+      returnWindow: p.returns?.window || '',
+      returnPolicy: p.returns?.policy || '',
+      seoTitle: p.seo?.title || '',
+      metaDescription: p.seo?.metaDescription || '',
+      canonicalUrl: p.seo?.canonicalUrl || '',
+      featured: p.featured || false,
+      sortOrder: p.sortOrder || 0,
     })
     setEditing(p.id)
   }
@@ -63,13 +150,54 @@ export default function ShopManager() {
       addToast('Name and price are required', 'error')
       return
     }
+
+    // Build images array — first image is the featured one, rest are gallery
+    const galleryImages = form.images
+      .filter((img) => img.url.trim())
+      .map((img, i) => ({ url: img.url.trim(), alt: img.alt.trim(), sortOrder: i }))
+
     const data = {
-      ...form,
+      name: form.name,
+      slug: form.slug,
+      sku: form.sku,
+      brand: form.brand,
+      category: form.category,
       price: parseFloat(form.price),
-      originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
+      compareAtPrice: form.compareAtPrice ? parseFloat(form.compareAtPrice) : null,
+      originalPrice: form.compareAtPrice ? parseFloat(form.compareAtPrice) : null,
+      description: form.description,
+      imageUrl: form.imageUrl,
+      images: galleryImages.length > 0
+        ? [{ url: form.imageUrl, alt: form.featuredImageAlt || '', sortOrder: 0 }, ...galleryImages]
+        : galleryImages,
+      stockQuantity: parseInt(form.stockQuantity, 10) || 0,
+      lowStockThreshold: parseInt(form.lowStockThreshold, 10) || 5,
+      stockStatus: form.stockStatus,
+      inStock: form.stockStatus === 'in_stock' || form.stockStatus === 'low_stock' || form.stockStatus === 'backorder',
+      variants: form.variants.filter((v) => v.name.trim() && v.value.trim()),
+      specifications: form.specifications.filter((s) => s.key.trim()),
       features: form.features.filter((f) => f.trim()),
-      images: form.images.filter((img) => img.trim()),
+      shipping: {
+        deliveryTime: form.deliveryTime,
+        freeShipping: form.freeShipping,
+      },
+      warranty: {
+        period: form.warrantyPeriod,
+        details: form.warrantyDetails,
+      },
+      returns: {
+        window: form.returnWindow,
+        policy: form.returnPolicy,
+      },
+      seo: {
+        title: form.seoTitle,
+        metaDescription: form.metaDescription,
+        canonicalUrl: form.canonicalUrl,
+      },
+      featured: form.featured,
+      sortOrder: parseInt(form.sortOrder, 10) || 0,
     }
+
     if (editing !== 'new') data.id = editing
     await saveProduct(data)
     await reload()
@@ -108,6 +236,23 @@ export default function ShopManager() {
     addToast('Payment status updated', 'success')
   }
 
+  /* ── Array field helpers ── */
+
+  function addListItem(field, empty) {
+    setForm({ ...form, [field]: [...form[field], { ...empty }] })
+  }
+
+  function updateListItem(field, idx, key, val) {
+    setForm({
+      ...form,
+      [field]: form[field].map((item, i) => i === idx ? { ...item, [key]: val } : item),
+    })
+  }
+
+  function removeListItem(field, idx) {
+    setForm({ ...form, [field]: form[field].filter((_, i) => i !== idx) })
+  }
+
   function addFeature() { setForm({ ...form, features: [...form.features, ''] }) }
   function updateFeature(idx, val) {
     setForm({ ...form, features: form.features.map((f, i) => i === idx ? val : f) })
@@ -118,7 +263,6 @@ export default function ShopManager() {
 
   /* ── Image Upload Handlers ── */
 
-  /** Upload a single file for the main product image */
   async function uploadMainImage(file) {
     if (!file) return
     const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']
@@ -158,7 +302,6 @@ export default function ShopManager() {
     }
   }
 
-  /** Upload multiple files for additional product images */
   async function uploadAdditionalImages(files) {
     if (!files || files.length === 0) return
     if (files.length > 10) {
@@ -184,10 +327,10 @@ export default function ShopManager() {
       }
       const uploaded = await res.json()
       if (uploaded && uploaded.length > 0) {
-        const urls = uploaded.map((p) => p.url)
-        const existing = form.images.filter((img) => img.trim())
-        setForm({ ...form, images: [...existing, ...urls, ''] })
-        addToast(`${urls.length} image${urls.length > 1 ? 's' : ''} uploaded`, 'success')
+        const newImgs = uploaded.map((p) => ({ url: p.url, alt: '', sortOrder: 0 }))
+        const existing = form.images.filter((img) => img.url.trim())
+        setForm({ ...form, images: [...existing, ...newImgs, { url: '', alt: '', sortOrder: 0 }] })
+        addToast(`${newImgs.length} image${newImgs.length > 1 ? 's' : ''} uploaded`, 'success')
       }
     } catch (err) {
       addToast(err.message || 'Upload failed', 'error')
@@ -197,8 +340,15 @@ export default function ShopManager() {
     }
   }
 
+  function removeGalleryImage(idx) {
+    const filled = form.images.filter((img) => img.url.trim())
+    const updated = filled.filter((_, j) => j !== idx)
+    setForm({ ...form, images: updated.length > 0 ? [...updated, { url: '', alt: '', sortOrder: 0 }] : emptyImages() })
+  }
+
   if (loading) return <div className="empty-state"><h3>Loading shop…</h3></div>
 
+  /* Badge helpers */
   const statusBadge = (s) => {
     const colors = {
       pending_payment: 'badge-yellow',
@@ -219,6 +369,14 @@ export default function ShopManager() {
       refunded: 'badge-gray',
     }
     return <span className={`badge ${colors[s] || 'badge-gray'}`}>{s?.replace(/_/g, ' ')}</span>
+  }
+
+  const stockBadge = (p) => {
+    const colors = { in_stock: 'badge-green', low_stock: 'badge-yellow', out_of_stock: 'badge-red', backorder: 'badge-blue' }
+    const labels = { in_stock: 'In Stock', low_stock: 'Low', out_of_stock: 'Out', backorder: 'Backorder' }
+    return <span className={`badge ${colors[p.stockStatus] || (p.inStock ? 'badge-green' : 'badge-red')}`}>
+      {labels[p.stockStatus] || (p.inStock ? 'In Stock' : 'Out')}
+    </span>
   }
 
   const totalRevenue = orders
@@ -275,6 +433,7 @@ export default function ShopManager() {
         </button>
       </div>
 
+      {/* ── Products Tab ── */}
       {tab === 'products' && (
         <div className="card-admin">
           {products.length === 0 ? (
@@ -290,7 +449,7 @@ export default function ShopManager() {
                   <thead>
                     <tr>
                       <th style={{ width: 50 }}>Img</th>
-                      <th>Name</th>
+                      <th>Name / SKU</th>
                       <th>Brand</th>
                       <th>Category</th>
                       <th>Price</th>
@@ -309,15 +468,17 @@ export default function ShopManager() {
                             <div style={{ width: 40, height: 40, borderRadius: 6, background: '#e8e4da', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>📦</div>
                           )}
                         </td>
-                        <td><strong>{p.name}</strong></td>
+                        <td>
+                          <strong>{p.name}</strong>
+                          {p.sku && <div style={{ fontSize: '0.68rem', color: 'var(--stone)', fontFamily: 'monospace' }}>{p.sku}</div>}
+                        </td>
                         <td>{p.brand ? <span className="badge badge-blue">{p.brand}</span> : '—'}</td>
                         <td><span className="badge badge-gray">{p.category}</span></td>
-                        <td>PKR {p.price?.toLocaleString()}</td>
                         <td>
-                          <span className={`badge ${p.inStock ? 'badge-green' : 'badge-red'}`}>
-                            {p.inStock ? 'In Stock' : 'Out'}
-                          </span>
+                          PKR {p.price?.toLocaleString()}
+                          {p.compareAtPrice && <div style={{ fontSize: '0.65rem', color: '#aaa', textDecoration: 'line-through' }}>PKR {p.compareAtPrice.toLocaleString()}</div>}
                         </td>
+                        <td>{stockBadge(p)}</td>
                         <td>{p.featured ? '⭐' : '—'}</td>
                         <td>
                           <div style={{ display: 'flex', gap: 4 }}>
@@ -335,6 +496,7 @@ export default function ShopManager() {
         </div>
       )}
 
+      {/* ── Orders Tab ── */}
       {tab === 'orders' && (
         <div className="card-admin">
           {orders.length === 0 ? (
@@ -389,14 +551,29 @@ export default function ShopManager() {
         </div>
       )}
 
-      {/* Product Edit Modal */}
+      {/* ═══════════════════════════════════════════════════════════════
+          PRODUCT EDIT MODAL
+          ═══════════════════════════════════════════════════════════════ */}
       {editing && (
         <Modal title={editing === 'new' ? 'Add Product' : 'Edit Product'} onClose={() => setEditing(null)} wide>
-          <div className="admin-form">
+          <div className="admin-form" style={{ maxWidth: 'none' }}>
+
+            {/* ── 1. Basic Information ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Basic Information</h3>
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Product name *</label>
                 <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Grigri+" />
+              </div>
+              <div className="admin-field">
+                <label>Slug</label>
+                <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="e.g. petzl-grigri-plus" />
+              </div>
+            </div>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>SKU</label>
+                <input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="e.g. PTZ-GR-001" />
               </div>
               <div className="admin-field">
                 <label>Brand</label>
@@ -409,18 +586,30 @@ export default function ShopManager() {
                 <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Harnesses & Belay" />
               </div>
             </div>
+
+            {/* ── 2. Pricing ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Pricing</h3>
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Price (PKR) *</label>
                 <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="8500" />
               </div>
               <div className="admin-field">
-                <label>Original Price (for sale badge)</label>
-                <input type="number" value={form.originalPrice} onChange={(e) => setForm({ ...form, originalPrice: e.target.value })} placeholder="Leave empty if not on sale" />
+                <label>Compare-at Price (for sale badge)</label>
+                <input type="number" value={form.compareAtPrice} onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value })} placeholder="Leave empty if not on sale" />
               </div>
             </div>
+
+            {/* ── 3. Description ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Description</h3>
             <div className="admin-field">
-              <label>Main Image</label>
+              <textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Full product description…" />
+            </div>
+
+            {/* ── 4. Images ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Images</h3>
+            <div className="admin-field">
+              <label>Featured Image</label>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
@@ -447,61 +636,44 @@ export default function ShopManager() {
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
                     >
                       {uploadingMain ? (
-                        <>
-                          <span style={{
-                            width: 14, height: 14,
-                            border: '2px solid var(--chalk-dim)',
-                            borderTop: '2px solid var(--orange)',
-                            borderRadius: '50%',
-                            display: 'inline-block',
-                            animation: 'spin 0.8s linear infinite',
-                          }} /> Uploading…
-                        </>
+                        <><span style={{ width: 14, height: 14, border: '2px solid var(--chalk-dim)', borderTop: '2px solid var(--orange)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Uploading…</>
                       ) : (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                          Upload from device
-                        </>
+                        <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg> Upload from device</>
                       )}
                     </button>
                   </div>
+                  {form.imageUrl && (
+                    <div className="admin-field" style={{ marginTop: 6 }}>
+                      <label style={{ fontSize: '0.62rem' }}>Alt Text</label>
+                      <input value={form.featuredImageAlt || ''}
+                        onChange={(e) => setForm({ ...form, featuredImageAlt: e.target.value })}
+                        placeholder="Describe the image for accessibility"
+                        style={{ fontSize: '0.82rem', padding: '0.45em 0.7em' }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               {form.imageUrl && (
                 <div style={{ marginTop: 8, position: 'relative', display: 'inline-block' }}>
                   <img src={form.imageUrl} alt="" style={{ maxHeight: 100, borderRadius: 6, border: '1px solid var(--border)' }} />
-                  <button
-                    className="btn-admin-icon danger"
-                    onClick={() => setForm({ ...form, imageUrl: '' })}
-                    title="Remove image"
+                  <button className="btn-admin-icon danger" onClick={() => setForm({ ...form, imageUrl: '', featuredImageAlt: '' })}
                     style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}
                   >✕</button>
                 </div>
               )}
-              <p style={{ fontSize: '0.73rem', color: 'var(--stone)', marginTop: 4 }}>
-                Paste a Cloudinary URL or upload a new image from your device.
-              </p>
             </div>
 
-            <div className="admin-field">
-              <label>Additional Images</label>
-              {form.images.length > 0 && form.images.some((img) => img.trim()) && (
+            <div className="admin-field" style={{ marginTop: 8 }}>
+              <label>Gallery Images</label>
+              {/* Thumbnail previews */}
+              {form.images.filter((img) => img.url.trim()).length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-                  {form.images.filter((img) => img.trim()).map((img, i) => (
+                  {form.images.filter((img) => img.url.trim()).map((img, i) => (
                     <div key={i} style={{ position: 'relative', display: 'inline-block' }}>
-                      <img
-                        src={img}
-                        alt={`Additional ${i + 1}`}
-                        style={{ width: 80, height: 80, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--border)' }}
-                      />
-                      <button
-                        className="btn-admin-icon danger"
-                        onClick={() => {
-                          const filled = form.images.filter((x) => x.trim())
-                          const updated = filled.filter((_, j) => j !== i)
-                          setForm({ ...form, images: updated.length > 0 ? [...updated, ''] : [''] })
-                        }}
-                        title="Remove image"
+                      <img src={img.url} alt={img.alt || `Gallery ${i + 1}`}
+                        style={{ width: 80, height: 80, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                      <button className="btn-admin-icon danger" onClick={() => removeGalleryImage(i)}
                         style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', cursor: 'pointer', border: '1px solid #e5e0d4' }}
                       >✕</button>
                     </div>
@@ -509,81 +681,175 @@ export default function ShopManager() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                {/* File upload button */}
-                <input
-                  ref={additionalFileRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
-                  multiple
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                <input ref={additionalFileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" multiple
                   style={{ display: 'none' }}
-                  onChange={(e) => { if (e.target.files?.length > 0) uploadAdditionalImages(e.target.files) }}
-                />
-                <button
-                  className="btn-admin btn-admin-sm btn-admin-outline"
-                  type="button"
-                  disabled={uploadingAdditional}
+                  onChange={(e) => { if (e.target.files?.length > 0) uploadAdditionalImages(e.target.files) }} />
+                <button className="btn-admin btn-admin-sm btn-admin-outline" type="button" disabled={uploadingAdditional}
                   onClick={() => additionalFileRef.current?.click()}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
                 >
                   {uploadingAdditional ? (
-                    <>
-                      <span style={{
-                        width: 14, height: 14,
-                        border: '2px solid var(--chalk-dim)',
-                        borderTop: '2px solid var(--orange)',
-                        borderRadius: '50%',
-                        display: 'inline-block',
-                        animation: 'spin 0.8s linear infinite',
-                      }} /> Uploading…
-                    </>
+                    <><span style={{ width: 14, height: 14, border: '2px solid var(--chalk-dim)', borderTop: '2px solid var(--orange)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Uploading…</>
                   ) : (
-                    <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                      Upload images
-                    </>
+                    <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg> Upload images</>
                   )}
                 </button>
-
                 <span style={{ color: 'var(--stone)', fontSize: '0.78rem' }}>or</span>
-
-                <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, ''] })} style={{ alignSelf: 'flex-start' }}>
+                <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, { url: '', alt: '', sortOrder: 0 }] })}>
                   + Add URL field
                 </button>
               </div>
 
-              {/* URL inputs for additional images */}
+              {/* Image URL + Alt inputs */}
               {form.images.map((img, i) => (
-                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, marginTop: i === 0 ? 8 : 0 }}>
-                  <input style={{ flex: 1 }} value={img} onChange={(e) => setForm({ ...form, images: form.images.map((x, j) => j === i ? e.target.value : x) })} placeholder={`Additional image ${i + 1} URL`} />
-                  {!img.trim() && (
-                    <button className="btn-admin-icon danger" onClick={() => setForm({ ...form, images: form.images.filter((_, j) => j !== i) })} title="Remove">✕</button>
+                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                  <input style={{ flex: 1 }} value={img.url}
+                    onChange={(e) => updateListItem('images', i, 'url', e.target.value)}
+                    placeholder={`Gallery image ${i + 1} URL`} />
+                  <input style={{ width: 160 }} value={img.alt}
+                    onChange={(e) => updateListItem('images', i, 'alt', e.target.value)}
+                    placeholder="Alt text" />
+                  {!img.url.trim() && (
+                    <button className="btn-admin-icon danger" onClick={() => removeListItem('images', i)}>✕</button>
                   )}
                 </div>
               ))}
               <p style={{ fontSize: '0.73rem', color: 'var(--stone)', marginTop: 4 }}>
-                Upload images from your device, or paste Cloudinary URLs to add more.
+                Upload images from your device, or paste Cloudinary URLs. Add alt text for accessibility.
               </p>
             </div>
-            <div className="admin-field">
-              <label>Description</label>
-              <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="A short description of the product…" />
-            </div>
-            <div className="admin-field">
-              <label>Features / Bullet points</label>
-              {form.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                  <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
-                  <button className="btn-admin-icon danger" onClick={() => removeFeature(i)} title="Remove">✕</button>
-                </div>
-              ))}
-              <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start' }}>+ Add Feature</button>
-            </div>
+
+            {/* ── 5. Inventory ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Inventory</h3>
             <div className="admin-form-row">
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
-                <input type="checkbox" checked={form.inStock} onChange={(e) => setForm({ ...form, inStock: e.target.checked })} />
-                In Stock
-              </label>
+              <div className="admin-field">
+                <label>Stock Quantity</label>
+                <input type="number" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} placeholder="0" min="0" />
+              </div>
+              <div className="admin-field">
+                <label>Low Stock Threshold</label>
+                <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} placeholder="5" min="1" />
+              </div>
+            </div>
+            <div className="admin-field">
+              <label>Stock Status</label>
+              <select value={form.stockStatus} onChange={(e) => setForm({ ...form, stockStatus: e.target.value })}>
+                {STOCK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+
+            {/* ── 6. Variants ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>
+              Variants
+              <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => addListItem('variants', { name: '', value: '', price: '', sku: '', stockQuantity: 0 })}
+                style={{ float: 'right', marginTop: -4 }}>+ Add Variant</button>
+            </h3>
+            {form.variants.length === 0 && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: 0 }}>No variants yet. Click "Add Variant" to add size, color, etc.</p>
+            )}
+            {form.variants.map((v, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                <select style={{ width: 90, padding: '0.5em', borderRadius: 6, border: '1px solid #d8d0bc', fontSize: '0.82rem' }}
+                  value={v.name} onChange={(e) => updateListItem('variants', i, 'name', e.target.value)}>
+                  <option value="">Type</option>
+                  <option value="Size">Size</option>
+                  <option value="Color">Color</option>
+                  <option value="Length">Length</option>
+                  <option value="Weight">Weight</option>
+                  <option value="Style">Style</option>
+                </select>
+                <input style={{ width: 100 }} value={v.value} onChange={(e) => updateListItem('variants', i, 'value', e.target.value)} placeholder="Value" />
+                <input style={{ width: 90 }} type="number" value={v.price} onChange={(e) => updateListItem('variants', i, 'price', e.target.value)} placeholder="Price" />
+                <input style={{ width: 90 }} value={v.sku} onChange={(e) => updateListItem('variants', i, 'sku', e.target.value)} placeholder="SKU" />
+                <input style={{ width: 70 }} type="number" value={v.stockQuantity} onChange={(e) => updateListItem('variants', i, 'stockQuantity', e.target.value)} placeholder="Qty" />
+                <button className="btn-admin-icon danger" onClick={() => removeListItem('variants', i)}>✕</button>
+              </div>
+            ))}
+
+            {/* ── 7. Specifications ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>
+              Specifications
+              <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => addListItem('specifications', { key: '', value: '' })}
+                style={{ float: 'right', marginTop: -4 }}>+ Add Spec</button>
+            </h3>
+            {form.specifications.map((s, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                <input style={{ flex: 1 }} value={s.key} onChange={(e) => updateListItem('specifications', i, 'key', e.target.value)} placeholder="e.g. Material" />
+                <input style={{ flex: 1 }} value={s.value} onChange={(e) => updateListItem('specifications', i, 'value', e.target.value)} placeholder="e.g. Nylon" />
+                <button className="btn-admin-icon danger" onClick={() => removeListItem('specifications', i)}>✕</button>
+              </div>
+            ))}
+
+            {/* ── 8. Features ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Features</h3>
+            {form.features.map((f, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
+                <button className="btn-admin-icon danger" onClick={() => removeFeature(i)} title="Remove">✕</button>
+              </div>
+            ))}
+            <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start' }}>+ Add Feature</button>
+
+            {/* ── 9. Shipping ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Shipping</h3>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Delivery Time</label>
+                <input value={form.deliveryTime} onChange={(e) => setForm({ ...form, deliveryTime: e.target.value })} placeholder="e.g. 2–3 Days" />
+              </div>
+              <div className="admin-field" style={{ justifyContent: 'flex-end' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem', marginTop: 22 }}>
+                  <input type="checkbox" checked={form.freeShipping} onChange={(e) => setForm({ ...form, freeShipping: e.target.checked })} />
+                  Free Shipping Eligible
+                </label>
+              </div>
+            </div>
+
+            {/* ── 10. Warranty ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Warranty</h3>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Warranty Period</label>
+                <input value={form.warrantyPeriod} onChange={(e) => setForm({ ...form, warrantyPeriod: e.target.value })} placeholder="e.g. 1 Year" />
+              </div>
+              <div className="admin-field">
+                <label>Warranty Details</label>
+                <input value={form.warrantyDetails} onChange={(e) => setForm({ ...form, warrantyDetails: e.target.value })} placeholder="e.g. Covers manufacturer defects" />
+              </div>
+            </div>
+
+            {/* ── 11. Returns ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Returns</h3>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Return Window</label>
+                <input value={form.returnWindow} onChange={(e) => setForm({ ...form, returnWindow: e.target.value })} placeholder="e.g. 30 Days" />
+              </div>
+              <div className="admin-field">
+                <label>Return Policy</label>
+                <input value={form.returnPolicy} onChange={(e) => setForm({ ...form, returnPolicy: e.target.value })} placeholder="e.g. Full refund within 30 days" />
+              </div>
+            </div>
+
+            {/* ── 12. SEO ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>SEO</h3>
+            <div className="admin-field">
+              <label>SEO Title</label>
+              <input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} placeholder="e.g. Petzl Grigri+ Belay Device | Climb Crux Pakistan" />
+            </div>
+            <div className="admin-field">
+              <label>Meta Description</label>
+              <textarea rows={2} value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} placeholder="A short description for search engines…" />
+            </div>
+            <div className="admin-field">
+              <label>Canonical URL</label>
+              <input value={form.canonicalUrl} onChange={(e) => setForm({ ...form, canonicalUrl: e.target.value })} placeholder="https://climbcruxpakistan.com/shop/product-slug" />
+            </div>
+
+            {/* ── 13. Flags ── */}
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--orange)', borderBottom: '2px solid var(--orange)', paddingBottom: 6, margin: '16px 0 8px' }}>Settings</h3>
+            <div className="admin-form-row">
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
                 <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
                 Featured (show on homepage)
@@ -593,15 +859,18 @@ export default function ShopManager() {
                 <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })} />
               </div>
             </div>
-            <div className="admin-form-actions">
+
+            {/* ── Actions ── */}
+            <div className="admin-form-actions" style={{ marginTop: 16 }}>
               <button className="btn-admin btn-admin-primary" onClick={handleSave}>Save Product</button>
               <button className="btn-admin btn-admin-outline" onClick={() => setEditing(null)}>Cancel</button>
             </div>
+
           </div>
         </Modal>
       )}
 
-      {/* Order Detail Modal */}
+      {/* ── Order Detail Modal ── */}
       {viewOrder && (
         <Modal title={`Order #${viewOrder.order_number}`} onClose={() => setViewOrder(null)}>
           <div className="admin-form">
@@ -616,62 +885,37 @@ export default function ShopManager() {
               <div>
                 <h4 style={{ fontSize: '0.8rem', color: 'var(--stone)', marginBottom: 8 }}>Order</h4>
                 <p style={{ margin: 0 }}><strong>{viewOrder.product_name}</strong></p>
-                <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>
-                  Qty: {viewOrder.quantity} × PKR {viewOrder.product_price?.toLocaleString()}
-                </p>
-                <p style={{ margin: '4px 0', fontWeight: 700, color: 'var(--orange)' }}>
-                  Total: PKR {viewOrder.total_amount?.toLocaleString()}
-                </p>
+                <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>Qty: {viewOrder.quantity} × PKR {viewOrder.product_price?.toLocaleString()}</p>
+                <p style={{ margin: '4px 0', fontWeight: 700, color: 'var(--orange)' }}>Total: PKR {viewOrder.total_amount?.toLocaleString()}</p>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Status</span>
-                <div style={{ marginTop: 4 }}>{statusBadge(viewOrder.status)}</div>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Payment</span>
-                <div style={{ marginTop: 4 }}>{payStatusBadge(viewOrder.payment_status)}</div>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Payment Method</span>
-                <div style={{ marginTop: 4, fontSize: '0.85rem', fontWeight: 500 }}>{viewOrder.payment_method || '—'}</div>
-              </div>
-              {viewOrder.paid_at && (
-                <div>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Paid at</span>
-                  <div style={{ marginTop: 4, fontSize: '0.85rem' }}>{new Date(viewOrder.paid_at).toLocaleString()}</div>
-                </div>
-              )}
+              <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Status</span><div style={{ marginTop: 4 }}>{statusBadge(viewOrder.status)}</div></div>
+              <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Payment</span><div style={{ marginTop: 4 }}>{payStatusBadge(viewOrder.payment_status)}</div></div>
+              <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Payment Method</span><div style={{ marginTop: 4, fontSize: '0.85rem', fontWeight: 500 }}>{viewOrder.payment_method || '—'}</div></div>
+              {viewOrder.paid_at && <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Paid at</span><div style={{ marginTop: 4, fontSize: '0.85rem' }}>{new Date(viewOrder.paid_at).toLocaleString()}</div></div>}
             </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
-
             <h4 style={{ fontSize: '0.85rem', marginBottom: 12 }}>Update Status</h4>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
               {['pending_payment', 'pending_verification', 'confirmed', 'shipped', 'cancelled'].map((s) => (
-                <button
-                  key={s}
+                <button key={s}
                   className={`btn-admin btn-admin-sm ${viewOrder.status === s ? 'btn-admin-primary' : 'btn-admin-outline'}`}
                   onClick={() => handleUpdateStatus(viewOrder.id, s)}
                   disabled={viewOrder.status === s}
-                >
-                  {s.replace(/_/g, ' ')}
-                </button>
+                >{s.replace(/_/g, ' ')}</button>
               ))}
             </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
-
             <h4 style={{ fontSize: '0.85rem', marginBottom: 12 }}>Update Payment</h4>
             <div className="admin-form-row">
               <div className="admin-field">
                 <label>Payment Status</label>
                 <select value={payForm.payment_status} onChange={(e) => setPayForm({ ...payForm, payment_status: e.target.value })}>
-                  {['pending', 'verification_required', 'paid', 'failed', 'refunded'].map((s) => (
-                    <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-                  ))}
+                  {['pending', 'verification_required', 'paid', 'failed', 'refunded'].map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>
               <div className="admin-field">
@@ -680,35 +924,19 @@ export default function ShopManager() {
               </div>
             </div>
             <div className="admin-form-row">
-              <div className="admin-field">
-                <label>Payer Bank</label>
-                <input value={payForm.payer_bank} onChange={(e) => setPayForm({ ...payForm, payer_bank: e.target.value })} />
-              </div>
-              <div className="admin-field">
-                <label>Payer Name</label>
-                <input value={payForm.payer_name} onChange={(e) => setPayForm({ ...payForm, payer_name: e.target.value })} />
-              </div>
-              <div className="admin-field">
-                <label>Payer Phone</label>
-                <input value={payForm.payer_phone} onChange={(e) => setPayForm({ ...payForm, payer_phone: e.target.value })} />
-              </div>
+              <div className="admin-field"><label>Payer Bank</label><input value={payForm.payer_bank} onChange={(e) => setPayForm({ ...payForm, payer_bank: e.target.value })} /></div>
+              <div className="admin-field"><label>Payer Name</label><input value={payForm.payer_name} onChange={(e) => setPayForm({ ...payForm, payer_name: e.target.value })} /></div>
+              <div className="admin-field"><label>Payer Phone</label><input value={payForm.payer_phone} onChange={(e) => setPayForm({ ...payForm, payer_phone: e.target.value })} /></div>
             </div>
             <div className="admin-form-actions">
-              <button className="btn-admin btn-admin-primary" onClick={() => handleUpdatePayment(viewOrder.id)}>
-                Update Payment
-              </button>
+              <button className="btn-admin btn-admin-primary" onClick={() => handleUpdatePayment(viewOrder.id)}>Update Payment</button>
               <button className="btn-admin btn-admin-outline" onClick={() => setViewOrder(null)}>Close</button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Spin animation for upload spinners */}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </>
   )
 }

@@ -119,14 +119,26 @@ router.post('/', requireAdmin, async (req, res, next) => {
     const product = await Product.create({
       name,
       price,
+      slug: req.body.slug || '',
+      sku: req.body.sku || '',
       brand: req.body.brand || '',
       category: req.body.category || 'Uncategorized',
+      compareAtPrice: req.body.compareAtPrice || null,
       originalPrice: req.body.originalPrice || null,
+      description: req.body.description || '',
       imageUrl: req.body.imageUrl || '',
       images: req.body.images || [],
-      description: req.body.description || '',
-      features: req.body.features || [],
+      stockQuantity: req.body.stockQuantity ?? 0,
+      lowStockThreshold: req.body.lowStockThreshold ?? 5,
+      stockStatus: req.body.stockStatus || 'in_stock',
       inStock: req.body.inStock !== false,
+      variants: req.body.variants || [],
+      specifications: req.body.specifications || [],
+      features: req.body.features || [],
+      shipping: req.body.shipping || { deliveryTime: '', freeShipping: false },
+      warranty: req.body.warranty || { period: '', details: '' },
+      returns: req.body.returns || { window: '', policy: '' },
+      seo: req.body.seo || { title: '', metaDescription: '', canonicalUrl: '' },
       featured: req.body.featured || false,
       sortOrder: req.body.sortOrder || 0,
     })
@@ -138,7 +150,17 @@ router.post('/', requireAdmin, async (req, res, next) => {
 router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
-    const fields = ['name', 'brand', 'price', 'category', 'originalPrice', 'imageUrl', 'images', 'description', 'features', 'inStock', 'featured', 'sortOrder']
+    const fields = [
+      'name', 'slug', 'sku', 'brand', 'category',
+      'price', 'compareAtPrice', 'originalPrice',
+      'description',
+      'imageUrl', 'images',
+      'stockQuantity', 'lowStockThreshold', 'stockStatus', 'inStock',
+      'variants', 'specifications', 'features',
+      'shipping', 'warranty', 'returns',
+      'seo',
+      'featured', 'sortOrder',
+    ]
     for (const f of fields) {
       if (req.body[f] !== undefined) update[f] = req.body[f]
     }
