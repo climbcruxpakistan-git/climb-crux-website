@@ -135,10 +135,13 @@ router.post('/', requireAdmin, async (req, res, next) => {
       variants: req.body.variants || [],
       specifications: req.body.specifications || [],
       features: req.body.features || [],
+      featureIcons: req.body.featureIcons || [],
+      faqs: req.body.faqs || [],
       shipping: req.body.shipping || { deliveryTime: '', freeShipping: false },
       warranty: req.body.warranty || { period: '', details: '' },
       returns: req.body.returns || { window: '', policy: '' },
       seo: req.body.seo || { title: '', metaDescription: '', canonicalUrl: '' },
+      status: req.body.status || 'published',
       featured: req.body.featured || false,
       sortOrder: req.body.sortOrder || 0,
     })
@@ -156,9 +159,10 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
       'description',
       'imageUrl', 'images',
       'stockQuantity', 'lowStockThreshold', 'stockStatus', 'inStock',
-      'variants', 'specifications', 'features',
+      'variants', 'specifications', 'features', 'featureIcons', 'faqs',
       'shipping', 'warranty', 'returns',
       'seo',
+      'status',
       'featured', 'sortOrder',
     ]
     for (const f of fields) {

@@ -87,6 +87,9 @@ const productSchema = new mongoose.Schema({
     canonicalUrl: { type: String, default: '' },
   },
 
+  // ── Publish ──
+  status: { type: String, enum: ['draft', 'published', 'archived'], default: 'published' },
+
   // ── Flags ──
   featured: { type: Boolean, default: false },
   sortOrder: { type: Number, default: 0 },
