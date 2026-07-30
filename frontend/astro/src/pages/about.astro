@@ -9,6 +9,10 @@ const description = about?.description || "Climb Crux started with a simple idea
 ---
 
 <MainLayout>
+  <Fragment slot="head">
+    <title>About — Climb Crux Pakistan</title>
+    <meta name="description" content="Learn about Climb Crux Pakistan — our mission to make rock climbing accessible on Margalla Hills. Certified instructors, top safety standards, and a passion for the climb." />
+  </Fragment>
   <PageHeader eyebrow="About Climb Crux" title="Built by climbers, for climbers.">
     <p slot="default">{description}</p>
   </PageHeader>
