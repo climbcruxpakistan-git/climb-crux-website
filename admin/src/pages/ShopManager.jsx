@@ -606,11 +606,11 @@ export default function ShopManager() {
     return (
       <div className="admin-form" style={{ maxWidth: 'none' }}>
         <p style={{ fontSize: '0.78rem', color: 'var(--stone)', marginBottom: 12 }}>Key selling points shown as highlights on the product page.</p>
-        {form.features.length === 0 || (form.features.length === 1 && !form.features[0]) ? (
+        {form.features.length === 0 ? (
           <p style={{ fontSize: '0.85rem', color: 'var(--stone)', padding: 20, textAlign: 'center' }}>No features yet.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {form.features.filter((f) => f.trim()).map((f, i) => (
+            {form.features.map((f, i) => (
               <div key={i} style={{ display: 'flex', gap: 6 }}>
                 <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
                 <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>✕</button>
