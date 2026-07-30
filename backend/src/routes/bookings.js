@@ -52,17 +52,23 @@ res.status(201).json(booking)
   } catch (err) { next(err) }
 })
 
-router.get('/:id', async (req, res, next) => {
+// ── Static sub-routes (MUST be before /:id) ────────────────────────
+
+// GET /api/bookings/by-number/:bookingNumber — public: find booking by number
+router.get('/by-number/:bookingNumber', async (req, res, next) => {
   try {
-    const booking = await Booking.findById(req.params.id)
+    const booking = await Booking.findOne({ booking_number: req.params.bookingNumber })
     if (!booking) return res.status(404).json({ error: 'Not found' })
     res.json(booking)
   } catch (err) { next(err) }
 })
 
-router.get('/by-number/:bookingNumber', async (req, res, next) => {
+// ── Parameterized routes ───────────────────────────────────────────
+
+// GET /api/bookings/:id — public: single booking
+router.get('/:id', async (req, res, next) => {
   try {
-    const booking = await Booking.findOne({ booking_number: req.params.bookingNumber })
+    const booking = await Booking.findById(req.params.id)
     if (!booking) return res.status(404).json({ error: 'Not found' })
     res.json(booking)
   } catch (err) { next(err) }
