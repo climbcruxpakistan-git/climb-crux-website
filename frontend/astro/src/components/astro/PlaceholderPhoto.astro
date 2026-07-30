@@ -1,0 +1,36 @@
+---
+interface Props {
+  tag?: string;
+  ratio?: string;
+}
+
+const { tag = '', ratio = '4 / 3' } = Astro.props;
+---
+
+<div class="placeholder-photo" style="--ar: {ratio};">
+  {tag && <span class="tag">{tag}</span>}
+</div>
+
+<style>
+  .placeholder-photo {
+    position: relative;
+    aspect-ratio: var(--ar, 4 / 3);
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 14px),
+      linear-gradient(155deg, var(--charcoal) 0%, #2c2b2d 55%, var(--orange-dark) 140%);
+    color: var(--chalk-dim);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+  .tag {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    padding: 14px 16px;
+    color: var(--chalk-dim);
+    opacity: 0.85;
+  }
+</style>

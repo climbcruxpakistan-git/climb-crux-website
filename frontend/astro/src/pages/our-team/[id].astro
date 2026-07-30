@@ -1,0 +1,31 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import InstructorProfile from '../../components/react/InstructorProfile.jsx';
+import { getTeam } from '../../lib/api';
+
+export async function getStaticPaths() {
+  const members = await getTeam().catch(() => []);
+  return members.map((m) => ({
+    params: { id: m.id || m._id },
+    props: { instructorName: m.name, instructorRole: m.role },
+  }))
+}
+
+const { id } = Astro.params;
+const { instructorName, instructorRole } = Astro.props;
+const pageTitle = instructorName ? `${instructorName} — Climb Crux Pakistan` : 'Our Team — Climb Crux Pakistan';
+
+const team = await getTeam().catch(() => []);
+const instructor = team.find((m) => (m.id || m._id) === id) || null;
+---
+
+<MainLayout>
+  <Fragment slot="head">
+    <title>{pageTitle}</title>
+  </Fragment>
+  <InstructorProfile
+    client:only="react"
+    id={id}
+    initialInstructor={JSON.stringify(instructor)}
+  />
+</MainLayout>

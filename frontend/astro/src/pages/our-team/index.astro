@@ -1,0 +1,37 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PlaceholderPhoto from '../../components/astro/PlaceholderPhoto.astro';
+import { getTeam } from '../../lib/api';
+import '../../styles/OurTeam.css';
+
+const instructors = await getTeam().catch(() => []);
+---
+
+<MainLayout>
+  <section class="section">
+    <div class="wrap">
+      <h2>Who's holding your rope</h2>
+      <div class="instructor-grid">
+        {instructors.map((i) => {
+          const profileId = i.id || i._id;
+          return (
+            <a href={`/our-team/${profileId}`} class="instructor-card" key={profileId}>
+              <div class="instructor-photo-wrap">
+                {i.photoUrl ? (
+                  <img src={i.photoUrl} alt={i.name} style="width:100%;height:100%;object-fit:cover;" />
+                ) : (
+                  <PlaceholderPhoto tag="Instructor photo" ratio="1 / 1" />
+                )}
+              </div>
+              <div class="instructor-body">
+                <h4>{i.name}</h4>
+                <span class="instructor-subtitle">{i.role}</span>
+                <p>{i.bio}</p>
+              </div>
+            </a>
+          )
+        })}
+      </div>
+    </div>
+  </section>
+</MainLayout>

@@ -1,0 +1,14 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHeader from '../components/astro/PageHeader.astro';
+import BookNow from '../components/react/BookNow.jsx';
+
+const preselected = Astro.url.searchParams.get('type') || '';
+---
+
+<MainLayout>
+  <PageHeader title="Book your climb.">
+    <p slot="default">Pick the session that fits — a public group climb, a private experience, or a fully customized session for your own group.</p>
+  </PageHeader>
+  <BookNow client:load preselected={preselected} />
+</MainLayout>

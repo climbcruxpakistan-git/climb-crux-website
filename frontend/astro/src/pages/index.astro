@@ -1,0 +1,128 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHeader from '../components/astro/PageHeader.astro';
+import CliffEdge from '../components/astro/CliffEdge.astro';
+import GradeBadge from '../components/astro/GradeBadge.astro';
+import PlaceholderPhoto from '../components/astro/PlaceholderPhoto.astro';
+import { getHomeContent, getUploads } from '../lib/api';
+import '../styles/Home.css';
+
+const content = await getHomeContent().catch(() => null);
+const uploads = await getUploads().catch(() => []);
+
+const heroTitle = content?.heroTitle || 'Find your next hold.';
+const heroLede = content?.heroLede || "Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you've chased yet.";
+const heroPhotoUrl = content?.heroPhotoUrl || '';
+const paths = content?.paths || [
+  { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
+  { grade: 'Up to 7c+', label: 'Custom & Premium', title: 'Private & Premium', copy: 'Book a private slot for your group or go one-on-one with an instructor. Premium plans open the door to the hardest routes we run.', to: '/private-premium', cta: 'Explore plans' },
+];
+const teasers = content?.teasers || [
+  { tag: 'Public Session · 4+' }, { tag: 'Private Coaching · 1-on-1' }, { tag: 'Premium Ascent · 7c+' },
+];
+const pathsEyebrow = content?.pathsEyebrow || 'Two ways to climb with us';
+const pathsTitle = content?.pathsTitle || 'Pick your route';
+const teasersEyebrow = content?.teasersEyebrow || 'From the wall';
+const teasersTitle = content?.teasersTitle || 'A look at recent sessions';
+const teaserSessionSlug = content?.teaserSessionSlug || '';
+
+const sessionPhotos = teaserSessionSlug
+  ? uploads.filter((p) => (p.tags || []).some((t) => t.toLowerCase() === teaserSessionSlug.toLowerCase()))
+  : [];
+---
+
+<MainLayout>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <h1>{heroTitle}</h1>
+        <p class="hero-lede">{heroLede}</p>
+        <div class="hero-actions">
+          <a href="/sessions" class="btn btn-primary">Join a Public Session</a>
+          <a href="/private-premium" class="btn btn-outline">Build a Private Plan</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        {heroPhotoUrl ? (
+          <img src={heroPhotoUrl} alt="Climb Crux" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);box-shadow:0 24px 60px rgba(0,0,0,0.35);" />
+        ) : (
+          <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
+        )}
+      </div>
+    </div>
+    <CliffEdge fill="var(--chalk)" height={56} />
+  </section>
+
+  <section class="section paths">
+    <div class="wrap">
+      <span class="eyebrow">{pathsEyebrow}</span>
+      <h2>{pathsTitle}</h2>
+      <div class="paths-grid">
+        {paths.map((p) => (
+          <div class="path-card">
+            <GradeBadge grade={p.grade} label={p.label} />
+            <h3>{p.title}</h3>
+            <p>{p.copy}</p>
+            {p.photoUrl && (
+              <img src={p.photoUrl} alt={p.title} style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:var(--radius);margin-top:8px;" />
+            )}
+            <a href={p.to} class="path-link">
+              {p.cta} <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">{teasersEyebrow}</span>
+      <h2>{teasersTitle}</h2>
+      <div class="teaser-grid">
+        {sessionPhotos.length > 0
+          ? sessionPhotos.slice(0, 3).map((p, i) => (
+              <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);" />
+            ))
+          : teasers.slice(0, 3).map((t, i) => (
+              t.photoUrl ? (
+                <img key={i} src={t.photoUrl} alt={t.tag} style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);" />
+              ) : (
+                <PlaceholderPhoto tag={t.tag} ratio="4 / 3" />
+              )
+            ))
+        }
+      </div>
+      <a href="/gallery" class="btn btn-outline" style="margin-top:24px;">View full gallery</a>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .hero {
+    background: linear-gradient(135deg, var(--charcoal-deep) 0%, var(--charcoal) 100%);
+    color: var(--chalk);
+    position: relative;
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 48px;
+    align-items: center;
+    padding-top: clamp(32px, 6vw, 80px);
+    padding-bottom: 0;
+  }
+  @media (max-width: 860px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+  }
+  .hero h1 { color: var(--chalk); font-size: clamp(2.2rem, 5.5vw, 4rem); margin-bottom: 0.3em; }
+  .hero-lede { color: #c9c4b8; font-size: clamp(1rem, 2vw, 1.12rem); max-width: 56ch; line-height: 1.7; margin-bottom: 28px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .paths-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+  @media (max-width: 700px) { .paths-grid { grid-template-columns: 1fr; } }
+  .path-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; background: var(--chalk); border: 1px solid var(--chalk-dim); }
+  .path-link { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.88rem; font-weight: 600; color: var(--orange); margin-top: auto; padding-top: 8px; transition: color 0.15s; }
+  .path-link:hover { color: var(--orange-dark); }
+  .teaser-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 600px) { .teaser-grid { grid-template-columns: 1fr; } }
+</style>

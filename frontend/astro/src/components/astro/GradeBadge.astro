@@ -1,0 +1,40 @@
+---
+interface Props {
+  grade: string;
+  label?: string;
+}
+
+const { grade, label } = Astro.props;
+---
+
+<span class="grade-badge">
+  <span class="grade">{grade}</span>
+  {label && <span class="label">{label}</span>}
+</span>
+
+<style>
+  .grade-badge {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    font-family: var(--font-display);
+    background: var(--charcoal);
+    color: var(--chalk);
+    padding: 0.4em 0.85em;
+    clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+  }
+  .grade {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--orange-light);
+  }
+  .label {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 560px) {
+    .grade { font-size: 0.92rem; }
+    .label { font-size: 0.65rem; }
+  }
+</style>

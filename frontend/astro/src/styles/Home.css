@@ -1,0 +1,284 @@
+/* ============================== HERO ============================== */
+
+.hero {
+  background: var(--charcoal);
+  color: var(--chalk);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1.01fr 0.94fr;
+  gap: 56px;
+  align-items: center;
+  padding-top: clamp(48px, 6vw, 80px);
+  padding-bottom: clamp(72px, 10vw, 120px);
+}
+
+.hero-copy h1 {
+  color: var(--chalk);
+  font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+  max-width: 12ch;
+}
+
+.hero-lede {
+  color: #c9c4b8;
+  font-size: 1.08rem;
+  max-width: 46ch;
+  margin-bottom: 1.8em;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero .btn-outline {
+  border-color: var(--chalk);
+  color: var(--chalk);
+}
+
+.hero .btn-outline:hover {
+  background: var(--chalk);
+  color: var(--charcoal);
+}
+
+.hero-visual {
+  width: 100%;
+  justify-self: end;
+}
+
+.hero-visual .placeholder-photo {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================== PATHS ============================== */
+
+.paths .eyebrow {
+  display: flex;
+}
+
+.paths h2 {
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  margin-bottom: 0.9em;
+  max-width: 16ch;
+}
+
+.paths-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.path-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-top: 4px solid var(--orange);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.3s ease;
+}
+
+.path-card:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(243, 111, 33, 0.25);
+}
+
+.path-card:hover h3,
+.path-card:hover p,
+.path-card:hover .path-link {
+  color: var(--chalk);
+}
+
+.path-card:hover .grade-badge {
+  background: var(--chalk);
+}
+
+.path-card:hover .grade-badge .grade {
+  color: var(--orange-dark);
+}
+
+.path-card:hover .grade-badge .label {
+  color: var(--charcoal);
+}
+
+.path-card h3 {
+  font-size: 1.5rem;
+  margin: 0.1em 0 0;
+}
+
+.path-link {
+  margin-top: auto;
+  padding-top: 8px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.86rem;
+  letter-spacing: 0.05em;
+  color: var(--orange-dark);
+  font-weight: 600;
+}
+
+.path-link span {
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.path-link:hover span {
+  transform: translateX(4px);
+}
+
+/* ============================== TRUST STRIP ============================== */
+
+.trust-strip {
+  background: var(--chalk-dim);
+  border-top: 1px solid #ded5bf;
+  border-bottom: 1px solid #ded5bf;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 40px 0;
+}
+
+.trust-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 20px;
+  border-left: 1px solid #ded5bf;
+  text-align: center;
+}
+
+.trust-item:first-child {
+  border-left: none;
+}
+
+.trust-k {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+}
+
+.trust-v {
+  font-size: 0.82rem;
+  color: var(--stone-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ============================== TEASER GRID ============================== */
+
+.teaser-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.teaser-cta {
+  margin: 0 auto;
+  display: table;
+}
+
+/* ============================== CTA BAND ============================== */
+
+.cta-band {
+  background: var(--charcoal);
+  color: var(--chalk);
+  text-align: center;
+}
+
+.cta-band-inner {
+  padding-bottom: clamp(64px, 8vw, 96px);
+}
+
+.cta-band h2 {
+  color: var(--chalk);
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+}
+
+.cta-band p {
+  color: #c9c4b8;
+  margin: 0 auto 1.8em;
+}
+
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-visual {
+    max-width: 642px;
+    justify-self: center;
+  }
+
+  .paths-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 0;
+  }
+
+  .trust-item:nth-child(3) {
+    border-left: none;
+  }
+
+  .teaser-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .hero-inner {
+    gap: 20px;
+    padding-top: clamp(32px, 5vw, 48px);
+    padding-bottom: clamp(48px, 8vw, 72px);
+  }
+  .hero-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .hero-copy h1 {
+    font-size: clamp(2rem, 8vw, 2.6rem) !important;
+  }
+  .hero-lede {
+    font-size: 0.95rem;
+  }
+  
+  .paths-grid {
+    gap: 16px;
+  }
+  .path-card {
+    padding: 24px 20px;
+  }
+  .path-card h3 { font-size: 1.2rem; }
+  
+  .trust-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 0;
+    padding: 24px 0;
+  }
+  .trust-item { padding: 0 12px; }
+  .trust-k { font-size: 1.3rem; }
+  .trust-v { font-size: 0.72rem; }
+  
+  .teaser-grid {
+    gap: 12px;
+  }
+}

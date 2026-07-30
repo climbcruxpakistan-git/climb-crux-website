@@ -1,0 +1,18 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import PageHeader from '../../../components/astro/PageHeader.astro';
+import EasyPaisaConfirmation from '../../../components/react/EasyPaisaConfirmation.jsx';
+
+export async function getStaticPaths() {
+  return [{ params: { bookingNumber: '_placeholder' } }]
+}
+
+const { bookingNumber } = Astro.params;
+---
+
+<MainLayout>
+  <PageHeader title="Payment confirmation.">
+    <p slot="default">Here's what you need to complete your EasyPaisa transfer.</p>
+  </PageHeader>
+  <EasyPaisaConfirmation client:load bookingNumber={bookingNumber} />
+</MainLayout>

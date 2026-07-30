@@ -1,0 +1,110 @@
+---
+import CliffEdge from './CliffEdge.astro';
+---
+
+<CliffEdge fill="var(--charcoal)" height={48} />
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <img src="/logo.png" alt="Climb Crux" class="footer-logo" width="60" height="60" />
+      <p>Guided rock climbing and adventure in the heart of Margalla Hills. Founded for the first foothold you take and the hardest grade you chase.</p>
+    </div>
+    <div>
+      <h4>Climb</h4>
+      <ul>
+        <li><a href="/sessions">Public Sessions</a></li>
+        <li><a href="/private-premium">Private &amp; Premium</a></li>
+        <li><a href="/book-now">Book Now</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/our-team">Our Team</a></li>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/shop">Shop</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="https://instagram.com/climbcrux" target="_blank" rel="noreferrer">Instagram</a></li>
+        <li><a href="https://wa.me/923132690377" target="_blank" rel="noreferrer">WhatsApp</a></li>
+        <li><a href="mailto:climbcruxpakistan@gmail.com">Email</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner wrap">
+      <span>&copy; {new Date().getFullYear()} Climb Crux Pakistan. All rights reserved.</span>
+      <span>Built with chalk and conviction.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--charcoal);
+    color: var(--chalk-dim);
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 40px;
+    padding-top: 8px;
+    padding-bottom: 56px;
+  }
+  .footer-logo {
+    height: 60px;
+    margin-bottom: 16px;
+    filter: brightness(0) invert(1);
+  }
+  .footer-brand p {
+    color: #a9a49a;
+    font-size: 0.92rem;
+  }
+  .footer h4 {
+    color: var(--chalk);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 1em;
+  }
+  .footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .footer ul a {
+    color: #c9c4b8;
+    font-size: 0.92rem;
+    transition: color 0.15s ease;
+  }
+  .footer ul a:hover {
+    color: var(--orange-light);
+  }
+  .footer-bottom {
+    border-top: 1px solid #4a4a4b;
+  }
+  .footer-bottom-inner {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px var(--edge);
+    font-size: 0.8rem;
+    color: #8f8a80;
+  }
+  @media (max-width: 760px) {
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    .footer-bottom-inner { flex-direction: column; gap: 6px; }
+  }
+  @media (max-width: 480px) {
+    .footer-inner { grid-template-columns: 1fr; gap: 28px; padding-top: 0; padding-bottom: 40px; }
+    .footer-logo { height: 48px; }
+    .footer h4 { font-size: 0.78rem; }
+    .footer ul a { font-size: 0.85rem; }
+    .footer-bottom-inner { font-size: 0.72rem; text-align: center; }
+  }
+</style>

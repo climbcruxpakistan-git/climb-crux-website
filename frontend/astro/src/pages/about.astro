@@ -1,0 +1,34 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHeader from '../components/astro/PageHeader.astro';
+import { getAbout } from '../lib/api';
+
+const about = await getAbout().catch(() => null);
+const safety = about?.safetyItems || [];
+const description = about?.description || "Climb Crux started with a simple idea: the limestone of Margalla Hills shouldn't be reserved for people who already know how to climb. We run sessions for the person picking up a harness for the first time, and for the one training toward their hardest send yet.";
+---
+
+<MainLayout>
+  <PageHeader eyebrow="About Climb Crux" title="Built by climbers, for climbers.">
+    <p slot="default">{description}</p>
+  </PageHeader>
+
+  <section class="section" style="background: var(--chalk-dim);">
+    <div class="wrap">
+      <span class="eyebrow">Safety approach</span>
+      <h2>Safety isn't an add-on, it's the baseline</h2>
+      {safety.length > 0 ? (
+        <div class="info-grid">
+          {safety.map((s) => (
+            <div class="info-card" key={s.h}>
+              <h4>{s.h}</h4>
+              <p>{s.p}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style="color: var(--stone);">Loading…</p>
+      )}
+    </div>
+  </section>
+</MainLayout>

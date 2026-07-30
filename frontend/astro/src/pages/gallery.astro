@@ -1,0 +1,12 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHeader from '../components/astro/PageHeader.astro';
+import Gallery from '../components/react/Gallery.jsx';
+---
+
+<MainLayout>
+  <PageHeader title="From the wall.">
+    <p slot="default">A running record of sessions on Margalla Hills — public climbs, private coaching, and premium ascents.</p>
+  </PageHeader>
+  <Gallery client:load />
+</MainLayout>

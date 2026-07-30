@@ -1,0 +1,1521 @@
+/* ============================== PAGE HEADER ============================== */
+
+.page-header {
+  background: var(--charcoal);
+  color: var(--chalk);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle topographic pattern overlay */
+.page-header-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  background:
+    repeating-linear-gradient(
+      75deg,
+      transparent,
+      transparent 60px,
+      rgba(243, 111, 33, 0.06) 60px,
+      rgba(243, 111, 33, 0.06) 61px
+    ),
+    repeating-linear-gradient(
+      -15deg,
+      transparent,
+      transparent 80px,
+      rgba(255, 255, 255, 0.02) 80px,
+      rgba(255, 255, 255, 0.02) 81px
+    );
+  pointer-events: none;
+}
+
+/* Vertical orange accent bar along the left edge */
+.page-header-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: var(--orange);
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .page-header-accent {
+    width: 4px;
+  }
+}
+
+.page-header-inner {
+  padding-top: 72px;
+  padding-bottom: 60px;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 480px) {
+  .page-header-inner {
+    padding-top: 40px;
+    padding-bottom: 36px;
+  }
+}
+
+.page-header h1 {
+  color: var(--chalk);
+  font-size: clamp(2.6rem, 5vw, 3.8rem);
+  position: relative;
+  padding-bottom: 0.35em;
+  margin-bottom: 0.5em;
+}
+
+/* Orange accent line under the title */
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 70px;
+  height: 4px;
+  background: var(--orange);
+  border-radius: 2px;
+}
+
+.page-header-desc p {
+  color: #c9c4b8;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  margin-bottom: 0;
+  max-width: 68ch;
+}
+
+.page-header-desc p + p {
+  margin-top: 0.6em;
+}
+
+@media (max-width: 600px) {
+  .page-header-inner {
+    padding-top: 48px;
+    padding-bottom: 40px;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.8rem, 6.5vw, 2.6rem);
+  }
+
+  .page-header h1::after {
+    width: 50px;
+    height: 3px;
+  }
+}
+
+/* ============================== INFO GRID (feature cards) ============================== */
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin: 32px 0;
+}
+
+.info-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-left: 3px solid var(--orange);
+  padding: 24px 22px;
+}
+
+.info-card h4 {
+  font-size: 1.02rem;
+  margin-bottom: 0.4em;
+}
+
+.info-card p {
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .info-card {
+    padding: 18px 16px;
+  }
+  .info-card h4 { font-size: 0.92rem; }
+  .info-card p { font-size: 0.85rem; }
+}
+
+/* ============================== PRICING ============================== */
+
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+@media (max-width: 560px) {
+  .price-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.price-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  .price-card {
+    padding: 24px 18px;
+  }
+}
+
+.price-card.featured {
+  background: var(--charcoal);
+  color: var(--chalk);
+  border-color: var(--charcoal);
+}
+
+.price-card.featured h3,
+.price-card.featured .price-note {
+  color: var(--chalk);
+}
+
+.price-card.featured p {
+  color: #c9c4b8;
+}
+
+.price-card-tag {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  transform: translateY(-50%);
+  background: var(--orange);
+  color: var(--chalk);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  font-weight: 600;
+}
+
+.price-card h3 {
+  font-size: 1.3rem;
+  margin: 0.2em 0 0;
+}
+
+@media (max-width: 480px) {
+  .price-card h3 { font-size: 1.1rem; }
+}
+
+.price-amount {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+}
+
+@media (max-width: 480px) {
+  .price-amount {
+    font-size: 1.6rem;
+  }
+  .price-amount span {
+    font-size: 0.82rem;
+  }
+}
+
+.price-card.featured .price-amount {
+  color: var(--orange-light);
+}
+
+.price-amount span {
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  text-transform: none;
+  color: var(--stone);
+  margin-left: 4px;
+}
+
+.price-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.92rem;
+}
+
+.price-card ul li {
+  padding-left: 1.3em;
+  position: relative;
+}
+
+.price-card ul li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.price-card .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.price-note {
+  font-size: 0.82rem;
+  color: var(--stone);
+  margin-top: 12px;
+}
+
+/* ============================== FORMS ============================== */
+
+.form-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 32px;
+}
+
+@media (max-width: 480px) {
+  .form-card {
+    padding: 20px 16px;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.field label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--stone-dark);
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  padding: 0.75em 0.9em;
+  border: 1px solid #d8d0bc;
+  background: #fff;
+  color: var(--ink);
+  border-radius: var(--radius);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--orange);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-note {
+  font-size: 0.82rem;
+  color: var(--stone);
+  margin-top: 4px;
+}
+
+.form-success {
+  background: var(--charcoal);
+  color: var(--chalk);
+  padding: 24px 28px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+}
+
+/* ============================== FAQ ============================== */
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 76ch;
+}
+
+.faq details {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 18px 22px;
+}
+
+.faq summary {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.98rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+  color: var(--charcoal);
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: '+';
+  font-size: 1.3rem;
+  color: var(--orange);
+  transition: transform 0.15s ease;
+}
+
+.faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.faq details p {
+  margin-top: 14px;
+  margin-bottom: 0;
+  font-size: 0.94rem;
+}
+
+/* ============================== GALLERY ============================== */
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .gallery-grid { gap: 8px; }
+}
+
+.gallery-grid .placeholder-photo {
+  cursor: default;
+}
+
+.gallery-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.filter-pill {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  padding: 0.5em 1.1em;
+  border: 1px solid var(--charcoal);
+  background: transparent;
+  color: var(--charcoal);
+}
+
+.filter-pill.is-active {
+  background: var(--charcoal);
+  color: var(--chalk);
+}
+
+/* ============================== CHECKOUT / PAYMENT ============================== */
+
+/* Step progress bar */
+.checkout-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 36px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.checkout-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 2px solid var(--chalk-dim);
+  color: var(--stone);
+  background: var(--chalk);
+  transition: all 0.3s ease;
+}
+
+.checkout-step.is-active .step-number {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: var(--chalk);
+  box-shadow: 0 0 0 4px rgba(243, 111, 33, 0.15);
+}
+
+.checkout-step.is-done .step-number {
+  border-color: #22c55e;
+  background: #22c55e;
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.step-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--stone);
+  transition: color 0.3s ease;
+}
+
+.checkout-step.is-active .step-label,
+.checkout-step.is-done .step-label {
+  color: var(--charcoal);
+}
+
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--chalk-dim);
+  margin: 0 12px;
+  min-width: 40px;
+  position: relative;
+  top: -14px;
+}
+
+.step-connector-fill {
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.4s ease;
+}
+
+/* Error banner */
+.form-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 0.88rem;
+  border-radius: var(--radius);
+}
+
+/* Form actions row */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Spinner */
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Booking summary */
+.booking-summary {
+  background: var(--charcoal);
+  color: var(--chalk);
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  border-radius: var(--radius);
+}
+
+.summary-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  color: var(--orange);
+  margin-bottom: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-key {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-display);
+  color: var(--stone);
+}
+
+.summary-val {
+  font-size: 0.95rem;
+  color: var(--chalk);
+  font-weight: 500;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 14px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: var(--chalk-dim);
+}
+
+.summary-amount {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--orange-light);
+}
+
+@media (max-width: 500px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .booking-summary {
+    padding: 18px 16px;
+  }
+}
+
+/* Payment method grid */
+.payment-method-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.payment-method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px;
+  background: var(--chalk);
+  border: 2px solid var(--chalk-dim);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  position: relative;
+}
+
+.payment-method-card:hover {
+  border-color: var(--orange);
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 111, 33, 0.1);
+}
+
+.payment-method-card.is-selected {
+  border-color: var(--orange);
+  background: #fffdf9;
+  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.15), 0 4px 12px rgba(243, 111, 33, 0.08);
+}
+
+.payment-method-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.payment-method-icon {
+  color: var(--charcoal);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-method-card.is-selected .payment-method-icon {
+  color: var(--orange);
+}
+
+.payment-method-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--charcoal);
+  line-height: 1.3;
+}
+
+.payment-method-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chalk-dim);
+  color: transparent;
+  transition: all 0.2s ease;
+}
+
+.payment-method-card.is-selected .payment-method-check {
+  background: var(--orange);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .payment-method-grid {
+    grid-template-columns: 1fr;
+  }
+  .payment-method-card {
+    flex-direction: row;
+    padding: 14px 18px;
+  }
+  .payment-method-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .payment-method-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Payment form section */
+.payment-form-section {
+  margin-bottom: 8px;
+}
+
+.payment-form-fields {
+  animation: fadeSlideIn 0.3s ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Credit card preview */
+.payment-card-preview {
+  margin-top: 20px;
+  perspective: 800px;
+}
+
+.payment-card-preview-inner {
+  background: linear-gradient(135deg, var(--charcoal) 0%, #2c2b2d 60%, var(--orange-dark) 100%);
+  border-radius: 12px;
+  padding: 24px 28px;
+  color: var(--chalk);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.payment-card-preview-inner::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -60px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+}
+
+.payment-card-preview-inner::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(243, 111, 33, 0.08);
+}
+
+.card-chip {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #ffd700 0%, #daa520 50%, #b8860b 100%);
+  border-radius: 4px;
+}
+
+.card-number-display {
+  font-family: 'Courier New', monospace;
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-holder, .card-expiry-display {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+  .payment-card-preview-inner {
+    min-height: 130px;
+    padding: 18px 20px;
+  }
+  .card-chip {
+    top: 20px;
+    left: 20px;
+    width: 32px;
+    height: 24px;
+  }
+  .card-number-display {
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+}
+
+/* Bank transfer info card */
+.payment-bank-info,
+.payment-easypaisa-info {
+  display: flex;
+  gap: 16px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--orange);
+}
+
+.bank-info-icon,
+.easypaisa-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--charcoal);
+  color: var(--chalk);
+  border-radius: 8px;
+}
+
+.bank-detail-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+}
+
+.bank-detail-row {
+  font-size: 0.85rem;
+  color: var(--stone-dark);
+  margin-bottom: 4px;
+}
+
+.bank-label {
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.phone-number {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--orange-dark);
+}
+
+/* SafePay section */
+.payment-safepay-info {
+  display: flex;
+  gap: 16px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--orange);
+}
+
+.safepay-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--charcoal);
+  color: var(--chalk);
+  border-radius: 8px;
+}
+
+.safepay-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.safepay-badge {
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-radius: 20px;
+  color: var(--stone-dark);
+}
+
+.status-paid {
+  color: #16a34a !important;
+  font-weight: 600;
+}
+
+/* Manual payment next steps */
+.manual-next-steps {
+  width: 100%;
+  max-width: 420px;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.manual-next-steps h4 {
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  margin-bottom: 18px;
+  margin-top: 4px;
+}
+
+.manual-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.manual-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.manual-step-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--chalk);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.manual-step strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--charcoal);
+  margin-bottom: 3px;
+}
+
+.manual-step p {
+  font-size: 0.85rem;
+  color: var(--stone-dark);
+  margin: 0;
+  max-width: 36ch;
+}
+
+.manual-next-steps .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Confirming payment spinner */
+.confirming-payment {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirming-spinner {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.spinner-ring {
+  margin-bottom: 24px;
+  display: inline-flex;
+  animation: spin 1.2s linear infinite;
+}
+
+.spinner-ring svg circle:last-child {
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% { stroke-dashoffset: 150; }
+  50% { stroke-dashoffset: 40; }
+  100% { stroke-dashoffset: 150; }
+}
+
+.confirming-spinner h3 {
+  font-size: 1.2rem;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+}
+
+.confirming-spinner p {
+  font-size: 0.92rem;
+  color: var(--stone);
+  margin: 0 auto;
+  max-width: 32ch;
+}
+
+.confirming-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.confirming-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--orange);
+  animation: dotPulse 1.4s ease-in-out infinite both;
+}
+
+.confirming-dots span:nth-child(1) { animation-delay: 0s; }
+.confirming-dots span:nth-child(2) { animation-delay: 0.16s; }
+.confirming-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+/* Bank transfer confirmation page */
+.bank-confirm-card {
+  background: var(--charcoal);
+  color: var(--chalk);
+  padding: 24px 32px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 24px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.bank-confirm-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--stone);
+  margin-bottom: 6px;
+}
+
+.bank-confirm-number {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--orange-light);
+  letter-spacing: 2px;
+}
+
+.bank-whatsapp-section {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 8px;
+}
+
+.bank-whatsapp-number {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 14px 20px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.bank-whatsapp-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--stone);
+}
+
+.bank-whatsapp-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+/* Bank transfer form */
+.bank-booking-ref {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #fef7ed;
+  border: 1px solid #fde4c8;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.bank-ref-label {
+  display: block;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--stone);
+  margin-bottom: 4px;
+}
+
+.bank-ref-value {
+  display: block;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+  letter-spacing: 1.5px;
+}
+
+.bank-ref-note {
+  font-size: 0.78rem;
+  color: var(--stone);
+  margin: 6px 0 0;
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Success state */
+.payment-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  animation: fadeSlideIn 0.4s ease;
+}
+
+.success-icon {
+  color: #22c55e;
+  margin-bottom: 16px;
+  animation: successPop 0.5s ease;
+}
+
+@keyframes successPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.payment-success h3 {
+  font-size: 1.5rem;
+  color: var(--charcoal);
+  margin-bottom: 10px;
+}
+
+.success-desc {
+  font-size: 1rem;
+  color: var(--stone-dark);
+  max-width: 40ch;
+  margin-bottom: 24px;
+}
+
+.success-details {
+  width: 100%;
+  max-width: 400px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.success-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+.success-detail-row span:first-child {
+  color: var(--stone);
+}
+
+.success-detail-row span:last-child {
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.ref-code {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  color: var(--orange-dark) !important;
+}
+
+.status-pending {
+  color: #d97706 !important;
+}
+
+.success-note {
+  font-size: 0.85rem;
+  color: var(--stone);
+  max-width: 44ch;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 480px) {
+  .payment-success {
+    padding: 24px 12px;
+  }
+  .payment-success h3 {
+    font-size: 1.2rem;
+  }
+  .success-details {
+    padding: 16px;
+  }
+  .success-detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+
+/* ============================== PROCESSING PAYMENT ============================== */
+
+.processing-payment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.processing-spinner {
+  animation: spin 1.2s linear infinite;
+}
+
+.processing-circle {
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% { stroke-dashoffset: 176; }
+  50% { stroke-dashoffset: 50; }
+  100% { stroke-dashoffset: 176; }
+}
+
+.processing-desc {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--stone-dark);
+}
+
+/* ============================== PAYMENT FAILED ============================== */
+
+.payment-failed-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.failed-actions {
+  width: 100%;
+  max-width: 320px;
+}
+
+.failed-actions .btn {
+  gap: 10px;
+  font-size: 0.95rem;
+  padding: 0.9em 1.5em;
+}
+
+/* Custom session contact card */
+.custom-session-card {
+  background: linear-gradient(135deg, #f8f4ef, #f0ebe3);
+  border-radius: 12px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--chalk-dim);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .custom-session-card {
+    padding: 20px 16px;
+  }
+  .custom-session-card h3 {
+    font-size: 1rem;
+  }
+  .custom-session-card a {
+    font-size: 0.82rem;
+    padding: 10px 16px;
+    word-break: break-all;
+  }
+}
+
+/* Price summary card (Book Now page) */
+.price-summary-card {
+  background: var(--chalk-dim);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--chalk-dim);
+}
+
+.price-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .price-summary-card {
+    padding: 16px;
+  }
+  .price-summary-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .price-summary-row > div:last-child {
+    text-align: left;
+    width: 100%;
+  }
+}
+
+/* Mobile: stack bank info icon on top */
+@media (max-width: 480px) {
+  .payment-bank-info {
+    flex-direction: column;
+    padding: 14px 16px;
+  }
+  .bank-info-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .bank-info-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .bank-detail-title {
+    font-size: 0.72rem;
+  }
+  .bank-detail-row {
+    font-size: 0.78rem;
+  }
+}
+
+/* Mobile: stack WhatsApp number section */
+@media (max-width: 480px) {
+  .bank-whatsapp-number {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+  .bank-whatsapp-label {
+    font-size: 0.65rem;
+  }
+  .bank-whatsapp-value {
+    font-size: 0.9rem;
+  }
+  .bank-confirm-card {
+    padding: 18px 20px;
+  }
+  .bank-confirm-number {
+    font-size: 1.15rem;
+  }
+}
+
+/* Mobile: booking summary tweaks */
+@media (max-width: 420px) {
+  .summary-total {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+  .summary-total span:first-child {
+    font-size: 0.78rem;
+  }
+  .summary-amount {
+    font-size: 1.1rem;
+  }
+}
+
+/* Mobile: payment method cards spacing */
+@media (max-width: 420px) {
+  .payment-method-grid {
+    gap: 8px;
+  }
+  .payment-method-card {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .payment-method-label {
+    font-size: 0.65rem;
+  }
+}
+
+/* Mobile: booking detail grid (payment page) */
+@media (max-width: 420px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .summary-item[style*="gridColumn"] {
+    grid-column: 1 !important;
+  }
+  .summary-val {
+    font-size: 0.85rem;
+  }
+}
+
+/* ============================== CONTACT ============================== */
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.contact-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.contact-info-list .k {
+  display: block;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--orange-dark);
+  margin-bottom: 2px;
+}
+
+.map-placeholder {
+  margin-top: 28px;
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 860px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+}

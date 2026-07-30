@@ -1,0 +1,77 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHeader from '../components/astro/PageHeader.astro';
+import GradeBadge from '../components/astro/GradeBadge.astro';
+import { getPlans, getSessionContent } from '../lib/api';
+import '../styles/PrivatePremium.css';
+
+const [plans, content] = await Promise.all([
+  getPlans().catch(() => []),
+  getSessionContent().catch(() => ({})),
+]);
+
+const c = content;
+const ppCustomItems = (c.ppCustomItems && c.ppCustomItems.length > 0) ? c.ppCustomItems : [
+  { h: 'Route & difficulty', p: 'Pick the grade you want to work — from an easy confidence climb to our toughest premium line.' },
+  { h: 'Group size & mix', p: 'Go solo, bring your own group, or fold in a friend or two. You set the roster.' },
+  { h: 'Pacing & duration', p: 'Half-day, full-day, or a multi-session block built around a goal you\'re training toward.' },
+  { h: 'Coaching focus', p: 'Technique, endurance, fear management, or grade progression — tell us the focus, we build the plan.' },
+];
+const ppCustomSession = c.ppCustomSession || {};
+---
+
+<MainLayout>
+  <PageHeader title={c.ppHeaderTitle || 'Your route, your pace.'}>
+    <p slot="default">{c.ppHeaderDesc || 'Private sessions are built around you — solo, with your group, or working toward the highest grades we run.'}</p>
+  </PageHeader>
+
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">{c.ppEyebrow || 'Plans'}</span>
+      <h2>{c.ppSectionTitle || 'Pick a plan to start from'}</h2>
+      <p style="margin-bottom:32px;">{c.ppSectionDesc || 'Every plan below is a starting point, not a fixed package — Tell us the goal and we\'ll design the climb around it.'}</p>
+      <div class="price-grid">
+        {plans.filter((t) => t.type !== 'elite-premium').map((t) => (
+          <div class={`price-card ${t.featured ? 'featured' : ''}`} key={t.id || t.title}>
+            {t.tag && <span class="price-card-tag">{t.tag}</span>}
+            <GradeBadge grade={t.grade} label={t.label} />
+            <h3>{t.title}</h3>
+            <div class="price-amount">PKR {t.price} <span>{t.unit}</span></div>
+            <ul>
+              {t.features?.map((f) => <li key={f}>{f}</li>)}
+            </ul>
+            <a href={`/book-now?type=${t.type || 'private'}`} class={`btn ${t.featured ? 'btn-primary' : 'btn-outline'}`}>
+              Book this plan
+            </a>
+          </div>
+        ))}
+        <div class="price-card">
+          <GradeBadge grade={ppCustomSession.grade || 'You decide'} label={ppCustomSession.label || 'Fully Custom'} />
+          <h3>{ppCustomSession.title || 'Customizable Session'}</h3>
+          <div class="price-amount">{ppCustomSession.price || 'On Request'} <span>{ppCustomSession.unit || 'Per Person'}</span></div>
+          <ul>
+            {(ppCustomSession.features && ppCustomSession.features.length > 0
+              ? ppCustomSession.features : ['Pick your own date, time & group size', 'Choose the grade and climbing focus', 'Solo, small group, or large private group', 'Full gear & certified instructor included']
+            ).map((f, i) => <li key={i}>{f}</li>)}
+          </ul>
+          <a href="/book-now?type=custom-group" class="btn btn-outline">Build your session</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--chalk-dim);">
+    <div class="wrap">
+      <span class="eyebrow">{c.ppCustomEyebrow || 'What gets customized'}</span>
+      <h2>{c.ppCustomSectionTitle || 'Built around your goal, not a template'}</h2>
+      <div class="info-grid">
+        {ppCustomItems.map((item) => (
+          <div class="info-card" key={item.h}>
+            <h4>{item.h}</h4>
+            <p>{item.p}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</MainLayout>

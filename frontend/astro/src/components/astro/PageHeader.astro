@@ -1,0 +1,117 @@
+---
+interface Props {
+  title: string;
+  eyebrow?: string;
+}
+
+const { title, eyebrow } = Astro.props;
+---
+
+<section class="page-header">
+  <div class="page-header-pattern"></div>
+  <div class="page-header-accent"></div>
+  <div class="wrap page-header-inner">
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1>{title}</h1>
+    {Astro.slots.has('default') && (
+      <div class="page-header-desc">
+        <slot />
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .page-header {
+    background: var(--charcoal);
+    color: var(--chalk);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.3;
+    background:
+      repeating-linear-gradient(75deg, transparent, transparent 60px, rgba(243,111,33,0.06) 60px, rgba(243,111,33,0.06) 61px),
+      repeating-linear-gradient(-15deg, transparent, transparent 80px, rgba(255,255,255,0.02) 80px, rgba(255,255,255,0.02) 81px);
+    pointer-events: none;
+  }
+  .page-header-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: var(--orange);
+    pointer-events: none;
+  }
+  @media (max-width: 860px) {
+    .page-header-accent { width: 4px; }
+  }
+  .page-header-inner {
+    padding-top: 72px;
+    padding-bottom: 60px;
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 480px) {
+    .page-header-inner { padding-top: 40px; padding-bottom: 36px; }
+  }
+  .page-header h1 {
+    color: var(--chalk);
+    font-size: clamp(1.8rem, 6.5vw, 2.6rem);
+    position: relative;
+    padding-bottom: 0.35em;
+    margin-bottom: 0.5em;
+  }
+  @media (min-width: 601px) {
+    .page-header h1 { font-size: clamp(2.6rem, 5vw, 3.8rem); }
+  }
+  .page-header h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 70px;
+    height: 4px;
+    background: var(--orange);
+    border-radius: 2px;
+  }
+  @media (max-width: 600px) {
+    .page-header h1::after { width: 50px; height: 3px; }
+  }
+  .page-header-desc p {
+    color: #c9c4b8;
+    font-size: 1.08rem;
+    line-height: 1.7;
+    margin-bottom: 0;
+    max-width: 68ch;
+  }
+  .page-header-desc p + p { margin-top: 0.6em; }
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.78rem;
+    color: var(--orange);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 0.9em;
+  }
+  @media (max-width: 560px) {
+    .eyebrow { font-size: 0.7rem; }
+  }
+  .eyebrow::before {
+    content: '';
+    width: 22px;
+    height: 2px;
+    background: var(--orange);
+    display: inline-block;
+  }
+  @media (max-width: 560px) {
+    .eyebrow::before { width: 16px; }
+  }
+</style>

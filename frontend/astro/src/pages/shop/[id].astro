@@ -1,0 +1,88 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import ProductDetail from '../../components/react/ProductDetail.jsx';
+import { getProducts, getProduct, getProductReviews } from '../../lib/api';
+import '../../styles/ProductDetail.css';
+
+export async function getStaticPaths() {
+  const allProducts = await getProducts().catch(() => []);
+  return allProducts.map((p) => ({
+    params: { id: p.id },
+    props: { productName: p.name, productCategory: p.category },
+  }))
+}
+
+const { id } = Astro.params;
+const { productName, productCategory } = Astro.props;
+const pageTitle = productName ? `${productName} — Climb Crux Pakistan` : 'Product — Climb Crux Pakistan';
+
+// Fetch full product data, all products, and reviews at build time
+const product = await getProduct(id).catch(() => null);
+const allProducts = await getProducts().catch(() => []);
+const reviewData = await getProductReviews(id).catch(() => ({ reviews: [], total: 0, avgRating: 0, distribution: [0,0,0,0,0] }));
+
+// Build JSON-LD for server-side rendering (visible to search engines)
+let jsonLd = null;
+if (product) {
+  jsonLd = {
+    '@context': 'https://schema.org/',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description ? product.description.slice(0, 300) : `${product.name} from Climb Crux Pakistan`,
+    sku: product.sku || undefined,
+    category: product.category || undefined,
+    image: [product.imageUrl, ...(product.images || [])].filter(Boolean),
+    offers: {
+      '@type': 'Offer',
+      url: `https://climbcruxpakistan.com/shop/${id}`,
+      priceCurrency: 'PKR',
+      price: product.price,
+      availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    },
+    ...(reviewData.total > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: reviewData.avgRating,
+        reviewCount: reviewData.total,
+      },
+    } : {}),
+    ...(product.shipping?.deliveryTime ? {
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'PK' },
+        deliveryTime: product.shipping.deliveryTime,
+      },
+    } : {}),
+  }
+}
+---
+
+<MainLayout>
+  <Fragment slot="head">
+    <title>{pageTitle}</title>
+  </Fragment>
+  {
+    jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd, null, 2)} />
+    )
+  }
+  {/* Product content rendered by React island using initial data — no loading spinner */}
+  {
+    !product && (
+      <section class="section"><div class="wrap" style="text-align:center;padding:60px 20px;">
+        <h2>Product not found</h2>
+        <a href="/shop" class="btn btn-outline" style="margin-top:16px;">← Back to shop</a>
+      </div></section>
+    )
+  }
+
+  {/* React island for interactivity: uses initialProduct data to render immediately without loading state */}
+  <ProductDetail
+    client:only="react"
+    id={id}
+    initialProduct={JSON.stringify(product)}
+    initialAllProducts={JSON.stringify(allProducts)}
+    initialReviewData={JSON.stringify(reviewData)}
+  />
+</MainLayout>
