@@ -10,15 +10,8 @@ function authHeaders() {
   return token ? { 'Authorization': `Bearer ${token}` } : {}
 }
 
-/** Normalise an image entry — accept string or { url, alt, sortOrder } */
-function toImageObj(img) {
-  if (!img) return { url: '', alt: '', sortOrder: 0 }
-  if (typeof img === 'string') return { url: img, alt: '', sortOrder: 0 }
-  return { url: img.url || '', alt: img.alt || '', sortOrder: img.sortOrder || 0 }
-}
-
 function emptyImages() {
-  return [{ url: '', alt: '', sortOrder: 0 }]
+  return ['']
 }
 
 const STOCK_OPTIONS = [
@@ -90,7 +83,7 @@ export default function ShopManager() {
       name: '', slug: '', sku: '', brand: '', category: 'Uncategorized',
       price: '', compareAtPrice: '',
       description: '',
-      imageUrl: '', imageAlt: '', images: emptyImages(),
+      imageUrl: '', featuredImageAlt: '', images: emptyImages(),
       stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
       variants: [],
       specifications: [],
@@ -109,9 +102,8 @@ export default function ShopManager() {
   }
 
   function openEdit(p) {
-    const imgs = (p.images || []).length > 0
-      ? (p.images || []).map(toImageObj).concat([{ url: '', alt: '', sortOrder: 0 }])
-      : emptyImages()
+    const rawImages = (p.images || []).filter(Boolean)
+    const imgs = rawImages.length > 0 ? [...rawImages, ''] : ['']
     setForm({
       name: p.name || '',
       slug: p.slug || '',
@@ -122,7 +114,7 @@ export default function ShopManager() {
       compareAtPrice: (p.compareAtPrice ?? p.originalPrice)?.toString() || '',
       description: p.description || '',
       imageUrl: p.imageUrl || '',
-      featuredImageAlt: (p.images?.[0] && typeof p.images[0] === 'object' ? p.images[0].alt : '') || '',
+      featuredImageAlt: p.featuredImageAlt || '',
       images: imgs,
       stockQuantity: p.stockQuantity ?? 0,
       lowStockThreshold: p.lowStockThreshold ?? 5,
@@ -151,11 +143,6 @@ export default function ShopManager() {
       return
     }
 
-    // Build images array — first image is the featured one, rest are gallery
-    const galleryImages = form.images
-      .filter((img) => img.url.trim())
-      .map((img, i) => ({ url: img.url.trim(), alt: img.alt.trim(), sortOrder: i }))
-
     const data = {
       name: form.name,
       slug: form.slug,
@@ -167,9 +154,8 @@ export default function ShopManager() {
       originalPrice: form.compareAtPrice ? parseFloat(form.compareAtPrice) : null,
       description: form.description,
       imageUrl: form.imageUrl,
-      images: galleryImages.length > 0
-        ? [{ url: form.imageUrl, alt: form.featuredImageAlt || '', sortOrder: 0 }, ...galleryImages]
-        : galleryImages,
+      featuredImageAlt: form.featuredImageAlt || '',
+      images: form.images.filter((url) => url.trim()),
       stockQuantity: parseInt(form.stockQuantity, 10) || 0,
       lowStockThreshold: parseInt(form.lowStockThreshold, 10) || 5,
       stockStatus: form.stockStatus,
@@ -327,9 +313,9 @@ export default function ShopManager() {
       }
       const uploaded = await res.json()
       if (uploaded && uploaded.length > 0) {
-        const newImgs = uploaded.map((p) => ({ url: p.url, alt: '', sortOrder: 0 }))
-        const existing = form.images.filter((img) => img.url.trim())
-        setForm({ ...form, images: [...existing, ...newImgs, { url: '', alt: '', sortOrder: 0 }] })
+        const newImgs = uploaded.map((p) => p.url)
+        const existing = form.images.filter((url) => url.trim())
+        setForm({ ...form, images: [...existing, ...newImgs, ''] })
         addToast(`${newImgs.length} image${newImgs.length > 1 ? 's' : ''} uploaded`, 'success')
       }
     } catch (err) {
@@ -341,9 +327,9 @@ export default function ShopManager() {
   }
 
   function removeGalleryImage(idx) {
-    const filled = form.images.filter((img) => img.url.trim())
+    const filled = form.images.filter((url) => url.trim())
     const updated = filled.filter((_, j) => j !== idx)
-    setForm({ ...form, images: updated.length > 0 ? [...updated, { url: '', alt: '', sortOrder: 0 }] : emptyImages() })
+    setForm({ ...form, images: updated.length > 0 ? [...updated, ''] : [''] })
   }
 
   if (loading) return <div className="empty-state"><h3>Loading shop…</h3></div>
@@ -667,11 +653,11 @@ export default function ShopManager() {
             <div className="admin-field" style={{ marginTop: 8 }}>
               <label>Gallery Images</label>
               {/* Thumbnail previews */}
-              {form.images.filter((img) => img.url.trim()).length > 0 && (
+              {form.images.filter((url) => url.trim()).length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-                  {form.images.filter((img) => img.url.trim()).map((img, i) => (
+                  {form.images.filter((url) => url.trim()).map((url, i) => (
                     <div key={i} style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={img.url} alt={img.alt || `Gallery ${i + 1}`}
+                      <img src={url} alt={`Gallery ${i + 1}`}
                         style={{ width: 80, height: 80, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--border)' }} />
                       <button className="btn-admin-icon danger" onClick={() => removeGalleryImage(i)}
                         style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', cursor: 'pointer', border: '1px solid #e5e0d4' }}
@@ -696,27 +682,24 @@ export default function ShopManager() {
                   )}
                 </button>
                 <span style={{ color: 'var(--stone)', fontSize: '0.78rem' }}>or</span>
-                <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, { url: '', alt: '', sortOrder: 0 }] })}>
+                <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={() => setForm({ ...form, images: [...form.images, ''] })}>
                   + Add URL field
                 </button>
               </div>
 
-              {/* Image URL + Alt inputs */}
-              {form.images.map((img, i) => (
+              {/* Gallery image URL inputs */}
+              {form.images.map((url, i) => (
                 <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
-                  <input style={{ flex: 1 }} value={img.url}
-                    onChange={(e) => updateListItem('images', i, 'url', e.target.value)}
+                  <input style={{ flex: 1 }} value={url}
+                    onChange={(e) => setForm({ ...form, images: form.images.map((x, j) => j === i ? e.target.value : x) })}
                     placeholder={`Gallery image ${i + 1} URL`} />
-                  <input style={{ width: 160 }} value={img.alt}
-                    onChange={(e) => updateListItem('images', i, 'alt', e.target.value)}
-                    placeholder="Alt text" />
-                  {!img.url.trim() && (
+                  {!url.trim() && (
                     <button className="btn-admin-icon danger" onClick={() => removeListItem('images', i)}>✕</button>
                   )}
                 </div>
               ))}
               <p style={{ fontSize: '0.73rem', color: 'var(--stone)', marginTop: 4 }}>
-                Upload images from your device, or paste Cloudinary URLs. Add alt text for accessibility.
+                Upload images from your device, or paste Cloudinary URLs.
               </p>
             </div>
 

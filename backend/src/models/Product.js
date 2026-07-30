@@ -18,13 +18,8 @@ const productSchema = new mongoose.Schema({
 
   // ── Images ──
   imageUrl: { type: String, default: '' }, // featured image (backward compat)
-  images: [
-    {
-      url: { type: String, default: '' },
-      alt: { type: String, default: '' },
-      sortOrder: { type: Number, default: 0 },
-    },
-  ],
+  featuredImageAlt: { type: String, default: '' }, // alt text for featured image
+  images: [{ type: String }], // gallery image URLs (strings for backward compat)
 
   // ── Inventory ──
   stockQuantity: { type: Number, default: 0 },
