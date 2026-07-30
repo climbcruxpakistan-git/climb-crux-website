@@ -72,10 +72,12 @@ export default function Shop() {
                   onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/shop/${product.id}`) }}
                 >
                   {/* Badges */}
-                  {product.originalPrice && (
-                    <span className="shop-badge shop-badge-sale">Sale</span>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <span className="shop-badge shop-badge-sale">
+                      {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                    </span>
                   )}
-                  {product.featured && !product.originalPrice && (
+                  {product.featured && (!product.originalPrice || product.originalPrice <= product.price) && (
                     <span className="shop-badge shop-badge-featured">Featured</span>
                   )}
 
@@ -117,8 +119,13 @@ export default function Shop() {
                     <div className="shop-card-price-row">
                       <div className="shop-card-price">
                         <span className="shop-card-price-current">PKR {product.price.toLocaleString()}</span>
-                        {product.originalPrice && (
-                          <span className="shop-card-price-original">PKR {product.originalPrice.toLocaleString()}</span>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                          <>
+                            <span className="shop-card-price-original">PKR {product.originalPrice.toLocaleString()}</span>
+                            <span className="shop-card-discount-pct">
+                              -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                            </span>
+                          </>
                         )}
                       </div>
                       {!product.inStock && (

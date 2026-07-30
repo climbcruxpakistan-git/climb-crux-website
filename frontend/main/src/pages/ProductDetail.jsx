@@ -185,7 +185,14 @@ export default function ProductDetail() {
 
             <div className="pd-price-row">
               <span className="pd-price-current">PKR {product.price.toLocaleString()}</span>
-              {product.originalPrice && <span className="pd-price-original">PKR {product.originalPrice.toLocaleString()}</span>}
+              {product.originalPrice && product.originalPrice > product.price && (
+                <>
+                  <span className="pd-price-original">PKR {product.originalPrice.toLocaleString()}</span>
+                  <span className="pd-discount-badge">
+                    -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                  </span>
+                </>
+              )}
             </div>
 
             <div className={`pd-stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
