@@ -81,6 +81,7 @@ export default function ProductDetail() {
   const [reviewForm, setReviewForm] = useState({ customer_name: '', rating: 5, title: '', comment: '' })
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
+  const [reviewError, setReviewError] = useState('')
 
   // Recently viewed
   const [recentlyViewed, setRecentlyViewed] = useState([])
@@ -231,9 +232,10 @@ export default function ProductDetail() {
   async function handleSubmitReview(e) {
     e.preventDefault()
     if (!reviewForm.customer_name.trim() || !reviewForm.rating) {
-      setError('Name and rating are required')
+      setReviewError('Name and rating are required')
       return
     }
+    setReviewError('')
     setReviewSubmitting(true)
     try {
       await submitProductReview(id, reviewForm)
@@ -242,7 +244,7 @@ export default function ProductDetail() {
       const fresh = await getProductReviews(id)
       setReviewData(fresh)
     } catch {
-      setError('Failed to submit review')
+      setReviewError('Failed to submit review')
     } finally { setReviewSubmitting(false) }
   }
 
@@ -558,6 +560,7 @@ export default function ProductDetail() {
                   <label>Review</label>
                   <textarea rows={3} value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} placeholder="Share your experience with this product" />
                 </div>
+                {reviewError && <div className="form-error-banner">{reviewError}</div>}
                 <button type="submit" className="btn btn-primary" disabled={reviewSubmitting}>
                   {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
                 </button>
