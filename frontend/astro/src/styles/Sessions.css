@@ -168,6 +168,90 @@
   margin-right: auto;
 }
 
+/* ── Monthly Membership card ── */
+.pricing-section .price-card.membership-card {
+  padding-top: 48px;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 1px var(--orange), 0 12px 36px rgba(243, 111, 33, 0.2);
+  /* let the badge sit on the card border without being clipped */
+  overflow: visible;
+}
+
+.pricing-section .price-card.membership-card::before {
+  opacity: 1;
+  background: linear-gradient(90deg, var(--orange), var(--orange-light));
+}
+
+.membership-badge {
+  position: absolute;
+  top: 0;
+  left: 28px;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, var(--orange), #ff8c3b);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 7px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(243, 111, 33, 0.45);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.membership-save {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.membership-card .original-price {
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: line-through;
+  font-size: 0.95rem;
+}
+
+.membership-card .save-tag {
+  background: rgba(243, 111, 33, 0.15);
+  color: var(--orange-light);
+  border: 1px solid rgba(243, 111, 33, 0.45);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.membership-card .membership-desc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+  color: #c9c4b8;
+}
+
+@media (max-width: 480px) {
+  .pricing-section .price-card.membership-card {
+    padding-top: 44px;
+  }
+  .membership-badge {
+    left: 18px;
+    font-size: 0.72rem;
+    padding: 6px 12px;
+  }
+  .membership-card .original-price {
+    font-size: 0.85rem;
+  }
+  .membership-card .save-tag {
+    font-size: 0.66rem;
+  }
+  .membership-card .membership-desc {
+    font-size: 0.82rem;
+  }
+}
+
 /* Featured card gets its own hover treatment */
 .pricing-section .price-card.featured:hover {
   box-shadow: 0 12px 36px rgba(243, 111, 33, 0.15);

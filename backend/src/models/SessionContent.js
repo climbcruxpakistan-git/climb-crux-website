@@ -23,6 +23,21 @@ const customSessionSchema = new mongoose.Schema({
   features: [{ type: String }],
 }, { _id: false })
 
+const membershipSchema = new mongoose.Schema({
+  title: { type: String, default: 'Monthly Membership' },
+  badge: { type: String, default: '🔥 Save 20%' },
+  price: { type: String, default: '8,000' },
+  originalPrice: { type: String, default: '10,000' },
+  discount: { type: String, default: '20%' },
+  unit: { type: String, default: '/ Month' },
+  category: { type: String, default: 'Membership' },
+  duration: { type: String, default: '1 Month' },
+  sessionsIncluded: { type: String, default: '4' },
+  description: { type: String, default: 'Train consistently with our monthly climbing membership. Enjoy four climbing sessions every month at a discounted price while improving your strength, technique, and confidence.' },
+  features: [{ type: String }],
+  ctaLabel: { type: String, default: 'Get Monthly Membership' },
+}, { _id: false })
+
 const ppCustomItemSchema = new mongoose.Schema({
   h: { type: String, default: '' },
   p: { type: String, default: '' },
@@ -45,7 +60,7 @@ const sessionContentSchema = new mongoose.Schema({
   includedSectionTitle: { type: String, default: 'Everything you need, nothing to bring' },
   faqEyebrow: { type: String, default: 'Good to know' },
   faqSectionTitle: { type: String, default: 'Frequently asked questions' },
-  customSession: { type: customSessionSchema, default: () => ({}) },
+  membership: { type: membershipSchema, default: () => ({}) },
 
   // Private & Premium page content
   ppHeaderTitle: { type: String, default: 'Your route, your pace.' },

@@ -90,6 +90,7 @@ export default function PaymentPage() {
     const map = {
       public: 'Public Session',
       private: 'Private Session',
+      membership: 'Monthly Membership',
       'custom-group': 'Custom Group Session',
     }
     return map[sessionId] || sessionId?.replace(/-/g, ' ') || '—'

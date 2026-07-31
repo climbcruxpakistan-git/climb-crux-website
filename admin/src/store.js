@@ -82,11 +82,30 @@ export async function getSessionContent() {
           { text: 'Harness, helmet, rope, belay gear & climbing shoes' },
           { text: 'Group of up to 20 climbers' },
         ],
+    // Sessions page content
+    sessionsHeaderTitle: data.sessionsHeaderTitle || '',
+    sessionsHeaderDesc: data.sessionsHeaderDesc || '',
+    sessionsSectionTitle: data.sessionsSectionTitle || '',
+    pricingSectionTitle: data.pricingSectionTitle || '',
+    includedSectionTitle: data.includedSectionTitle || '',
+    faqEyebrow: data.faqEyebrow || '',
+    faqSectionTitle: data.faqSectionTitle || '',
+    membership: data.membership || {},
+    // Private & Premium page content
+    ppHeaderTitle: data.ppHeaderTitle || '',
+    ppHeaderDesc: data.ppHeaderDesc || '',
+    ppEyebrow: data.ppEyebrow || '',
+    ppSectionTitle: data.ppSectionTitle || '',
+    ppSectionDesc: data.ppSectionDesc || '',
+    ppCustomSession: data.ppCustomSession || {},
+    ppCustomEyebrow: data.ppCustomEyebrow || '',
+    ppCustomSectionTitle: data.ppCustomSectionTitle || '',
+    ppCustomItems: data.ppCustomItems || [],
   }
 }
 
-export async function saveSessionContent({ includedItems, faqs, sessionsDisabled, pricingTitle, pricingPrice, pricingUnit, pricingFeatures }) {
-  return await request('PUT', '/session-content', { includedItems, faqs, sessionsDisabled, pricingTitle, pricingPrice, pricingUnit, pricingFeatures })
+export async function saveSessionContent(body) {
+  return await request('PUT', '/session-content', body)
 }
 
 // Re-export for backward compatibility with SessionsManager

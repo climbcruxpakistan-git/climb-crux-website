@@ -9,10 +9,10 @@ const preselected = Astro.url.searchParams.get('type') || '';
 <MainLayout>
   <Fragment slot="head">
     <title>Book a Climbing Session — Climb Crux Pakistan</title>
-    <meta name="description" content="Reserve your spot for guided rock climbing on Margalla Hills. Choose a public session, private coaching, or a fully customized group climb in Islamabad." />
+    <meta name="description" content="Reserve your spot for guided rock climbing on Margalla Hills. Choose a public session, a monthly membership, or private coaching in Islamabad." />
   </Fragment>
   <PageHeader title="Book your climb.">
-    <p slot="default">Pick the session that fits — a public group climb, a private experience, or a fully customized session for your own group.</p>
+    <p slot="default">Pick the session that fits — a public group climb, a discounted monthly membership, or a private experience built around your goals.</p>
   </PageHeader>
   <BookNow client:load preselected={preselected} />
 </MainLayout>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import GradeBadge from '../components/GradeBadge.jsx'
 import { getSessions, getSessionContent } from '../api.js'
 import './Sessions.css'
 
@@ -61,6 +60,11 @@ export default function Sessions() {
   }, [])
 
   const c = pageContent
+  const m = c.membership || {}
+  const defaultMembershipFeatures = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome']
+  const rawMembershipFeatures = m.features?.length ? m.features.filter((f) => typeof f === 'string' && f.trim()) : []
+  const membershipFeatures = rawMembershipFeatures.length ? rawMembershipFeatures : defaultMembershipFeatures
+  const membershipDesc = m.description || 'Train consistently with our monthly climbing membership. Enjoy four climbing sessions every month at a discounted price while improving your strength, technique, and confidence.'
 
   return (
     <>
@@ -109,7 +113,7 @@ export default function Sessions() {
         <div className="wrap">
           <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
           <div className="price-grid">
-            <div className="price-card featured">
+            <div className="price-card">
               <h3>{pricing.title}</h3>
               <div className="price-amount">PKR {pricing.price} <span>{pricing.unit}</span></div>
               <ul>
@@ -117,25 +121,25 @@ export default function Sessions() {
                   <li key={i}>{f.text || f}</li>
                 ))}
               </ul>
-              <Link to="/book-now?type=public" className="btn btn-primary">Reserve a spot</Link>
+              <Link to="/book-now?type=public" className="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</Link>
             </div>
 
-            {/* Customizable Session card */}
-            <div className="price-card">
-              <GradeBadge grade={(c.customSession && c.customSession.grade) || 'You decide'} label={(c.customSession && c.customSession.label) || 'Fully Custom'} />
-              <h3>{(c.customSession && c.customSession.title) || 'Customizable Session'}</h3>
-              <div className="price-amount">{(c.customSession && c.customSession.price) || 'On Request'} <span>{(c.customSession && c.customSession.unit) || 'Per Person'}</span></div>
+            {/* Monthly Membership card */}
+            <div className="price-card featured membership-card">
+              <span className="membership-badge">{m.badge || '🔥 Save 20%'}</span>
+              <h3>{m.title || 'Monthly Membership'}</h3>
+              <div className="price-amount">PKR {m.price || '8,000'} <span>{m.unit || '/ Month'}</span></div>
+              <div className="membership-save">
+                <span className="original-price" aria-label={`Original price PKR ${m.originalPrice || '10,000'}`}>PKR {m.originalPrice || '10,000'}</span>
+                <span className="save-tag">Save {m.discount || '20%'}</span>
+              </div>
+              <p className="membership-desc">{membershipDesc}</p>
               <ul>
-                {(c.customSession && c.customSession.features && c.customSession.features.length > 0
-                  ? c.customSession.features
-                  : ['Pick your own date, time &amp; group size', 'Choose the grade and climbing focus', 'Solo, small group, or large private group', 'Full gear &amp; certified instructor included']
-                ).map((f, i) => (
+                {membershipFeatures.map((f, i) => (
                   <li key={i}>{f}</li>
                 ))}
               </ul>
-              <Link to="/book-now?type=custom-group" className="btn btn-outline">
-                Build your session
-              </Link>
+              <Link to="/book-now?type=membership" className="btn btn-primary" aria-label="Get the Monthly Membership">{m.ctaLabel || 'Get Monthly Membership'}</Link>
             </div>
           </div>
         </div>

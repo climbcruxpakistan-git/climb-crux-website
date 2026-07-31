@@ -23,6 +23,8 @@ export default function SessionsManager() {
 
   const [showPricing, setShowPricing] = useState(false)
   const [pricing, setPricing] = useState({ title: 'Public Session', price: '4,500', unit: '/ person', features: defaultFeatures })
+  const [showMembership, setShowMembership] = useState(false)
+  const [membership, setMembership] = useState({})
   const [showSessionsContent, setShowSessionsContent] = useState(false)
   const [showPpContent, setShowPpContent] = useState(false)
   const [form, setForm] = useState({ date: '', time: '', spots: '' })
@@ -41,6 +43,7 @@ export default function SessionsManager() {
           unit: content.pricingUnit || '/ person',
           features: content.pricingFeatures?.length ? content.pricingFeatures : defaultFeatures,
         })
+        setMembership(content.membership || {})
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -206,6 +209,44 @@ export default function SessionsManager() {
         )}
       </div>
 
+      {/* Monthly Membership Card */}
+      <div className="card-admin">
+        <div className="card-admin-header">
+          <h2>Monthly Membership Card</h2>
+          <button className="btn-admin btn-admin-outline btn-admin-sm" onClick={() => setShowMembership(true)}>
+            Edit Membership
+          </button>
+        </div>
+        <div style={{ padding: '12px 0' }}>
+          <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Name</span>
+              <div style={{ fontWeight: 600 }}>{membership.title || 'Monthly Membership'}</div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Price</span>
+              <div style={{ fontWeight: 600 }}>PKR {membership.price || '8,000'} <span style={{ fontWeight: 400, color: '#888' }}>{membership.unit || '/ Month'}</span></div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Original Price</span>
+              <div style={{ fontWeight: 600, textDecoration: 'line-through', color: '#888' }}>PKR {membership.originalPrice || '10,000'}</div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Discount</span>
+              <div style={{ fontWeight: 600, color: '#dc2626' }}>Save {membership.discount || '20%'}</div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Category</span>
+              <div style={{ fontWeight: 600 }}>{membership.category || 'Membership'}</div>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Duration · Sessions</span>
+              <div style={{ fontWeight: 600 }}>{membership.duration || '1 Month'} · {membership.sessionsIncluded || '4'} sessions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Public Session Pricing Card */}
       <div className="card-admin">
         <div className="card-admin-header">
@@ -288,7 +329,7 @@ export default function SessionsManager() {
           <button className="btn-admin btn-admin-outline btn-admin-sm" onClick={() => setShowSessionsContent(true)}>Edit</button>
         </div>
         <div style={{ padding: '12px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>
-          <p>Edit page header, section headings, and custom session card for the Public Sessions page.</p>
+          <p>Edit page header and section headings for the Public Sessions page. The membership card is managed above.</p>
         </div>
       </div>
 
@@ -349,6 +390,22 @@ export default function SessionsManager() {
         </Modal>
       )}
 
+      {showMembership && (
+        <Modal title="Edit Monthly Membership" onClose={() => setShowMembership(false)} wide>
+          <MembershipForm
+            data={membership}
+            onSave={async (data) => {
+              const content = await getSessionContent()
+              await saveSessionContent({ ...content, membership: data })
+              setMembership(data)
+              setShowMembership(false)
+              addToast('Membership card updated', 'success')
+            }}
+            onCancel={() => setShowMembership(false)}
+          />
+        </Modal>
+      )}
+
       {showIncluded && (
         <Modal title="Edit Included Items" onClose={() => setShowIncluded(null)}>
           <IncludedForm items={included} onSave={handleIncludedSave} onCancel={() => setShowIncluded(null)} />
@@ -372,7 +429,6 @@ export default function SessionsManager() {
               includedSectionTitle: c.includedSectionTitle || '',
               faqEyebrow: c.faqEyebrow || '',
               faqSectionTitle: c.faqSectionTitle || '',
-              customSession: c.customSession || { title: '', grade: '', label: '', price: '', unit: '', features: [''] },
             }}
             onSave={async (data) => {
               const content = await getSessionContent()
@@ -456,6 +512,104 @@ function FaqForm({ faq, onSave, onCancel }) {
   )
 }
 
+function MembershipForm({ data, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    title: data.title || 'Monthly Membership',
+    badge: data.badge || '🔥 Save 20%',
+    price: data.price || '8,000',
+    originalPrice: data.originalPrice || '10,000',
+    discount: data.discount || '20%',
+    unit: data.unit || '/ Month',
+    category: data.category || 'Membership',
+    duration: data.duration || '1 Month',
+    sessionsIncluded: data.sessionsIncluded || '4',
+    description: data.description || '',
+    features: data.features && data.features.length ? data.features : ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome'],
+    ctaLabel: data.ctaLabel || 'Get Monthly Membership',
+  })
+
+  function update(field, val) { setForm({ ...form, [field]: val }) }
+  function addFeature() { setForm({ ...form, features: [...form.features, ''] }) }
+  function updateFeature(idx, val) { setForm({ ...form, features: form.features.map((f, i) => (i === idx ? val : f)) }) }
+  function removeFeature(idx) { setForm({ ...form, features: form.features.filter((_, i) => i !== idx) }) }
+  function handleSave() {
+    onSave({ ...form, features: form.features.filter((f) => f.trim()) })
+  }
+
+  return (
+    <div className="admin-form">
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label>Name</label>
+          <input value={form.title} onChange={(e) => update('title', e.target.value)} placeholder="e.g. Monthly Membership" />
+        </div>
+        <div className="admin-field">
+          <label>Badge</label>
+          <input value={form.badge} onChange={(e) => update('badge', e.target.value)} placeholder="e.g. 🔥 Save 20%" />
+        </div>
+      </div>
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label>Price</label>
+          <input value={form.price} onChange={(e) => update('price', e.target.value)} placeholder="e.g. 8,000" />
+        </div>
+        <div className="admin-field">
+          <label>Original Price</label>
+          <input value={form.originalPrice} onChange={(e) => update('originalPrice', e.target.value)} placeholder="e.g. 10,000" />
+        </div>
+      </div>
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label>Discount</label>
+          <input value={form.discount} onChange={(e) => update('discount', e.target.value)} placeholder="e.g. 20%" />
+        </div>
+        <div className="admin-field">
+          <label>Unit</label>
+          <input value={form.unit} onChange={(e) => update('unit', e.target.value)} placeholder="e.g. / Month" />
+        </div>
+      </div>
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label>Category</label>
+          <input value={form.category} onChange={(e) => update('category', e.target.value)} placeholder="e.g. Membership" />
+        </div>
+        <div className="admin-field">
+          <label>Sessions Included</label>
+          <input value={form.sessionsIncluded} onChange={(e) => update('sessionsIncluded', e.target.value)} placeholder="e.g. 4" />
+        </div>
+      </div>
+      <div className="admin-form-row">
+        <div className="admin-field">
+          <label>Duration</label>
+          <input value={form.duration} onChange={(e) => update('duration', e.target.value)} placeholder="e.g. 1 Month" />
+        </div>
+        <div className="admin-field">
+          <label>CTA Label</label>
+          <input value={form.ctaLabel} onChange={(e) => update('ctaLabel', e.target.value)} placeholder="e.g. Get Monthly Membership" />
+        </div>
+      </div>
+      <div className="admin-field">
+        <label>Description</label>
+        <textarea rows={3} value={form.description} onChange={(e) => update('description', e.target.value)} placeholder="Short pitch shown under the price." />
+      </div>
+      <div className="admin-field">
+        <label>Features</label>
+        {form.features.map((f, i) => (
+          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+            <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
+            <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>✕</button>
+          </div>
+        ))}
+        <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start' }}>+ Add Feature</button>
+      </div>
+      <div className="admin-form-actions">
+        <button className="btn-admin btn-admin-primary" onClick={handleSave}>Save</button>
+        <button className="btn-admin btn-admin-outline" onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
 function PricingForm({ data, onSave, onCancel }) {
   const [title, setTitle] = useState(data.title)
   const [price, setPrice] = useState(data.price)
@@ -518,25 +672,6 @@ function PricingForm({ data, onSave, onCancel }) {
 function SessionsPageContentForm({ content, onSave, onCancel }) {
   const [form, setForm] = useState(content)
 
-  function updateCustom(field, val) {
-    setForm({ ...form, customSession: { ...form.customSession, [field]: val } })
-  }
-
-  function addFeature() {
-    setForm({ ...form, customSession: { ...form.customSession, features: [...(form.customSession?.features || []), ''] } })
-  }
-
-  function updateFeature(idx, val) {
-    const feat = [...(form.customSession?.features || [])]
-    feat[idx] = val
-    setForm({ ...form, customSession: { ...form.customSession, features: feat } })
-  }
-
-  function removeFeature(idx) {
-    const feat = (form.customSession?.features || []).filter((_, i) => i !== idx)
-    setForm({ ...form, customSession: { ...form.customSession, features: feat } })
-  }
-
   return (
     <div className="admin-form">
       <h3 style={{ marginBottom: 12 }}>Page Header</h3>
@@ -556,28 +691,6 @@ function SessionsPageContentForm({ content, onSave, onCancel }) {
       <div className="admin-field"><label>Included Section Title</label><input value={form.includedSectionTitle} onChange={(e) => setForm({ ...form, includedSectionTitle: e.target.value })} /></div>
       <div className="admin-field"><label>FAQ Eyebrow</label><input value={form.faqEyebrow} onChange={(e) => setForm({ ...form, faqEyebrow: e.target.value })} /></div>
       <div className="admin-field"><label>FAQ Section Title</label><input value={form.faqSectionTitle} onChange={(e) => setForm({ ...form, faqSectionTitle: e.target.value })} /></div>
-
-      <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
-      <h3 style={{ marginBottom: 12 }}>Customizable Session Card</h3>
-      <div className="admin-form-row">
-        <div className="admin-field"><label>Title</label><input value={form.customSession?.title || ''} onChange={(e) => updateCustom('title', e.target.value)} /></div>
-        <div className="admin-field"><label>Grade</label><input value={form.customSession?.grade || ''} onChange={(e) => updateCustom('grade', e.target.value)} /></div>
-      </div>
-      <div className="admin-form-row">
-        <div className="admin-field"><label>Label</label><input value={form.customSession?.label || ''} onChange={(e) => updateCustom('label', e.target.value)} /></div>
-        <div className="admin-field"><label>Price</label><input value={form.customSession?.price || ''} onChange={(e) => updateCustom('price', e.target.value)} /></div>
-      </div>
-      <div className="admin-field"><label>Unit</label><input value={form.customSession?.unit || ''} onChange={(e) => updateCustom('unit', e.target.value)} /></div>
-      <div className="admin-field">
-        <label>Features</label>
-        {(form.customSession?.features || []).map((f, i) => (
-          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-            <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
-            <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>✕</button>
-          </div>
-        ))}
-        <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start' }}>+ Add Feature</button>
-      </div>
 
       <div className="admin-form-actions">
         <button className="btn-admin btn-admin-primary" onClick={() => onSave(form)}>Save All</button>

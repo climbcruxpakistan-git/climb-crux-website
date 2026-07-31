@@ -20,6 +20,7 @@ export default function BookNow({ preselected = '' }) {
   const [sessionType, setSessionType] = useState(preselected || '')
   const [participants, setParticipants] = useState(1)
   const [pricing, setPricing] = useState({ publicPrice: 2500 })
+  const [membership, setMembership] = useState({})
   const [planOptions, setPlanOptions] = useState([])
   const [loaded, setLoaded] = useState(false)
 
@@ -28,6 +29,7 @@ export default function BookNow({ preselected = '' }) {
       .then(([content, plans]) => {
         const publicPrice = parsePrice(content.pricingPrice) || 2500
         setPricing({ publicPrice })
+        setMembership(content.membership || {})
         const privatePlans = (plans || [])
           .filter((p) => p.type === 'private-starter' || p.type === 'private-advanced')
           .map((p) => ({
@@ -37,7 +39,7 @@ export default function BookNow({ preselected = '' }) {
             desc: `${p.title} — PKR ${p.price}/person`,
           }))
         setPlanOptions(privatePlans)
-        const allValues = ['public', 'custom-group', ...privatePlans.map((p) => p.value)]
+        const allValues = ['public', 'membership', 'custom-group', ...privatePlans.map((p) => p.value)]
         if (preselected && allValues.includes(preselected)) {
           setSessionType(preselected)
         }
@@ -49,9 +51,12 @@ export default function BookNow({ preselected = '' }) {
       })
   }, [preselected])
 
+  const membershipPrice = parsePrice(membership.price) || 8000
+
   const allSessionOptions = (() => {
     const opts = []
     opts.push({ value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' })
+    opts.push({ value: 'membership', label: membership.title || 'Monthly Membership', desc: `${membership.sessionsIncluded || '4'} sessions / month — PKR ${membership.price || '8,000'} · save ${membership.discount || '20%'}` })
     planOptions.forEach((po) => { opts.push({ value: po.value, label: po.label, desc: po.desc }) })
     opts.push({ value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' })
     return opts
@@ -60,6 +65,7 @@ export default function BookNow({ preselected = '' }) {
   const isCustom = sessionType === 'custom-group'
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
+    if (type === 'membership') return membershipPrice
     const plan = planOptions.find((p) => p.value === type)
     return plan ? plan.price : 0
   }
@@ -143,7 +149,15 @@ export default function BookNow({ preselected = '' }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8 }}>
                   <div>
                     <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>{allSessionOptions.find(t => t.value === sessionType)?.label || sessionType}</div>
-                    <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>PKR {perPersonPrice(sessionType).toLocaleString()} <span style={{ color: 'var(--stone)' }}>× {participants} {participants === 1 ? 'person' : 'people'}</span></div>
+                    <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>
+                      {sessionType === 'membership' && membership.originalPrice && (
+                        <span style={{ textDecoration: 'line-through', color: 'var(--stone)', marginRight: 8 }}>PKR {membership.originalPrice}</span>
+                      )}
+                      PKR {perPersonPrice(sessionType).toLocaleString()} <span style={{ color: 'var(--stone)' }}>× {participants} {participants === 1 ? 'person' : 'people'}</span>
+                      {sessionType === 'membership' && (
+                        <span style={{ display: 'block', color: 'var(--orange-dark)', fontWeight: 600, marginTop: 4 }}>🔥 Save {membership.discount || '20%'} — {membership.sessionsIncluded || '4'} sessions, valid {membership.duration || '1 month'}</span>
+                      )}
+                    </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 12, color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</div>

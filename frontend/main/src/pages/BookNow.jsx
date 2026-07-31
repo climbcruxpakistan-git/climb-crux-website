@@ -34,6 +34,7 @@ export default function BookNow() {
   const [sessionType, setSessionType] = useState('')
   const [participants, setParticipants] = useState(1)
   const [pricing, setPricing] = useState({ publicPrice: 2500 })
+  const [membership, setMembership] = useState({})
   const [planOptions, setPlanOptions] = useState([])
   const [loaded, setLoaded] = useState(false)
 
@@ -43,6 +44,7 @@ export default function BookNow() {
       .then(([content, plans]) => {
         const publicPrice = parsePrice(content.pricingPrice) || 2500
         setPricing({ publicPrice })
+        setMembership(content.membership || {})
 
         // Build private plan options from API data
         const privatePlans = (plans || [])
@@ -56,7 +58,7 @@ export default function BookNow() {
         setPlanOptions(privatePlans)
 
         // Set initial session type from URL param if valid
-        const allValues = ['public', 'custom-group', ...privatePlans.map((p) => p.value)]
+        const allValues = ['public', 'membership', 'custom-group', ...privatePlans.map((p) => p.value)]
         if (preselected && allValues.includes(preselected)) {
           setSessionType(preselected)
         }
@@ -68,12 +70,16 @@ export default function BookNow() {
       })
   }, [preselected])
 
+  const membershipPrice = parsePrice(membership.price) || 8000
+
   // Combine static + dynamic options for the dropdown
   const allSessionOptions = (() => {
     const opts = []
     // Public first
     const pub = staticOptions.find((o) => o.value === 'public')
     if (pub) opts.push(pub)
+    // Monthly Membership
+    opts.push({ value: 'membership', label: membership.title || 'Monthly Membership', desc: `${membership.sessionsIncluded || '4'} sessions / month — PKR ${membership.price || '8,000'} · save ${membership.discount || '20%'}` })
     // Private plans (Starter, Advanced)
     planOptions.forEach((po) => {
       opts.push({
@@ -92,6 +98,7 @@ export default function BookNow() {
 
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
+    if (type === 'membership') return membershipPrice
     const plan = planOptions.find((p) => p.value === type)
     if (plan) return plan.price
     return 0
@@ -134,8 +141,8 @@ export default function BookNow() {
     <>
       <PageHeader title="Book your climb.">
         <p>
-          Pick the session that fits — a public group climb, a private
-          experience, or a fully customized session for your own group.
+          Pick the session that fits — a public group climb, a discounted
+          monthly membership, or a private experience built around your goals.
         </p>
       </PageHeader>
 
@@ -246,8 +253,14 @@ export default function BookNow() {
                         {allSessionOptions.find(t => t.value === sessionType)?.label || sessionType}
                       </div>
                       <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>
+                        {sessionType === 'membership' && membership.originalPrice && (
+                          <span style={{ textDecoration: 'line-through', color: 'var(--stone)', marginRight: 8 }}>PKR {membership.originalPrice}</span>
+                        )}
                         PKR {perPersonPrice(sessionType).toLocaleString()}{' '}
                         <span style={{ color: 'var(--stone)' }}>× {participants} {participants === 1 ? 'person' : 'people'}</span>
+                        {sessionType === 'membership' && (
+                          <span style={{ display: 'block', color: 'var(--orange-dark)', fontWeight: 600, marginTop: 4 }}>🔥 Save {membership.discount || '20%'} — {membership.sessionsIncluded || '4'} sessions, valid {membership.duration || '1 month'}</span>
+                        )}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>

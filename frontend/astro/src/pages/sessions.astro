@@ -1,7 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import PageHeader from '../components/astro/PageHeader.astro';
-import GradeBadge from '../components/astro/GradeBadge.astro';
 import { getSessions, getSessionContent } from '../lib/api';
 import '../styles/Sessions.css';
 
@@ -26,13 +25,17 @@ const sessionsDisabled = content.sessionsDisabled || false;
 const c = content;
 const defaultFeatures = ['2–3 hour guided session', 'Certified instructor & safety briefing', 'Harness, helmet, rope, belay gear & climbing shoes', 'Group of up to 20 climbers'];
 const pricingFeatures = c.pricingFeatures?.length ? c.pricingFeatures.map(f => f.text || f) : defaultFeatures;
-const customSession = c.customSession || {};
+const membership = c.membership || {};
+const defaultMembershipFeatures = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome'];
+const rawMembershipFeatures = membership.features?.length ? membership.features.filter((f) => typeof f === 'string' && f.trim()) : [];
+const membershipFeatures = rawMembershipFeatures.length ? rawMembershipFeatures : defaultMembershipFeatures;
+const membershipDesc = membership.description || 'Train consistently with our monthly climbing membership. Enjoy four climbing sessions every month at a discounted price while improving your strength, technique, and confidence.';
 ---
 
 <MainLayout>
   <Fragment slot="head">
-    <title>Public Climbing Sessions — Climb Crux Pakistan</title>
-    <meta name="description" content="Join guided public climbing sessions on Margalla Hills every other Sunday. No gear or experience needed. PKR 4,500/person. Book your spot today." />
+    <title>Public Climbing Sessions &amp; Monthly Membership — Climb Crux Pakistan</title>
+    <meta name="description" content="Join guided public climbing sessions on Margalla Hills every other Sunday, or climb every month with our PKR 8,000/month membership. No gear or experience needed. Book today." />
   </Fragment>
   <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'}>
     <p slot="default">{c.sessionsHeaderDesc || 'Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.'}</p>
@@ -67,24 +70,27 @@ const customSession = c.customSession || {};
     <div class="wrap">
       <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
       <div class="price-grid">
-        <div class="price-card featured">
+        <div class="price-card">
           <h3>{c.pricingTitle || 'Public Session'}</h3>
           <div class="price-amount">PKR {c.pricingPrice || '4,500'} <span>{c.pricingUnit || '/ person'}</span></div>
           <ul>
             {pricingFeatures.map((f, i) => <li key={i}>{f}</li>)}
           </ul>
-          <a href="/book-now?type=public" class="btn btn-primary">Reserve a spot</a>
+          <a href="/book-now?type=public" class="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</a>
         </div>
-        <div class="price-card">
-          <GradeBadge grade={customSession.grade || 'You decide'} label={customSession.label || 'Fully Custom'} />
-          <h3>{customSession.title || 'Customizable Session'}</h3>
-          <div class="price-amount">{customSession.price || 'On Request'} <span>{customSession.unit || 'Per Person'}</span></div>
+        <div class="price-card featured membership-card">
+          <span class="membership-badge">{membership.badge || '🔥 Save 20%'}</span>
+          <h3>{membership.title || 'Monthly Membership'}</h3>
+          <div class="price-amount">PKR {membership.price || '8,000'} <span>{membership.unit || '/ Month'}</span></div>
+          <div class="membership-save">
+            <span class="original-price" aria-label={`Original price PKR ${membership.originalPrice || '10,000'}`}>PKR {membership.originalPrice || '10,000'}</span>
+            <span class="save-tag">Save {membership.discount || '20%'}</span>
+          </div>
+          <p class="membership-desc">{membershipDesc}</p>
           <ul>
-            {(customSession.features && customSession.features.length > 0
-              ? customSession.features : ['Pick your own date, time & group size', 'Choose the grade and climbing focus', 'Solo, small group, or large private group', 'Full gear & certified instructor included']
-            ).map((f, i) => <li key={i}>{f}</li>)}
+            {membershipFeatures.map((f, i) => <li key={i}>{f}</li>)}
           </ul>
-          <a href="/book-now?type=custom-group" class="btn btn-outline">Build your session</a>
+          <a href="/book-now?type=membership" class="btn btn-primary" aria-label="Get the Monthly Membership">{membership.ctaLabel || 'Get Monthly Membership'}</a>
         </div>
       </div>
     </div>

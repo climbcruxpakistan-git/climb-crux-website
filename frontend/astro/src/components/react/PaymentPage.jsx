@@ -53,7 +53,7 @@ export default function PaymentPage({ bookingNumber }) {
   }
 
   function getSessionLabel(sessionId) {
-    const map = { public: 'Public Session', private: 'Private Session', 'custom-group': 'Custom Group Session' }
+    const map = { public: 'Public Session', private: 'Private Session', membership: 'Monthly Membership', 'custom-group': 'Custom Group Session' }
     return map[sessionId] || sessionId?.replace(/-/g, ' ') || '—'
   }
 
