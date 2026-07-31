@@ -1,9 +1,25 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import './index.css'
 import './layout.css'
 import './shared.css'
+
+// Re-fire GA4 pageviews on client-side route changes (SPA navigation).
+// The inline gtag snippet in index.html handles the initial pageview, so
+// we skip the first run to avoid double-counting.
+function TrackPageViews() {
+  const { pathname } = useLocation()
+  const firstRun = useRef(true)
+  useEffect(() => {
+    if (firstRun.current) { firstRun.current = false; return }
+    if (typeof window.gtag === 'function') {
+      window.gtag('js', new Date())
+      window.gtag('config', 'G-QTTHTK67QR')
+    }
+  }, [pathname])
+  return null
+}
 
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
@@ -23,6 +39,7 @@ import EasyPaisaConfirmation from './pages/EasyPaisaConfirmation.jsx'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
+      <TrackPageViews />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
