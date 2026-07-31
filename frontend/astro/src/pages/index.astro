@@ -43,15 +43,18 @@ const sessionPhotos = teaserSessionSlug
         <p class="hero-lede">{heroLede}</p>
         <div class="hero-actions">
           <a href="/sessions" class="btn btn-primary">Join a Public Session</a>
-          <a href="/private-premium" class="btn btn-outline">Build a Private Plan</a>
+          <a href="/shop" class="btn btn-outline">Shop Climbing Equipment</a>
         </div>
       </div>
       <div class="hero-visual">
-        {heroPhotoUrl ? (
-          <img src={heroPhotoUrl} alt="Climb Crux" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);box-shadow:0 24px 60px rgba(0,0,0,0.35);" />
-        ) : (
-          <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
-        )}
+        <figure class="hero-figure">
+          {heroPhotoUrl ? (
+            <img src={heroPhotoUrl} alt="Climb Crux" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);box-shadow:0 24px 60px rgba(0,0,0,0.35);" />
+          ) : (
+            <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
+          )}
+          <figcaption class="hero-caption">Group Photo From Our Successful Group Session</figcaption>
+        </figure>
       </div>
     </div>
     <CliffEdge fill="var(--chalk)" height={56} />
@@ -85,10 +88,10 @@ const sessionPhotos = teaserSessionSlug
       <h2>{teasersTitle}</h2>
       <div class="teaser-grid">
         {sessionPhotos.length > 0
-          ? sessionPhotos.slice(0, 3).map((p, i) => (
+          ? sessionPhotos.slice(0, 6).map((p, i) => (
               <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);" />
             ))
-          : teasers.slice(0, 3).map((t, i) => (
+          : teasers.slice(0, 6).map((t, i) => (
               t.photoUrl ? (
                 <img key={i} src={t.photoUrl} alt={t.tag} style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);" />
               ) : (
@@ -122,6 +125,16 @@ const sessionPhotos = teaserSessionSlug
   .hero h1 { color: var(--chalk); font-size: clamp(2.2rem, 5.5vw, 4rem); margin-bottom: 0.3em; }
   .hero-lede { color: #c9c4b8; font-size: clamp(1rem, 2vw, 1.12rem); max-width: 56ch; line-height: 1.7; margin-bottom: 28px; }
   .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-figure { margin: 0; }
+  .hero-caption {
+    margin-top: 12px;
+    text-align: center;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    color: #c9c4b8;
+  }
   .paths-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
   @media (max-width: 700px) { .paths-grid { grid-template-columns: 1fr; } }
   .path-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; background: var(--chalk); border: 1px solid var(--chalk-dim); }

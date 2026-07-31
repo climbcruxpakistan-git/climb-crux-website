@@ -59,15 +59,18 @@ export default function Home() {
             <p className="hero-lede">{heroLede}</p>
             <div className="hero-actions">
               <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
-              <Link to="/private-premium" className="btn btn-outline">Build a Private Plan</Link>
+              <Link to="/shop" className="btn btn-outline">Shop Climbing Equipment</Link>
             </div>
           </div>
           <div className="hero-visual">
-            {heroPhotoUrl ? (
-              <img src={heroPhotoUrl} alt="Climb Crux" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35)' }} />
-            ) : (
-              <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
-            )}
+            <figure className="hero-figure">
+              {heroPhotoUrl ? (
+                <img src={heroPhotoUrl} alt="Climb Crux" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35)' }} />
+              ) : (
+                <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
+              )}
+              <figcaption className="hero-caption">Group Photo From Our Successful Group Session</figcaption>
+            </figure>
           </div>
         </div>
         <CliffEdge fill="var(--chalk)" height={56} />
@@ -101,10 +104,10 @@ export default function Home() {
           <h2>{teasersTitle}</h2>
           <div className="teaser-grid">
             {sessionPhotos.length > 0
-              ? sessionPhotos.map((p, i) => (
+              ? sessionPhotos.slice(0, 6).map((p, i) => (
                   <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
                 ))
-              : teasers.map((t, i) => (
+              : teasers.slice(0, 6).map((t, i) => (
                   t.photoUrl ? (
                     <img key={i} src={t.photoUrl} alt={t.tag} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
                   ) : (

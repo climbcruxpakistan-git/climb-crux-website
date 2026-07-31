@@ -150,6 +150,10 @@ export default function HomeManager() {
         <div className="card-admin-header"><h2>Teaser Photos</h2>
           <button className="btn-admin btn-admin-outline btn-admin-sm" onClick={() => setEditTeasers(true)}>Edit Teasers</button>
         </div>
+
+        <p style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 14px', lineHeight: 1.6 }}>
+          Up to <strong>6 photos</strong> show in the grid on the home page. To show specific photos, paste up to 6 Cloudinary image URLs in <strong>Edit Teasers</strong> (leave the session slug empty below). Otherwise, pick a session slug to auto-load its photos instead of random ones.
+        </p>
         
         {/* Session slug picker for auto-teasers */}
         <div className="admin-form">
@@ -281,6 +285,9 @@ function TeasersForm({ items, onSave, onCancel }) {
           <button className="btn-admin-icon danger" onClick={() => remove(i)}>✕</button>
         </div>
       ))}
+      <p style={{ fontSize: '0.75rem', color: 'var(--stone)', marginTop: 8 }}>
+        Only the first 6 photos are shown on the home page. Leave the session slug empty and add Cloudinary URLs here to show exactly these photos instead of random ones.
+      </p>
       <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={add} style={{ alignSelf: 'flex-start' }}>+ Add Teaser</button>
       <div className="admin-form-actions">
         <button className="btn-admin btn-admin-primary" onClick={() => onSave(list)}>Save All</button>
