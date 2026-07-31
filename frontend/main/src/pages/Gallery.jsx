@@ -124,8 +124,7 @@ export default function Gallery() {
     <>
       <PageHeader title="From the wall.">
         <p>
-          A running record of sessions on Margalla Hills — public climbs,
-          private coaching, and premium ascents.
+          A running record of sessions on Margalla Hills. Public climbs, Private coaching and Group Training.
         </p>
       </PageHeader>
 
@@ -133,7 +132,9 @@ export default function Gallery() {
         <div className="wrap">
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading gallery…</p>
-          ) : activeAlbum ? (
+          ) : (
+          <div className="page-fade-in">
+          {activeAlbum ? (
             /* ── Level 2: Photos inside an album ── */
             <>
               <div className="gallery-folder-header">
@@ -227,6 +228,8 @@ export default function Gallery() {
                 })}
               </div>
             </>
+          )}
+          </div>
           )}
         </div>
       </section>

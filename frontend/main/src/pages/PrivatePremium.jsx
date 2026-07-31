@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
+import PageHeaderSkeleton from '../components/PageHeaderSkeleton.jsx'
 import GradeBadge from '../components/GradeBadge.jsx'
 import { getPlans, getSessionContent } from '../api.js'
 import './PrivatePremium.css'
@@ -30,23 +31,29 @@ export default function PrivatePremium() {
 
   return (
     <>
-      <PageHeader title={c.ppHeaderTitle || 'Your route, your pace.'}>
-        <p>
-          {c.ppHeaderDesc || 'Private sessions are built around you — solo, with your group, or working toward the highest grades we run.'}
-        </p>
-      </PageHeader>
+      {loading ? (
+        <PageHeaderSkeleton />
+      ) : (
+        <div className="page-fade-in">
+          <PageHeader title={c.ppHeaderTitle || 'Your route, your pace.'}>
+            <p>
+              {c.ppHeaderDesc || 'Private sessions are built around you. Your Choice, just solo, with your group or working toward the highest grades we run.'}
+            </p>
+          </PageHeader>
+        </div>
+      )}
 
       <section className="section">
         <div className="wrap">
-          <span className="eyebrow">{c.ppEyebrow || 'Plans'}</span>
-          <h2>{c.ppSectionTitle || 'Pick a plan to start from'}</h2>
-          <p style={{ marginBottom: '32px' }}>
-            {c.ppSectionDesc || 'Every plan below is a starting point, not a fixed package — Tell us the goal and we\'ll design the climb around it.'}
-          </p>
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading plans…</p>
           ) : (
-            <div className="price-grid">
+            <div className="page-fade-in">
+              <h2>{c.ppSectionTitle || 'Pick a plan to start from'}</h2>
+              <p style={{ marginBottom: '32px' }}>
+                {c.ppSectionDesc || 'Every plan below is a starting point, not a fixed package. Tell us the goal and we\'ll design the climb around it.'}
+              </p>
+              <div className="price-grid">
               {tiers.filter((t) => t.type !== 'elite-premium').map((t) => (
                 <div className={`price-card ${t.featured ? 'featured' : ''}`} key={t.id || t.title}>
                   {t.tag && <span className="price-card-tag">{t.tag}</span>}
@@ -80,23 +87,38 @@ export default function PrivatePremium() {
                   Build your session
                 </Link>
               </div>
-            </div>
+              </div>
+              </div>
           )}
         </div>
       </section>
 
       <section className="section" style={{ background: 'var(--chalk-dim)' }}>
         <div className="wrap">
-          <span className="eyebrow">{c.ppCustomEyebrow || 'What gets customized'}</span>
-          <h2>{c.ppCustomSectionTitle || 'Built around your goal, not a template'}</h2>
-          <div className="info-grid">
-            {ppCustomItems.map((item) => (
-              <div className="info-card" key={item.h}>
-                <h4>{item.h}</h4>
-                <p>{item.p}</p>
+          {loading ? (
+            <div className="skeleton-on-light" aria-hidden="true">
+              <span className="skeleton skeleton-eyebrow" />
+              <div className="skeleton skeleton-h2" />
+              <div className="info-grid">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="skeleton skeleton-info" />
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="page-fade-in">
+              <span className="eyebrow">{c.ppCustomEyebrow || 'What gets customized'}</span>
+              <h2>{c.ppCustomSectionTitle || 'Built around your goal, not a template'}</h2>
+              <div className="info-grid">
+                {ppCustomItems.map((item) => (
+                  <div className="info-card" key={item.h}>
+                    <h4>{item.h}</h4>
+                    <p>{item.p}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>

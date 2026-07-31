@@ -23,7 +23,8 @@ export default function OurTeam() {
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading team…</p>
           ) : (
-            <div className="instructor-grid">
+            <div className="page-fade-in">
+              <div className="instructor-grid">
               {instructors.map((i) => {
                 const profileId = i.id || i._id
                 return (
@@ -43,6 +44,7 @@ export default function OurTeam() {
                   </Link>
                 )
               })}
+              </div>
             </div>
           )}
         </div>

@@ -23,17 +23,16 @@ const ppCustomSession = c.ppCustomSession || {};
 <MainLayout>
   <Fragment slot="head">
     <title>Private & Premium Climbing — Climb Crux Pakistan</title>
-    <meta name="description" content="Private rock climbing sessions and premium plans on Margalla Hills, Islamabad. Solo coaching, group bookings, or custom climbs. Book your private session." />
+    <meta name="description" content="Private rock climbing sessions in Islamabad and premium plans on Margalla Hills. Solo coaching, group bookings, adventure events or custom climbs. Book your private session." />
   </Fragment>
   <PageHeader title={c.ppHeaderTitle || 'Your route, your pace.'}>
-    <p slot="default">{c.ppHeaderDesc || 'Private sessions are built around you — solo, with your group, or working toward the highest grades we run.'}</p>
+    <p slot="default">{c.ppHeaderDesc || 'Private sessions are built around you. Your Choice, just solo, with your group or working toward the highest grades we run.'}</p>
   </PageHeader>
 
   <section class="section">
     <div class="wrap">
-      <span class="eyebrow">{c.ppEyebrow || 'Plans'}</span>
       <h2>{c.ppSectionTitle || 'Pick a plan to start from'}</h2>
-      <p style="margin-bottom:32px;">{c.ppSectionDesc || 'Every plan below is a starting point, not a fixed package — Tell us the goal and we\'ll design the climb around it.'}</p>
+      <p style="margin-bottom:32px;">{c.ppSectionDesc || 'Every plan below is a starting point, not a fixed package. Tell us the goal and we\'ll design the climb around it.'}</p>
       <div class="price-grid">
         {plans.filter((t) => t.type !== 'elite-premium').map((t) => (
           <div class={`price-card ${t.featured ? 'featured' : ''}`} key={t.id || t.title}>

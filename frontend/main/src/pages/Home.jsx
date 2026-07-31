@@ -55,12 +55,22 @@ export default function Home() {
       <section className="hero">
         <div className="wrap hero-inner">
           <div className="hero-copy">
-            <h1>
-              {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
-                <Fragment key={i}>{i > 0 && <br />}{part.trim()}</Fragment>
-              ))}
-            </h1>
-            <p className="hero-lede">{heroLede}</p>
+            {loading ? (
+              <div className="hero-skeleton" aria-hidden="true">
+                <span className="skeleton skeleton-title" />
+                <span className="skeleton skeleton-line" />
+                <span className="skeleton skeleton-line short" />
+              </div>
+            ) : (
+              <div className="page-fade-in">
+                <h1>
+                  {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
+                    <Fragment key={i}>{i > 0 && <br />}{part.trim()}</Fragment>
+                  ))}
+                </h1>
+                <p className="hero-lede">{heroLede}</p>
+              </div>
+            )}
             <div className="hero-actions">
               <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
               <Link to="/shop" className="btn btn-outline">Shop Climbing Equipment</Link>
@@ -82,45 +92,72 @@ export default function Home() {
 
       <section className="section paths">
         <div className="wrap">
-          <span className="eyebrow">{pathsEyebrow}</span>
-          <h2>{pathsTitle}</h2>
-          <div className="paths-grid">
-            {paths.map((p) => (
-              <div className="path-card" key={p.title}>
-                <GradeBadge grade={p.grade} label={p.label} />
-                <h3>{p.title}</h3>
-                <p>{p.copy}</p>
-                {p.photoUrl && (
-                  <img src={p.photoUrl} alt={p.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', marginTop: 8 }} />
-                )}
-                <Link to={p.to} className="path-link">
-                  {p.cta} <span aria-hidden="true">→</span>
-                </Link>
+          {loading ? (
+            <div className="skeleton-on-light" aria-hidden="true">
+              <span className="skeleton skeleton-eyebrow" />
+              <div className="skeleton skeleton-h2" />
+              <div className="paths-grid">
+                <div className="skeleton skeleton-card" />
+                <div className="skeleton skeleton-card" />
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="page-fade-in">
+              <span className="eyebrow">{pathsEyebrow}</span>
+              <h2>{pathsTitle}</h2>
+              <div className="paths-grid">
+                {paths.map((p) => (
+                  <div className="path-card" key={p.title}>
+                    <GradeBadge grade={p.grade} label={p.label} />
+                    <h3>{p.title}</h3>
+                    <p>{p.copy}</p>
+                    {p.photoUrl && (
+                      <img src={p.photoUrl} alt={p.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', marginTop: 8 }} />
+                    )}
+                    <Link to={p.to} className="path-link">
+                      {p.cta} <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       <section className="section">
         <div className="wrap">
-          <span className="eyebrow">{teasersEyebrow}</span>
-          <h2>{teasersTitle}</h2>
-          <div className="teaser-grid">
-            {sessionPhotos.length > 0
-              ? sessionPhotos.slice(0, 6).map((p, i) => (
-                  <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
-                ))
-              : teasers.slice(0, 6).map((t, i) => (
-                  t.photoUrl ? (
-                    <img key={i} src={t.photoUrl} alt={t.tag} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
-                  ) : (
-                    <PlaceholderPhoto key={i} tag={t.tag} ratio="4 / 3" />
-                  )
-                ))
-            }
-          </div>
-          <Link to="/gallery" className="btn btn-outline teaser-cta">View full gallery</Link>
+          {loading ? (
+            <div className="skeleton-on-light" aria-hidden="true">
+              <span className="skeleton skeleton-eyebrow" />
+              <div className="skeleton skeleton-h2" />
+              <div className="teaser-grid">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="skeleton skeleton-tile" />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="page-fade-in">
+              <span className="eyebrow">{teasersEyebrow}</span>
+              <h2>{teasersTitle}</h2>
+              <div className="teaser-grid">
+                {sessionPhotos.length > 0
+                  ? sessionPhotos.slice(0, 6).map((p, i) => (
+                      <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
+                    ))
+                  : teasers.slice(0, 6).map((t, i) => (
+                      t.photoUrl ? (
+                        <img key={i} src={t.photoUrl} alt={t.tag} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
+                      ) : (
+                        <PlaceholderPhoto key={i} tag={t.tag} ratio="4 / 3" />
+                      )
+                    ))
+                }
+              </div>
+              <Link to="/gallery" className="btn btn-outline teaser-cta">View full gallery</Link>
+            </div>
+          )}
         </div>
       </section>
     </>

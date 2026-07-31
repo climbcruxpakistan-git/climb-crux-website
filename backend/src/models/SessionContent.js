@@ -65,10 +65,9 @@ const sessionContentSchema = new mongoose.Schema({
 
   // Private & Premium page content
   ppHeaderTitle: { type: String, default: 'Your route, your pace.' },
-  ppHeaderDesc: { type: String, default: 'Private sessions are built around you — solo, with your group, or working toward the highest grades we run.' },
-  ppEyebrow: { type: String, default: 'Plans' },
+  ppHeaderDesc: { type: String, default: 'Private sessions are built around you. Your Choice, just solo, with your group or working toward the highest grades we run.' },
   ppSectionTitle: { type: String, default: 'Pick a plan to start from' },
-  ppSectionDesc: { type: String, default: 'Every plan below is a starting point, not a fixed package — Tell us the goal and we\'ll design the climb around it.' },
+  ppSectionDesc: { type: String, default: 'Every plan below is a starting point, not a fixed package. Tell us the goal and we\'ll design the climb around it.' },
   ppCustomSession: { type: customSessionSchema, default: () => ({}) },
   ppCustomEyebrow: { type: String, default: 'What gets customized' },
   ppCustomSectionTitle: { type: String, default: 'Built around your goal, not a template' },

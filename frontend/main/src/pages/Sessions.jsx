@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
+import PageHeaderSkeleton from '../components/PageHeaderSkeleton.jsx'
 import { getSessions, getSessionContent } from '../api.js'
 import './Sessions.css'
 
@@ -71,44 +72,54 @@ export default function Sessions() {
 
   return (
     <>
-      <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'}>
-        <p>
-          {c.sessionsHeaderDesc || 'Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.'}
-        </p>
-      </PageHeader>
+      {loading ? (
+        <PageHeaderSkeleton />
+      ) : (
+        <div className="page-fade-in">
+          <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'}>
+            <p>
+              {c.sessionsHeaderDesc || 'Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.'}
+            </p>
+          </PageHeader>
+        </div>
+      )}
 
       <section className="section schedule-section">
         <div className="wrap">
-          <h2>{c.sessionsSectionTitle || 'Upcoming sessions'}</h2>
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading sessions…</p>
-          ) : sessionsDisabled || upcoming.length === 0 ? (
-            <div className="empty-sessions-card">
-              <div className="empty-sessions-icon">📅</div>
-              <h3>No public sessions right now</h3>
-              <p>
-                We don't have any public sessions scheduled at the moment.
-                But you can still climb! Check out our private &amp; premium
-                sessions designed around your schedule and goals.
-              </p>
-              <Link to="/private-premium" className="btn btn-primary" style={{ marginTop: 8 }}>
-                Explore private sessions
-              </Link>
-            </div>
           ) : (
-            <ul className="schedule-list">
-              {upcoming.map((s) => (
-                <li key={s.id || s.date}>
-                  <span className="schedule-date">{s.date}</span>
-                  <span className="schedule-time">{s.time}</span>
-                  <span className="schedule-spots">{s.spots}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="page-fade-in">
+              <h2>{c.sessionsSectionTitle || 'Upcoming sessions'}</h2>
+              {sessionsDisabled || upcoming.length === 0 ? (
+                <div className="empty-sessions-card">
+                  <div className="empty-sessions-icon">📅</div>
+                  <h3>No public sessions right now</h3>
+                  <p>
+                    We don't have any public sessions scheduled at the moment.
+                    But you can still climb! Check out our private &amp; premium
+                    sessions designed around your schedule and goals.
+                  </p>
+                  <Link to="/private-premium" className="btn btn-primary" style={{ marginTop: 8 }}>
+                    Explore private sessions
+                  </Link>
+                </div>
+              ) : (
+                <ul className="schedule-list">
+                  {upcoming.map((s) => (
+                    <li key={s.id || s.date}>
+                      <span className="schedule-date">{s.date}</span>
+                      <span className="schedule-time">{s.time}</span>
+                      <span className="schedule-spots">{s.spots}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="form-note">
+                Sessions run every other week — check back or contact us if these dates don't line up with you.
+              </p>
+            </div>
           )}
-          <p className="form-note">
-            Sessions run every other week — check back or contact us if these dates don't line up with you.
-          </p>
         </div>
       </section>
 
@@ -117,7 +128,7 @@ export default function Sessions() {
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading pricing…</p>
           ) : (
-            <>
+            <div className="page-fade-in">
               <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
               <div className="price-grid">
                 <div className="price-card">
@@ -150,7 +161,7 @@ export default function Sessions() {
                   <Link to="/book-now?type=membership" className="btn btn-primary" aria-label="Get the Monthly Membership">{m.ctaLabel || 'Get Monthly Membership'}</Link>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </section>
@@ -160,7 +171,7 @@ export default function Sessions() {
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading…</p>
           ) : (
-            <>
+            <div className="page-fade-in">
               <span className="eyebrow">What's included</span>
               <h2>{c.includedSectionTitle || 'Everything you need, nothing to bring'}</h2>
               <div className="info-grid">
@@ -171,7 +182,7 @@ export default function Sessions() {
                   </div>
                 ))}
               </div>
-            </>
+            </div>
           )}
         </div>
       </section>
@@ -181,7 +192,7 @@ export default function Sessions() {
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading…</p>
           ) : (
-            <>
+            <div className="page-fade-in">
               <span className="eyebrow">{c.faqEyebrow || 'Good to know'}</span>
               <h2>{c.faqSectionTitle || 'Frequently asked questions'}</h2>
               <div className="faq">
@@ -192,7 +203,7 @@ export default function Sessions() {
                   </details>
                 ))}
               </div>
-            </>
+            </div>
           )}
         </div>
       </section>

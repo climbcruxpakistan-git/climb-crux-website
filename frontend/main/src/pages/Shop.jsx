@@ -38,8 +38,7 @@ export default function Shop() {
     <>
       <PageHeader title="Gear up.">
         <p>
-          Curated climbing equipment for the Margalla Hills — from harnesses and hardware
-          to the shoes that stick the slab.
+          Curated climbing equipment for the Margalla Hills, from harnesses, helmets to the climbing safety hardware.
         </p>
       </PageHeader>
 
@@ -65,7 +64,9 @@ export default function Shop() {
         <div className="wrap">
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading products…</p>
-          ) : filtered.length === 0 ? (
+          ) : (
+          <div className="page-fade-in">
+          {filtered.length === 0 ? (
             <div className="shop-empty">
               <div className="shop-empty-icon">🧗</div>
               <h3>Nothing here yet</h3>
@@ -168,12 +169,14 @@ export default function Shop() {
               ))}
             </div>
           )}
+          </div>
+          )}
         </div>
       </section>
 
       {/* ── Product Recommendations ── */}
       {recommended.length > 0 && !loading && (
-        <section className="section shop-section">
+        <section className="section shop-section page-fade-in">
           <div className="wrap">
             <h2 className="pd-section-title">You might also like</h2>
             <div className="shop-grid">

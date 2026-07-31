@@ -95,7 +95,6 @@ export async function getSessionContent() {
     // Private & Premium page content
     ppHeaderTitle: data.ppHeaderTitle || '',
     ppHeaderDesc: data.ppHeaderDesc || '',
-    ppEyebrow: data.ppEyebrow || '',
     ppSectionTitle: data.ppSectionTitle || '',
     ppSectionDesc: data.ppSectionDesc || '',
     ppCustomSession: data.ppCustomSession || {},

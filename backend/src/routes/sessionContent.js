@@ -65,7 +65,6 @@ router.put('/', async (req, res, next) => {
     // Private & Premium page content
     if (req.body.ppHeaderTitle !== undefined) content.ppHeaderTitle = req.body.ppHeaderTitle
     if (req.body.ppHeaderDesc !== undefined) content.ppHeaderDesc = req.body.ppHeaderDesc
-    if (req.body.ppEyebrow !== undefined) content.ppEyebrow = req.body.ppEyebrow
     if (req.body.ppSectionTitle !== undefined) content.ppSectionTitle = req.body.ppSectionTitle
     if (req.body.ppSectionDesc !== undefined) content.ppSectionDesc = req.body.ppSectionDesc
     if (req.body.ppCustomSession !== undefined) content.ppCustomSession = req.body.ppCustomSession

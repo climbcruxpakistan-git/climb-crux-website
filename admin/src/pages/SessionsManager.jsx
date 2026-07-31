@@ -455,7 +455,6 @@ export default function SessionsManager() {
             content={{
               ppHeaderTitle: c.ppHeaderTitle || '',
               ppHeaderDesc: c.ppHeaderDesc || '',
-              ppEyebrow: c.ppEyebrow || '',
               ppSectionTitle: c.ppSectionTitle || '',
               ppSectionDesc: c.ppSectionDesc || '',
               ppCustomSession: c.ppCustomSession || { title: '', grade: '', label: '', price: '', unit: '', features: [''] },
@@ -762,7 +761,6 @@ function PrivatePremiumContentForm({ content, onSave, onCancel }) {
 
       <hr style={{ border: 'none', borderTop: '1px solid #e5e0d4', margin: '16px 0' }} />
       <h3 style={{ marginBottom: 12 }}>Section Headings</h3>
-      <div className="admin-field"><label>Plans Eyebrow</label><input value={form.ppEyebrow} onChange={(e) => setForm({ ...form, ppEyebrow: e.target.value })} /></div>
       <div className="admin-field"><label>Plans Section Title</label><input value={form.ppSectionTitle} onChange={(e) => setForm({ ...form, ppSectionTitle: e.target.value })} /></div>
       <div className="admin-field"><label>Plans Section Description</label><textarea rows={2} value={form.ppSectionDesc} onChange={(e) => setForm({ ...form, ppSectionDesc: e.target.value })} /></div>
 

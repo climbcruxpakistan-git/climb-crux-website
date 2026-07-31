@@ -7,6 +7,7 @@ import TeamMember from './models/TeamMember.js'
 import GalleryItem from './models/GalleryItem.js'
 import Booking from './models/Booking.js'
 import About from './models/About.js'
+import SessionContent from './models/SessionContent.js'
 
 // Use custom DNS servers if configured (helps when system DNS blocks mongodb.net)
 const dnsServers = process.env.DNS_SERVERS
@@ -113,6 +114,33 @@ const seedAbout = {
   ],
 }
 
+const seedSessionContent = {
+  includedItems: [
+    { h: 'Certified guidance', p: 'Every session is led by a certified climbing instructor, start to finish.' },
+    { h: 'Full safety gear', p: 'Harness, helmet, rope, belay setup, and climbing shoes provided.' },
+    { h: 'Beginner-friendly routes', p: 'Routes are set for first-timers, roughly grade 4–6a on the French scale.' },
+    { h: 'Small groups', p: 'Group sessions capped at 20 climbers so there\'s plenty of room on the wall.' },
+  ],
+  faqs: [
+    { q: 'Do I need climbing experience?', a: 'No — public sessions are built for first-timers. Instructors walk you through technique, belay basics, and route reading before anyone leaves the ground.' },
+    { q: 'What should I bring?', a: 'Comfortable athletic clothing, closed-toe shoes you can climb in, water, and sun protection. We provide the harness, helmet, rope, and climbing shoes.' },
+    { q: 'What is the minimum age?', a: 'Climbers 10 and up are welcome on public sessions. Anyone under 18 needs a parent or guardian\'s consent.' },
+    { q: 'What if it rains or a session is cancelled?', a: 'We reschedule affected sessions to the next available date, or move your booking to a private session at no extra cost.' },
+    { q: 'Can I pause my membership?', a: 'Yes. Your membership gives you 4 climbing sessions each month, and you can spread them across any of our public session dates that suit you — there\'s no need to book them all at once. If life gets in the way and you need a break, just message us at least 48 hours before your first session and we\'ll pause your membership, carrying any unused sessions over to the next month at no extra cost.' },
+  ],
+  pricingTitle: 'Public Session',
+  pricingPrice: '2,500',
+  pricingUnit: '/ person',
+  pricingDescription: 'Join a guided group session on Margalla Hills — every other Sunday. Full gear and certified instructors included.',
+  pricingFeatures: [
+    { text: '2–3 hour guided session' },
+    { text: 'Certified instructor & safety briefing' },
+    { text: 'Harness, helmet, rope, belay gear & climbing shoes' },
+    { text: 'Group of up to 20 climbers' },
+  ],
+  ppHeaderDesc: 'Private sessions are built around you. Your Choice, just solo, with your group or working toward the highest grades we run.',
+}
+
 async function seed() {
   // Safety check: require --force flag or confirm
   if (!process.argv.includes('--force')) {
@@ -131,6 +159,7 @@ async function seed() {
     GalleryItem.deleteMany({}),
     Booking.deleteMany({}),
     About.deleteMany({}),
+    SessionContent.deleteMany({}),
   ])
   console.log('Cleared existing data\n')
 
@@ -144,6 +173,8 @@ async function seed() {
   console.log(`Seeded ${gallery.length} gallery items`)
   await About.create(seedAbout)
   console.log('Seeded about page content')
+  await SessionContent.create(seedSessionContent)
+  console.log('Seeded session & private/premium page content')
 
   console.log('\n✅ Seed complete!')
   await mongoose.disconnect()

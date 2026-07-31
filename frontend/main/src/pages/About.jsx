@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import PageHeader from '../components/PageHeader.jsx'
+import PageHeaderSkeleton from '../components/PageHeaderSkeleton.jsx'
 import { getAbout } from '../api.js'
 
 export default function About() {
@@ -29,11 +30,17 @@ From public climbing sessions and private coaching to memberships, workshops and
 
   return (
     <>
-      <PageHeader eyebrow="About Climb Crux" title="Built by climbers, for climbers.">
-        {descriptionParagraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </PageHeader>
+      {loading ? (
+        <PageHeaderSkeleton />
+      ) : (
+        <div className="page-fade-in">
+          <PageHeader eyebrow="About Climb Crux" title="Built by climbers, for climbers.">
+            {descriptionParagraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </PageHeader>
+        </div>
+      )}
 
       <section className="section" style={{ background: 'var(--chalk-dim)' }}>
         <div className="wrap">
@@ -42,13 +49,15 @@ From public climbing sessions and private coaching to memberships, workshops and
           {loading ? (
             <p style={{ color: 'var(--stone)' }}>Loading…</p>
           ) : (
-            <div className="info-grid">
-              {safety.map((s) => (
-                <div className="info-card" key={s.h}>
-                  <h4>{s.h}</h4>
-                  <p>{s.p}</p>
-                </div>
-              ))}
+            <div className="page-fade-in">
+              <div className="info-grid">
+                {safety.map((s) => (
+                  <div className="info-card" key={s.h}>
+                    <h4>{s.h}</h4>
+                    <p>{s.p}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
