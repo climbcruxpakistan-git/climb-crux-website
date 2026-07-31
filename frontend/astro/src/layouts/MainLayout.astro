@@ -20,17 +20,17 @@ import '../styles/shared.css';
     {
       import.meta.env.PROD && (
         <>
-          <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-Z75M4FQFTL"></script>
+          <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-QTTHTK67QR"></script>
           <script is:inline>
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-Z75M4FQFTL');
+            gtag('config', 'G-QTTHTK67QR');
 
             // Re-trigger page views during Astro View Transitions
             document.addEventListener('astro:after-swap', () => {
               gtag('js', new Date());
-              gtag('config', 'G-Z75M4FQFTL');
+              gtag('config', 'G-QTTHTK67QR');
             });
           </script>
         </>
