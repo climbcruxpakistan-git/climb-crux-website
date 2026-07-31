@@ -3,11 +3,17 @@ import { getAbout, saveAbout } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
+const DEFAULT_DESCRIPTION = `Climb Crux is an outdoor rock climbing community dedicated to making climbing safe, accessible and enjoyable for people of all ages and experience levels in Pakistan. Based in the Islamabad region, we offer professionally guided climbing sessions, beginner-friendly experiences, skill development programs and climbing memberships designed to help every climber progress with confidence.
+
+Whether you're trying outdoor rock climbing for the first time or looking to improve your climbing technique, our experienced instructors provide structured coaching in a safe and supportive environment. Every session emphasizes proper climbing techniques, equipment safety and personal growth while ensuring an enjoyable experience for individuals, families, students and corporate groups.
+
+From public climbing sessions and private coaching to memberships, workshops and special events, Climb Crux is committed to providing high-quality climbing experiences for beginners and experienced climbers alike. Whether you're looking for a fun weekend activity, regular climbing training, or a new fitness challenge, we're here to help you reach new heights.`
+
 export default function AboutManager() {
   const { addToast } = useToast()
   const [about, setAbout] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [description, setDescription] = useState('')
+  const [description, setDescription] = useState(DEFAULT_DESCRIPTION)
   const [safetyItems, setSafetyItems] = useState([])
   const [editSafety, setEditSafety] = useState(null)
 
@@ -15,7 +21,7 @@ export default function AboutManager() {
     getAbout()
       .then((data) => {
         setAbout(data)
-        setDescription(data.description || '')
+        setDescription(data.description || DEFAULT_DESCRIPTION)
         setSafetyItems(data.safetyItems || [])
       })
       .catch(console.error)
@@ -60,7 +66,7 @@ export default function AboutManager() {
         <div className="admin-form">
           <div className="admin-field">
             <label>Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} placeholder="About page description…" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={8} placeholder="About page description…" />
           </div>
           <div className="admin-form-actions">
             <button className="btn-admin btn-admin-primary" onClick={handleDescriptionSave}>Save Description</button>

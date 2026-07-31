@@ -7,7 +7,7 @@ router.get('/', async (_req, res, next) => {
   try {
     let about = await About.findOne()
     if (!about) {
-      about = await About.create({ description: '', safetyItems: [] })
+      about = await About.create({ safetyItems: [] })
     }
     res.json(about)
   } catch (err) { next(err) }
