@@ -7,7 +7,7 @@ import { readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const SITE_URL = 'https://climbcruxpakistan.com'
+const SITE_URL = 'https://www.climbcruxpakistan.com'
 const DIST_DIR = fileURLToPath(new URL('../.vercel/output/static', import.meta.url))
 
 /** Exclude these path patterns from the sitemap */
@@ -47,8 +47,9 @@ const urls = htmlFiles
       .replace(/\/?index\.html$/, '/')
       .replace(/\.html$/, '/')
 
-    // If it's just the root path, ensure it's exactly /
+    // Ensure a leading slash so SITE_URL + path joins correctly (e.g. /about/)
     if (urlPath === '') urlPath = '/'
+    if (!urlPath.startsWith('/')) urlPath = '/' + urlPath
 
     const loc = `${SITE_URL}${urlPath}`
 
