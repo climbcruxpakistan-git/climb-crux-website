@@ -16,6 +16,27 @@ import '../styles/shared.css';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="icon" href="/logo.png" sizes="any" />
+    <!-- Google tag (gtag.js) - GA4 -->
+    {
+      import.meta.env.PROD && (
+        <>
+          <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-Z75M4FQFTL"></script>
+          <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-Z75M4FQFTL');
+
+            // Re-trigger page views during Astro View Transitions
+            document.addEventListener('astro:after-swap', () => {
+              gtag('js', new Date());
+              gtag('config', 'G-Z75M4FQFTL');
+            });
+          </script>
+        </>
+      )
+    }
+
     <slot name="head" />
     <!-- Fallback defaults for pages that don't inject their own head content -->
     <title>Climb Crux Pakistan — Guided Rock Climbing & Adventure</title>
