@@ -238,12 +238,14 @@
   justify-content: space-between;
   margin-top: auto;
   padding-top: 8px;
+  gap: 8px;
 }
 
 .shop-card-price {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .shop-card-price-current {
