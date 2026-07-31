@@ -91,6 +91,15 @@ router.patch('/orders/:id/payment', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// DELETE /api/products/orders/:id — admin: delete an order
+router.delete('/orders/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const order = await ProductOrder.findByIdAndDelete(req.params.id)
+    if (!order) return res.status(404).json({ error: 'Order not found' })
+    res.json({ success: true })
+  } catch (err) { next(err) }
+})
+
 // ── Parameterized routes (keep after static routes) ─────────────────
 
 // GET /api/products/:id — public, single product (supports both MongoDB _id and slug)

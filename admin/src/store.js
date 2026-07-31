@@ -257,6 +257,10 @@ export async function patchOrderPayment(id, paymentData) {
   return mapId(await request('PATCH', `/products/orders/${id}/payment`, paymentData))
 }
 
+export async function deleteProductOrder(id) {
+  return request('DELETE', `/products/orders/${id}`)
+}
+
 /* ---------- About ---------- */
 
 export async function getAbout() {

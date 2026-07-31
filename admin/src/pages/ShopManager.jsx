@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { getProducts, saveProduct, deleteProduct, getProductOrders, patchOrderStatus, patchOrderPayment } from '../store.js'
+import { getProducts, saveProduct, deleteProduct, getProductOrders, patchOrderStatus, patchOrderPayment, deleteProductOrder } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
@@ -339,6 +339,14 @@ export default function ShopManager() {
   }
   async function handleUpdateStatus(orderId, status) { await patchOrderStatus(orderId, status); await reload(); addToast('Order status updated', 'success') }
   async function handleUpdatePayment(orderId) { await patchOrderPayment(orderId, payForm); await reload(); setViewOrder(null); addToast('Payment status updated', 'success') }
+  async function handleDeleteOrder(order) {
+    const label = order.order_number ? `order #${order.order_number}` : 'this order'
+    if (!confirm(`Delete ${label}? This permanently removes the order record.`)) return
+    await deleteProductOrder(order.id)
+    await reload()
+    setViewOrder(null)
+    addToast('Order deleted', 'success')
+  }
 
   // ── Badge helpers ──
   const statusBadge = (s) => {
@@ -921,7 +929,7 @@ export default function ShopManager() {
                       <th>Status</th>
                       <th>Payment</th>
                       <th>Date</th>
-                      <th style={{ width: 60 }}></th>
+                      <th style={{ width: 90 }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -935,7 +943,10 @@ export default function ShopManager() {
                         <td>{statusBadge(o.status)}</td>
                         <td>{payStatusBadge(o.payment_status)}</td>
                         <td style={{ fontSize: '0.75rem', color: 'var(--stone)', whiteSpace: 'nowrap' }}>{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
-                        <td><button className="btn-admin-icon" onClick={(e) => { e.stopPropagation(); openOrder(o) }} title="View">→</button></td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <button className="btn-admin-icon" onClick={(e) => { e.stopPropagation(); openOrder(o) }} title="View">→</button>
+                          <button className="btn-admin-icon danger" onClick={(e) => { e.stopPropagation(); handleDeleteOrder(o) }} title="Delete order">✕</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1024,6 +1035,7 @@ export default function ShopManager() {
             </div>
             <div className="admin-form-actions">
               <button className="btn-admin btn-admin-primary" onClick={() => handleUpdatePayment(viewOrder.id)}>Update Payment</button>
+              <button className="btn-admin btn-admin-danger" onClick={() => handleDeleteOrder(viewOrder)}>Delete Order</button>
               <button className="btn-admin btn-admin-outline" onClick={() => setViewOrder(null)}>Close</button>
             </div>
           </div>
