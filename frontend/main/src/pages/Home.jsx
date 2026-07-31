@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import CliffEdge from '../components/CliffEdge.jsx'
@@ -55,7 +55,11 @@ export default function Home() {
       <section className="hero">
         <div className="wrap hero-inner">
           <div className="hero-copy">
-            <h1>{heroTitle}</h1>
+            <h1>
+              {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
+                <Fragment key={i}>{i > 0 && <br />}{part}</Fragment>
+              ))}
+            </h1>
             <p className="hero-lede">{heroLede}</p>
             <div className="hero-actions">
               <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>

@@ -39,7 +39,11 @@ const sessionPhotos = teaserSessionSlug
   <section class="hero">
     <div class="wrap hero-inner">
       <div class="hero-copy">
-        <h1>{heroTitle}</h1>
+        <h1>
+          {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
+            <Fragment key={i}>{i > 0 && <br />}{part}</Fragment>
+          ))}
+        </h1>
         <p class="hero-lede">{heroLede}</p>
         <div class="hero-actions">
           <a href="/sessions" class="btn btn-primary">Join a Public Session</a>
