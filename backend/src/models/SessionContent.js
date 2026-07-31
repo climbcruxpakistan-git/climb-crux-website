@@ -48,8 +48,9 @@ const sessionContentSchema = new mongoose.Schema({
   faqs: [faqSchema],
   sessionsDisabled: { type: Boolean, default: false },
   pricingTitle: { type: String, default: 'Public Session' },
-  pricingPrice: { type: String, default: '4,500' },
+  pricingPrice: { type: String, default: '2,500' },
   pricingUnit: { type: String, default: '/ person' },
+  pricingDescription: { type: String, default: 'Join a guided group session on Margalla Hills — every other Sunday. Full gear and certified instructors included.' },
   pricingFeatures: [pricingFeatureSchema],
 
   // Sessions page content

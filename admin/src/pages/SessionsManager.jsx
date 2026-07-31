@@ -22,7 +22,7 @@ export default function SessionsManager() {
   ]
 
   const [showPricing, setShowPricing] = useState(false)
-  const [pricing, setPricing] = useState({ title: 'Public Session', price: '4,500', unit: '/ person', features: defaultFeatures })
+  const [pricing, setPricing] = useState({ title: 'Public Session', price: '2,500', unit: '/ person', description: '', features: defaultFeatures })
   const [showMembership, setShowMembership] = useState(false)
   const [membership, setMembership] = useState({})
   const [showSessionsContent, setShowSessionsContent] = useState(false)
@@ -39,8 +39,9 @@ export default function SessionsManager() {
         setPageContent(content)
         setPricing({
           title: content.pricingTitle || 'Public Session',
-          price: content.pricingPrice || '4,500',
+          price: content.pricingPrice || '2,500',
           unit: content.pricingUnit || '/ person',
+          description: content.pricingDescription || '',
           features: content.pricingFeatures?.length ? content.pricingFeatures : defaultFeatures,
         })
         setMembership(content.membership || {})
@@ -265,6 +266,10 @@ export default function SessionsManager() {
               <span style={{ fontSize: '0.75rem', color: '#888' }}>Price</span>
               <div style={{ fontWeight: 600 }}>PKR {pricing.price} <span style={{ fontWeight: 400, color: '#888' }}>{pricing.unit}</span></div>
             </div>
+            <div style={{ flexBasis: '100%' }}>
+              <span style={{ fontSize: '0.75rem', color: '#888' }}>Description</span>
+              <div style={{ fontWeight: 500, fontSize: '0.85rem', maxWidth: 560 }}>{pricing.description || '—'}</div>
+            </div>
             <div>
               <span style={{ fontSize: '0.75rem', color: '#888' }}>Features ({pricing.features.length})</span>
               <ul style={{ margin: 0, paddingLeft: 16, fontSize: '0.85rem' }}>
@@ -379,6 +384,7 @@ export default function SessionsManager() {
                 pricingTitle: data.title,
                 pricingPrice: data.price,
                 pricingUnit: data.unit,
+                pricingDescription: data.description,
                 pricingFeatures: data.features,
               })
               setPricing(data)
@@ -614,6 +620,7 @@ function PricingForm({ data, onSave, onCancel }) {
   const [title, setTitle] = useState(data.title)
   const [price, setPrice] = useState(data.price)
   const [unit, setUnit] = useState(data.unit)
+  const [description, setDescription] = useState(data.description || '')
   const [features, setFeatures] = useState(
     data.features.map((f) => (typeof f === 'string' ? f : f.text || ''))
   )
@@ -629,6 +636,7 @@ function PricingForm({ data, onSave, onCancel }) {
       title,
       price,
       unit,
+      description,
       features: features.filter((f) => f.trim()).map((text) => ({ text })),
     })
   }
@@ -644,12 +652,16 @@ function PricingForm({ data, onSave, onCancel }) {
       <div className="admin-form-row">
         <div className="admin-field">
           <label>Price</label>
-          <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 4,500" />
+          <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 2,500" />
         </div>
         <div className="admin-field">
           <label>Unit</label>
           <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. / person" />
         </div>
+      </div>
+      <div className="admin-field">
+        <label>Description</label>
+        <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short pitch shown under the price." />
       </div>
       <div className="admin-field">
         <label>Features</label>

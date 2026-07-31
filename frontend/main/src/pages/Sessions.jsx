@@ -19,8 +19,9 @@ export default function Sessions() {
 
   const [pricing, setPricing] = useState({
     title: 'Public Session',
-    price: '4,500',
+    price: '2,500',
     unit: '/ person',
+    description: '',
     features: defaultFeatures,
   })
   const [loading, setLoading] = useState(true)
@@ -35,8 +36,9 @@ export default function Sessions() {
         setPageContent(content)
         setPricing({
           title: content.pricingTitle || 'Public Session',
-          price: content.pricingPrice || '4,500',
+          price: content.pricingPrice || '2,500',
           unit: content.pricingUnit || '/ person',
+          description: content.pricingDescription || '',
           features: content.pricingFeatures?.length ? content.pricingFeatures : defaultFeatures,
         })
       })
@@ -54,6 +56,7 @@ export default function Sessions() {
           { q: 'What should I bring?', a: 'Comfortable athletic clothing, closed-toe shoes you can climb in, water, and sun protection. We provide the harness, helmet, rope, and climbing shoes.' },
           { q: 'What is the minimum age?', a: 'Climbers 10 and up are welcome on public sessions. Anyone under 18 needs a parent or guardian\'s consent.' },
           { q: 'What if it rains or a session is cancelled?', a: 'We reschedule affected sessions to the next available date, or move your booking to a private session at no extra cost.' },
+          { q: 'Can I pause my membership?', a: 'Yes. Your membership gives you 4 climbing sessions each month, and you can spread them across any of our public session dates that suit you — there\'s no need to book them all at once. If life gets in the way and you need a break, just message us at least 48 hours before your first session and we\'ll pause your membership, carrying any unused sessions over to the next month at no extra cost.' },
         ])
       })
       .finally(() => setLoading(false))
@@ -111,67 +114,86 @@ export default function Sessions() {
 
       <section className="section pricing-section">
         <div className="wrap">
-          <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
-          <div className="price-grid">
-            <div className="price-card">
-              <h3>{pricing.title}</h3>
-              <div className="price-amount">PKR {pricing.price} <span>{pricing.unit}</span></div>
-              <ul>
-                {pricing.features.map((f, i) => (
-                  <li key={i}>{f.text || f}</li>
-                ))}
-              </ul>
-              <Link to="/book-now?type=public" className="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</Link>
-            </div>
+          {loading ? (
+            <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading pricing…</p>
+          ) : (
+            <>
+              <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
+              <div className="price-grid">
+                <div className="price-card">
+                  <h3>{pricing.title}</h3>
+                  <div className="price-amount">PKR {pricing.price} <span>{pricing.unit}</span></div>
+                  <p className="pricing-desc">{pricing.description || 'Join a guided group session on Margalla Hills — every other Sunday. Full gear and certified instructors included.'}</p>
+                  <ul>
+                    {pricing.features.map((f, i) => (
+                      <li key={i}>{f.text || f}</li>
+                    ))}
+                  </ul>
+                  <Link to="/book-now?type=public" className="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</Link>
+                </div>
 
-            {/* Monthly Membership card */}
-            <div className="price-card featured membership-card">
-              <span className="membership-badge">{m.badge || '🔥 Save 20%'}</span>
-              <h3>{m.title || 'Monthly Membership'}</h3>
-              <div className="price-amount">PKR {m.price || '8,000'} <span>{m.unit || '/ Month'}</span></div>
-              <div className="membership-save">
-                <span className="original-price" aria-label={`Original price PKR ${m.originalPrice || '10,000'}`}>PKR {m.originalPrice || '10,000'}</span>
-                <span className="save-tag">Save {m.discount || '20%'}</span>
+                {/* Monthly Membership card */}
+                <div className="price-card featured membership-card">
+                  <span className="membership-badge">{m.badge || '🔥 Save 20%'}</span>
+                  <h3>{m.title || 'Monthly Membership'}</h3>
+                  <div className="price-amount">PKR {m.price || '8,000'} <span>{m.unit || '/ Month'}</span></div>
+                  <div className="membership-save">
+                    <span className="original-price" aria-label={`Original price PKR ${m.originalPrice || '10,000'}`}>PKR {m.originalPrice || '10,000'}</span>
+                    <span className="save-tag">Save {m.discount || '20%'}</span>
+                  </div>
+                  <p className="membership-desc">{membershipDesc}</p>
+                  <ul>
+                    {membershipFeatures.map((f, i) => (
+                      <li key={i}>{f}</li>
+                    ))}
+                  </ul>
+                  <Link to="/book-now?type=membership" className="btn btn-primary" aria-label="Get the Monthly Membership">{m.ctaLabel || 'Get Monthly Membership'}</Link>
+                </div>
               </div>
-              <p className="membership-desc">{membershipDesc}</p>
-              <ul>
-                {membershipFeatures.map((f, i) => (
-                  <li key={i}>{f}</li>
-                ))}
-              </ul>
-              <Link to="/book-now?type=membership" className="btn btn-primary" aria-label="Get the Monthly Membership">{m.ctaLabel || 'Get Monthly Membership'}</Link>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </section>
 
       <section className="section">
         <div className="wrap">
-          <span className="eyebrow">What's included</span>
-          <h2>{c.includedSectionTitle || 'Everything you need, nothing to bring'}</h2>
-          <div className="info-grid">
-            {included.map((i) => (
-              <div className="info-card" key={i.h}>
-                <h4>{i.h}</h4>
-                <p>{i.p}</p>
+          {loading ? (
+            <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading…</p>
+          ) : (
+            <>
+              <span className="eyebrow">What's included</span>
+              <h2>{c.includedSectionTitle || 'Everything you need, nothing to bring'}</h2>
+              <div className="info-grid">
+                {included.map((i) => (
+                  <div className="info-card" key={i.h}>
+                    <h4>{i.h}</h4>
+                    <p>{i.p}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </section>
 
       <section className="section faq-section">
         <div className="wrap">
-          <span className="eyebrow">{c.faqEyebrow || 'Good to know'}</span>
-          <h2>{c.faqSectionTitle || 'Frequently asked questions'}</h2>
-          <div className="faq">
-            {faqs.map((f) => (
-              <details key={f.q}>
-                <summary>{f.q}</summary>
-                <p>{f.a}</p>
-              </details>
-            ))}
-          </div>
+          {loading ? (
+            <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading…</p>
+          ) : (
+            <>
+              <span className="eyebrow">{c.faqEyebrow || 'Good to know'}</span>
+              <h2>{c.faqSectionTitle || 'Frequently asked questions'}</h2>
+              <div className="faq">
+                {faqs.map((f) => (
+                  <details key={f.q}>
+                    <summary>{f.q}</summary>
+                    <p>{f.a}</p>
+                  </details>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </>

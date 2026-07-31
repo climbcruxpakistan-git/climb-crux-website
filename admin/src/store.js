@@ -72,8 +72,9 @@ export async function getSessionContent() {
     faqs: data.faqs || [],
     sessionsDisabled: data.sessionsDisabled || false,
     pricingTitle: data.pricingTitle || 'Public Session',
-    pricingPrice: data.pricingPrice || '4,500',
+    pricingPrice: data.pricingPrice || '2,500',
     pricingUnit: data.pricingUnit || '/ person',
+    pricingDescription: data.pricingDescription || '',
     pricingFeatures: data.pricingFeatures?.length
       ? data.pricingFeatures
       : [

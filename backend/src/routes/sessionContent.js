@@ -20,10 +20,12 @@ router.get('/', async (_req, res, next) => {
           { q: 'What should I bring?', a: 'Comfortable athletic clothing, closed-toe shoes you can climb in, water, and sun protection. We provide the harness, helmet, rope, and climbing shoes.' },
           { q: 'What is the minimum age?', a: 'Climbers 10 and up are welcome on public sessions. Anyone under 18 needs a parent or guardian\'s consent.' },
           { q: 'What if it rains or a session is cancelled?', a: 'We reschedule affected sessions to the next available date, or move your booking to a private session at no extra cost.' },
+          { q: 'Can I pause my membership?', a: 'Yes. Your membership gives you 4 climbing sessions each month, and you can spread them across any of our public session dates that suit you — there\'s no need to book them all at once. If life gets in the way and you need a break, just message us at least 48 hours before your first session and we\'ll pause your membership, carrying any unused sessions over to the next month at no extra cost.' },
         ],
         pricingTitle: 'Public Session',
-        pricingPrice: '4,500',
+        pricingPrice: '2,500',
         pricingUnit: '/ person',
+        pricingDescription: 'Join a guided group session on Margalla Hills — every other Sunday. Full gear and certified instructors included.',
         pricingFeatures: [
           { text: '2–3 hour guided session' },
           { text: 'Certified instructor & safety briefing' },
@@ -49,6 +51,7 @@ router.put('/', async (req, res, next) => {
     if (req.body.pricingTitle !== undefined) content.pricingTitle = req.body.pricingTitle
     if (req.body.pricingPrice !== undefined) content.pricingPrice = req.body.pricingPrice
     if (req.body.pricingUnit !== undefined) content.pricingUnit = req.body.pricingUnit
+    if (req.body.pricingDescription !== undefined) content.pricingDescription = req.body.pricingDescription
     if (req.body.pricingFeatures !== undefined) content.pricingFeatures = req.body.pricingFeatures
     // Sessions page content
     if (req.body.sessionsHeaderTitle !== undefined) content.sessionsHeaderTitle = req.body.sessionsHeaderTitle
