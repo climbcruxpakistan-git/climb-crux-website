@@ -21,6 +21,7 @@ export default function Footer() {
             <li><NavLink to="/private-premium">Private &amp; Premium</NavLink></li>
             <li><NavLink to="/our-team">Our Team</NavLink></li>
             <li><NavLink to="/gallery">Gallery</NavLink></li>
+            <li><NavLink to="/shop">Shop Climbing Equipment</NavLink></li>
           </ul>
         </div>
 
