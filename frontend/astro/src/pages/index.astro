@@ -10,7 +10,7 @@ import '../styles/Home.css';
 const content = await getHomeContent().catch(() => null);
 const uploads = await getUploads().catch(() => []);
 
-const heroTitle = content?.heroTitle || 'Find your next hold.';
+const heroTitle = content?.heroTitle || 'Discover the Thrill of Rock Climbing';
 const heroLede = content?.heroLede || "Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you've chased yet.";
 const heroPhotoUrl = content?.heroPhotoUrl || '';
 const paths = content?.paths || [
@@ -41,7 +41,7 @@ const sessionPhotos = teaserSessionSlug
       <div class="hero-copy">
         <h1>
           {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
-            <Fragment key={i}>{i > 0 && <br />}{part}</Fragment>
+            <Fragment key={i}>{i > 0 && <br />}{part.trim()}</Fragment>
           ))}
         </h1>
         <p class="hero-lede">{heroLede}</p>
@@ -126,7 +126,7 @@ const sessionPhotos = teaserSessionSlug
   @media (max-width: 860px) {
     .hero-inner { grid-template-columns: 1fr; gap: 32px; }
   }
-  .hero h1 { color: var(--chalk); font-size: clamp(2rem, 3.2vw, 2.8rem); margin-bottom: 0.3em; white-space: nowrap; }
+  .hero h1 { color: var(--chalk); font-size: clamp(2.3rem, 3.8vw, 3.2rem); margin-bottom: 0.3em; white-space: nowrap; }
   .hero-lede { color: #c9c4b8; font-size: clamp(1rem, 2vw, 1.12rem); max-width: 56ch; line-height: 1.7; margin-bottom: 28px; }
   .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
   .hero-figure { margin: 0; }

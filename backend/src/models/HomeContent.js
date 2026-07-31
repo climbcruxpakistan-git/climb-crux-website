@@ -16,7 +16,7 @@ const teaserSchema = new mongoose.Schema({
 }, { _id: false })
 
 const homeContentSchema = new mongoose.Schema({
-  heroTitle: { type: String, default: 'Find your next hold.' },
+  heroTitle: { type: String, default: 'Discover the Thrill of Rock Climbing' },
   heroLede: { type: String, default: 'Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you\'ve chased yet.' },
   heroPhotoUrl: { type: String, default: '' },
   pathsEyebrow: { type: String, default: 'Two ways to climb with us' },

@@ -25,7 +25,7 @@ export default function Home() {
   }, [])
 
   // Use content from API, fallback to hardcoded defaults
-  const heroTitle = content?.heroTitle || 'Find your next hold.'
+  const heroTitle = content?.heroTitle || 'Discover the Thrill of Rock Climbing'
   const heroLede = content?.heroLede || "Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you've chased yet."
   const heroPhotoUrl = content?.heroPhotoUrl || ''
   const paths = content?.paths || [
@@ -57,7 +57,7 @@ export default function Home() {
           <div className="hero-copy">
             <h1>
               {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
-                <Fragment key={i}>{i > 0 && <br />}{part}</Fragment>
+                <Fragment key={i}>{i > 0 && <br />}{part.trim()}</Fragment>
               ))}
             </h1>
             <p className="hero-lede">{heroLede}</p>

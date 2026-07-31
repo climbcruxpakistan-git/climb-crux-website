@@ -18,7 +18,7 @@
 
 .hero-copy h1 {
   color: var(--chalk);
-  font-size: clamp(2rem, 3.2vw, 2.8rem);
+  font-size: clamp(2.3rem, 3.8vw, 3.2rem);
   white-space: nowrap;
 }
 
@@ -269,7 +269,7 @@
     justify-content: center;
   }
   .hero-copy h1 {
-    font-size: clamp(1.6rem, 6.5vw, 2.2rem) !important;
+    font-size: clamp(1.8rem, 7vw, 2.5rem) !important;
   }
   .hero-lede {
     font-size: 0.95rem;
