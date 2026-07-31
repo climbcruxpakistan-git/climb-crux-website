@@ -1,2 +1,5 @@
 node_modules
 .env
+
+# Database backups (contain PII — never commit)
+backups/*.json
