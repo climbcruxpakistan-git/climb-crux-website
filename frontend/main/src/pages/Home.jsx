@@ -69,7 +69,7 @@ export default function Home() {
               ) : (
                 <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
               )}
-              <figcaption className="hero-caption">Group Photo From Our Successful Group Session</figcaption>
+              <figcaption className="hero-caption">Group Photo From Our Successful Rock Climbing Session</figcaption>
             </figure>
           </div>
         </div>
