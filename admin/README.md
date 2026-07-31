@@ -1,6 +1,6 @@
 # 🧗 Climb Crux — Admin Dashboard
 
-React + Vite admin panel for managing Climb Crux website content, bookings, and payments. Requires authentication via the backend API.
+React + Vite admin panel for managing Climb Crux website content, bookings, shop products & orders, and payments. Requires authentication via the backend API.
 
 ---
 
@@ -21,7 +21,7 @@ The admin dashboard reads the API base URL from an environment variable:
 
 ```bash
 # .env in the admin/ directory
-VITE_API_URL=https://climb-crux-api.onrender.com/api
+VITE_API_URL=https://climb-crux-backend.onrender.com/api
 ```
 
 If `VITE_API_URL` is not set, the dashboard falls back to `/api` in development (Vite proxies to the backend) or `https://climb-crux-backend.onrender.com/api` in production.
@@ -61,6 +61,7 @@ admin/
 │       ├── TeamManager.jsx
 │       ├── GalleryManager.jsx
 │       ├── PhotosManager.jsx
+│       ├── ShopManager.jsx
 │       ├── AboutManager.jsx
 │       └── BookingsManager.jsx
 ├── .env                       # Local env vars (gitignored)
@@ -101,6 +102,13 @@ admin/
 - Upload and manage gallery photos
 - Cloudinary integration for image hosting
 
+### 🛒 Shop Management
+- **Products**: full CRUD with tabbed editor (General, Pricing, Inventory, Images, Variants, Specifications, Features, Shipping, SEO, Publish)
+- Search, filters (category, brand, stock, status, price range), and sorting
+- Image upload to Cloudinary (featured + gallery images)
+- **Orders**: order list with status & payment badges, detail modal, status/payment updates, delete orders
+- Stats: total orders, pending, paid revenue
+
 ### ℹ️ About Page Management
 - Edit the about page description
 - Manage safety highlights with title + description pairs
@@ -131,6 +139,7 @@ admin/
 | `/team` | Team Manager | Manage instructor profiles |
 | `/gallery` | Gallery Manager | Manage gallery items |
 | `/photos` | Photos Manager | Upload & manage photos |
+| `/shop` | Shop Manager | Manage products & orders |
 | `/about` | About Manager | Edit about page |
 | `/bookings` | Bookings Manager | Manage bookings & payments |
 

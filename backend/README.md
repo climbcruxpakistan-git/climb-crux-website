@@ -1,6 +1,6 @@
 # 🧗 Climb Crux — Backend API
 
-Express + MongoDB REST API powering the Climb Crux climbing platform. Handles content management, bookings, payments, authentication, email notifications, and image uploads.
+Express + MongoDB REST API powering the Climb Crux climbing platform. Handles content management, bookings, payments, shop products & orders, authentication, email notifications, and image uploads.
 
 ---
 
@@ -30,7 +30,7 @@ ADMIN_EMAIL=admin@climbcrux.com
 ADMIN_PASSWORD=your-admin-password
 
 # CORS (set for production; localhost origins are auto-allowed)
-FRONTEND_URL=https://climb-crux.vercel.app
+FRONTEND_URL=https://climbcruxpakistan.com
 ADMIN_URL=https://climb-crux-admin.vercel.app
 
 # Email notifications (Gmail SMTP — optional)
@@ -57,7 +57,7 @@ DNS_SERVERS=8.8.8.8,1.1.1.1
 |--------|---------|-------------|
 | `dev` | `node --watch src/index.js` | Start with hot-reload |
 | `start` | `node src/index.js` | Production start |
-| `seed` | `node src/seed.js --force` | Seed database with sample data |
+| `seed` | `node src/seed.js` | Seed database with sample data |
 | `db:backup` | `node src/backup.js` | Backup all collections to JSON |
 | `db:restore` | `node src/restore.js` | Restore collections from JSON backup |
 
@@ -77,8 +77,8 @@ backend/
 │   ├── middleware/
 │   │   ├── auth.js           # JWT verification middleware (GET=public, write=auth'd)
 │   │   └── rateLimiter.js    # Tiered rate limiting (auth, booking, general API)
-│   ├── models/               # Mongoose schemas (10 models)
-│   └── routes/               # Express route handlers (11 route files)
+│   ├── models/               # Mongoose schemas (13 models)
+│   └── routes/               # Express route handlers (13 route files)
 ├── backups/                  # Auto-generated DB backups
 ├── .env                      # Local environment variables (gitignored)
 ├── package.json
@@ -104,9 +104,28 @@ The backend uses **JWT-based authentication** with a single admin account.
 
 ---
 
+## 🛍️ Shop API (Products, Orders & Reviews)
+
+| Method | Route | Auth Required | Description |
+|--------|-------|---------------|-------------|
+| `GET` | `/api/products` | No | List all published products |
+| `GET` | `/api/products/:id` | No | Single product by slug or `_id` |
+| `POST` | `/api/products` | Yes | Create a product |
+| `PUT` | `/api/products/:id` | Yes | Update a product |
+| `DELETE` | `/api/products/:id` | Yes | Delete a product |
+| `POST` | `/api/products/order` | No | Place a product order (Bank Transfer / EasyPaisa) |
+| `GET` | `/api/products/orders` | Yes | List all product orders |
+| `PATCH` | `/api/products/orders/:id/status` | Yes | Update order status |
+| `PATCH` | `/api/products/orders/:id/payment` | Yes | Update order payment status |
+| `DELETE` | `/api/products/orders/:id` | Yes | Delete a product order |
+| `GET` | `/api/products/:productId/reviews` | No | List reviews with average rating & distribution |
+| `POST` | `/api/products/:productId/reviews` | No | Submit a customer review (name + rating 1–5 required) |
+
+---
+
 ## 📨 Email Notifications
 
-When `GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`, and `NOTIFICATION_EMAIL` are configured, the server sends email notifications for new bookings (with customer details and booking number). Emails include a styled HTML template with branding and a link to the admin dashboard.
+When `GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`, and `NOTIFICATION_EMAIL` are configured, the server sends email notifications for new bookings (with customer details and booking number) and payment confirmations. Emails include a styled HTML template with branding and a link to the admin dashboard.
 
 ---
 
