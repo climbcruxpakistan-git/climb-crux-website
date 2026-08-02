@@ -31,7 +31,6 @@ export default function AboutContent({ initial }) {
   }, [])
 
   const about = data.about || {}
-  const safety = about.safetyItems || []
   const description = about.description || DEFAULT_DESCRIPTION
   const paragraphs = description
     .replace(/\r\n?/g, '\n')
@@ -83,28 +82,6 @@ export default function AboutContent({ initial }) {
           ))}
         </div>
         <CliffEdge fill="var(--chalk-dim)" height={40} />
-      </section>
-
-      <section className="section safety-section">
-        <div className="wrap">
-          <span className="eyebrow">Safety approach</span>
-          <h2>Safety isn't an add-on, it's the baseline</h2>
-          <p className="section-intro">Every climb runs on a checklist of certified, redundant safety systems — before anyone touches rock.</p>
-          <div className="safety-grid">
-            {safety.length > 0 ? (
-              safety.map((s, i) => (
-                <div className="safety-card" key={s.h}>
-                  <span className="safety-num">{String(i + 1).padStart(2, '0')}</span>
-                  <h3>{s.h}</h3>
-                  <p>{s.p}</p>
-                </div>
-              ))
-            ) : (
-              <p style={{ color: 'var(--stone)' }}>No safety items yet.</p>
-            )}
-          </div>
-        </div>
-        <CliffEdge fill="var(--charcoal)" height={48} />
       </section>
     </>
   )
