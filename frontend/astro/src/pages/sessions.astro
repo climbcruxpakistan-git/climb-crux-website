@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import PageHeader from '../components/astro/PageHeader.astro';
+import SessionsContent from '../components/react/SessionsContent.jsx';
 import { getSessions, getSessionContent } from '../lib/api';
 import '../styles/Sessions.css';
 
@@ -9,12 +9,6 @@ const [sessions, content] = await Promise.all([
   getSessionContent().catch(() => ({})),
 ]);
 
-const included = content.includedItems || [
-  { h: 'Certified guidance', p: 'Every session is led by a certified climbing instructor, start to finish.' },
-  { h: 'Full safety gear', p: 'Harness, helmet, rope, belay setup, and climbing shoes provided.' },
-  { h: 'Beginner-friendly routes', p: 'Routes are set for first-timers, roughly grade 4–6a on the French scale.' },
-  { h: 'Small groups', p: 'Group sessions capped at 20 climbers so there\'s plenty of room on the wall.' },
-];
 const faqs = content.faqs || [
   { q: 'Do I need climbing experience?', a: 'No — public sessions are built for first-timers. Instructors walk you through technique, belay basics, and route reading before anyone leaves the ground.' },
   { q: 'What should I bring?', a: 'Comfortable athletic clothing, closed-toe shoes you can climb in, water, and sun protection. We provide the harness, helmet, rope, and climbing shoes.' },
@@ -22,110 +16,22 @@ const faqs = content.faqs || [
   { q: 'What if it rains or a session is cancelled?', a: 'We reschedule affected sessions to the next available date, or move your booking to a private session at no extra cost.' },
   { q: 'Can I pause my membership?', a: 'Yes. Your membership gives you 4 climbing sessions each month, and you can spread them across any of our public session dates that suit you — there\'s no need to book them all at once. If life gets in the way and you need a break, just message us at least 48 hours before your first session and we\'ll pause your membership, carrying any unused sessions over to the next month at no extra cost.' },
 ];
-const sessionsDisabled = content.sessionsDisabled || false;
-const c = content;
-const defaultFeatures = ['2–3 hour guided session', 'Certified instructor & safety briefing', 'Harness, helmet, rope, belay gear & climbing shoes', 'Group of up to 20 climbers'];
-const pricingFeatures = c.pricingFeatures?.length ? c.pricingFeatures.map(f => f.text || f) : defaultFeatures;
-const pricingDesc = c.pricingDescription || 'Join a guided group session on Margalla Hills — every other Sunday. Full gear and certified instructors included.';
-const membership = c.membership || {};
-const defaultMembershipFeatures = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome'];
-const rawMembershipFeatures = membership.features?.length ? membership.features.filter((f) => typeof f === 'string' && f.trim()) : [];
-const membershipFeatures = rawMembershipFeatures.length ? rawMembershipFeatures : defaultMembershipFeatures;
-const membershipDesc = membership.description || 'Train consistently with our monthly climbing membership. Enjoy four climbing sessions every month at a discounted price while improving your strength, technique, and confidence.';
 ---
 
 <MainLayout>
   <Fragment slot="head">
     <title>Public Climbing Sessions &amp; Events in Islamabad — Climb Crux Pakistan</title>
     <meta name="description" content="Join guided rock climbing sessions and events in Islamabad on Margalla Hills every other Sunday, or climb every month with our PKR 8,000/month membership. No gear or experience needed. Book today." />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      'mainEntity': faqs.map((f) => ({
+        '@type': 'Question',
+        'name': f.q,
+        'acceptedAnswer': { '@type': 'Answer', 'text': f.a },
+      })),
+    })} />
   </Fragment>
-  <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'}>
-    <p slot="default">{c.sessionsHeaderDesc || 'Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.'}</p>
-  </PageHeader>
 
-  <section class="section schedule-section">
-    <div class="wrap">
-      <h2>{c.sessionsSectionTitle || 'Upcoming sessions'}</h2>
-      {sessionsDisabled || sessions.length === 0 ? (
-        <div class="empty-sessions-card">
-          <div class="empty-sessions-icon">📅</div>
-          <h3>No public sessions right now</h3>
-          <p>We don't have any public sessions scheduled at the moment. But you can still climb! Check out our private &amp; premium sessions designed around your schedule and goals.</p>
-          <a href="/private-premium" class="btn btn-primary" style="margin-top:8px;">Explore private sessions</a>
-        </div>
-      ) : (
-        <ul class="schedule-list">
-          {sessions.map((s) => (
-            <li key={s.id || s.date}>
-              <span class="schedule-date">{s.date}</span>
-              <span class="schedule-time">{s.time}</span>
-              <span class="schedule-spots">{s.spots}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p class="form-note">Sessions run every other week — check back or contact us if these dates don't line up with you.</p>
-    </div>
-  </section>
-
-  <section class="section pricing-section">
-    <div class="wrap">
-      <h2>{c.pricingSectionTitle || 'One flat rate, everything included'}</h2>
-      <div class="price-grid">
-        <div class="price-card">
-          <h3>{c.pricingTitle || 'Public Session'}</h3>
-          <div class="price-amount">PKR {c.pricingPrice || '2,500'} <span>{c.pricingUnit || '/ person'}</span></div>
-          <p class="pricing-desc">{pricingDesc}</p>
-          <ul>
-            {pricingFeatures.map((f, i) => <li key={i}>{f}</li>)}
-          </ul>
-          <a href="/book-now?type=public" class="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</a>
-        </div>
-        <div class="price-card featured membership-card">
-          <span class="membership-badge">{membership.badge || '🔥 Save 20%'}</span>
-          <h3>{membership.title || 'Monthly Membership'}</h3>
-          <div class="price-amount">PKR {membership.price || '8,000'} <span>{membership.unit || '/ Month'}</span></div>
-          <div class="membership-save">
-            <span class="original-price" aria-label={`Original price PKR ${membership.originalPrice || '10,000'}`}>PKR {membership.originalPrice || '10,000'}</span>
-            <span class="save-tag">Save {membership.discount || '20%'}</span>
-          </div>
-          <p class="membership-desc">{membershipDesc}</p>
-          <ul>
-            {membershipFeatures.map((f, i) => <li key={i}>{f}</li>)}
-          </ul>
-          <a href="/book-now?type=membership" class="btn btn-primary" aria-label="Get the Monthly Membership">{membership.ctaLabel || 'Get Monthly Membership'}</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <span class="eyebrow">What's included</span>
-      <h2>{c.includedSectionTitle || 'Everything you need, nothing to bring'}</h2>
-      <div class="info-grid">
-        {included.map((i) => (
-          <div class="info-card" key={i.h}>
-            <h4>{i.h}</h4>
-            <p>{i.p}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section faq-section">
-    <div class="wrap">
-      <span class="eyebrow">{c.faqEyebrow || 'Good to know'}</span>
-      <h2>{c.faqSectionTitle || 'Frequently asked questions'}</h2>
-      <div class="faq">
-        {faqs.map((f) => (
-          <details key={f.q}>
-            <summary>{f.q}</summary>
-            <p>{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </div>
-  </section>
+  <SessionsContent client:load initial={{ sessions, content }} />
 </MainLayout>

@@ -3,11 +3,11 @@ import { getAbout, saveAbout } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
-const DEFAULT_DESCRIPTION = `Climb Crux is an outdoor rock climbing community dedicated to making climbing safe, accessible and enjoyable for people of all ages and experience levels in Pakistan. Based in the Islamabad region, we offer professionally guided climbing sessions, beginner-friendly experiences, skill development programs and climbing memberships designed to help every climber progress with confidence.
+const DEFAULT_DESCRIPTION = `Climb Crux is a rock climbing club based in Islamabad, dedicated to making rock climbing safe, accessible and enjoyable for people of all ages and experience levels. We offer professionally guided climbing sessions, structured coaching, monthly memberships and a welcoming community where every climber can learn, train and grow.
 
-Whether you're trying outdoor rock climbing for the first time or looking to improve your climbing technique, our experienced instructors provide structured coaching in a safe and supportive environment. Every session emphasizes proper climbing techniques, equipment safety and personal growth while ensuring an enjoyable experience for individuals, families, students and corporate groups.
+Whether you're trying rock climbing for the first time or looking to improve your skills. Our experienced instructors provide a safe and supportive environment focused on confidence, technique and internationally recognized safety practices. From beginners to experienced climbers, everyone is welcome.
 
-From public climbing sessions and private coaching to memberships, workshops and special events, Climb Crux is committed to providing high-quality climbing experiences for beginners and experienced climbers alike. Whether you're looking for a fun weekend activity, regular climbing training, or a new fitness challenge, we're here to help you reach new heights.`
+More than just climbing sessions, Climb Crux is building a passionate climbing community in Pakistan through public sessions, private coaching, memberships, workshops and outdoor adventures. Whether you're looking for a new challenge, a unique fitness activity or a rock climbing club in Islamabad. We're here to help you reach new heights.`
 
 export default function AboutManager() {
   const { addToast } = useToast()
@@ -30,9 +30,14 @@ export default function AboutManager() {
 
   async function handleDescriptionSave() {
     const data = { description, safetyItems }
-    await saveAbout(data)
-    setAbout(await getAbout())
-    addToast('About page updated', 'success')
+    try {
+      await saveAbout(data)
+      setAbout(await getAbout())
+      addToast('About page updated', 'success')
+    } catch (err) {
+      console.error('Failed to save About page:', err)
+      addToast('Failed to save — your session may have expired. Please log out and log back in, then try again.', 'error')
+    }
   }
 
   async function handleSafetySave(items) {
@@ -65,7 +70,16 @@ export default function AboutManager() {
         <div className="card-admin-header"><h2>Page Description</h2></div>
         <div className="admin-form">
           <div className="admin-field">
-            <label>Description</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+              <label style={{ marginBottom: 0 }}>Description</label>
+              <button
+                className="btn-admin btn-admin-outline btn-admin-sm"
+                onClick={() => setDescription(DEFAULT_DESCRIPTION)}
+                title="Fill the box with the recommended About description"
+              >
+                Use recommended description
+              </button>
+            </div>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={8} placeholder="About page description…" />
           </div>
           <div className="admin-form-actions">

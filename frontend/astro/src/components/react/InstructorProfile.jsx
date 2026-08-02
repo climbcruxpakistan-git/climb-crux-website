@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react'
+import { getTeam } from '../../lib/api'
+
 function jsonParse(str) {
   try { return str ? JSON.parse(str) : null } catch { return null }
 }

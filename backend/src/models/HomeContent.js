@@ -17,7 +17,7 @@ const teaserSchema = new mongoose.Schema({
 
 const homeContentSchema = new mongoose.Schema({
   heroTitle: { type: String, default: 'Discover the Thrill of Rock Climbing' },
-  heroLede: { type: String, default: 'Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you\'ve chased yet.' },
+  heroLede: { type: String, default: 'Climb Crux is Islamabad\'s premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers.' },
   heroPhotoUrl: { type: String, default: '' },
   pathsEyebrow: { type: String, default: 'Two ways to climb with us' },
   pathsTitle: { type: String, default: 'Pick your route' },

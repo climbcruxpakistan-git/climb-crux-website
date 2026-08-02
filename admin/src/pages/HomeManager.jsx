@@ -77,7 +77,7 @@ export default function HomeManager() {
           </div>
           <div className="admin-field">
             <label>Hero Description</label>
-            <textarea rows={3} value={content.heroLede || ''} onChange={(e) => setContent({ ...content, heroLede: e.target.value })} />
+            <textarea rows={3} value={content.heroLede || ''} onChange={(e) => setContent({ ...content, heroLede: e.target.value })} placeholder="Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers." />
             <div className="admin-form-actions" style={{ paddingTop: 8 }}>
               <button className="btn-admin btn-admin-primary btn-admin-sm" onClick={() => updateField('heroLede', content.heroLede)}>Save</button>
             </div>

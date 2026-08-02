@@ -1,17 +1,14 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import PageHeader from '../components/astro/PageHeader.astro';
-import CliffEdge from '../components/astro/CliffEdge.astro';
-import GradeBadge from '../components/astro/GradeBadge.astro';
-import PlaceholderPhoto from '../components/astro/PlaceholderPhoto.astro';
+import HomeContent from '../components/react/HomeContent.jsx';
 import { getHomeContent, getUploads } from '../lib/api';
 import '../styles/Home.css';
 
 const content = await getHomeContent().catch(() => null);
 const uploads = await getUploads().catch(() => []);
 
-const heroTitle = content?.heroTitle || 'Discover the Thrill of Rock Climbing';
-const heroLede = content?.heroLede || "Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you've chased yet.";
+const heroTitle = content?.heroTitle || 'Discover Rock Climbing in Islamabad';
+const heroLede = content?.heroLede || "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers.";
 const heroPhotoUrl = content?.heroPhotoUrl || '';
 const paths = content?.paths || [
   { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
@@ -26,124 +23,74 @@ const teasersEyebrow = content?.teasersEyebrow || 'From the wall';
 const teasersTitle = content?.teasersTitle || 'A look at recent sessions';
 const teaserSessionSlug = content?.teaserSessionSlug || '';
 
-const sessionPhotos = teaserSessionSlug
-  ? uploads.filter((p) => (p.tags || []).some((t) => t.toLowerCase() === teaserSessionSlug.toLowerCase()))
-  : [];
+const localFaqs = [
+  {
+    q: 'Is rock climbing in Islamabad safe?',
+    a: 'Yes. Every Climb Crux session on Margalla Hills is led by a certified instructor, starts with a full safety briefing, and uses harnesses, helmets, ropes and belay gear that meet climbing safety standards.'
+  },
+  {
+    q: 'Do I need experience to go rock climbing in Islamabad?',
+    a: 'No. Public sessions are built for first-timers with beginner-friendly routes around grade 4–6a. Your instructor walks you through technique, belay basics and route reading before anyone leaves the ground.'
+  },
+  {
+    q: 'Where does rock climbing in Islamabad happen?',
+    a: 'On the limestone crags of Margalla Hills National Park — Islamabad\'s backyard climbing area, roughly 30–40 minutes from the city centre along the Trail 3, 4 and 5 ridges.'
+  },
+  {
+    q: 'What should I bring to a rock climbing session in Islamabad?',
+    a: 'Comfortable athletic clothing, closed-toe shoes you can climb in, water and sun protection. We provide the harness, helmet, rope, belay gear and climbing shoes.'
+  },
+];
+
+const initial = {
+  heroTitle,
+  heroLede,
+  heroPhotoUrl,
+  paths,
+  teasers,
+  pathsEyebrow,
+  pathsTitle,
+  teasersEyebrow,
+  teasersTitle,
+  teaserSessionSlug,
+  uploads,
+};
 ---
 
 <MainLayout>
   <Fragment slot="head">
-    <title>Climb Crux Pakistan — Rock Climbing Club & Adventure in Islamabad</title>
-    <meta name="description" content="Climb Crux is a rock climbing club in Islamabad offering guided climbing, hiking and adventure events on Margalla Hills. Public sessions, private coaching & premium ascents — all gear provided, no experience needed." />
+    <title>Rock Climbing in Islamabad | Climb Crux — Climbing Club on Margalla Hills</title>
+    <meta name="description" content="Rock climbing in Islamabad with Climb Crux — guided sessions on the limestone crags of Margalla Hills every other Sunday. Beginner-friendly, all gear provided, certified instructors. Book today." />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      'mainEntity': localFaqs.map((f) => ({
+        '@type': 'Question',
+        'name': f.q,
+        'acceptedAnswer': { '@type': 'Answer', 'text': f.a },
+      })),
+    })} />
   </Fragment>
-  <section class="hero">
-    <div class="wrap hero-inner">
-      <div class="hero-copy">
-        <h1>
-          {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
-            <Fragment key={i}>{i > 0 && <br />}{part.trim()}</Fragment>
-          ))}
-        </h1>
-        <p class="hero-lede">{heroLede}</p>
-        <div class="hero-actions">
-          <a href="/sessions" class="btn btn-primary">Join a Public Session</a>
-          <a href="/shop" class="btn btn-outline">Shop Climbing Equipment</a>
-        </div>
-      </div>
-      <div class="hero-visual">
-        <figure class="hero-figure">
-          {heroPhotoUrl ? (
-            <img src={heroPhotoUrl} alt="Climb Crux" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);box-shadow:0 24px 60px rgba(0,0,0,0.35);" />
-          ) : (
-            <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
-          )}
-          <figcaption class="hero-caption">Group Photo From Our Successful Rock Climbing Session</figcaption>
-        </figure>
-      </div>
-    </div>
-    <CliffEdge fill="var(--chalk)" height={56} />
-  </section>
 
-  <section class="section paths">
+  <HomeContent client:load initial={initial} />
+
+  <section class="section local-seo-section">
     <div class="wrap">
-      <span class="eyebrow">{pathsEyebrow}</span>
-      <h2>{pathsTitle}</h2>
-      <div class="paths-grid">
-        {paths.map((p) => (
-          <div class="path-card">
-            <GradeBadge grade={p.grade} label={p.label} />
-            <h3>{p.title}</h3>
-            <p>{p.copy}</p>
-            {p.photoUrl && (
-              <img src={p.photoUrl} alt={p.title} style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:var(--radius);margin-top:8px;" />
-            )}
-            <a href={p.to} class="path-link">
-              {p.cta} <span aria-hidden="true">→</span>
-            </a>
-          </div>
+      <span class="eyebrow">Climb in Islamabad</span>
+      <h2>Rock climbing in Islamabad — on the limestone of Margalla Hills</h2>
+      <div class="local-seo-copy">
+        <p>Islamabad is one of the few capitals in the world with real rock climbing right on its doorstep. The limestone crags of Margalla Hills National Park — along the Trail 3, 4 and 5 ridges — sit just 30–40 minutes from the city centre, and Climb Crux runs guided sessions there every other Sunday.</p>
+        <p>From your first top-rope on an easy 4+ to training lines that push 7c+, our certified instructors handle the safety and the gear so you can focus on the climb. Families, students, first-timers and seasoned climbers all find their route on Islamabad's own hillside.</p>
+        <a href="/sessions" class="btn btn-outline">See session dates &amp; pricing</a>
+      </div>
+      <div class="faq">
+        {localFaqs.map((f) => (
+          <details>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
         ))}
       </div>
     </div>
   </section>
-
-  <section class="section">
-    <div class="wrap">
-      <span class="eyebrow">{teasersEyebrow}</span>
-      <h2>{teasersTitle}</h2>
-      <div class="teaser-grid">
-        {sessionPhotos.length > 0
-          ? sessionPhotos.slice(0, 6).map((p, i) => (
-              <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);" />
-            ))
-          : teasers.slice(0, 6).map((t, i) => (
-              t.photoUrl ? (
-                <img key={i} src={t.photoUrl} alt={t.tag} style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);" />
-              ) : (
-                <PlaceholderPhoto tag={t.tag} ratio="4 / 3" />
-              )
-            ))
-        }
-      </div>
-      <a href="/gallery" class="btn btn-outline" style="margin-top:24px;">View full gallery</a>
-    </div>
-  </section>
 </MainLayout>
-
-<style>
-  .hero {
-    background: linear-gradient(135deg, var(--charcoal-deep) 0%, var(--charcoal) 100%);
-    color: var(--chalk);
-    position: relative;
-  }
-  .hero-inner {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 48px;
-    align-items: center;
-    padding-top: clamp(32px, 6vw, 80px);
-    padding-bottom: 0;
-  }
-  @media (max-width: 860px) {
-    .hero-inner { grid-template-columns: 1fr; gap: 32px; }
-  }
-  .hero h1 { color: var(--chalk); font-size: clamp(2.3rem, 3.8vw, 3.2rem); margin-bottom: 0.3em; white-space: nowrap; }
-  .hero-lede { color: #c9c4b8; font-size: clamp(1rem, 2vw, 1.12rem); max-width: 56ch; line-height: 1.7; margin-bottom: 28px; }
-  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-  .hero-figure { margin: 0; }
-  .hero-caption {
-    margin-top: 12px;
-    text-align: center;
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 0.72rem;
-    color: #c9c4b8;
-  }
-  .paths-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
-  @media (max-width: 700px) { .paths-grid { grid-template-columns: 1fr; } }
-  .path-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; background: var(--chalk); border: 1px solid var(--chalk-dim); }
-  .path-link { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.88rem; font-weight: 600; color: var(--orange); margin-top: auto; padding-top: 8px; transition: color 0.15s; }
-  .path-link:hover { color: var(--orange-dark); }
-  .teaser-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-  @media (max-width: 600px) { .teaser-grid { grid-template-columns: 1fr; } }
-</style>

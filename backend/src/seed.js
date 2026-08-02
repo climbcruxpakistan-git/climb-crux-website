@@ -105,7 +105,7 @@ const seedGallery = [
 ]
 
 const seedAbout = {
-  description: 'Climb Crux started with a simple idea: the limestone of Margalla Hills shouldn\'t be reserved for people who already know how to climb. We run sessions for the person picking up a harness for the first time, and for the one training toward their hardest send yet.',
+  description: 'Climb Crux is a rock climbing club based in Islamabad, dedicated to making rock climbing safe, accessible and enjoyable for people of all ages and experience levels. We offer professionally guided climbing sessions, structured coaching, monthly memberships and a welcoming community where every climber can learn, train and grow.\n\nWhether you\'re trying rock climbing for the first time or looking to improve your skills. Our experienced instructors provide a safe and supportive environment focused on confidence, technique and internationally recognized safety practices. From beginners to experienced climbers, everyone is welcome.\n\nMore than just climbing sessions, Climb Crux is building a passionate climbing community in Pakistan through public sessions, private coaching, memberships, workshops and outdoor adventures. Whether you\'re looking for a new challenge, a unique fitness activity or a rock climbing club in Islamabad. We\'re here to help you reach new heights.',
   safetyItems: [
     { h: 'Pre-climb briefing', p: 'Every session opens with a full gear check and safety walkthrough before anyone touches rock.' },
     { h: 'Certified belay technique', p: 'All instructors are trained and certified in belay systems, knots, and anchor building.' },

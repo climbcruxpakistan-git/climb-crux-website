@@ -6,6 +6,28 @@ import GradeBadge from '../components/GradeBadge.jsx'
 import PlaceholderPhoto from '../components/PlaceholderPhoto.jsx'
 import { getHomeContent, getUploads } from '../api.js'
 
+// Split the hero title into two balanced lines so the break always looks intentional,
+// no matter what title text comes back from the CMS.
+function splitTitleForLines(title) {
+  const words = String(title || '').trim().split(/\s+/).filter(Boolean)
+  const total = words.join(' ').length
+  // Keep short titles on one line so small headings aren't force-broken awkwardly
+  if (words.length < 3 || total < 22) return [words.join(' ') || title]
+  const half = total / 2
+  let best = 1
+  let bestDiff = Infinity
+  for (let i = 1; i < words.length; i++) {
+    const line1Length = words.slice(0, i).join(' ').length
+    const diff = Math.abs(line1Length - half)
+    // Prefer the later split on ties so the closing phrase (e.g. "in Islamabad") stays short
+    if (diff <= bestDiff) {
+      bestDiff = diff
+      best = i
+    }
+  }
+  return [words.slice(0, best).join(' '), words.slice(best).join(' ')]
+}
+
 export default function Home() {
   const [content, setContent] = useState(null)
   const [uploadPhotos, setUploadPhotos] = useState([])
@@ -26,7 +48,7 @@ export default function Home() {
 
   // Use content from API, fallback to hardcoded defaults
   const heroTitle = content?.heroTitle || 'Discover the Thrill of Rock Climbing'
-  const heroLede = content?.heroLede || "Guided rock climbing and adventure sessions on the cliffs of Margalla Hills. For the first foothold you ever take, or the hardest grade you've chased yet."
+  const heroLede = content?.heroLede || "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers."
   const heroPhotoUrl = content?.heroPhotoUrl || ''
   const paths = content?.paths || [
     { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
@@ -64,8 +86,8 @@ export default function Home() {
             ) : (
               <div className="page-fade-in">
                 <h1>
-                  {heroTitle.split(/(?=Rock Climbing)/).map((part, i) => (
-                    <Fragment key={i}>{i > 0 && <br />}{part.trim()}</Fragment>
+                  {splitTitleForLines(heroTitle).map((line, i) => (
+                    <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
                   ))}
                 </h1>
                 <p className="hero-lede">{heroLede}</p>

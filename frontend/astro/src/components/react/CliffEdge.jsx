@@ -1,0 +1,14 @@
+export default function CliffEdge({ fill = 'var(--chalk)', height = 56 }) {
+  return (
+    <svg
+      className="cliff-edge"
+      viewBox="0 0 1440 56"
+      preserveAspectRatio="none"
+      style={{ display: 'block', width: '100%', height }}
+      aria-hidden="true"
+    >
+      <path d="M0 56V33.6C142.9 41.8 299.6 47.5 446 49.2 617.5 51.2 758.3 42.4 899 33.6 1025.6 25.8 1152.3 18 1440 37.6V56z" fill={fill} />
+      <path d="M0 56V44.8c96-8 205-13.6 307-14.8 151-1.8 297 4.6 443 11 130 5.6 260 11.2 400 10 108-.8 200-4.2 290-8.8v25.6z" fill={fill} opacity="0.6" />
+    </svg>
+  )
+}

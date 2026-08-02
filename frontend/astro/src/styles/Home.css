@@ -50,6 +50,20 @@
   justify-self: end;
 }
 
+.hero-figure {
+  margin: 0;
+}
+
+.hero-caption {
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  color: #c9c4b8;
+}
+
 .hero-visual .placeholder-photo {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
@@ -239,6 +253,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================== LOCAL SEO (Islamabad) ============================== */
+
+.local-seo-section { background: var(--chalk-dim); }
+.local-seo-section h2 { max-width: 22ch; margin-bottom: 0.9em; }
+.local-seo-copy { max-width: 72ch; }
+.local-seo-copy p { line-height: 1.7; margin-bottom: 1em; color: var(--stone-dark); }
+.local-seo-section .faq { margin-top: 36px; }
 
 @media (max-width: 500px) {
   .hero-inner {

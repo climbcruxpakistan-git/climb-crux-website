@@ -29,12 +29,12 @@ import '../styles/shared.css';
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_PK" />
     <meta property="og:title" content="Climb Crux Pakistan — Rock Climbing & Adventure in Islamabad" />
-    <meta property="og:description" content="Guided rock climbing club in Islamabad. Public sessions, private coaching and premium ascents on Margalla Hills. Adventure activities for all levels — book your climb today." />
+    <meta property="og:description" content="Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers." />
     <meta property="og:url" content="https://www.climbcruxpakistan.com" />
     <meta property="og:image" content="https://www.climbcruxpakistan.com/logo.png" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Climb Crux Pakistan — Rock Climbing & Adventure in Islamabad" />
-    <meta name="twitter:description" content="Rock climbing club in Islamabad on Margalla Hills. Public sessions, private coaching, hiking & adventure events. Book your climb today." />
+    <meta name="twitter:description" content="Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers." />
     <!-- LocalBusiness structured data for local search (Islamabad) -->
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
@@ -58,17 +58,70 @@ import '../styles/shared.css';
         'latitude': 33.7448,
         'longitude': 73.0660,
       },
+      'hasMap': 'https://www.google.com/maps/search/?api=1&query=Margalla+Hills+National+Park+Islamabad',
       'areaServed': [
         { '@type': 'City', 'name': 'Islamabad' },
         { '@type': 'City', 'name': 'Rawalpindi' },
         { '@type': 'Place', 'name': 'Margalla Hills' },
       ],
       'sport': ['Rock Climbing', 'Hiking', 'Adventure Sports'],
+      'knowsAbout': ['Rock Climbing', 'Climbing Instruction', 'Outdoor Adventure', 'Margalla Hills', 'Adventure Sports'],
+      'keywords': 'rock climbing in Islamabad, rock climbing club Islamabad, Margalla Hills climbing, adventure Islamabad, climbing club Pakistan',
       'sameAs': [
         'https://instagram.com/climbcrux',
         'https://facebook.com/climbcrux',
       ],
       'openingHours': 'Sa 07:00-13:00, Su 07:00-13:00',
+      'openingHoursSpecification': [
+        {
+          '@type': 'OpeningHoursSpecification',
+          'dayOfWeek': ['Saturday', 'Sunday'],
+          'opens': '07:00',
+          'closes': '13:00',
+        },
+      ],
+    })} />
+    <!-- WebSite structured data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      'name': 'Climb Crux Pakistan',
+      'alternateName': 'Rock Climbing Club Islamabad',
+      'url': 'https://www.climbcruxpakistan.com/',
+      'inLanguage': 'en-PK',
+      'publisher': {
+        '@type': 'Organization',
+        'name': 'Climb Crux Pakistan',
+        'url': 'https://www.climbcruxpakistan.com/',
+        'logo': 'https://www.climbcruxpakistan.com/logo.png',
+        'sameAs': [
+          'https://instagram.com/climbcrux',
+          'https://facebook.com/climbcrux',
+        ],
+      },
+    })} />
+    <!-- Organization structured data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      'name': 'Climb Crux Pakistan',
+      'alternateName': 'Climb Crux — Rock Climbing Club Islamabad',
+      'url': 'https://www.climbcruxpakistan.com/',
+      'logo': 'https://www.climbcruxpakistan.com/logo.png',
+      'email': 'climbcruxpakistan@gmail.com',
+      'telephone': '+92 313 2690377',
+      'sameAs': [
+        'https://instagram.com/climbcrux',
+        'https://facebook.com/climbcrux',
+      ],
+      'contactPoint': {
+        '@type': 'ContactPoint',
+        'telephone': '+92 313 2690377',
+        'contactType': 'customer service',
+        'email': 'climbcruxpakistan@gmail.com',
+        'availableLanguage': ['English', 'Urdu'],
+        'areaServed': 'PK',
+      },
     })} />
     <!-- Google tag (gtag.js) - GA4 -->
     {

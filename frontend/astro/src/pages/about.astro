@@ -1,53 +1,32 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import PageHeader from '../components/astro/PageHeader.astro';
-import { getAbout } from '../lib/api';
+import AboutContent from '../components/react/AboutContent.jsx';
+import { getAbout, getUploads } from '../lib/api';
+import '../styles/About.css';
 
-const about = await getAbout().catch(() => null);
-const safety = about?.safetyItems || [];
-const description =
-  about?.description ||
-  `Climb Crux is an outdoor rock climbing community dedicated to making climbing safe, accessible and enjoyable for people of all ages and experience levels in Pakistan. Based in the Islamabad region, we offer professionally guided climbing sessions, beginner-friendly experiences, skill development programs and climbing memberships designed to help every climber progress with confidence.
-
-Whether you're trying outdoor rock climbing for the first time or looking to improve your climbing technique, our experienced instructors provide structured coaching in a safe and supportive environment. Every session emphasizes proper climbing techniques, equipment safety and personal growth while ensuring an enjoyable experience for individuals, families, students and corporate groups.
-
-From public climbing sessions and private coaching to memberships, workshops and special events, Climb Crux is committed to providing high-quality climbing experiences for beginners and experienced climbers alike. Whether you're looking for a fun weekend activity, regular climbing training, or a new fitness challenge, we're here to help you reach new heights.`;
-const descriptionParagraphs = description
-  .replace(/\r\n?/g, '\n')
-  .split(/\n{2,}/)
-  .map((p) => p.trim())
-  .filter(Boolean);
+const [about, uploads] = await Promise.all([
+  getAbout().catch(() => null),
+  getUploads().catch(() => []),
+]);
 ---
 
 <MainLayout>
   <Fragment slot="head">
-    <title>About — Climb Crux Pakistan</title>
-    <meta name="description" content="Learn about Climb Crux Pakistan — our mission to make rock climbing accessible on Margalla Hills. Certified instructors, top safety standards, and a passion for the climb." />
+    <title>About Climb Crux — Rock Climbing Club in Islamabad</title>
+    <meta name="description" content="Learn about Climb Crux Pakistan — the rock climbing club in Islamabad making Margalla Hills accessible to everyone. Certified instructors, top safety standards, and a passion for the climb." />
   </Fragment>
-  <PageHeader eyebrow="About Climb Crux" title="Built by climbers, for climbers.">
-    <Fragment slot="default">
-      {descriptionParagraphs.map((p, i) => (
-        <p key={i}>{p}</p>
-      ))}
-    </Fragment>
-  </PageHeader>
 
-  <section class="section" style="background: var(--chalk-dim);">
-    <div class="wrap">
-      <span class="eyebrow">Safety approach</span>
-      <h2>Safety isn't an add-on, it's the baseline</h2>
-      {safety.length > 0 ? (
-        <div class="info-grid">
-          {safety.map((s) => (
-            <div class="info-card" key={s.h}>
-              <h4>{s.h}</h4>
-              <p>{s.p}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p style="color: var(--stone);">Loading…</p>
-      )}
+  <AboutContent client:load initial={{ about, uploads }} />
+
+  <section class="cta-band">
+    <div class="wrap cta-inner">
+      <span class="eyebrow">Get on the wall</span>
+      <h2>Ready to climb with Islamabad's rock climbing club?</h2>
+      <p>Join a public session, book a private climb with a certified instructor, or come say hi on Instagram.</p>
+      <div class="cta-actions">
+        <a href="/sessions" class="btn btn-primary">Join a public session</a>
+        <a href="/book-now" class="btn btn-outline-light">Book now</a>
+      </div>
     </div>
   </section>
 </MainLayout>
