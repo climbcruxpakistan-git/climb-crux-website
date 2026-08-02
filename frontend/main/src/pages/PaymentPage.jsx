@@ -232,7 +232,7 @@ export default function PaymentPage() {
                     </div>
                     <span className="payment-method-label">
                       Credit / Debit Card
-                      <span style={{ display: 'block', fontSize: '0.6rem', opacity: 0.6, marginTop: 2 }}>Coming soon</span>
+                      <span style={{ display: 'block', fontSize: '0.7rem', opacity: 0.6, marginTop: 2 }}>Coming soon</span>
                     </span>
                   </div>
                 </div>

@@ -117,7 +117,7 @@ export default function PaymentPage({ bookingNumber }) {
                 </div>
                 <div className="payment-method-card" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
                   <div className="payment-method-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg></div>
-                  <span className="payment-method-label">Credit / Debit Card<span style={{ display: 'block', fontSize: '0.6rem', opacity: 0.6, marginTop: 2 }}>Coming soon</span></span>
+                  <span className="payment-method-label">Credit / Debit Card<span style={{ display: 'block', fontSize: '0.7rem', opacity: 0.6, marginTop: 2 }}>Coming soon</span></span>
                 </div>
               </div>
               <div className="form-actions">

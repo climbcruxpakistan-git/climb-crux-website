@@ -54,12 +54,12 @@
 }
 
 .shop-cat-btn {
-  padding: 8px 20px;
+  padding: 10px 22px;
   border-radius: 100px;
   border: 2px solid var(--chalk-dim);
   background: transparent;
   font-family: inherit;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: var(--stone);
   cursor: pointer;

@@ -97,7 +97,7 @@ export default function BankTransferConfirmation({ bookingNumber }) {
             </div>
           </div>
           <div className="bank-whatsapp-number" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--chalk)', border: '1px solid var(--chalk-dim)', padding: '14px 20px', borderRadius: 6, marginBottom: 16 }}>
-            <span className="bank-whatsapp-label" style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.06em', color: 'var(--stone)' }}>WhatsApp</span>
+            <span className="bank-whatsapp-label" style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.06em', color: 'var(--stone)' }}>WhatsApp</span>
             <span className="bank-whatsapp-value" style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--charcoal)' }}>{WHATSAPP_NUMBER}</span>
           </div>
           <a href={`https://wa.me/${WHATSAPP_NUMBER_CLEAN}?text=${encodeURIComponent(`I completed the bank transfer for booking ${booking.booking_number || bookingNumber}. Please verify.`)}`} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
