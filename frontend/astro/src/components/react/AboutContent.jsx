@@ -63,7 +63,6 @@ export default function AboutContent({ initial }) {
               {storyParagraphs.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
-              <blockquote className="story-quote">"From beginners to experienced climbers, everyone is welcome."</blockquote>
             </div>
           </div>
         </section>
