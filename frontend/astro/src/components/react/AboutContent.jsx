@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getAbout, getUploads } from '../../lib/api'
+import { getAbout } from '../../lib/api'
 import CliffEdge from './CliffEdge.jsx'
 
 const DEFAULT_DESCRIPTION = `Climb Crux is a rock climbing club based in Islamabad, dedicated to making rock climbing safe, accessible and enjoyable for people of all ages and experience levels. We offer professionally guided climbing sessions, structured coaching, monthly memberships and a welcoming community where every climber can learn, train and grow.
@@ -16,20 +16,19 @@ const STATS = [
 ]
 
 export default function AboutContent({ initial }) {
-  const [data, setData] = useState(initial || { about: null, uploads: [] })
+  const [data, setData] = useState(initial || { about: null })
 
   useEffect(() => {
     let active = true
-    Promise.all([getAbout().catch(() => null), getUploads().catch(() => [])])
-      .then(([about, uploads]) => {
-        if (active) setData({ about, uploads })
+    getAbout()
+      .catch(() => null)
+      .then((about) => {
+        if (active) setData({ about })
       })
-      .catch(() => {})
     return () => { active = false }
   }, [])
 
   const about = data.about || {}
-  const uploads = data.uploads || []
   const safety = about.safetyItems || []
   const description = about.description || DEFAULT_DESCRIPTION
   const paragraphs = description
@@ -39,7 +38,8 @@ export default function AboutContent({ initial }) {
     .filter(Boolean)
   const headerLead = paragraphs[0] || ''
   const storyParagraphs = paragraphs.slice(1)
-  const storyPhotoUrl = uploads.find((u) => u.url)?.url || ''
+  // Story photo deliberately removed — always show the built-in placeholder.
+  const storyPhotoUrl = ''
 
   return (
     <>
@@ -64,13 +64,9 @@ export default function AboutContent({ initial }) {
               <div className="story-badge">
                 <span className="grade-badge"><span className="grade">4 – 7c+</span><span className="label">All levels welcome</span></span>
               </div>
-              {storyPhotoUrl ? (
-                <img src={storyPhotoUrl} alt="Rock climbing session on Margalla Hills, Islamabad" />
-              ) : (
-                <div className="placeholder-photo" style={{ '--ar': '4 / 3' }}>
-                  <span className="tag">Margalla Hills · Climbing Session</span>
-                </div>
-              )}
+              <div className="placeholder-photo" style={{ '--ar': '4 / 3' }}>
+                <span className="tag">Margalla Hills · Climbing Session</span>
+              </div>
               <figcaption>On the limestone crags of Margalla Hills — our home wall.</figcaption>
             </figure>
             <div className="story-copy">

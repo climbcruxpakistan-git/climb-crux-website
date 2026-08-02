@@ -1,13 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import AboutContent from '../components/react/AboutContent.jsx';
-import { getAbout, getUploads } from '../lib/api';
+import { getAbout } from '../lib/api';
 import '../styles/About.css';
 
-const [about, uploads] = await Promise.all([
-  getAbout().catch(() => null),
-  getUploads().catch(() => []),
-]);
+const about = await getAbout().catch(() => null);
 ---
 
 <MainLayout>
@@ -16,7 +13,7 @@ const [about, uploads] = await Promise.all([
     <meta name="description" content="Learn about Climb Crux Pakistan — the rock climbing club in Islamabad making Margalla Hills accessible to everyone. Certified instructors, top safety standards, and a passion for the climb." />
   </Fragment>
 
-  <AboutContent client:load initial={{ about, uploads }} />
+  <AboutContent client:load initial={{ about }} />
 
   <section class="cta-band">
     <div class="wrap cta-inner">
