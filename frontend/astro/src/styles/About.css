@@ -2,6 +2,8 @@
 
 /* ── Our story ── */
 .about-story { background: var(--chalk); }
+/* Attach the story section directly to the stats band below (no big gap) */
+.about-story.section { padding-bottom: 0; }
 .story-grid { max-width: none; }
 .story-copy h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); margin-bottom: 0.6em; }
 .story-copy p { line-height: 1.75; max-width: 68ch; }
@@ -24,9 +26,13 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  padding: clamp(44px, 6vw, 72px) var(--edge);
+  padding: clamp(28px, 4vw, 48px) var(--edge);
   text-align: center;
 }
+/* About page: the stats band and footer are both charcoal, so drop the
+   footer's top cliff divider (it renders with an oversized height) to
+   attach the two sections. */
+svg.cliff-edge + .footer { display: none; }
 .stat {
   display: flex;
   flex-direction: column;

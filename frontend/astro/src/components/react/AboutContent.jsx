@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { getAbout } from '../../lib/api'
-import CliffEdge from './CliffEdge.jsx'
 
 const DEFAULT_DESCRIPTION = `Climb Crux is a rock climbing club based in Islamabad, dedicated to making rock climbing safe, accessible and enjoyable for people of all ages and experience levels. We offer professionally guided climbing sessions, structured coaching, monthly memberships and a welcoming community where every climber can learn, train and grow.
 
@@ -67,7 +66,6 @@ export default function AboutContent({ initial }) {
               <blockquote className="story-quote">"From beginners to experienced climbers, everyone is welcome."</blockquote>
             </div>
           </div>
-          <CliffEdge fill="var(--charcoal)" height={40} />
         </section>
       )}
 
@@ -80,7 +78,6 @@ export default function AboutContent({ initial }) {
             </div>
           ))}
         </div>
-        <CliffEdge fill="var(--chalk-dim)" height={40} />
       </section>
     </>
   )
