@@ -184,6 +184,20 @@ p {
   background: var(--stone);
 }
 
+.btn-dark {
+  background: var(--charcoal);
+  color: var(--chalk);
+}
+
+.btn-dark:hover {
+  background: var(--charcoal-deep);
+}
+
+/* Fade-in for page content on load — mirrors the previous site's feel */
+.page-fade-in {
+  animation: fadeSlideIn 0.35s ease both;
+}
+
 /* Grade badge — the site's signature recurring element.
    Mirrors real climbing route grades, used wherever a session/plan
    needs to communicate its difficulty at a glance. */

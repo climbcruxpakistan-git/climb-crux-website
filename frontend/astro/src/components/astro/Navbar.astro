@@ -14,7 +14,7 @@ import NavToggle from '../react/NavToggle.jsx';
       <a href="/our-team" class="navbar-link">Our Team</a>
       <a href="/about" class="navbar-link">About</a>
       <a href="/gallery" class="navbar-link">Gallery</a>
-      <a href="/shop" class="navbar-link">Shop</a>
+      <a href="/shop" class="btn btn-dark navbar-cta">Shop Now</a>
       <a href="/book-now" class="btn btn-primary navbar-cta">Book Now</a>
     </div>
     <NavToggle client:load />
@@ -73,6 +73,9 @@ import NavToggle from '../react/NavToggle.jsx';
   .navbar-cta {
     padding: 0.65em 1.4em;
     font-size: 0.82rem;
+  }
+  .navbar-cta + .navbar-cta {
+    margin-left: 8px;
   }
   @media (max-width: 860px) {
     .navbar-links {
