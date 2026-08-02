@@ -2,28 +2,7 @@
 
 /* ── Our story ── */
 .about-story { background: var(--chalk); }
-.story-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: clamp(32px, 6vw, 72px);
-  align-items: center;
-}
-.story-media { position: relative; margin: 0; }
-.story-media img,
-.story-media .placeholder-photo {
-  width: 100%;
-  border-radius: var(--radius);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-}
-.story-badge { position: absolute; top: 16px; left: 16px; z-index: 2; }
-.story-media figcaption {
-  margin-top: 12px;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.72rem;
-  color: var(--stone);
-}
+.story-grid { max-width: 78ch; }
 .story-copy h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); margin-bottom: 0.6em; }
 .story-copy p { line-height: 1.75; }
 .story-quote {
@@ -127,7 +106,6 @@
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
-  .story-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; }
   .safety-grid { grid-template-columns: 1fr; }
 }
