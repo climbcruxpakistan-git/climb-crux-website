@@ -3,20 +3,15 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import InstructorProfile from '../../components/react/InstructorProfile.jsx';
 import { getTeam } from '../../lib/api';
 
-export async function getStaticPaths() {
-  const members = await getTeam().catch(() => []);
-  return members.map((m) => ({
-    params: { id: m.id || m._id },
-    props: { instructorName: m.name, instructorRole: m.role },
-  }))
-}
+// Rendered on-demand so any team member — including ones added in the admin
+// after this deploy — gets a working page without needing a redeploy.
+export const prerender = false;
 
 const { id } = Astro.params;
-const { instructorName, instructorRole } = Astro.props;
-const pageTitle = instructorName ? `${instructorName} — Climb Crux Pakistan` : 'Our Team — Climb Crux Pakistan';
 
 const team = await getTeam().catch(() => []);
 const instructor = team.find((m) => (m.id || m._id) === id) || null;
+const pageTitle = instructor?.name ? `${instructor.name} — Climb Crux Pakistan` : 'Our Team — Climb Crux Pakistan';
 ---
 
 <MainLayout>

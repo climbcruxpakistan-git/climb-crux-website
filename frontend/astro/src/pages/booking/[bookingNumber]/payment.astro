@@ -3,9 +3,8 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import PageHeader from '../../../components/astro/PageHeader.astro';
 import PaymentPage from '../../../components/react/PaymentPage.jsx';
 
-export async function getStaticPaths() {
-  return [{ params: { bookingNumber: '_placeholder' } }]
-}
+// Rendered on-demand so any booking number works after a customer books.
+export const prerender = false;
 
 const { bookingNumber } = Astro.params;
 ---

@@ -1,6 +1,6 @@
 # 🧗 Climb Crux — Public Website (Astro)
 
-Astro + React frontend for the Climb Crux climbing platform. Static site generation (SSG) with React islands, built around the brand's charcoal/orange mark and the limestone of Margalla Hills. Includes the full booking → payment flow and a shop with product ordering and reviews.
+Astro + React frontend for the Climb Crux climbing platform. Hybrid output: statically generated pages (SSG) with React islands for speed and SEO, plus on-demand serverless rendering for the booking flow and shop/team detail pages so any booking number or newly added product works without a redeploy. Built around the brand's charcoal/orange mark and the limestone of Margalla Hills. Includes the full booking → payment flow and a shop with product ordering and reviews.
 
 ---
 

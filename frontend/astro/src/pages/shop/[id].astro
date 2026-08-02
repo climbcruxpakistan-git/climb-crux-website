@@ -1,25 +1,20 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import ProductDetail from '../../components/react/ProductDetail.jsx';
-import { getProducts, getProduct, getProductReviews } from '../../lib/api';
+import { getProduct, getProducts, getProductReviews } from '../../lib/api';
 import '../../styles/ProductDetail.css';
 
-export async function getStaticPaths() {
-  const allProducts = await getProducts().catch(() => []);
-  return allProducts.map((p) => ({
-    params: { id: p.id },
-    props: { productName: p.name, productCategory: p.category },
-  }))
-}
+// Rendered on-demand so any product — including ones added in the admin after
+// this deploy — gets a working page (server-rendered for SEO, no redeploy needed).
+export const prerender = false;
 
 const { id } = Astro.params;
-const { productName, productCategory } = Astro.props;
-const pageTitle = productName ? `${productName} — Climb Crux Pakistan` : 'Product — Climb Crux Pakistan';
 
-// Fetch full product data, all products, and reviews at build time
+// Fetch full product data, all products, and reviews on each request
 const product = await getProduct(id).catch(() => null);
 const allProducts = await getProducts().catch(() => []);
 const reviewData = await getProductReviews(id).catch(() => ({ reviews: [], total: 0, avgRating: 0, distribution: [0,0,0,0,0] }));
+const pageTitle = product?.name ? `${product.name} — Climb Crux Pakistan` : 'Product — Climb Crux Pakistan';
 
 // Build JSON-LD for server-side rendering (visible to search engines)
 let jsonLd = null;
