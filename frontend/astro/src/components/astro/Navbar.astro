@@ -1,5 +1,28 @@
 ---
 import NavToggle from '../react/NavToggle.jsx';
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '' } = Astro.props;
+const path = (currentPath || '/').replace(/\/+$/, '') || '/';
+
+const LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/sessions', label: 'Public Sessions' },
+  { href: '/private-premium', label: 'Private & Premium' },
+  { href: '/our-team', label: 'Our Team' },
+  { href: '/about', label: 'About' },
+  { href: '/gallery', label: 'Gallery' },
+];
+
+function isActive(href: string) {
+  // Home is only active on the exact home page.
+  if (href === '/') return path === '/';
+  // Section links stay highlighted on their sub-pages too (e.g. /our-team/[id]).
+  return path === href || path.startsWith(href + '/');
+}
 ---
 
 <nav class="navbar" role="navigation">
@@ -8,12 +31,11 @@ import NavToggle from '../react/NavToggle.jsx';
       <img src="/logo.png" alt="Climb Crux" width="60" height="60" />
     </a>
     <div id="navbar-links" class="navbar-links">
-      <a href="/" class="navbar-link">Home</a>
-      <a href="/sessions" class="navbar-link">Public Sessions</a>
-      <a href="/private-premium" class="navbar-link">Private &amp; Premium</a>
-      <a href="/our-team" class="navbar-link">Our Team</a>
-      <a href="/about" class="navbar-link">About</a>
-      <a href="/gallery" class="navbar-link">Gallery</a>
+      {LINKS.map((link) => (
+        <a href={link.href} class:list={['navbar-link', { 'is-active': isActive(link.href) }]}>
+          {link.label}
+        </a>
+      ))}
       <a href="/shop" class="btn btn-dark navbar-cta">Shop Now</a>
       <a href="/book-now" class="btn btn-primary navbar-cta">Book Now</a>
     </div>
@@ -67,7 +89,8 @@ import NavToggle from '../react/NavToggle.jsx';
     border-radius: 6px;
     transition: background 0.2s ease, color 0.2s ease;
   }
-  .navbar-link:hover {
+  .navbar-link:hover,
+  .navbar-link.is-active {
     background: var(--orange);
   }
   .navbar-cta {

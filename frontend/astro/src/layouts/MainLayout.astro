@@ -149,7 +149,7 @@ import '../styles/shared.css';
     <slot name="head" />
   </head>
   <body>
-    <Navbar />
+    <Navbar currentPath={Astro.url.pathname} />
     <main class="page-fade-in">
       <slot />
     </main>
