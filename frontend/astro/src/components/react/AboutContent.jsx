@@ -60,8 +60,7 @@ export default function AboutContent({ initial }) {
         <section className="section about-story">
           <div className="wrap story-grid">
             <div className="story-copy">
-              <span className="eyebrow">Our story</span>
-              <h2>From first foothold to 7c+ sends</h2>
+              <h2>Our Story</h2>
               {storyParagraphs.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
