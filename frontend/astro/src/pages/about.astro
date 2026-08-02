@@ -14,15 +14,4 @@ const about = await getAbout().catch(() => null);
   </Fragment>
 
   <AboutContent client:load initial={{ about }} />
-
-  <section class="cta-band">
-    <div class="wrap cta-inner">
-      <h2>Ready to climb with Islamabad's rock climbing club?</h2>
-      <p>Join a public session, book a private climb with a certified instructor, or come say hi on Instagram.</p>
-      <div class="cta-actions">
-        <a href="/sessions" class="btn btn-primary">Join a public session</a>
-        <a href="/book-now" class="btn btn-outline-light">Book now</a>
-      </div>
-    </div>
-  </section>
 </MainLayout>

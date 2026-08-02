@@ -49,18 +49,6 @@
   letter-spacing: 0.05em;
 }
 
-/* ── CTA band ── */
-.cta-band { background: var(--charcoal); color: var(--chalk); text-align: center; }
-.cta-inner { padding: clamp(56px, 8vw, 88px) 0 clamp(64px, 9vw, 104px); }
-.cta-band h2 {
-  color: var(--chalk);
-  font-size: clamp(1.9rem, 3.6vw, 2.7rem);
-  max-width: 22ch;
-  margin: 0 auto 0.5em;
-}
-.cta-band p { color: #c9c4b8; margin: 0 auto 1.8em; max-width: 46ch; }
-.cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-
 /* ── Responsive ── */
 @media (max-width: 860px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; }
