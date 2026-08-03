@@ -10,10 +10,12 @@ function getTransporter() {
     if (!GMAIL_EMAIL || !GMAIL_APP_PASSWORD) return null
     _transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      family: 4,
+      port: 465,
+      secure: true,
+      // Explicit timeouts so failures surface clearly in logs instead of hanging
+      connectionTimeout: 20000,
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
       auth: {
         user: GMAIL_EMAIL,
         pass: GMAIL_APP_PASSWORD,
@@ -133,7 +135,7 @@ export async function sendAdminNotification({ subject, title, description, booki
     console.log(`Admin notification sent: ${subject}`)
     return true
   } catch (err) {
-    console.error('Failed to send admin notification:', err.message)
+    console.error('Failed to send admin notification:', err.code || '', err.message)
     return false
   }
 }
@@ -178,7 +180,7 @@ export async function sendMembershipConfirmation({ to, application }) {
     console.log(`Membership confirmation sent to ${to}`)
     return true
   } catch (err) {
-    console.error('Failed to send membership confirmation:', err.message)
+    console.error('Failed to send membership confirmation:', err.code || '', err.message)
     return false
   }
 }
@@ -220,7 +222,7 @@ export async function sendAdminMembershipNotification({ application }) {
     console.log('Membership admin notification sent')
     return true
   } catch (err) {
-    console.error('Failed to send membership admin notification:', err.message)
+    console.error('Failed to send membership admin notification:', err.code || '', err.message)
     return false
   }
 }
