@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, getSessionContent, getPlans } from '../api.js'
+import { createBooking, getSessionContent, getPlans, getMembershipFormUrl } from '../api.js'
 
 /** Get today's date as YYYY-MM-DD for the min attribute on date input */
 function getTodayString() {
@@ -95,6 +95,7 @@ export default function BookNow() {
   })()
 
   const isCustom = sessionType === 'custom-group'
+  const isMembership = sessionType === 'membership'
 
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
@@ -109,6 +110,7 @@ export default function BookNow() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (isCustom) return  // custom sessions are booked via email
+    if (isMembership) return  // membership is applied for via the membership section
     setError('')
     setSending(true)
 
@@ -171,7 +173,7 @@ export default function BookNow() {
                 </select>
               </div>
 
-              {!isCustom && (
+              {!isCustom && !isMembership && (
                 <>
                   <div className="form-row">
                     <div className="field">
@@ -206,6 +208,40 @@ export default function BookNow() {
                     <input id="preferred-date" type="date" min={getTodayString()} />
                   </div>
                 </>
+              )}
+
+              {/* ── Monthly Membership: two actions ── */}
+              {isMembership && (
+                <div className="membership-card">
+                  <h3 className="membership-card-title">Monthly Membership (4 Sessions)</h3>
+                  <p className="membership-card-desc">
+                    Become a Climb Crux member and enjoy four guided climbing sessions each month.
+                  </p>
+
+                  <a href="/membership/apply" className="btn btn-primary membership-cta" style={{ width: '100%', justifyContent: 'center' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Apply Membership Online
+                  </a>
+                  <p className="membership-cta-desc">
+                    Complete your membership application online, upload the required documents, and submit everything digitally.
+                  </p>
+
+                  <div className="membership-or">or</div>
+
+                  <a
+                    href={getMembershipFormUrl()}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-outline membership-cta"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                    Download Membership Form (PDF)
+                  </a>
+                  <p className="membership-cta-desc">
+                    Prefer to register in person? Download, print, complete, and submit the membership form at the Climb Crux office.
+                  </p>
+                </div>
               )}
 
               {/* ── Custom Session: Contact card ── */}
@@ -243,8 +279,8 @@ export default function BookNow() {
                 </div>
               )}
 
-              {/* ── Live price summary (not for custom) ── */}
-              {sessionType && !isCustom && (
+              {/* ── Live price summary (not for custom / membership) ── */}
+              {sessionType && !isCustom && !isMembership && (
                 <div className="price-summary-card">
                   <div className="price-summary-row">
                     <div>
@@ -274,7 +310,7 @@ export default function BookNow() {
                 </div>
               )}
 
-              {!isCustom && (
+              {!isCustom && !isMembership && (
                 <div className="form-actions" style={{ flexDirection: 'column' }}>
                   <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded} style={{ width: '100%', justifyContent: 'center' }}>
                     {sending ? (

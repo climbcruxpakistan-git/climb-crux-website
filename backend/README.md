@@ -123,6 +123,22 @@ The backend uses **JWT-based authentication** with a single admin account.
 
 ---
 
+## 🧗 Membership API
+
+| Method | Route | Auth Required | Description |
+|--------|-------|---------------|-------------|
+| `POST` | `/api/membership/apply` | No | Submit an online membership application (multipart: fields + documents) |
+| `GET` | `/api/membership/form` | No | Download the printable Membership Form PDF |
+| `GET` | `/api/membership/applications` | Yes | List all membership applications |
+| `PATCH` | `/api/membership/applications/:id` | Yes | Update review / office-use fields (status, payment, membership ID, remarks…) |
+| `DELETE` | `/api/membership/applications/:id` | Yes | Delete an application |
+
+> **PDF lifecycle:** `public/membership-form.pdf` is the printable membership form served by `GET /api/membership/form`. It is derived from the Microsoft Word membership form (the single source of truth). Whenever the Word form changes, **replace `public/membership-form.pdf`** (and update the wording in `src/membershipForm.js` + the frontend `membershipFormData.js` files) so the online and printable versions stay synchronized.
+
+Application documents are uploaded to Cloudinary under `climb-crux/membership/…` and linked to the application record. Each new application generates an ID like `CCM-2026-00001` and sends a confirmation email to the member plus a notification to `NOTIFICATION_EMAIL`.
+
+---
+
 ## 📨 Email Notifications
 
 When `GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`, and `NOTIFICATION_EMAIL` are configured, the server sends email notifications for new bookings (with customer details and booking number) and payment confirmations. Emails include a styled HTML template with branding and a link to the admin dashboard.

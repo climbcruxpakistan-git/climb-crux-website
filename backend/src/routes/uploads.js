@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { v2 as cloudinary } from 'cloudinary'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import cloudinary from '../cloudinary.js'
 import Photo from '../models/Photo.js'
 
 const router = Router()
@@ -13,13 +13,6 @@ const tmpDir = path.join(__dirname, '..', 'tmp')
 
 // Ensure tmp directory exists
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
 
 // Multer disk storage to temp folder
 const storage = multer.diskStorage({

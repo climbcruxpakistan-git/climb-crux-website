@@ -1462,6 +1462,65 @@
   }
 }
 
+/* Membership action card (Book Now page — Monthly Membership selected) */
+.membership-card {
+  background: linear-gradient(135deg, #f8f4ef, #f0ebe3);
+  border-radius: 12px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--chalk-dim);
+  text-align: center;
+}
+
+.membership-card-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--charcoal);
+  margin: 0 0 8px;
+}
+
+.membership-card-desc {
+  font-size: 0.94rem;
+  color: var(--stone-dark);
+  line-height: 1.6;
+  margin: 0 0 20px;
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.membership-cta {
+  display: inline-flex;
+  align-items: center;
+}
+
+.membership-cta-desc {
+  font-size: 0.82rem;
+  color: var(--stone);
+  line-height: 1.55;
+  margin: 8px auto 0;
+  max-width: 44ch;
+}
+
+.membership-or {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--stone);
+  margin: 18px 0 16px;
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  .membership-card {
+    padding: 20px 16px;
+  }
+  .membership-card-title {
+    font-size: 1.05rem;
+  }
+}
+
 /* Price summary card (Book Now page) */
 .price-summary-card {
   background: var(--chalk-dim);

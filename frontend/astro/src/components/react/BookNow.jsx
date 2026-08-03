@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createBooking, getSessionContent, getPlans } from '../../lib/api'
+import { createBooking, getSessionContent, getPlans, getMembershipFormUrl } from '../../lib/api'
 
 function getTodayString() {
   const d = new Date()
@@ -63,6 +63,7 @@ export default function BookNow({ preselected = '' }) {
   })()
 
   const isCustom = sessionType === 'custom-group'
+  const isMembership = sessionType === 'membership'
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
     if (type === 'membership') return membershipPrice
@@ -74,6 +75,7 @@ export default function BookNow({ preselected = '' }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (isCustom) return
+    if (isMembership) return
     setError('')
     setSending(true)
     const form = e.target
@@ -119,7 +121,7 @@ export default function BookNow({ preselected = '' }) {
                 ))}
               </select>
             </div>
-            {!isCustom && (
+            {!isCustom && !isMembership && (
               <>
                 <div className="form-row">
                   <div className="field"><label htmlFor="customer-name">Full name</label><input id="customer-name" type="text" required /></div>
@@ -131,6 +133,29 @@ export default function BookNow({ preselected = '' }) {
                 </div>
                 <div className="field"><label htmlFor="preferred-date">Preferred date</label><input id="preferred-date" type="date" min={getTodayString()} /></div>
               </>
+            )}
+            {isMembership && (
+              <div className="membership-card" style={{ background: 'linear-gradient(135deg, #f8f4ef, #f0ebe3)', borderRadius: 12, padding: '28px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)', textAlign: 'center' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--charcoal)', margin: '0 0 8px' }}>Monthly Membership (4 Sessions)</h3>
+                <p style={{ fontSize: '0.94rem', color: 'var(--stone-dark)', lineHeight: 1.6, margin: '0 auto 20px', maxWidth: '46ch' }}>
+                  Become a Climb Crux member and enjoy four guided climbing sessions each month.
+                </p>
+                <a href="/membership/apply" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Apply Membership Online
+                </a>
+                <p style={{ fontSize: '0.82rem', color: 'var(--stone)', lineHeight: 1.55, margin: '8px auto 0', maxWidth: '44ch' }}>
+                  Complete your membership application online, upload the required documents, and submit everything digitally.
+                </p>
+                <div style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.12em', color: 'var(--stone)', margin: '18px 0 16px' }}>or</div>
+                <a href={getMembershipFormUrl()} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 12"/></svg>
+                  Download Membership Form (PDF)
+                </a>
+                <p style={{ fontSize: '0.82rem', color: 'var(--stone)', lineHeight: 1.55, margin: '8px auto 0', maxWidth: '44ch' }}>
+                  Prefer to register in person? Download, print, complete, and submit the membership form at the Climb Crux office.
+                </p>
+              </div>
             )}
             {isCustom && (
               <div className="custom-session-card" style={{ background: 'linear-gradient(135deg, #f8f4ef, #f0ebe3)', borderRadius: 12, padding: '28px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)', textAlign: 'center' }}>
@@ -144,7 +169,7 @@ export default function BookNow({ preselected = '' }) {
                 <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>Or call / WhatsApp: <strong>+92 313 2690377</strong></p>
               </div>
             )}
-            {sessionType && !isCustom && (
+            {sessionType && !isCustom && !isMembership && (
               <div className="price-summary-card" style={{ background: 'var(--chalk-dim)', borderRadius: 12, padding: '20px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8 }}>
                   <div>
@@ -166,7 +191,7 @@ export default function BookNow({ preselected = '' }) {
                 </div>
               </div>
             )}
-            {!isCustom && (
+            {!isCustom && !isMembership && (
               <div className="form-actions" style={{ flexDirection: 'column' }}>
                 <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded} style={{ width: '100%', justifyContent: 'center' }}>
                   {sending ? <><span className="btn-spinner" /> Creating booking…</> : 'Continue to payment →'}

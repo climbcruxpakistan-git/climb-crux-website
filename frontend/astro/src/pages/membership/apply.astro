@@ -1,0 +1,16 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PageHeader from '../../components/astro/PageHeader.astro';
+import MembershipApply from '../../components/react/MembershipApply.jsx';
+---
+
+<MainLayout>
+  <Fragment slot="head">
+    <title>Apply for Membership — Climb Crux Pakistan</title>
+    <meta name="description" content="Apply for the Climb Crux Monthly Membership (4 Sessions) online — upload your documents, accept the terms and liability waiver, and submit your digital application." />
+  </Fragment>
+  <PageHeader title="Apply for Membership.">
+    <p slot="default">Complete your membership application online — every field matches the printed Climb Crux membership form.</p>
+  </PageHeader>
+  <MembershipApply client:load />
+</MainLayout>

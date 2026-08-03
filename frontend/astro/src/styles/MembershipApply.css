@@ -1,0 +1,435 @@
+/* ============================== MEMBERSHIP APPLICATION ============================== */
+
+.mf-form-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 32px;
+}
+
+@media (max-width: 480px) {
+  .mf-form-card {
+    padding: 20px 16px;
+  }
+}
+
+/* Plan summary bar */
+.mf-plan-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--charcoal);
+  color: var(--chalk);
+  padding: 18px 22px;
+  border-radius: 10px;
+  margin-bottom: 28px;
+}
+
+.mf-plan-name {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.mf-plan-fee {
+  display: block;
+  color: var(--orange-light);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* Sections */
+.mf-section {
+  padding: 26px 0;
+  border-top: 1px solid var(--chalk-dim);
+}
+
+.mf-section:first-of-type {
+  border-top: none;
+}
+
+.mf-section-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  color: var(--orange-dark);
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--orange);
+  display: inline-block;
+}
+
+/* Fields */
+.mf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.mf-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--stone-dark);
+}
+
+.mf-field input[type='text'],
+.mf-field input[type='tel'],
+.mf-field input[type='email'],
+.mf-field input[type='date'],
+.mf-field textarea {
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  padding: 0.72em 0.9em;
+  border: 1px solid #d8d0bc;
+  background: #fff;
+  color: var(--ink);
+  border-radius: var(--radius);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mf-field input:focus,
+.mf-field textarea:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+
+.mf-field input:disabled {
+  background: var(--chalk-dim);
+  color: var(--stone-dark);
+  cursor: not-allowed;
+}
+
+.mf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 560px) {
+  .mf-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* Radio / checkbox cards */
+.mf-radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.mf-radio-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 2px solid var(--chalk-dim);
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--ink);
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.mf-radio-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mf-radio-card:hover {
+  border-color: var(--orange);
+}
+
+.mf-radio-card.is-checked {
+  border-color: var(--orange);
+  background: rgba(243, 111, 33, 0.06);
+  font-weight: 600;
+}
+
+/* Checkbox rows */
+.mf-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--chalk-dim);
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+  margin-bottom: 10px;
+}
+
+.mf-checkbox:hover {
+  border-color: var(--orange);
+}
+
+.mf-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mf-checkbox-mark {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 2px solid var(--stone);
+  border-radius: 5px;
+  position: relative;
+  transition: all 0.18s ease;
+  background: #fff;
+}
+
+.mf-checkbox input:checked + .mf-checkbox-mark {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+.mf-checkbox input:checked + .mf-checkbox-mark::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.mf-checkbox.has-error {
+  border-color: #fca5a5;
+}
+
+.mf-checkbox-label {
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.mf-terms-list .mf-checkbox-label {
+  font-size: 0.88rem;
+}
+
+/* File upload */
+.mf-file-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 18px;
+  border: 2px dashed #c9bfa6;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.mf-file-drop:hover {
+  border-color: var(--orange);
+  background: rgba(243, 111, 33, 0.04);
+}
+
+.mf-file-drop.has-error {
+  border-color: #fca5a5;
+}
+
+.mf-file-drop input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mf-file-prompt,
+.mf-file-picked {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--stone-dark);
+}
+
+.mf-file-picked {
+  color: var(--orange-dark);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.mf-file-picked em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--stone);
+}
+
+/* Helpers / errors */
+.mf-hint {
+  font-size: 0.82rem;
+  color: var(--stone);
+  margin: 2px 0 0;
+  line-height: 1.5;
+}
+
+.mf-age-note {
+  padding: 10px 14px;
+  background: rgba(243, 111, 33, 0.06);
+  border-left: 3px solid var(--orange);
+  border-radius: 4px;
+}
+
+.mf-error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  margin: 2px 0 0;
+}
+
+/* Payment account info box */
+.mf-account-box {
+  background: var(--chalk-dim);
+  border: 1px solid var(--chalk-dim);
+  border-left: 3px solid var(--orange);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+}
+
+.mf-account-box p {
+  margin: 4px 0;
+  font-size: 0.92rem;
+  color: var(--stone-dark);
+}
+
+.mf-account-box-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+}
+
+/* Declaration */
+.mf-declaration {
+  background: #fff;
+  border: 1px solid var(--chalk-dim);
+  border-radius: 8px;
+  padding: 18px 20px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+/* Signature line */
+.mf-signature-line {
+  border-bottom: 2px solid var(--stone);
+  width: 100%;
+  max-width: 320px;
+  margin: 6px 0 18px;
+}
+
+/* Success screen */
+.mf-success-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 48px 36px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+@media (max-width: 480px) {
+  .mf-success-card {
+    padding: 32px 18px;
+  }
+}
+
+.mf-success-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(243, 111, 33, 0.35);
+}
+
+.mf-success-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+
+.mf-success-sub {
+  color: var(--stone-dark);
+  font-size: 1rem;
+  margin: 0 0 24px;
+}
+
+.mf-success-id {
+  background: var(--charcoal);
+  color: var(--chalk);
+  border-radius: 10px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+}
+
+.mf-success-id span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--stone);
+  margin-bottom: 6px;
+}
+
+.mf-success-id strong {
+  font-family: 'Courier New', monospace;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+  color: var(--orange-light);
+}
+
+.mf-success-steps {
+  text-align: left;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mf-success-steps li {
+  position: relative;
+  padding: 8px 0 8px 28px;
+  font-size: 0.92rem;
+  color: var(--stone-dark);
+  line-height: 1.55;
+}
+
+.mf-success-steps li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--orange);
+  font-weight: 700;
+}

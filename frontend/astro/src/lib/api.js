@@ -101,6 +101,30 @@ export function optimizeImage(url, width) {
   return url.replace('/upload/', `/upload/${parts.join(',')}/`)
 }
 
+/* ---------- Membership ---------- */
+
+export async function submitMembershipApplication(formData) {
+  const res = await fetch(`${API_BASE}/membership/apply`, {
+    method: 'POST',
+    body: formData,
+  })
+  if (!res.ok) {
+    let message = 'Application could not be submitted'
+    try {
+      const data = await res.json()
+      message = data.error || message
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message)
+  }
+  return mapId(await res.json())
+}
+
+export function getMembershipFormUrl() {
+  return `${API_BASE}/membership/form`
+}
+
 /* ---------- Shop / Products ---------- */
 
 export async function getProducts() {

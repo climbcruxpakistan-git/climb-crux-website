@@ -106,6 +106,35 @@ export function optimizeImage(url, width) {
   return url.replace('/upload/', `/upload/${parts.join(',')}/`)
 }
 
+/* ---------- Membership ---------- */
+
+/**
+ * Submit a membership application (multipart: fields + documents).
+ * Files must be PDF/JPG/JPEG/PNG and ≤ 5 MB each.
+ */
+export async function submitMembershipApplication(formData) {
+  const res = await fetch(`${API}/membership/apply`, {
+    method: 'POST',
+    body: formData,
+  })
+  if (!res.ok) {
+    let message = 'Application could not be submitted'
+    try {
+      const data = await res.json()
+      message = data.error || message
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message)
+  }
+  return mapId(await res.json())
+}
+
+/** URL for the printable Membership Form PDF (downloads in a new tab). */
+export function getMembershipFormUrl() {
+  return `${API}/membership/form`
+}
+
 /* ---------- Shop / Products ---------- */
 
 export async function getProducts() {

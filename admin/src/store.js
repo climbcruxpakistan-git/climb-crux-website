@@ -260,6 +260,20 @@ export async function deleteProductOrder(id) {
   return request('DELETE', `/products/orders/${id}`)
 }
 
+/* ---------- Membership Applications ---------- */
+
+export async function getMembershipApplications() {
+  return mapId(await request('GET', '/membership/applications'))
+}
+
+export async function updateMembershipApplication(id, body) {
+  return mapId(await request('PATCH', `/membership/applications/${id}`, body))
+}
+
+export async function deleteMembershipApplication(id) {
+  return request('DELETE', `/membership/applications/${id}`)
+}
+
 /* ---------- About ---------- */
 
 export async function getAbout() {
