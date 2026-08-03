@@ -110,6 +110,16 @@ router.post('/apply', (req, res, next) => {
   const files = req.files || {}
   const under18 = isUnder18(b.date_of_birth)
 
+  // Multer turns repeated fields into arrays, so a client that accidentally
+  // sends a boolean field twice arrives as ['true','true']. Take the last
+  // value so the checks below behave the same either way.
+  const signatureConfirmed = Array.isArray(b.signature_confirmed)
+    ? b.signature_confirmed[b.signature_confirmed.length - 1]
+    : b.signature_confirmed
+  const declarationAccepted = Array.isArray(b.declaration_accepted)
+    ? b.declaration_accepted[b.declaration_accepted.length - 1]
+    : b.declaration_accepted
+
   try {
     // ── Validation (fail() cleans up temp files on rejection) ──
     if (!b.full_name || !String(b.full_name).trim()) {
@@ -146,10 +156,10 @@ router.post('/apply', (req, res, next) => {
     if (!b.signature_name || !String(b.signature_name).trim()) {
       return fail(res, files, 'A digital signature (typed full name) is required')
     }
-    if (b.signature_confirmed !== 'true' && b.signature_confirmed !== true) {
-      return fail(res, files, 'You must confirm that your typed name constitutes your electronic signature')
+    if (signatureConfirmed !== 'true' && signatureConfirmed !== true) {
+      return fail(res, files, 'Tick the box to confirm your typed name is your electronic signature')
     }
-    if (b.declaration_accepted !== 'true' && b.declaration_accepted !== true) {
+    if (declarationAccepted !== 'true' && declarationAccepted !== true) {
       return fail(res, files, 'You must accept the member declaration')
     }
 
@@ -206,9 +216,9 @@ router.post('/apply', (req, res, next) => {
       payment_screenshot_url: uploaded.payment_screenshot?.url || '',
       payment_screenshot_name: uploaded.payment_screenshot?.name || '',
       agreed_terms: agreedTerms,
-      declaration_accepted: b.declaration_accepted === 'true' || b.declaration_accepted === true,
+      declaration_accepted: declarationAccepted === 'true' || declarationAccepted === true,
       signature_name: String(b.signature_name).trim(),
-      signature_confirmed: b.signature_confirmed === 'true' || b.signature_confirmed === true,
+      signature_confirmed: signatureConfirmed === 'true' || signatureConfirmed === true,
       signature_date: b.signature_date || new Date().toISOString().slice(0, 10),
       status: 'pending_review',
       payment_status: 'pending',
@@ -229,7 +239,7 @@ router.post('/apply', (req, res, next) => {
 
 /* ── GET /api/membership/form — public · downloads the printable form PDF ── */
 router.get('/form', (_req, res) => {
-  const pdfPath = path.join(__dirname, '..', 'public', 'membership-form.pdf')
+  const pdfPath = path.join(__dirname, '..', '..', 'public', 'membership-form.pdf')
   if (!fs.existsSync(pdfPath)) {
     return res.status(404).json({ error: 'Membership form is not available right now' })
   }

@@ -198,7 +198,7 @@ export default function MembershipApply() {
     if (missingTerms.length > 0) e.terms = 'Please tick every box to continue'
     if (!form.declaration_accepted) e.declaration_accepted = 'You must accept the declaration'
     if (!form.signature_name.trim()) e.signature_name = 'Type your full name as your digital signature'
-    if (!form.signature_confirmed) e.signature_confirmed = 'You must confirm your electronic signature'
+    if (!form.signature_confirmed) e.signature_confirmed = 'Tick the box to confirm your typed name is your electronic signature'
 
     return e
   }
@@ -219,7 +219,10 @@ export default function MembershipApply() {
     Object.entries(form).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         if (value.length) fd.append(key, JSON.stringify(value))
-      } else if (value !== '' && value !== false) {
+      } else if (value !== '' && typeof value !== 'boolean') {
+        // Booleans are appended below as explicit 'true'/'false' strings —
+        // appending them here too would send the field twice, which multer
+        // turns into an array and the backend would reject.
         fd.append(key, value)
       }
     })
