@@ -114,8 +114,8 @@ app.use((err, _req, res, _next) => {
 })
 
 // Startup status
-const gmailConfigured = process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD
-console.log(`Gmail notifications: ${gmailConfigured ? '✓ configured' : '✗ not configured (set GMAIL_EMAIL + GMAIL_APP_PASSWORD)'}`)
+const emailConfigured = process.env.RESEND_API_KEY
+console.log(`Email service (Resend): ${emailConfigured ? '✓ configured' : '✗ not configured (set RESEND_API_KEY)'}`)
 
 mongoose
   .connect(MONGODB_URI)

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 import Payment from '../models/Payment.js'
 import Booking from '../models/Booking.js'
-import { sendAdminNotification } from '../email.js'
+import { sendAdminPaymentNotification } from '../services/emailService.js'
 
 const router = Router()
 
@@ -64,15 +64,10 @@ router.post('/verify', async (req, res, next) => {
       booking.booking_status = 'confirmed'
       await booking.save()
 
-    // Send admin notification (don't block response on failure)
-    sendAdminNotification({
-      subject: `✅ Payment Confirmed — ${booking.customer_name} (${booking.booking_number})`,
-      title: '✅ Payment Confirmed',
-      description: `${booking.customer_name} paid PKR ${(booking.amount || 0).toLocaleString()} via ${booking.payment_method || 'bank transfer'}`,
-      booking,
-    })
+    // Send admin notification after the booking is confirmed (don't block response on failure)
+    sendAdminPaymentNotification({ booking }).catch(() => {})
 
-res.json({
+    res.json({
         success: true,
         message: 'Payment approved and booking confirmed',
         booking,

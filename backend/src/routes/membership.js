@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import cloudinary from '../cloudinary.js'
 import MembershipApplication from '../models/MembershipApplication.js'
 import { requireAdmin } from '../middleware/auth.js'
-import { sendMembershipConfirmation, sendAdminMembershipNotification } from '../email.js'
+import { sendMembershipConfirmation, sendAdminMembershipNotification } from '../services/emailService.js'
 import { MEMBERSHIP_TERMS } from '../membershipForm.js'
 
 const router = Router()
@@ -226,8 +226,8 @@ router.post('/apply', (req, res, next) => {
 
     cleanupFiles(files)
 
-    // ── Emails (never block the response) ──
-    sendMembershipConfirmation({ to: application.email, application }).catch(() => {})
+    // ── Emails fire after the application is saved (never block the response) ──
+    sendMembershipConfirmation({ application }).catch(() => {})
     sendAdminMembershipNotification({ application }).catch(() => {})
 
     res.status(201).json(application)

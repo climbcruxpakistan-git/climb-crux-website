@@ -2,9 +2,14 @@ import { Router } from 'express'
 import Booking from '../models/Booking.js'
 import Payment from '../models/Payment.js'
 import { requireAdmin } from '../middleware/auth.js'
-import { sendAdminNotification } from '../email.js'
+import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/emailService.js'
 
 const router = Router()
+
+/** Classify a booking as Public or Private based on its session_id. */
+function bookingTypeLabel(sessionId) {
+  return String(sessionId || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session'
+}
 
 router.get('/', async (req, res, next) => {
   try {
@@ -40,15 +45,12 @@ router.post('/', async (req, res, next) => {
       payment_status: req.body.payment_status || 'pending',
     })
 
-    // Send admin notification (don't block response on failure)
-    sendAdminNotification({
-      subject: `🧗 New Booking — ${booking.customer_name}`,
-      title: '🧗 New Booking Request',
-      description: `${booking.customer_name} just booked a session`,
-      booking,
-    })
+    // Emails fire after the booking is saved. Never block the response on failure.
+    const sessionType = bookingTypeLabel(booking.session_id)
+    sendBookingConfirmation({ booking, sessionType }).catch(() => {})
+    sendAdminBookingNotification({ booking, sessionType }).catch(() => {})
 
-res.status(201).json(booking)
+    res.status(201).json(booking)
   } catch (err) { next(err) }
 })
 
