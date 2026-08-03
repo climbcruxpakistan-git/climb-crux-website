@@ -280,8 +280,8 @@ export async function approveMembershipApplication(id) {
   return mapId(await request('POST', `/membership/applications/${id}/approve`))
 }
 
-export async function rejectMembershipApplication(id) {
-  return mapId(await request('POST', `/membership/applications/${id}/reject`))
+export async function rejectMembershipApplication(id, reason = 'payment') {
+  return mapId(await request('POST', `/membership/applications/${id}/reject`, { reason }))
 }
 
 /* ---------- About ---------- */

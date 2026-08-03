@@ -19,6 +19,7 @@ import { Resend } from 'resend'
 import { bookingConfirmation } from '../templates/bookingConfirmation.js'
 import { membershipConfirmation } from '../templates/membershipConfirmation.js'
 import { membershipApprovalEmail } from '../templates/membershipApprovalEmail.js'
+import { membershipRejectionEmail } from '../templates/membershipRejectionEmail.js'
 import {
   adminBookingNotification,
   adminMembershipNotification,
@@ -90,6 +91,12 @@ export async function sendMembershipApprovalEmail({ application, pdfBuffer }) {
       ? [{ filename: `Climb-Crux-Approved-Membership-${reference}.pdf`, content: pdfBuffer }]
       : undefined,
   })
+}
+
+/** Membership rejection — reason picks the payment-failed or documentation variant. */
+export async function sendMembershipRejectionEmail({ application, reason = 'payment' }) {
+  const { subject, html } = membershipRejectionEmail({ application, reason, whatsapp: CLIMB_CRUX_WHATSAPP })
+  return send({ to: application.email, subject, html })
 }
 
 /** Admin alert — new booking created. */

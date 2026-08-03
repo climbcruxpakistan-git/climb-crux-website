@@ -11,7 +11,7 @@
  */
 import MembershipApplication from '../models/MembershipApplication.js'
 import { generateMembershipPdf, saveMembershipPdf } from './pdfService.js'
-import { sendMembershipApprovalEmail } from './emailService.js'
+import { sendMembershipApprovalEmail, sendMembershipRejectionEmail } from './emailService.js'
 
 /**
  * @param {import('mongoose').Document} application — a loaded MembershipApplication
@@ -51,6 +51,34 @@ export async function approveMembership(application) {
   }
   if (!emailSent) {
     console.warn(`[membership] Approval email NOT sent for ${application.application_id} (${application.email}) — approval kept`)
+  }
+
+  return { application, emailSent }
+}
+
+/**
+ * Reject a membership application.
+ * @param {import('mongoose').Document} application
+ * @param {'payment'|'documentation'} reason — also drives which email variant is sent
+ * @returns {Promise<{ application: object, emailSent: boolean }>}
+ * The rejection is always persisted; a failed email is logged and reported, never
+ * rolled back.
+ */
+export async function rejectMembership(application, reason = 'payment') {
+  application.status = 'rejected'
+  if (reason === 'payment') {
+    application.payment_status = 'failed'
+  }
+  await application.save()
+
+  let emailSent = false
+  try {
+    emailSent = await sendMembershipRejectionEmail({ application, reason })
+  } catch (err) {
+    console.error(`[membership] Rejection email error for ${application.application_id}:`, err.message)
+  }
+  if (!emailSent) {
+    console.warn(`[membership] Rejection email NOT sent for ${application.application_id} (${application.email}) — rejection kept`)
   }
 
   return { application, emailSent }

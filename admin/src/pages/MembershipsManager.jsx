@@ -130,6 +130,7 @@ export default function MembershipsManager() {
   const [reviewFilter, setReviewFilter] = useState('All')
   const [paymentFilter, setPaymentFilter] = useState('All')
   const [viewing, setViewing] = useState(null)
+  const [rejecting, setRejecting] = useState(null)
   const [acting, setActing] = useState(false)
 
   useEffect(() => {
@@ -162,17 +163,22 @@ export default function MembershipsManager() {
     }
   }
 
-  async function handleReject(a) {
-    if (!confirm(`Reject ${a.full_name}'s membership application?`)) return
+  async function handleReject(a, reason) {
     setActing(true)
     try {
-      await rejectMembershipApplication(a.id)
+      const res = await rejectMembershipApplication(a.id, reason)
       await refresh()
-      addToast('Application rejected', 'success')
+      setViewing((v) => (v && (v.id === a.id) ? { ...v, ...(res.application || {}) } : v))
+      if (res.emailSent === false) {
+        addToast('Application rejected, but the rejection email could not be sent', 'error')
+      } else {
+        addToast('Application rejected — email sent to applicant', 'success')
+      }
     } catch (err) {
       addToast(`Failed: ${err.message}`, 'error')
     } finally {
       setActing(false)
+      setRejecting(null)
     }
   }
 
@@ -362,7 +368,7 @@ export default function MembershipsManager() {
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
-                              onClick={() => handleReject(a)}
+                              onClick={() => setRejecting(a)}
                               disabled={acting}
                               title="Reject application"
                             >
@@ -538,7 +544,7 @@ export default function MembershipsManager() {
             {(viewing.status || 'pending_review') !== 'rejected' && (
               <button
                 className="btn-admin btn-admin-danger"
-                onClick={() => handleReject(viewing)}
+                onClick={() => setRejecting(viewing)}
                 disabled={acting}
               >
                 ✕ Reject application
@@ -550,6 +556,42 @@ export default function MembershipsManager() {
               </button>
             )}
             <button className="btn-admin btn-admin-outline" onClick={() => setViewing(null)}>Close</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Rejection reason picker ── */}
+      {rejecting && (
+        <Modal title={`Reject — ${rejecting.full_name || 'Application'}`} onClose={() => setRejecting(null)}>
+          <p style={{ margin: '0 0 16px', color: '#666', fontSize: '0.85rem', lineHeight: 1.6 }}>
+            Choose a reason — the applicant will receive the matching rejection email.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              className="btn-admin"
+              style={{ justifyContent: 'flex-start', background: '#fff7f0', border: '1px solid #fde3d2', color: '#1c1c1c', textAlign: 'left' }}
+              onClick={() => handleReject(rejecting, 'payment')}
+              disabled={acting}
+            >
+              💳 Payment not verified
+              <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, color: '#8a8a8a', marginTop: 2 }}>
+                Email: "Payment could not be verified"
+              </span>
+            </button>
+            <button
+              className="btn-admin"
+              style={{ justifyContent: 'flex-start', background: '#f6faf6', border: '1px solid #e0efe0', color: '#1c1c1c', textAlign: 'left' }}
+              onClick={() => handleReject(rejecting, 'documentation')}
+              disabled={acting}
+            >
+              📄 Improper / incomplete documentation
+              <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, color: '#8a8a8a', marginTop: 2 }}>
+                Email: "Documents incomplete"
+              </span>
+            </button>
+            <button className="btn-admin btn-admin-outline" onClick={() => setRejecting(null)} disabled={acting}>
+              Cancel
+            </button>
           </div>
         </Modal>
       )}

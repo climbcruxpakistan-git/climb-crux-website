@@ -7,7 +7,7 @@ import cloudinary from '../cloudinary.js'
 import MembershipApplication from '../models/MembershipApplication.js'
 import { requireAdmin } from '../middleware/auth.js'
 import { sendMembershipConfirmation, sendAdminMembershipNotification } from '../services/emailService.js'
-import { approveMembership } from '../services/membershipService.js'
+import { approveMembership, rejectMembership } from '../services/membershipService.js'
 import { generateMembershipPdf, saveMembershipPdf, membershipPdfFullPath } from '../services/pdfService.js'
 import { MEMBERSHIP_TERMS } from '../membershipForm.js'
 
@@ -309,14 +309,26 @@ router.post('/applications/:id/approve', requireAdmin, async (req, res, next) =>
   }
 })
 
-/* ── POST /api/membership/applications/:id/reject — admin ───────────────── */
+/* ── POST /api/membership/applications/:id/reject — admin ─────────────────
+   Rejects the application and emails the applicant. The body may carry a
+   `reason`: 'payment' (payment could not be verified) or 'documentation'
+   (submitted documents were incomplete). The email variant follows the reason. */
 router.post('/applications/:id/reject', requireAdmin, async (req, res, next) => {
   try {
     const app = await MembershipApplication.findById(req.params.id)
     if (!app) return res.status(404).json({ error: 'Application not found' })
-    app.status = 'rejected'
-    await app.save()
-    res.json(app)
+    if (app.status === 'rejected') {
+      return res.status(409).json({ error: 'This application is already rejected' })
+    }
+    const reason = req.body?.reason === 'documentation' ? 'documentation' : 'payment'
+    const { application, emailSent } = await rejectMembership(app, reason)
+    res.json({
+      application,
+      emailSent,
+      note: emailSent
+        ? undefined
+        : 'Application rejected, but the rejection email could not be sent. Check the server logs.',
+    })
   } catch (err) { next(err) }
 })
 
