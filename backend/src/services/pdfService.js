@@ -45,13 +45,34 @@ function ageFromDob(dob) {
 }
 
 /**
+ * Draw a small checkbox square with an orange tick when checked.
+ * (The ☑/☐ unicode glyphs are not in PDFKit's built-in Helvetica, so they
+ * render as garbage — drawing them as vector shapes is reliable everywhere.)
+ */
+function drawCheckBox(doc, x, yPos, checked) {
+  doc.save()
+  doc.rect(x, yPos, 9, 9).lineWidth(0.8).strokeColor('#999999').stroke()
+  if (checked) {
+    doc.moveTo(x + 1.6, yPos + 4.6)
+      .lineTo(x + 3.8, yPos + 6.8)
+      .lineTo(x + 7.4, yPos + 2.8)
+      .lineWidth(1.4)
+      .strokeColor(ORANGE)
+      .stroke()
+  }
+  doc.restore()
+}
+
+/**
  * Build the approved membership application PDF.
  * @param {object} app — MembershipApplication document
+ * @param {{ compress?: boolean }} [opts] — pass compress:false to keep content
+ * streams readable (useful for debugging / smoke tests)
  * @returns {Promise<Buffer>}
  */
-export function generateMembershipPdf(app) {
+export function generateMembershipPdf(app, { compress = true } = {}) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margins: { top: 48, bottom: 48, left: 50, right: 50 }, bufferPages: true })
+    const doc = new PDFDocument({ size: 'A4', compress, margins: { top: 48, bottom: 48, left: 50, right: 50 }, bufferPages: true })
     const chunks = []
     doc.on('data', (c) => chunks.push(c))
     doc.on('end', () => resolve(Buffer.concat(chunks)))
@@ -60,33 +81,59 @@ export function generateMembershipPdf(app) {
     const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
     const twoColX = doc.page.margins.left + pageWidth / 2
 
-    /* ── Header ── */
-    doc.rect(doc.page.margins.left, 40, pageWidth, 96).fill(DARK)
-    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(20)
-      .text('CLIMB CRUX', doc.page.margins.left + 20, 56, { width: pageWidth - 40 })
-    doc.font('Helvetica').fontSize(11)
-      .text('Islamabad\u2019s Premier Rock Climbing Club', doc.page.margins.left + 20, 84, { width: pageWidth - 40 })
+    /* ── Header (hero band) ── */
+    const bandTop = 40
+    const bandHeight = 124
+    doc.rect(doc.page.margins.left, bandTop, pageWidth, bandHeight).fill(DARK)
+
+    // Brand (left side)
+    const leftX = doc.page.margins.left + 22
+    const leftW = pageWidth / 2 - 34
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(21)
+      .text('CLIMB CRUX', leftX, 58, { width: leftW })
+    doc.font('Helvetica').fontSize(10).fillColor('#b8b8b8')
+      .text('Islamabad\u2019s Premier Rock Climbing Club', leftX, 88, { width: leftW })
     doc.font('Helvetica-Bold').fontSize(13).fillColor(ORANGE)
-      .text('Approved Membership Application', doc.page.margins.left + 20, 108, { width: pageWidth - 40 })
+      .text('Approved Membership Application', leftX, 116, { width: leftW })
 
-    doc.fillColor(DARK).fontSize(10)
-      .text(`Application ID: ${clean(app.application_id)}`, twoColX + 10, 56, { width: pageWidth / 2 - 10, align: 'right' })
-      .text(`Membership ID: ${clean(app.membership_id)}`, twoColX + 10, 72, { width: pageWidth / 2 - 10, align: 'right' })
-    doc.fillColor(ORANGE).font('Helvetica-Bold').fontSize(10)
-      .text('Status: APPROVED / ACTIVE', twoColX + 10, 88, { width: pageWidth / 2 - 10, align: 'right' })
-    doc.fillColor(DARK).font('Helvetica').fontSize(10)
-      .text(`Approved: ${clean(app.approval_date)}`, twoColX + 10, 104, { width: pageWidth / 2 - 10, align: 'right' })
+    // Key information (right side, aligned label/value pairs)
+    const rightX = twoColX + 16
+    const rightW = pageWidth / 2 - 16
+    const heroLabel = (small, big, color = '#ffffff') => {
+      doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
+      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 12, { width: rightW, align: 'right' })
+    }
+    let rx = 54
+    heroLabel('APPLICATION ID', clean(app.application_id))
+    rx += 30
+    heroLabel('MEMBERSHIP ID', clean(app.membership_id))
+    rx += 30
+    heroLabel('STATUS', 'APPROVED / ACTIVE', ORANGE)
+    rx += 30
+    heroLabel('APPROVED', clean(app.approval_date))
 
-    let y = 176
+    // Orange accent bar across the bottom of the band
+    doc.rect(doc.page.margins.left, bandTop + bandHeight - 4, pageWidth, 4).fill(ORANGE)
+
+    let y = bandTop + bandHeight + 22
+
+    function ensureSpace(needed) {
+      if (y + needed > doc.page.height - 60) {
+        doc.addPage()
+        y = doc.page.margins.top
+      }
+    }
 
     function sectionTitle(title) {
-      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(title, doc.page.margins.left, y)
-      y += 6
+      ensureSpace(30)
+      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(title, doc.page.margins.left, y, { width: pageWidth })
+      y = doc.y + 8 // use the real text bottom so the divider always sits right below the title
       doc.moveTo(doc.page.margins.left, y).lineTo(doc.page.margins.left + pageWidth, y).lineWidth(1).strokeColor(ORANGE).stroke()
       y += 10
     }
 
     function row(labelText, value) {
+      ensureSpace(18)
       const valueText = clean(value)
       doc.font('Helvetica').fontSize(9.5).fillColor(GRAY).text(labelText, doc.page.margins.left, y, { width: twoColX - doc.page.margins.left - 10 })
       doc.fillColor(DARK).text(valueText, twoColX + 10, y, { width: pageWidth / 2 - 10 })
@@ -152,15 +199,20 @@ export function generateMembershipPdf(app) {
       ['Payment Screenshot', app.payment_screenshot_name || (app.payment_screenshot_url ? 'Attached' : '')],
     ])
 
-    /* ── Terms & conditions (liability waiver) ── */
+    /* ── Terms & conditions (liability waiver) — each with a drawn checkbox ── */
     sectionTitle('TERMS & CONDITIONS (LIABILITY WAIVER)')
-    MEMBERSHIP_TERMS.forEach((term, i) => {
+    const TERM_INDENT = 16
+    doc.font('Helvetica').fontSize(9)
+    MEMBERSHIP_TERMS.forEach((term) => {
       const accepted = (app.agreed_terms || []).includes(term)
-      doc.font('Helvetica').fontSize(9).fillColor(DARK)
-        .text(`${accepted ? '☑' : '☐'}  ${term}`, doc.page.margins.left, y, { width: pageWidth })
-      y = doc.y + 6
+      const termWidth = pageWidth - TERM_INDENT
+      const termHeight = doc.heightOfString(term, { width: termWidth })
+      ensureSpace(termHeight + 10)
+      drawCheckBox(doc, doc.page.margins.left, y + 1, accepted)
+      doc.fillColor(DARK).text(term, doc.page.margins.left + TERM_INDENT, y, { width: termWidth })
+      y = doc.y + 8
     })
-    y += 6
+    y += 4
 
     /* ── Declaration ── */
     box('MEMBER DECLARATION', [
@@ -172,7 +224,6 @@ export function generateMembershipPdf(app) {
     box('DIGITAL SIGNATURE', [
       ['Signed By (Full Name)', app.signature_name],
       ['Electronic Signature Confirmed', (app.signature_confirmed === true || app.signature_confirmed === 'true') ? 'Yes' : 'No'],
-      ['Signature Date', app.signature_date],
       ['Submitted On', app.created_at ? new Date(app.created_at).toISOString().slice(0, 10) : ''],
     ])
 
