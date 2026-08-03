@@ -3,3 +3,6 @@ node_modules
 
 # Database backups (contain PII — never commit)
 backups/*.json
+
+# Generated membership PDFs (ephemeral, regenerated on demand)
+storage/

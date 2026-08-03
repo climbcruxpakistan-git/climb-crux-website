@@ -8,6 +8,8 @@
 // In production (Vercel), we use the Render backend URL directly.
 const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
 
+export const API_URL = API
+
 function getAuthHeaders() {
   const token = localStorage.getItem('admin_token')
   return token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -272,6 +274,14 @@ export async function updateMembershipApplication(id, body) {
 
 export async function deleteMembershipApplication(id) {
   return request('DELETE', `/membership/applications/${id}`)
+}
+
+export async function approveMembershipApplication(id) {
+  return mapId(await request('POST', `/membership/applications/${id}/approve`))
+}
+
+export async function rejectMembershipApplication(id) {
+  return mapId(await request('POST', `/membership/applications/${id}/reject`))
 }
 
 /* ---------- About ---------- */

@@ -7,6 +7,8 @@ import cloudinary from '../cloudinary.js'
 import MembershipApplication from '../models/MembershipApplication.js'
 import { requireAdmin } from '../middleware/auth.js'
 import { sendMembershipConfirmation, sendAdminMembershipNotification } from '../services/emailService.js'
+import { approveMembership } from '../services/membershipService.js'
+import { generateMembershipPdf, saveMembershipPdf, membershipPdfFullPath } from '../services/pdfService.js'
 import { MEMBERSHIP_TERMS } from '../membershipForm.js'
 
 const router = Router()
@@ -279,6 +281,64 @@ router.delete('/applications/:id', requireAdmin, async (req, res, next) => {
     const app = await MembershipApplication.findByIdAndDelete(req.params.id)
     if (!app) return res.status(404).json({ error: 'Application not found' })
     res.json({ success: true })
+  } catch (err) { next(err) }
+})
+
+/* ── POST /api/membership/applications/:id/approve — admin ────────────────
+   Approves the membership: status → approved, membership → active, payment →
+   paid, generates + stores the approved-application PDF, and emails it to the
+   applicant. If PDF generation fails the approval is NOT persisted.          */
+router.post('/applications/:id/approve', requireAdmin, async (req, res, next) => {
+  try {
+    const app = await MembershipApplication.findById(req.params.id)
+    if (!app) return res.status(404).json({ error: 'Application not found' })
+    if (app.status === 'approved') {
+      return res.status(409).json({ error: 'This application is already approved' })
+    }
+    const { application, emailSent } = await approveMembership(app)
+    res.json({
+      application,
+      emailSent,
+      note: emailSent
+        ? undefined
+        : 'Membership approved, but the confirmation email could not be sent. Check the server logs.',
+    })
+  } catch (err) {
+    console.error('[membership] Approval failed:', err)
+    res.status(500).json({ error: `Approval failed: ${err.message || 'PDF could not be generated'}` })
+  }
+})
+
+/* ── POST /api/membership/applications/:id/reject — admin ───────────────── */
+router.post('/applications/:id/reject', requireAdmin, async (req, res, next) => {
+  try {
+    const app = await MembershipApplication.findById(req.params.id)
+    if (!app) return res.status(404).json({ error: 'Application not found' })
+    app.status = 'rejected'
+    await app.save()
+    res.json(app)
+  } catch (err) { next(err) }
+})
+
+/* ── GET /api/membership/applications/:id/pdf — admin · download the stored
+   approved-application PDF. Regenerates on the fly if the file is missing.  */
+router.get('/applications/:id/pdf', requireAdmin, async (req, res, next) => {
+  try {
+    const app = await MembershipApplication.findById(req.params.id)
+    if (!app) return res.status(404).json({ error: 'Application not found' })
+
+    let fullPath = membershipPdfFullPath(app.pdf_path)
+    if (!fullPath && app.status === 'approved') {
+      // Filesystem was reset (e.g. Render redeploy) — rebuild from stored data
+      const buffer = await generateMembershipPdf(app)
+      app.pdf_path = await saveMembershipPdf(app, buffer)
+      await app.save()
+      fullPath = membershipPdfFullPath(app.pdf_path)
+    }
+    if (!fullPath) {
+      return res.status(404).json({ error: 'No approved PDF available for this application' })
+    }
+    res.download(fullPath, `Climb-Crux-Approved-Membership-${app.application_id || 'Application'}.pdf`)
   } catch (err) { next(err) }
 })
 

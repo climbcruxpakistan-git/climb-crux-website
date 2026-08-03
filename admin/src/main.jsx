@@ -17,7 +17,7 @@ import GalleryManager from './pages/GalleryManager.jsx'
 import PhotosManager from './pages/PhotosManager.jsx'
 import AboutManager from './pages/AboutManager.jsx'
 import BookingsManager from './pages/BookingsManager.jsx'
-import MembershipApplicationsManager from './pages/MembershipApplicationsManager.jsx'
+import MembershipsManager from './pages/MembershipsManager.jsx'
 import ShopManager from './pages/ShopManager.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -40,7 +40,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/about" element={<AboutManager />} />
                 <Route path="/shop" element={<ShopManager />} />
                 <Route path="/bookings" element={<BookingsManager />} />
-                <Route path="/membership-applications" element={<MembershipApplicationsManager />} />
+                <Route path="/memberships" element={<MembershipsManager />} />
+                <Route path="/membership-applications" element={<Navigate to="/memberships" replace />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

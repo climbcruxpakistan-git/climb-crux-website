@@ -85,6 +85,8 @@ const membershipApplicationSchema = new mongoose.Schema(
     remarks: { type: String, default: '' },
     office_start_date: { type: String, default: '' },
     office_expiry_date: { type: String, default: '' },
+    approval_date: { type: String, default: '' }, // set when the membership is approved
+    pdf_path: { type: String, default: '' }, // stored approved-application PDF file name
   },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 )

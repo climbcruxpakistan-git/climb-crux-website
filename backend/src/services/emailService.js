@@ -18,6 +18,7 @@
 import { Resend } from 'resend'
 import { bookingConfirmation } from '../templates/bookingConfirmation.js'
 import { membershipConfirmation } from '../templates/membershipConfirmation.js'
+import { membershipApprovalEmail } from '../templates/membershipApprovalEmail.js'
 import {
   adminBookingNotification,
   adminMembershipNotification,
@@ -39,7 +40,7 @@ function getClient() {
 }
 
 /** Core send helper — never throws, always logs clearly. */
-async function send({ to, subject, html }) {
+async function send({ to, subject, html, attachments }) {
   const client = getClient()
   if (!client) {
     console.warn(`[email] Resend not configured (set RESEND_API_KEY) — skipping "${subject}"`)
@@ -50,12 +51,9 @@ async function send({ to, subject, html }) {
     return false
   }
   try {
-    const { data, error } = await client.emails.send({
-      from: EMAIL_FROM,
-      to,
-      subject,
-      html,
-    })
+    const payload = { from: EMAIL_FROM, to, subject, html }
+    if (attachments && attachments.length > 0) payload.attachments = attachments
+    const { data, error } = await client.emails.send(payload)
     if (error) {
       console.error(`[email] Failed to send "${subject}" to ${to}:`, error.name || '', error.message || JSON.stringify(error))
       return false
@@ -78,6 +76,20 @@ export async function sendBookingConfirmation({ booking, sessionType }) {
 export async function sendMembershipConfirmation({ application }) {
   const { subject, html } = membershipConfirmation({ application, whatsapp: CLIMB_CRUX_WHATSAPP })
   return send({ to: application.email, subject, html })
+}
+
+/** Membership approval — includes the approved-application PDF as an attachment. */
+export async function sendMembershipApprovalEmail({ application, pdfBuffer }) {
+  const { subject, html } = membershipApprovalEmail({ application })
+  const reference = application.membership_id || application.application_id || 'application'
+  return send({
+    to: application.email,
+    subject,
+    html,
+    attachments: pdfBuffer
+      ? [{ filename: `Climb-Crux-Approved-Membership-${reference}.pdf`, content: pdfBuffer }]
+      : undefined,
+  })
 }
 
 /** Admin alert — new booking created. */
