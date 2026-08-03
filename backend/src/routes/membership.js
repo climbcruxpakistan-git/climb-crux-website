@@ -131,9 +131,6 @@ router.post('/apply', (req, res, next) => {
     if (!b.date_of_birth) {
       return fail(res, files, 'Date of birth is required')
     }
-    if (!files.cnic_file || files.cnic_file.length === 0) {
-      return fail(res, files, 'A copy of the participant CNIC is required')
-    }
     if (under18) {
       if (!files.bform_file || files.bform_file.length === 0) {
         return fail(res, files, 'A copy of the B-Form is required for participants under 18')
@@ -141,6 +138,8 @@ router.post('/apply', (req, res, next) => {
       if (!files.guardian_cnic_file || files.guardian_cnic_file.length === 0) {
         return fail(res, files, 'A copy of the parent/guardian CNIC is required for participants under 18')
       }
+    } else if (!files.cnic_file || files.cnic_file.length === 0) {
+      return fail(res, files, 'A copy of the participant CNIC is required')
     }
     if (b.payment_method && !files.payment_screenshot) {
       return fail(res, files, 'A payment screenshot is required when a payment method is selected')

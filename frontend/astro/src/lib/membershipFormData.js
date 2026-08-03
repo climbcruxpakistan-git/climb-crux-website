@@ -4,7 +4,7 @@
  * online form and validation never drift apart.
  */
 
-export const MEMBERSHIP_PLAN = 'Monthly Membership (4 Sessions)'
+export const MEMBERSHIP_PLAN = 'Climb Crux Monthly Membership Form (4 Sessions)'
 export const MEMBERSHIP_FEE = 'PKR 8,000 / Month'
 
 /** Membership Terms & Conditions — every box must be ticked. */

@@ -178,13 +178,14 @@ export default function MembershipApply() {
       e.member_account_name = 'Enter the account name used for payment'
     }
 
-    const cnicCheck = validateFile(files.cnic_file)
-    if (!cnicCheck.ok) e.cnic_file = cnicCheck.error
     if (under18) {
       const bformCheck = validateFile(files.bform_file)
       if (!bformCheck.ok) e.bform_file = bformCheck.error
       const guardianCheck = validateFile(files.guardian_cnic_file)
       if (!guardianCheck.ok) e.guardian_cnic_file = guardianCheck.error
+    } else {
+      const cnicCheck = validateFile(files.cnic_file)
+      if (!cnicCheck.ok) e.cnic_file = cnicCheck.error
     }
     if (form.payment_method) {
       const shotCheck = validateFile(files.payment_screenshot)
@@ -514,13 +515,6 @@ export default function MembershipApply() {
             {/* ── 8 · Document Uploads ── */}
             <div className="mf-section">
               <SectionTitle>Document Uploads</SectionTitle>
-              <FileUpload
-                label="Participant CNIC"
-                hint="A copy of the participant's CNIC must be attached to this form."
-                file={files.cnic_file}
-                onFile={setFile('cnic_file')}
-                error={errors.cnic_file}
-              />
               {under18 ? (
                 <>
                   <FileUpload
@@ -539,9 +533,18 @@ export default function MembershipApply() {
                   />
                 </>
               ) : (
-                <p className="mf-hint mf-age-note">
-                  Age on form: {age !== null ? `${age} years` : '—'} — B-Form &amp; guardian CNIC are only required for participants under 18.
-                </p>
+                <>
+                  <FileUpload
+                    label="Participant CNIC"
+                    hint="A copy of the participant's CNIC must be attached to this form."
+                    file={files.cnic_file}
+                    onFile={setFile('cnic_file')}
+                    error={errors.cnic_file}
+                  />
+                  <p className="mf-hint mf-age-note">
+                    Age on form: {age !== null ? `${age} years` : '—'} — B-Form &amp; guardian CNIC are only required for participants under 18.
+                  </p>
+                </>
               )}
             </div>
 
