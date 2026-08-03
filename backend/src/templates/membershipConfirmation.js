@@ -52,7 +52,7 @@ export function membershipConfirmation({ application, whatsapp = '' }) {
         items: ['Your Membership ID: ' + escapeHtml(reference), 'Payment screenshot or transaction receipt'],
         confirmText: 'Once your payment has been verified, your membership will be confirmed via WhatsApp.',
       })}
-      ${closingBlock('If you have any questions, reply to this email or message us on WhatsApp. We can\u2019t wait to climb with you! 🧗')}
+      ${closingBlock('Please do not reply to this email. If you have any queries, reach out to the WhatsApp number of Climb Crux mentioned above.')}
     `,
   })
 
