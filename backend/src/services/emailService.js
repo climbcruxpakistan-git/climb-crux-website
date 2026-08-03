@@ -25,7 +25,7 @@ import {
 } from '../templates/adminNotifications.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
-const EMAIL_FROM = process.env.EMAIL_FROM || '"Climb Crux" <no-reply@climbcruxpakistan.com>'
+const EMAIL_FROM = process.env.EMAIL_FROM || '"Climb Crux" <bookings@climbcruxpakistan.com>'
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || ''
 const CLIMB_CRUX_WHATSAPP = process.env.CLIMB_CRUX_WHATSAPP || '+923132690377'
 
