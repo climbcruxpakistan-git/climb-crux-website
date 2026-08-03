@@ -65,7 +65,7 @@ export default function PrivatePremium() {
                       <li key={f}>{f}</li>
                     ))}
                   </ul>
-                  <Link to="/book-now?type=private" className={`btn ${t.featured ? 'btn-primary' : 'btn-outline'}`}>
+                  <Link to={`/book-now?type=${t.type}`} className={`btn ${t.featured ? 'btn-primary' : 'btn-outline'}`}>
                     Book this plan
                   </Link>
                 </div>
