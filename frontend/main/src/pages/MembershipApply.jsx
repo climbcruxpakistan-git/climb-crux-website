@@ -297,7 +297,7 @@ export default function MembershipApply() {
     <>
       <PageHeader title="Apply for Membership.">
         <p>
-          Complete your membership application online — every field matches the printed Climb Crux membership form.
+          Complete your membership application online.
         </p>
       </PageHeader>
 
