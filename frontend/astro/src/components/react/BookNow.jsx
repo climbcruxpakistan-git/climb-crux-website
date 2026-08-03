@@ -14,10 +14,17 @@ function parsePrice(val) {
   return Number(String(val).replace(/,/g, '')) || 0
 }
 
+/** Read the ?type= query param directly in the browser as a fallback */
+function getUrlType() {
+  if (typeof window === 'undefined') return ''
+  return new URLSearchParams(window.location.search).get('type') || ''
+}
+
 export default function BookNow({ preselected = '' }) {
+  const effectivePreselected = preselected || getUrlType()
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
-  const [sessionType, setSessionType] = useState(preselected || '')
+  const [sessionType, setSessionType] = useState(effectivePreselected || '')
   const [participants, setParticipants] = useState(1)
   const [pricing, setPricing] = useState({ publicPrice: 2500 })
   const [membership, setMembership] = useState({})
@@ -40,8 +47,8 @@ export default function BookNow({ preselected = '' }) {
           }))
         setPlanOptions(privatePlans)
         const allValues = ['public', 'membership', 'custom-group', ...privatePlans.map((p) => p.value)]
-        if (preselected && allValues.includes(preselected)) {
-          setSessionType(preselected)
+        if (effectivePreselected && allValues.includes(effectivePreselected)) {
+          setSessionType(effectivePreselected)
         }
         setLoaded(true)
       })
@@ -49,7 +56,7 @@ export default function BookNow({ preselected = '' }) {
         setPricing({ publicPrice: 2500 })
         setLoaded(true)
       })
-  }, [preselected])
+  }, [effectivePreselected])
 
   const membershipPrice = parsePrice(membership.price) || 8000
 

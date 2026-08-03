@@ -3,6 +3,10 @@ import MainLayout from '../layouts/MainLayout.astro';
 import PageHeader from '../components/astro/PageHeader.astro';
 import BookNow from '../components/react/BookNow.jsx';
 
+// On-demand render: so the ?type= query param (from the card CTA buttons) is
+// read per-request instead of being baked into static HTML at build time.
+export const prerender = false;
+
 const preselected = Astro.url.searchParams.get('type') || '';
 ---
 
