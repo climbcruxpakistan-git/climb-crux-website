@@ -270,8 +270,8 @@ export default function MembershipApply() {
               </div>
               <ul className="mf-success-steps">
                 <li>A confirmation email has been sent to <strong>{submittedApp.email}</strong>.</li>
-                <li>We will verify your documents and payment (usually within 24–48 hours).</li>
-                <li>Once approved, you'll receive your membership ID and activation details by email.</li>
+                <li>We will verify your documents and payment (usually within 24 hours).</li>
+                <li>Once approved, you'll receive your membership ID and activation details by email at <a href="mailto:bookings@climbcruxpakistan.com">bookings@climbcruxpakistan.com</a>.</li>
               </ul>
               <div className="form-actions" style={{ flexDirection: 'column' }}>
                 <Link to="/book-now" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
