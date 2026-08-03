@@ -396,8 +396,10 @@ export default function MembershipsManager() {
                 <DetailRow k="Membership ID" v={viewing.membership_id} mono />
                 <DetailRow k="Plan" v={viewing.membership_plan || DEFAULT_PLAN} />
                 <DetailRow k="Fee" v={DEFAULT_FEE} />
-                <DetailRow k="Membership Start" v={viewing.membership_start_date || viewing.office_start_date} />
-                <DetailRow k="Approval Date" v={viewing.approval_date} />
+                <DetailRow k="Membership Start" v={viewing.membership_start_date || viewing.office_start_date || '—'} />
+                <DetailRow k="Membership Expiry" v={viewing.office_expiry_date || '—'} />
+                <DetailRow k="Verified By" v={viewing.verified_by || '—'} />
+                <DetailRow k="Approval Date" v={viewing.approval_date || '—'} />
                 <DetailRow k="Submitted On" v={formatDate(viewing.created_at)} />
                 <div className="detail-status-row">
                   <span className="detail-key">Membership Status</span>
@@ -490,11 +492,11 @@ export default function MembershipsManager() {
 
               <h4 className="detail-section-title" style={{ marginTop: 24 }}>Office Use (read-only)</h4>
               <div className="detail-fields">
-                <DetailRow k="Verified By" v={viewing.verified_by} />
-                <DetailRow k="Start Date" v={viewing.office_start_date} />
-                <DetailRow k="Expiry Date" v={viewing.office_expiry_date} />
-                <DetailRow k="Remarks" v={viewing.remarks} />
-                <DetailRow k="Approved PDF" v={viewing.pdf_path ? 'Stored on server' : null} />
+                <DetailRow k="Verified By" v={viewing.verified_by || '—'} />
+                <DetailRow k="Start Date" v={viewing.office_start_date || '—'} />
+                <DetailRow k="Expiry Date" v={viewing.office_expiry_date || '—'} />
+                <DetailRow k="Remarks" v={viewing.remarks || '—'} />
+                <DetailRow k="Approved PDF" v={viewing.pdf_path ? 'Stored on server' : 'Not yet generated'} />
               </div>
             </div>
 
