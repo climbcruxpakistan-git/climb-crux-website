@@ -33,6 +33,10 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/climb-
 
 const app = express()
 
+// Render sits behind a reverse proxy — trust the first hop so req.ip is the
+// real client IP (fixes express-rate-limit's X-Forwarded-For validation error).
+app.set('trust proxy', 1)
+
 // CORS: allow specific frontend origins + localhost for development
 const FRONTEND_URL = process.env.FRONTEND_URL
 const ADMIN_URL = process.env.ADMIN_URL

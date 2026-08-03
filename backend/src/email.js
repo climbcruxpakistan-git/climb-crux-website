@@ -12,6 +12,8 @@ function getTransporter() {
       host: 'smtp.gmail.com',
       port: 465,
       secure: true,
+      // Force IPv4 — Render has no IPv6 route to Gmail (ENETUNREACH otherwise)
+      family: 4,
       // Explicit timeouts so failures surface clearly in logs instead of hanging
       connectionTimeout: 20000,
       greetingTimeout: 20000,
