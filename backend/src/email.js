@@ -1,19 +1,36 @@
 import nodemailer from 'nodemailer'
+import { lookup } from 'dns/promises'
 
 const GMAIL_EMAIL = process.env.GMAIL_EMAIL || ''
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || ''
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || ''
+
+/**
+ * nodemailer resolves BOTH IPv4 and IPv6 for a hostname and then picks a random
+ * address from the combined list — it ignores the `family` transport option
+ * entirely. Render has an IPv6 interface but no IPv6 route to Gmail, so when
+ * nodemailer randomly lands on an IPv6 address the connection dies with
+ * `ENETUNREACH`. Fix: resolve smtp.gmail.com to an IPv4 literal once at startup
+ * and connect to the IP directly, keeping the hostname only for TLS SNI.
+ */
+let SMTP_HOST = 'smtp.gmail.com'
+try {
+  const { address } = await lookup('smtp.gmail.com', { family: 4 })
+  if (address) SMTP_HOST = address
+} catch (err) {
+  console.warn('Could not resolve smtp.gmail.com IPv4 (falling back to hostname):', err.code || '', err.message)
+}
+console.log(`Gmail SMTP connecting via: ${SMTP_HOST} (IPv4)`)
 
 let _transporter = null
 function getTransporter() {
   if (!_transporter) {
     if (!GMAIL_EMAIL || !GMAIL_APP_PASSWORD) return null
     _transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: SMTP_HOST, // IPv4 literal — nodemailer skips DNS, no IPv6 possible
+      servername: 'smtp.gmail.com', // keep TLS SNI correct when host is an IP
       port: 465,
       secure: true,
-      // Force IPv4 — Render has no IPv6 route to Gmail (ENETUNREACH otherwise)
-      family: 4,
       // Explicit timeouts so failures surface clearly in logs instead of hanging
       connectionTimeout: 20000,
       greetingTimeout: 20000,
