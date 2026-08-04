@@ -74,6 +74,24 @@
   text-overflow: ellipsis;
 }
 
+/* On small screens the 120% scale + right shift can push the hero image past
+   the viewport edge — ease both off so nothing clips. */
+@media (max-width: 900px) {
+  .hero-figure {
+    transform: scale(1.05) translateX(0);
+  }
+}
+@media (max-width: 640px) {
+  .hero-figure {
+    transform: scale(1.03);
+  }
+}
+@media (max-width: 500px) {
+  .hero-figure {
+    transform: scale(1.02);
+  }
+}
+
 /* ============================== PATHS ============================== */
 
 .paths .eyebrow {

@@ -128,7 +128,7 @@
     background: var(--chalk);
     border-bottom: 3px solid var(--orange);
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0;
     max-height: 0;
     overflow: hidden;
@@ -136,21 +136,35 @@
   }
 
   .navbar-links.is-open {
-    max-height: 480px;
+    max-height: 640px;
   }
 
   .navbar-link {
     width: 100%;
     padding: 16px var(--edge);
     border-bottom: 1px solid var(--chalk-dim);
+    box-sizing: border-box;
   }
 
   .navbar-link::after {
     display: none;
   }
 
-  .navbar-cta {
-    margin: 16px var(--edge) 20px;
+  /* Full-width, equal, edge-aligned CTA buttons — matches the menu links so
+     Book Now / Shop Now line up with each other and with the items above. */
+  .navbar-cta:nth-last-child(2),
+  .navbar-cta:last-child {
+    width: calc(100% - (var(--edge) * 2));
+    margin: 0 var(--edge);
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  .navbar-cta:nth-last-child(2) {
+    margin-top: 20px;
+  }
+  .navbar-cta:last-child {
+    margin-bottom: 20px;
   }
 }
 
@@ -162,9 +176,8 @@
     padding: 14px var(--edge);
     font-size: 0.82rem;
   }
-  .navbar-cta {
-    width: calc(100% - calc(var(--edge) * 2));
-    text-align: center;
+  .navbar-cta:nth-last-child(2),
+  .navbar-cta:last-child {
     font-size: 0.78rem;
   }
 }
