@@ -3,10 +3,15 @@
  *
  * Only these functions are exposed today:
  *   · sendBookingConfirmation({ booking, sessionType })
+ *   · sendBookingApprovedEmail({ booking, sessionType })
+ *   · sendBookingDeclinedEmail({ booking, sessionType, reason })
  *   · sendMembershipConfirmation({ application })
+ *   · sendMembershipApprovalEmail({ application, pdfBuffer })
+ *   · sendMembershipRejectionEmail({ application, reason })
  *   · sendAdminBookingNotification({ booking, sessionType })
  *   · sendAdminMembershipNotification({ application })
  *   · sendAdminPaymentNotification({ booking })
+ *   · sendAdminPaymentProofNotification({ booking })
  *
  * Modular by design: each template lives in ../templates and produces
  * { subject, html }; adding a new email type later means adding one template
@@ -17,6 +22,8 @@
  */
 import { Resend } from 'resend'
 import { bookingConfirmation } from '../templates/bookingConfirmation.js'
+import { bookingApprovedEmail } from '../templates/bookingApprovedEmail.js'
+import { bookingDeclinedEmail } from '../templates/bookingDeclinedEmail.js'
 import { membershipConfirmation } from '../templates/membershipConfirmation.js'
 import { membershipApprovalEmail } from '../templates/membershipApprovalEmail.js'
 import { membershipRejectionEmail } from '../templates/membershipRejectionEmail.js'
@@ -24,6 +31,7 @@ import {
   adminBookingNotification,
   adminMembershipNotification,
   adminPaymentNotification,
+  adminPaymentProofNotification,
 } from '../templates/adminNotifications.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
@@ -73,6 +81,32 @@ export async function sendBookingConfirmation({ booking, sessionType }) {
   return send({ to: booking.customer_email, subject, html })
 }
 
+/** Customer booking approval (admin verified the payment) — includes the confirmed-booking PDF. */
+export async function sendBookingApprovedEmail({ booking, sessionType, pdfBuffer }) {
+  const { subject, html } = bookingApprovedEmail({ booking, sessionType })
+  return send({
+    to: booking.customer_email,
+    subject,
+    html,
+    attachments: pdfBuffer
+      ? [{ filename: `Climb-Crux-Booking-${booking.booking_number || 'Confirmed'}.pdf`, content: pdfBuffer }]
+      : undefined,
+  })
+}
+
+/** Customer booking decline (payment or personal-information reason) — includes the booking-form PDF. */
+export async function sendBookingDeclinedEmail({ booking, sessionType, reason = 'payment', pdfBuffer }) {
+  const { subject, html } = bookingDeclinedEmail({ booking, sessionType, reason })
+  return send({
+    to: booking.customer_email,
+    subject,
+    html,
+    attachments: pdfBuffer
+      ? [{ filename: `Climb-Crux-Booking-${booking.booking_number || 'Request'}.pdf`, content: pdfBuffer }]
+      : undefined,
+  })
+}
+
 /** Customer membership confirmation. */
 export async function sendMembershipConfirmation({ application }) {
   const { subject, html } = membershipConfirmation({ application, whatsapp: CLIMB_CRUX_WHATSAPP })
@@ -102,6 +136,12 @@ export async function sendMembershipRejectionEmail({ application, reason = 'paym
 /** Admin alert — new booking created. */
 export async function sendAdminBookingNotification({ booking, sessionType }) {
   const { subject, html } = adminBookingNotification({ booking, sessionType })
+  return send({ to: NOTIFICATION_EMAIL, subject, html })
+}
+
+/** Admin alert — payment screenshot submitted, awaiting verification. */
+export async function sendAdminPaymentProofNotification({ booking }) {
+  const { subject, html } = adminPaymentProofNotification({ booking })
   return send({ to: NOTIFICATION_EMAIL, subject, html })
 }
 

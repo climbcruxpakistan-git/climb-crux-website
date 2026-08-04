@@ -1650,6 +1650,17 @@ tbody tr:hover {
   letter-spacing: 0.3px;
 }
 
+.timeline-actor {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--stone);
+}
+
+.timeline-actor::before {
+  content: '👤 ';
+  opacity: 0.7;
+}
+
 .timeline-section {
   grid-column: 1 / -1;
   margin-top: 8px;

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getBookingByNumber, createPayment } from '../../lib/api'
 
-const WHATSAPP_NUMBER = '+92 313 2690377'
-
 export default function PaymentPage({ bookingNumber }) {
   const [booking, setBooking] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -14,6 +12,8 @@ export default function PaymentPage({ bookingNumber }) {
   const [accountHolder, setAccountHolder] = useState('')
   const [easypaisaSender, setEasypaisaSender] = useState('')
   const [easypaisaPhone, setEasypaisaPhone] = useState('')
+  const [screenshot, setScreenshot] = useState(null)
+  const [screenshotName, setScreenshotName] = useState('')
 
   useEffect(() => {
     if (!bookingNumber) return
@@ -36,20 +36,39 @@ export default function PaymentPage({ bookingNumber }) {
     if (method === 'easypaisa') setFlow('easypaisa-form')
   }
 
-  async function handleBankSubmit(e) {
-    e.preventDefault(); setError(''); setSending(true)
-    try {
-      await createPayment(booking.id, { method: 'bank_transfer', payer_name: accountHolder, payer_bank: bankName })
-      window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/bank-transfer-confirmation`
-    } catch { setError('Failed to process payment. Please try again.') } finally { setSending(false) }
+  function handleScreenshotChange(e) {
+    const file = e.target.files?.[0] || null
+    if (!file) { setScreenshot(null); setScreenshotName(''); return }
+    const okType = /\.(jpe?g|png|pdf)$/i.test(file.name) || file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'application/pdf'
+    if (!okType) { setScreenshot(null); setScreenshotName(''); setError('Please upload a JPG, PNG or PDF payment screenshot'); return }
+    if (file.size > 10 * 1024 * 1024) { setScreenshot(null); setScreenshotName(''); setError('Payment screenshot must be 10 MB or smaller'); return }
+    setError('')
+    setScreenshot(file)
+    setScreenshotName(file.name)
   }
 
-  async function handleEasypaisaSubmit(e) {
-    e.preventDefault(); setError(''); setSending(true)
+  async function submitPayment(method, extra) {
+    if (!screenshot) { setError('Please attach your payment screenshot before submitting for verification'); return }
+    setSending(true)
     try {
-      await createPayment(booking.id, { method: 'easypaisa', payer_name: easypaisaSender, payer_phone: easypaisaPhone })
-      window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/easypaisa-confirmation`
-    } catch { setError('Failed to process payment. Please try again.') } finally { setSending(false) }
+      const fd = new FormData()
+      fd.append('method', method)
+      Object.entries(extra).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      fd.append('payment_screenshot', screenshot)
+      await createPayment(booking.id, fd)
+      const route = method === 'bank_transfer' ? 'bank-transfer-confirmation' : 'easypaisa-confirmation'
+      window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/${route}`
+    } catch (err) { setError(err.message || 'Failed to process payment. Please try again.') } finally { setSending(false) }
+  }
+
+  function handleBankSubmit(e) {
+    e.preventDefault(); setError('')
+    submitPayment('bank_transfer', { payer_name: accountHolder, payer_bank: bankName })
+  }
+
+  function handleEasypaisaSubmit(e) {
+    e.preventDefault(); setError('')
+    submitPayment('easypaisa', { payer_name: easypaisaSender, payer_phone: easypaisaPhone })
   }
 
   function getSessionLabel(sessionId) {
@@ -141,15 +160,24 @@ export default function PaymentPage({ bookingNumber }) {
                   <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
                   <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>Please transfer <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the account above.</p>
                   <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
-                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, please send the payment proof/screenshot to our WhatsApp at <strong style={{ color: 'var(--orange-dark)' }}>{WHATSAPP_NUMBER}</strong> for verification along with your booking number.</p>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, upload your payment screenshot below and submit it for verification. Our team verifies your payment and <strong style={{ color: 'var(--orange-dark)' }}>emails you</strong> once your booking is confirmed.</p>
                   </div>
                 </div>
               </div>
               <div className="field"><label>Sender bank name</label><input type="text" placeholder="e.g. HBL, Meezan Bank, UBL" required value={bankName} onChange={(e) => setBankName(e.target.value)} /></div>
               <div className="field"><label>Account holder name</label><input type="text" placeholder="Name on the account used for payment" required value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} /></div>
+              <div className="field">
+                <label>Payment screenshot / proof</label>
+                <input type="file" accept="image/jpeg,image/png,application/pdf" onChange={handleScreenshotChange} required />
+                {screenshotName ? (
+                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>📎 {screenshotName} attached — ready to submit</p>
+                ) : (
+                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>JPG, PNG or PDF · max 10 MB</p>
+                )}
+              </div>
               <div className="form-actions">
                 <button type="button" className="btn btn-outline" onClick={() => setFlow('select')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>{sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit & Confirm'}</button>
+                <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>{sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit for Verification'}</button>
               </div>
             </form>
           )}
@@ -165,15 +193,24 @@ export default function PaymentPage({ bookingNumber }) {
                   <p className="bank-detail-row"><span className="bank-label">Account name:</span> Saif Ud Din</p>
                   <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>Please send <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the EasyPaisa account above.</p>
                   <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
-                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, please send the payment proof/screenshot to our WhatsApp at <strong style={{ color: 'var(--orange-dark)' }}>{WHATSAPP_NUMBER}</strong>.</p>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, upload your payment screenshot below and submit it for verification. Our team verifies your payment and <strong style={{ color: 'var(--orange-dark)' }}>emails you</strong> once your booking is confirmed.</p>
                   </div>
                 </div>
               </div>
               <div className="field"><label>Sender name</label><input type="text" placeholder="Your full name" required value={easypaisaSender} onChange={(e) => setEasypaisaSender(e.target.value)} /></div>
               <div className="field"><label>Phone number</label><input type="tel" placeholder="03XX-XXXXXXX" required value={easypaisaPhone} onChange={(e) => setEasypaisaPhone(e.target.value)} /></div>
+              <div className="field">
+                <label>Payment screenshot / proof</label>
+                <input type="file" accept="image/jpeg,image/png,application/pdf" onChange={handleScreenshotChange} required />
+                {screenshotName ? (
+                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>📎 {screenshotName} attached — ready to submit</p>
+                ) : (
+                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>JPG, PNG or PDF · max 10 MB</p>
+                )}
+              </div>
               <div className="form-actions">
                 <button type="button" className="btn btn-outline" onClick={() => setFlow('select')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>{sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit & Confirm'}</button>
+                <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>{sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit for Verification'}</button>
               </div>
             </form>
           )}

@@ -1,14 +1,69 @@
 import { Router } from 'express'
+import multer from 'multer'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import cloudinary from '../cloudinary.js'
 import Booking from '../models/Booking.js'
 import Payment from '../models/Payment.js'
+import Session from '../models/Session.js'
 import { requireAdmin } from '../middleware/auth.js'
-import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/emailService.js'
+import { generateBookingPdf } from '../services/pdfService.js'
+import {
+  sendBookingConfirmation,
+  sendBookingApprovedEmail,
+  sendBookingDeclinedEmail,
+  sendAdminBookingNotification,
+  sendAdminPaymentProofNotification,
+} from '../services/emailService.js'
 
 const router = Router()
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const tmpDir = path.join(__dirname, '..', 'tmp')
+
+// Ensure tmp directory exists (same temp folder as membership/photo uploads)
+if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
+
+// ── Multer — payment proof screenshot uploads ──────────────────────────
+// Accepted: PDF, JPG, JPEG, PNG · max 10 MB per file
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, tmpDir),
+  filename: (_req, file, cb) =>
+    cb(null, `${Date.now()}-${String(file.originalname).replace(/[^a-zA-Z0-9.\-_]/g, '_')}`),
+})
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['application/pdf', 'image/jpeg', 'image/png']
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error('Only PDF, JPG, JPEG and PNG files are allowed'))
+    }
+  },
+})
+
+const uploadPaymentScreenshot = upload.single('payment_screenshot')
 
 /** Classify a booking as Public or Private based on its session_id. */
 function bookingTypeLabel(sessionId) {
   return String(sessionId || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session'
+}
+
+/** Append an event to the booking's audit history (bounded to the last 100). */
+function logEvent(booking, entry) {
+  const history = Array.isArray(booking.history) ? booking.history : []
+  history.push({
+    type: entry.type || '',
+    description: entry.description || '',
+    actor: entry.actor || '',
+    details: entry.details || {},
+    timestamp: new Date(),
+  })
+  booking.history = history.slice(-100)
 }
 
 router.get('/', async (req, res, next) => {
@@ -26,16 +81,18 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'customer_name and customer_email are required' })
     }
 
-    // Auto-generate booking number: CCP-YYYY-XXXXX (sequential)
+    // Auto-generate booking number: CCS-YYYY-XXXXX (sequential)
     const year = new Date().getFullYear()
     const count = await Booking.countDocuments()
-    const booking_number = `CCP-${year}-${String(count + 1).padStart(5, '0')}`
+    const booking_number = `CCS-${year}-${String(count + 1).padStart(5, '0')}`
 
     const booking = await Booking.create({
       booking_number,
       customer_name,
       customer_email,
       customer_phone: req.body.customer_phone || '',
+      emergency_contact_name: req.body.emergency_contact_name || '',
+      emergency_contact_phone: req.body.emergency_contact_phone || '',
       session_id: req.body.session_id || '',
       date: req.body.date || '',
       participants: req.body.participants || 1,
@@ -44,6 +101,14 @@ router.post('/', async (req, res, next) => {
       payment_method: req.body.payment_method || '',
       payment_status: req.body.payment_status || 'pending',
     })
+
+    // Audit trail: booking created
+    logEvent(booking, {
+      type: 'booking_created',
+      description: 'Booking request created',
+      details: { session: booking.session_id, date: booking.date },
+    })
+    await booking.save()
 
     // Emails fire after the booking is saved. Never block the response on failure.
     const sessionType = bookingTypeLabel(booking.session_id)
@@ -76,7 +141,7 @@ router.get('/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const {
       customer_name, customer_email, customer_phone,
@@ -89,6 +154,8 @@ router.put('/:id', async (req, res, next) => {
       req.params.id,
       {
         customer_name, customer_email, customer_phone,
+        emergency_contact_name: req.body.emergency_contact_name,
+        emergency_contact_phone: req.body.emergency_contact_phone,
         session_id, date, participants, amount,
         booking_status, payment_method, payment_status,
         payer_bank, payer_name, payer_phone,
@@ -96,6 +163,13 @@ router.put('/:id', async (req, res, next) => {
       { new: true, runValidators: true }
     )
     if (!booking) return res.status(404).json({ error: 'Not found' })
+    // Audit trail: booking updated by an admin
+    logEvent(booking, {
+      type: 'status_changed',
+      description: 'Booking details updated',
+      actor: req.user?.email || 'Admin',
+    })
+    await booking.save()
     res.json(booking)
   } catch (err) { next(err) }
 })
@@ -115,6 +189,14 @@ router.patch('/:id/booking-status', requireAdmin, async (req, res, next) => {
       { booking_status },
       { new: true, runValidators: true }
     )
+    // Audit trail: booking status changed by an admin
+    logEvent(booking, {
+      type: 'status_changed',
+      description: `Booking status changed to ${booking_status.replace(/_/g, ' ')}`,
+      actor: req.user?.email || 'Admin',
+      details: { from: existing.booking_status, to: booking_status },
+    })
+    await booking.save()
     res.json(booking)
   } catch (err) { next(err) }
 })
@@ -134,19 +216,69 @@ router.patch('/:id/payment-status', requireAdmin, async (req, res, next) => {
       { payment_status },
       { new: true, runValidators: true }
     )
+    // Audit trail: payment status changed by an admin
+    logEvent(booking, {
+      type: 'status_changed',
+      description: `Payment status changed to ${payment_status.replace(/_/g, ' ')}`,
+      actor: req.user?.email || 'Admin',
+      details: { from: existing.payment_status, to: payment_status },
+    })
+    await booking.save()
     res.json(booking)
   } catch (err) { next(err) }
 })
 
-router.post('/:id/create-payment', async (req, res, next) => {
+/* ── POST /api/bookings/:id/create-payment — public · multipart ─────────
+   Records the customer's payment method + payer details, uploads the
+   payment-proof screenshot to Cloudinary, and moves the booking to
+   pending_verification so the admin can review it in the dashboard.      */
+router.post('/:id/create-payment', (req, res, next) => {
+  uploadPaymentScreenshot(req, res, (err) => {
+    if (err) {
+      // Multer file limit error
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'Payment screenshot must be 10 MB or smaller' })
+      }
+      // fileFilter rejection or anything else
+      return res.status(400).json({ error: err.message || 'Upload failed' })
+    }
+    next()
+  })
+}, async (req, res, next) => {
   try {
     const { method, payer_name, payer_bank, payer_phone } = req.body
     if (!method) {
+      if (req.file) fs.unlink(req.file.path, () => {})
       return res.status(400).json({ error: 'Payment method is required' })
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'A payment screenshot is required for verification' })
     }
 
     const booking = await Booking.findById(req.params.id)
-    if (!booking) return res.status(404).json({ error: 'Booking not found' })
+    if (!booking) {
+      fs.unlink(req.file.path, () => {})
+      return res.status(404).json({ error: 'Booking not found' })
+    }
+
+    // ── Upload screenshot to Cloudinary (clean up the temp file either way) ──
+    let screenshot = { url: '', name: '' }
+    try {
+      const resourceType = req.file.mimetype.startsWith('image/') ? 'image' : 'raw'
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'climb-crux/bookings/payment',
+        resource_type: resourceType,
+      })
+      screenshot = { url: result.secure_url, name: req.file.originalname }
+    } catch (uploadErr) {
+      console.error('[bookings] Screenshot upload failed:', uploadErr)
+    } finally {
+      fs.unlink(req.file.path, () => {})
+    }
+
+    if (!screenshot.url) {
+      return res.status(500).json({ error: 'Payment screenshot could not be uploaded. Please try again.' })
+    }
 
     // Create Payment record
     const payment = await Payment.create({
@@ -162,10 +294,23 @@ router.post('/:id/create-payment', async (req, res, next) => {
     booking.payment_method = method
     booking.payment_status = 'verification_required'
     booking.booking_status = 'pending_verification'
+    booking.payment_screenshot_url = screenshot.url
+    booking.payment_screenshot_name = screenshot.name
+    booking.payment_submitted_at = new Date().toISOString()
     if (payer_name) booking.payer_name = payer_name
     if (payer_bank) booking.payer_bank = payer_bank
     if (payer_phone) booking.payer_phone = payer_phone
+
+    // Audit trail: payment proof submitted
+    logEvent(booking, {
+      type: 'payment_submitted',
+      description: 'Payment screenshot submitted for verification',
+      details: { method, screenshot: screenshot.name },
+    })
     await booking.save()
+
+    // Alert the admin that a payment proof is waiting for verification
+    sendAdminPaymentProofNotification({ booking }).catch(() => {})
 
     res.json({
       booking,
@@ -174,6 +319,136 @@ router.post('/:id/create-payment', async (req, res, next) => {
         method: payment.method,
         status: payment.status,
       },
+    })
+  } catch (err) { next(err) }
+})
+
+/* ── POST /api/bookings/:id/approve — admin ─────────────────────────────
+   Verifies the payment: booking → confirmed, payment → paid, records who
+   verified it and when, then emails the customer their confirmation.      */
+router.post('/:id/approve', requireAdmin, async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+    if (!booking) return res.status(404).json({ error: 'Booking not found' })
+    // Double-action guard: a booking can only be approved while it is awaiting
+    // payment/verification. Confirmed or declined bookings need an explicit
+    // status reset (via the status patch endpoint) before they can be
+    // re-approved.
+    if (['confirmed', 'cancelled'].includes(booking.booking_status)) {
+      return res.status(409).json({
+        error: `This booking is already ${booking.booking_status}. Reset its status before approving again.`,
+      })
+    }
+
+    const adminEmail = req.user?.email || 'Admin'
+    booking.booking_status = 'confirmed'
+    booking.payment_status = 'paid'
+    booking.verified_by = adminEmail
+    booking.approval_date = new Date().toISOString().slice(0, 10)
+    booking.rejected_by = ''
+    booking.rejection_date = ''
+
+    // Audit trail: approved (admin identity + timestamp)
+    logEvent(booking, {
+      type: 'booking_approved',
+      description: 'Booking approved and payment verified',
+      actor: adminEmail,
+      details: { from: 'pending', to: 'confirmed' },
+    })
+    await booking.save()
+
+    // Mark any outstanding Payment record(s) as paid
+    await Payment.updateMany(
+      { booking_id: booking._id, status: 'verification_required' },
+      { status: 'paid', paid_at: new Date() }
+    )
+
+    const sessionType = bookingTypeLabel(booking.session_id)
+    // Best-effort session time (from the sessions list) for the PDF
+    let sessionTime = ''
+    try {
+      const s = booking.date ? await Session.findOne({ date: booking.date }) : null
+      sessionTime = s?.time || ''
+    } catch { /* ignore */ }
+    // Generate the confirmed-booking PDF (best-effort — never blocks approval)
+    let pdfBuffer = null
+    try {
+      pdfBuffer = await generateBookingPdf(booking, { status: 'confirmed', sessionType, time: sessionTime })
+    } catch (pdfErr) {
+      console.error('[bookings] Confirmation PDF failed:', pdfErr.message)
+    }
+    const emailSent = await sendBookingApprovedEmail({ booking, sessionType, pdfBuffer }).catch(() => false)
+    res.json({
+      booking,
+      emailSent,
+      note: emailSent
+        ? undefined
+        : 'Booking confirmed, but the confirmation email could not be sent. Check the server logs.',
+    })
+  } catch (err) { next(err) }
+})
+
+/* ── POST /api/bookings/:id/reject — admin ──────────────────────────────
+   Declines the booking: booking → cancelled, payment → failed. The body may
+   carry a `reason`: 'payment' (payment could not be verified) or
+   'information' (personal information was incorrect/incomplete). The email
+   variant follows the reason.                                              */
+router.post('/:id/reject', requireAdmin, async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+    if (!booking) return res.status(404).json({ error: 'Booking not found' })
+    // Double-action guard: a booking can only be declined while it is awaiting
+    // payment/verification. Confirmed or declined bookings need an explicit
+    // status reset before they can be re-declined.
+    if (['confirmed', 'cancelled'].includes(booking.booking_status)) {
+      return res.status(409).json({
+        error: `This booking is already ${booking.booking_status}. Reset its status before declining again.`,
+      })
+    }
+
+    const reason = req.body?.reason === 'information' ? 'information' : 'payment'
+    const adminEmail = req.user?.email || 'Admin'
+    booking.booking_status = 'cancelled'
+    booking.payment_status = 'failed'
+    booking.rejected_by = adminEmail
+    booking.rejection_date = new Date().toISOString().slice(0, 10)
+
+    // Audit trail: declined (admin identity + timestamp)
+    logEvent(booking, {
+      type: 'booking_rejected',
+      description: `Booking declined (${reason === 'information' ? 'incorrect personal information' : 'payment could not be verified'})`,
+      actor: adminEmail,
+      details: { from: 'pending', to: 'cancelled', reason },
+    })
+    await booking.save()
+
+    // Mark any outstanding Payment record(s) as failed
+    await Payment.updateMany(
+      { booking_id: booking._id, status: { $in: ['verification_required', 'pending'] } },
+      { status: 'failed' }
+    )
+
+    const sessionType = bookingTypeLabel(booking.session_id)
+    // Best-effort session time (from the sessions list) for the PDF
+    let sessionTime = ''
+    try {
+      const s = booking.date ? await Session.findOne({ date: booking.date }) : null
+      sessionTime = s?.time || ''
+    } catch { /* ignore */ }
+    // Generate the booking-form PDF (best-effort — never blocks the decline)
+    let pdfBuffer = null
+    try {
+      pdfBuffer = await generateBookingPdf(booking, { status: 'declined', sessionType, time: sessionTime })
+    } catch (pdfErr) {
+      console.error('[bookings] Decline PDF failed:', pdfErr.message)
+    }
+    const emailSent = await sendBookingDeclinedEmail({ booking, sessionType, reason, pdfBuffer }).catch(() => false)
+    res.json({
+      booking,
+      emailSent,
+      note: emailSent
+        ? undefined
+        : 'Booking declined, but the decline email could not be sent. Check the server logs.',
     })
   } catch (err) { next(err) }
 })

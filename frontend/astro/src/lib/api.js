@@ -89,6 +89,22 @@ export async function getBookingByNumber(bookingNumber) {
 }
 
 export async function createPayment(bookingId, data) {
+  // Multipart (with payment screenshot) — send as FormData without a Content-Type header.
+  if (data instanceof FormData) {
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/create-payment`, {
+      method: 'POST',
+      body: data,
+    })
+    if (!res.ok) {
+      let message = 'Failed to submit payment proof'
+      try {
+        const d = await res.json()
+        message = d.error || message
+      } catch { /* ignore */ }
+      throw new Error(message)
+    }
+    return mapId(await res.json())
+  }
   return mapId(await postJson(`/bookings/${bookingId}/create-payment`, data))
 }
 

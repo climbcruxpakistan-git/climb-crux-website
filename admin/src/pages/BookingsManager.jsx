@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react'
-import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus } from '../store.js'
+import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+
+/** Cloudinary URL that forces a download instead of preview. */
+function downloadUrl(url) {
+  if (!url) return ''
+  return url.replace('/upload/', '/upload/fl_attachment/')
+}
+
+function isImage(url) {
+  return /\.(jpe?g|png)(\?|$)/i.test(url || '')
+}
 
 function formatMethod(method) {
   if (method === 'bank_transfer' || method === 'bank') return 'Bank Transfer'
@@ -26,9 +36,9 @@ function badge(status) {
   }
   const display = {
     pending_payment: 'Pending Payment',
-    pending_verification: 'Verifying',
+    pending_verification: 'Pending Verification',
     confirmed: 'Confirmed',
-    cancelled: 'Cancelled',
+    cancelled: 'Declined',
   }
   const label = display[status] || status || '—'
   return <span className={`badge ${map[status] || 'badge-gray'}`}>{label}</span>
@@ -92,6 +102,27 @@ function PaymentDetailCard({ paymentMethod, paymentDetails, payerBank, payerName
   )
 }
 
+/** Small thumbnail / badge for the payment-proof screenshot. */
+function ScreenshotCell({ url, name }) {
+  if (!url) return <span className="cell-muted">—</span>
+  if (isImage(url)) {
+    return (
+      <a href={url} target="_blank" rel="noreferrer" title={name || 'Payment screenshot'}>
+        <img
+          src={url}
+          alt="Payment screenshot"
+          style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid #eee', display: 'block' }}
+        />
+      </a>
+    )
+  }
+  return (
+    <a href={url} target="_blank" rel="noreferrer" title={name || 'Payment screenshot'}>
+      <span className="badge badge-gray">📄 PDF</span>
+    </a>
+  )
+}
+
 export default function BookingsManager() {
   const { addToast } = useToast()
   const [bookings, setBookings] = useState([])
@@ -103,6 +134,9 @@ export default function BookingsManager() {
   const [dateTo, setDateTo] = useState('')
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
+  const [rejecting, setRejecting] = useState(null)
+  const [zooming, setZooming] = useState(null) // { url, name } for the screenshot lightbox
+  const [acting, setActing] = useState(false)
 
   const emptyForm = {
     customer_name: '', customer_email: '', customer_phone: '',
@@ -114,6 +148,13 @@ export default function BookingsManager() {
 
   const paymentStatusOptions = ['All', 'pending', 'verification_required', 'paid', 'failed']
   const bookingStatusOptions = ['All', 'pending_payment', 'pending_verification', 'confirmed', 'cancelled']
+  const bookingStatusLabels = {
+    All: 'All',
+    pending_payment: 'Pending Payment',
+    pending_verification: 'Pending Verification',
+    confirmed: 'Confirmed',
+    cancelled: 'Declined',
+  }
   const datePresets = [
     { value: 'all', label: 'All time' },
     { value: 'today', label: 'Today' },
@@ -176,22 +217,6 @@ export default function BookingsManager() {
     setEditing('new')
   }
 
-  function openEdit(b) {
-    setForm({
-      customer_name: b.customer_name || '',
-      customer_email: b.customer_email || '',
-      customer_phone: b.customer_phone || '',
-      session_id: b.session_id || '',
-      date: b.date || '',
-      participants: b.participants || 1,
-      amount: b.amount || 2500,
-      booking_status: b.booking_status || 'pending_payment',
-      payment_method: b.payment_method || '',
-      payment_status: b.payment_status || 'pending',
-    })
-    setEditing(b.id)
-  }
-
   async function handleSave() {
     if (!form.customer_name || !form.customer_email) {
       addToast('Name and email are required', 'error')
@@ -231,6 +256,46 @@ export default function BookingsManager() {
     } catch (err) {
       addToast(`Failed to update payment: ${err.message}`, 'error')
     }
+  }
+
+  async function handleApprove(b) {
+    if (!confirm(`Approve ${b.customer_name}'s booking?\n\nThis will:\n• Mark the booking as Confirmed & payment Paid\n• Email the confirmation to ${b.customer_email}`)) return
+    setActing(true)
+    try {
+      const res = await approveBooking(b.id)
+      await refresh()
+      if (res.emailSent === false) {
+        addToast('Booking confirmed, but the confirmation email could not be sent', 'error')
+      } else {
+        addToast('Booking approved — confirmation email sent', 'success')
+      }
+    } catch (err) {
+      addToast(`Failed to approve: ${err.message}`, 'error')
+    } finally {
+      setActing(false)
+    }
+  }
+
+  async function handleReject(b, reason) {
+    setActing(true)
+    try {
+      const res = await rejectBooking(b.id, reason)
+      await refresh()
+      if (res.emailSent === false) {
+        addToast('Booking declined, but the decline email could not be sent', 'error')
+      } else {
+        addToast('Booking declined — email sent to customer', 'success')
+      }
+    } catch (err) {
+      addToast(`Failed to decline: ${err.message}`, 'error')
+    } finally {
+      setActing(false)
+      setRejecting(null)
+    }
+  }
+
+  async function refresh() {
+    setBookings(await getBookings())
   }
 
   // Apply filters (status + payment + date range)
@@ -353,7 +418,7 @@ export default function BookingsManager() {
                 className={`btn-admin btn-admin-sm ${statusFilter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
                 onClick={() => setStatusFilter(c)}
               >
-                {c.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                {bookingStatusLabels[c] || c.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
               </button>
             ))}
             <span style={{ width: 1, height: 24, background: '#e5e0d4', margin: '0 4px' }} />
@@ -391,8 +456,9 @@ export default function BookingsManager() {
                     <th>Status</th>
                     <th>Payment</th>
                     <th>Payment Status</th>
+                    <th>Proof</th>
                     <th style={{ width: 80 }}>View</th>
-                    <th style={{ width: 160 }}>Actions</th>
+                    <th style={{ width: 220 }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -420,6 +486,9 @@ export default function BookingsManager() {
                       </td>
                       <td>{paymentBadge(b.payment_status || 'pending')}</td>
                       <td>
+                        <ScreenshotCell url={b.payment_screenshot_url} name={b.payment_screenshot_name} />
+                      </td>
+                      <td>
                         <button
                           className="btn-admin-icon"
                           onClick={() => setViewing(b)}
@@ -430,25 +499,26 @@ export default function BookingsManager() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <button className="btn-admin-icon" onClick={() => openEdit(b)} title="Edit">✎</button>
                           {b.booking_status !== 'confirmed' && (
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
-                              onClick={() => updateStatus(b.id, 'confirmed')}
-                              title="Confirm booking"
+                              onClick={() => handleApprove(b)}
+                              disabled={acting}
+                              title="Approve — confirm & email customer"
                             >
-                              ✓
+                              ✓ Approve
                             </button>
                           )}
                           {b.booking_status !== 'cancelled' && (
                             <button
                               className="btn-admin btn-admin-sm"
                               style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
-                              onClick={() => updateStatus(b.id, 'cancelled')}
-                              title="Cancel booking"
+                              onClick={() => setRejecting(b)}
+                              disabled={acting}
+                              title="Decline — cancel & email customer"
                             >
-                              ✕
+                              ✕ Decline
                             </button>
                           )}
                           {(b.payment_status || 'pending') !== 'paid' && b.payment_method && (
@@ -456,7 +526,7 @@ export default function BookingsManager() {
                               className="btn-admin btn-admin-sm"
                               style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
                               onClick={() => updatePaymentStatus(b.id, 'paid')}
-                              title="Mark as paid"
+                              title="Mark as paid (no email)"
                             >
                               💰
                             </button>
@@ -466,12 +536,32 @@ export default function BookingsManager() {
                               className="btn-admin btn-admin-sm"
                               style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
                               onClick={() => updatePaymentStatus(b.id, 'failed')}
-                              title="Mark as failed"
+                              title="Mark as failed (no email)"
                             >
                               ⚠
                             </button>
                           )}
-                          <button className="btn-admin-icon danger" onClick={() => handleDelete(b.id)} title="Delete">✕</button>
+                          {b.booking_status !== 'confirmed' && (
+                            <button
+                              className="btn-admin btn-admin-sm"
+                              style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
+                              onClick={() => updateStatus(b.id, 'confirmed')}
+                              title="Confirm booking (no email)"
+                            >
+                              ✓
+                            </button>
+                          )}
+                          {b.booking_status !== 'cancelled' && (
+                            <button
+                              className="btn-admin btn-admin-sm"
+                              style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
+                              onClick={() => updateStatus(b.id, 'cancelled')}
+                              title="Cancel booking (no email)"
+                            >
+                              ✕
+                            </button>
+                          )}
+                          <button className="btn-admin-icon danger" onClick={() => handleDelete(b.id)} title="Delete">🗑</button>
                         </div>
                       </td>
                     </tr>
@@ -483,9 +573,9 @@ export default function BookingsManager() {
         )}
       </div>
 
-      {/* ---- Edit / Add Modal ---- */}
+      {/* ---- Add Booking Modal (new bookings only — existing customer submissions are read-only) ---- */}
       {editing && (
-        <Modal title={editing === 'new' ? 'Add Booking' : 'Edit Booking'} onClose={() => setEditing(null)} wide>
+        <Modal title="Add Booking" onClose={() => setEditing(null)} wide>
           <div className="admin-form">
             <h3 className="card-admin-header" style={{ margin: 0, fontSize: '0.85rem' }}>Contact Details</h3>
             <div className="admin-form-row">
@@ -533,7 +623,7 @@ export default function BookingsManager() {
                   <option value="pending_payment">Pending Payment</option>
                   <option value="pending_verification">Pending Verification</option>
                   <option value="confirmed">Confirmed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="cancelled">Declined</option>
                 </select>
               </div>
               <div className="admin-field">
@@ -585,6 +675,13 @@ export default function BookingsManager() {
                   <span className="detail-val">{viewing.customer_phone || '—'}</span>
                 </div>
                 <div className="detail-row">
+                  <span className="detail-key">Emergency Contact</span>
+                  <span className="detail-val">
+                    {viewing.emergency_contact_name || '—'}
+                    {viewing.emergency_contact_phone ? ` (${viewing.emergency_contact_phone})` : ''}
+                  </span>
+                </div>
+                <div className="detail-row">
                   <span className="detail-key">Booking #</span>
                   <span className="detail-val ref-code" style={{ fontFamily: 'monospace' }}>{viewing.booking_number || '—'}</span>
                 </div>
@@ -616,23 +713,44 @@ export default function BookingsManager() {
                 {paymentBadge(viewing.payment_status || 'pending')}
               </div>
 
+              {(viewing.verified_by || viewing.rejected_by) && (
+                <div className="detail-fields" style={{ marginTop: 16 }}>
+                  {viewing.verified_by && (
+                    <div className="detail-row">
+                      <span className="detail-key">Approved By</span>
+                      <span className="detail-val">{viewing.verified_by} · {viewing.approval_date || '—'}</span>
+                    </div>
+                  )}
+                  {viewing.rejected_by && (
+                    <div className="detail-row">
+                      <span className="detail-key">Declined By</span>
+                      <span className="detail-val">{viewing.rejected_by} · {viewing.rejection_date || '—'}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="detail-actions" style={{ marginTop: 24 }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {viewing.booking_status !== 'confirmed' && (
                     <button
                       className="btn-admin btn-admin-sm"
                       style={{ background: '#16a34a', color: '#fff', border: 'none' }}
-                      onClick={() => { updateStatus(viewing.id, 'confirmed'); setViewing(null) }}
+                      onClick={() => { handleApprove(viewing); setViewing(null) }}
+                      disabled={acting}
+                      title="Approve — confirm, mark paid & email customer"
                     >
-                      ✓ Confirm booking
+                      ✓ Approve booking
                     </button>
                   )}
                   {viewing.booking_status !== 'cancelled' && (
                     <button
                       className="btn-admin btn-admin-sm btn-admin-danger"
-                      onClick={() => { updateStatus(viewing.id, 'cancelled'); setViewing(null) }}
+                      onClick={() => setRejecting(viewing)}
+                      disabled={acting}
+                      title="Decline — cancel & email customer"
                     >
-                      ✕ Cancel booking
+                      ✕ Decline booking
                     </button>
                   )}
                   {(viewing.payment_status || 'pending') !== 'paid' && viewing.payment_method && (
@@ -640,6 +758,7 @@ export default function BookingsManager() {
                       className="btn-admin btn-admin-sm"
                       style={{ background: '#2563eb', color: '#fff', border: 'none' }}
                       onClick={() => { updatePaymentStatus(viewing.id, 'paid'); setViewing(null) }}
+                      title="Mark as paid (no email)"
                     >
                       💰 Mark as paid
                     </button>
@@ -658,6 +777,57 @@ export default function BookingsManager() {
                 payerName={viewing.payer_name}
                 payerPhone={viewing.payer_phone}
               />
+
+              {/* Payment proof screenshot */}
+              {viewing.payment_screenshot_url && (
+                <div className="payment-detail-card" style={{ marginTop: 16 }}>
+                  <div className="payment-detail-header">
+                    <span className="payment-detail-method-icon">📎</span>
+                    <span className="payment-detail-method-name">Payment Proof Screenshot</span>
+                  </div>
+                  <div style={{ padding: 12 }}>
+                    {isImage(viewing.payment_screenshot_url) ? (
+                      <button
+                        className="proof-image-btn"
+                        style={{ padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', display: 'block' }}
+                        onClick={() => setZooming({ url: viewing.payment_screenshot_url, name: viewing.payment_screenshot_name })}
+                        title="Click to zoom"
+                      >
+                        <img
+                          src={viewing.payment_screenshot_url}
+                          alt="Payment proof screenshot"
+                          style={{ maxWidth: '100%', maxHeight: 260, borderRadius: 8, border: '1px solid #eee', display: 'block' }}
+                        />
+                      </button>
+                    ) : (
+                      <span className="badge badge-gray">📄 {viewing.payment_screenshot_name || 'PDF proof'}</span>
+                    )}
+                    {viewing.payment_submitted_at && (
+                      <p className="cell-muted" style={{ margin: '8px 0 0', fontSize: '0.75rem' }}>
+                        Uploaded {new Date(viewing.payment_submitted_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
+                    <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                      {isImage(viewing.payment_screenshot_url) && (
+                        <button
+                          className="btn-admin btn-admin-sm"
+                          onClick={() => setZooming({ url: viewing.payment_screenshot_url, name: viewing.payment_screenshot_name })}
+                        >
+                          🔍 Zoom
+                        </button>
+                      )}
+                      <a
+                        href={downloadUrl(viewing.payment_screenshot_url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-admin btn-admin-sm"
+                      >
+                        ⬇ Download proof
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Reference: Our account details (shown for reference) */}
               {(viewing.payment_method === 'bank_transfer' || viewing.payment_method === 'bank') && (
@@ -710,13 +880,6 @@ export default function BookingsManager() {
                   <span className="verified-icon">✓</span> Payment verified
                 </div>
               )}
-              <button
-                className="btn-admin btn-admin-outline btn-admin-sm"
-                style={{ marginTop: 16 }}
-                onClick={() => { setViewing(null); openEdit(viewing) }}
-              >
-                ✎ Edit booking
-              </button>
             </div>
 
             {/* Bottom row: Timeline */}
@@ -733,6 +896,9 @@ export default function BookingsManager() {
                       })
                       const iconMap = {
                         booking_created: '🆕',
+                        payment_submitted: '📎',
+                        booking_approved: '✅',
+                        booking_rejected: '⛔',
                         status_changed: '🔄',
                         payment_status_changed: '💰',
                         payment_method_set: '💳',
@@ -763,6 +929,9 @@ export default function BookingsManager() {
                                 )}
                               </div>
                             )}
+                            {event.actor && (
+                              <div className="timeline-actor">by {event.actor}</div>
+                            )}
                           </div>
                         </div>
                       )
@@ -771,6 +940,70 @@ export default function BookingsManager() {
               ) : (
                 <p className="cell-muted" style={{ padding: '12px 0' }}>No history recorded yet.</p>
               )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Decline reason picker ── */}
+      {rejecting && (
+        <Modal title={`Decline — ${rejecting.customer_name || 'Booking'}`} onClose={() => setRejecting(null)}>
+          <p style={{ margin: '0 0 16px', color: '#666', fontSize: '0.85rem', lineHeight: 1.6 }}>
+            Choose a reason — the customer will receive the matching decline email. The booking will be
+            declined and the payment marked as failed.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              className="btn-admin"
+              style={{ justifyContent: 'flex-start', background: '#fff7f0', border: '1px solid #fde3d2', color: '#1c1c1c', textAlign: 'left' }}
+              onClick={() => handleReject(rejecting, 'payment')}
+              disabled={acting}
+            >
+              💳 Payment not verified
+              <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, color: '#8a8a8a', marginTop: 2 }}>
+                Email: "Payment could not be verified"
+              </span>
+            </button>
+            <button
+              className="btn-admin"
+              style={{ justifyContent: 'flex-start', background: '#f6faf6', border: '1px solid #e0efe0', color: '#1c1c1c', textAlign: 'left' }}
+              onClick={() => handleReject(rejecting, 'information')}
+              disabled={acting}
+            >
+              📋 Incorrect / incomplete personal information
+              <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400, color: '#8a8a8a', marginTop: 2 }}>
+                Email: "Personal information was incorrect or incomplete"
+              </span>
+            </button>
+            <button className="btn-admin btn-admin-outline" onClick={() => setRejecting(null)} disabled={acting}>
+              Cancel
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Screenshot zoom lightbox ── */}
+      {zooming && (
+        <Modal title="Payment Screenshot" onClose={() => setZooming(null)}>
+          <div style={{ textAlign: 'center' }}>
+            <img
+              src={zooming.url}
+              alt={zooming.name || 'Payment screenshot'}
+              style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: 8, border: '1px solid #eee' }}
+            />
+            {zooming.name && (
+              <p className="cell-muted" style={{ margin: '10px 0 0', fontSize: '0.78rem' }}>{zooming.name}</p>
+            )}
+            <div style={{ marginTop: 14 }}>
+              <a
+                href={downloadUrl(zooming.url)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-admin btn-admin-sm"
+                onClick={() => setZooming(null)}
+              >
+                ⬇ Download
+              </a>
             </div>
           </div>
         </Modal>

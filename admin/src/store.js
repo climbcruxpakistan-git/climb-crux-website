@@ -200,6 +200,16 @@ export async function patchPaymentStatus(id, payment_status) {
   return mapId(await request('PATCH', `/bookings/${id}/payment-status`, { payment_status }))
 }
 
+/** Admin approves a booking — confirms + marks paid + emails the customer. */
+export async function approveBooking(id, verifiedBy = '') {
+  return mapId(await request('POST', `/bookings/${id}/approve`, { verified_by: verifiedBy }))
+}
+
+/** Admin rejects a booking — cancels + marks failed + emails the customer. */
+export async function rejectBooking(id, reason = 'payment') {
+  return mapId(await request('POST', `/bookings/${id}/reject`, { reason }))
+}
+
 /* ---------- Payments ---------- */
 
 export async function getPendingPayments() {

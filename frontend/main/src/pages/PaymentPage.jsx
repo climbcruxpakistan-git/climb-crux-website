@@ -12,8 +12,6 @@ export default function PaymentPage() {
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
 
-  const WHATSAPP_NUMBER = '+92 313 2690377'
-
   // Flow: 'select' | 'bank-form' | 'easypaisa-form'
   const [flow, setFlow] = useState('select')
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -25,6 +23,10 @@ export default function PaymentPage() {
   // EasyPaisa fields
   const [easypaisaSender, setEasypaisaSender] = useState('')
   const [easypaisaPhone, setEasypaisaPhone] = useState('')
+
+  // Payment proof screenshot
+  const [screenshot, setScreenshot] = useState(null)
+  const [screenshotName, setScreenshotName] = useState('')
 
   useEffect(() => {
     if (!bookingNumber) return
@@ -48,42 +50,62 @@ export default function PaymentPage() {
     if (method === 'easypaisa') setFlow('easypaisa-form')
   }
 
-  async function handleBankSubmit(e) {
-    e.preventDefault()
+  function handleScreenshotChange(e) {
+    const file = e.target.files?.[0] || null
+    if (!file) {
+      setScreenshot(null)
+      setScreenshotName('')
+      return
+    }
+    const okType = /^\.(jpe?g|png|pdf)$/i.test(file.name) || file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'application/pdf'
+    if (!okType) {
+      setScreenshot(null)
+      setScreenshotName('')
+      setError('Please upload a JPG, PNG or PDF payment screenshot')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setScreenshot(null)
+      setScreenshotName('')
+      setError('Payment screenshot must be 10 MB or smaller')
+      return
+    }
     setError('')
-    setSending(true)
+    setScreenshot(file)
+    setScreenshotName(file.name)
+  }
 
+  async function submitPayment(method, extra) {
+    if (!screenshot) {
+      setError('Please attach your payment screenshot before submitting for verification')
+      return
+    }
+    setSending(true)
     try {
-      await createPayment(booking.id, {
-        method: 'bank_transfer',
-        payer_name: accountHolder,
-        payer_bank: bankName,
-      })
-      navigate(`/booking/${encodeURIComponent(bookingNumber)}/bank-transfer-confirmation`, { replace: true })
+      const fd = new FormData()
+      fd.append('method', method)
+      Object.entries(extra).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      fd.append('payment_screenshot', screenshot)
+      await createPayment(booking.id, fd)
+      const route = method === 'bank_transfer' ? 'bank-transfer-confirmation' : 'easypaisa-confirmation'
+      navigate(`/booking/${encodeURIComponent(bookingNumber)}/${route}`, { replace: true })
     } catch (err) {
-      setError('Failed to process payment. Please try again.')
+      setError(err.message || 'Failed to process payment. Please try again.')
     } finally {
       setSending(false)
     }
   }
 
-  async function handleEasypaisaSubmit(e) {
+  function handleBankSubmit(e) {
     e.preventDefault()
     setError('')
-    setSending(true)
+    submitPayment('bank_transfer', { payer_name: accountHolder, payer_bank: bankName })
+  }
 
-    try {
-      await createPayment(booking.id, {
-        method: 'easypaisa',
-        payer_name: easypaisaSender,
-        payer_phone: easypaisaPhone,
-      })
-      navigate(`/booking/${encodeURIComponent(bookingNumber)}/easypaisa-confirmation`, { replace: true })
-    } catch (err) {
-      setError('Failed to process payment. Please try again.')
-    } finally {
-      setSending(false)
-    }
+  function handleEasypaisaSubmit(e) {
+    e.preventDefault()
+    setError('')
+    submitPayment('easypaisa', { payer_name: easypaisaSender, payer_phone: easypaisaPhone })
   }
 
   function getSessionLabel(sessionId) {
@@ -281,9 +303,9 @@ export default function PaymentPage() {
                     </p>
                     <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
                       <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}>
-                        <strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, please send the payment proof/screenshot to
-                        our WhatsApp at <strong style={{ color: 'var(--orange-dark)' }}>{WHATSAPP_NUMBER}</strong> for verification along with your booking number.
-                        Your booking will only be confirmed once the payment is verified.
+                        <strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, upload your payment
+                        screenshot below and submit it for verification. Our team verifies your payment and
+                        <strong style={{ color: 'var(--orange-dark)' }}> emails you</strong> once your booking is confirmed.
                       </p>
                     </div>
                   </div>
@@ -300,12 +322,26 @@ export default function PaymentPage() {
                     value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} />
                 </div>
 
+                <div className="field">
+                  <label htmlFor="payment-screenshot">Payment screenshot / proof</label>
+                  <input id="payment-screenshot" type="file" accept="image/jpeg,image/png,application/pdf" onChange={handleScreenshotChange} required />
+                  {screenshotName ? (
+                    <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>
+                      📎 {screenshotName} attached — ready to submit
+                    </p>
+                  ) : (
+                    <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>
+                      JPG, PNG or PDF · max 10 MB
+                    </p>
+                  )}
+                </div>
+
                 <div className="form-actions">
                   <button type="button" className="btn btn-outline" onClick={() => setFlow('select')} style={{ flex: 1, justifyContent: 'center' }}>
                     ← Back
                   </button>
                   <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>
-                    {sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit & Confirm'}
+                    {sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit for Verification'}
                   </button>
                 </div>
               </form>
@@ -334,9 +370,9 @@ export default function PaymentPage() {
                     </p>
                     <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
                       <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}>
-                        <strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, please send the payment proof/screenshot to
-                        our WhatsApp at <strong style={{ color: 'var(--orange-dark)' }}>{WHATSAPP_NUMBER}</strong> for verification along with your booking number.
-                        Your booking will only be confirmed once the payment is verified.
+                        <strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, upload your payment
+                        screenshot below and submit it for verification. Our team verifies your payment and
+                        <strong style={{ color: 'var(--orange-dark)' }}> emails you</strong> once your booking is confirmed.
                       </p>
                     </div>
                   </div>
@@ -353,12 +389,26 @@ export default function PaymentPage() {
                     value={easypaisaPhone} onChange={(e) => setEasypaisaPhone(e.target.value)} />
                 </div>
 
+                <div className="field">
+                  <label htmlFor="payment-screenshot">Payment screenshot / proof</label>
+                  <input id="payment-screenshot" type="file" accept="image/jpeg,image/png,application/pdf" onChange={handleScreenshotChange} required />
+                  {screenshotName ? (
+                    <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>
+                      📎 {screenshotName} attached — ready to submit
+                    </p>
+                  ) : (
+                    <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>
+                      JPG, PNG or PDF · max 10 MB
+                    </p>
+                  )}
+                </div>
+
                 <div className="form-actions">
                   <button type="button" className="btn btn-outline" onClick={() => setFlow('select')} style={{ flex: 1, justifyContent: 'center' }}>
                     ← Back
                   </button>
                   <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>
-                    {sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit & Confirm'}
+                    {sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit for Verification'}
                   </button>
                 </div>
               </form>

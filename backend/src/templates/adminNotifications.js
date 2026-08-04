@@ -3,7 +3,7 @@
  * Alert the Climb Crux team to new bookings, new membership applications,
  * and confirmed payments. Built on the same shared layout as the customer emails.
  */
-import { renderEmailLayout, summaryTable } from './emailLayout.js'
+import { renderEmailLayout, summaryTable, escapeHtml } from './emailLayout.js'
 import { MEMBERSHIP_FEE } from '../membershipForm.js'
 
 /** New booking created → admin alert. */
@@ -62,6 +62,40 @@ export function adminMembershipNotification({ application }) {
         </p>
         <div style="margin:14px 0 4px;font-size:12px;font-weight:800;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Application details</div>
         ${summaryTable(rows)}
+      `,
+    }),
+  }
+}
+
+/** New payment proof (screenshot) submitted → admin alert. */
+export function adminPaymentProofNotification({ booking }) {
+  const rows = [
+    ['Customer', booking.customer_name || '—'],
+    ['Booking Number', booking.booking_number || '—'],
+    ['Amount', `PKR ${(booking.amount || 0).toLocaleString()}`],
+    ['Payment Method', booking.payment_method === 'bank_transfer' ? 'Bank Transfer' : booking.payment_method === 'easypaisa' ? 'EasyPaisa' : booking.payment_method || '—'],
+    ['Status', 'Awaiting Verification'],
+  ]
+
+  const screenshotUrl = booking.payment_screenshot_url
+  const screenshotBlock = screenshotUrl
+    ? `<div style="margin:14px 0 0"><a href="${screenshotUrl}" style="display:inline-block;background:#f36f21;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 22px;border-radius:8px">View Payment Screenshot</a></div>`
+    : ''
+
+  return {
+    subject: `💳 Payment Proof Submitted — ${booking.customer_name} (${booking.booking_number || ''})`,
+    html: renderEmailLayout({
+      headerTitle: 'Payment Proof Submitted',
+      headerSubtitle: 'A customer uploaded a payment screenshot for verification',
+      bodyHtml: `
+        <p style="margin:0 0 6px;font-size:14px;color:#444;line-height:1.7">
+          <strong>${escapeHtml(booking.customer_name)}</strong> submitted their payment
+          screenshot for booking <strong>${escapeHtml(booking.booking_number || '')}</strong>.
+          Verify it in the admin dashboard to confirm the booking.
+        </p>
+        <div style="margin:14px 0 4px;font-size:12px;font-weight:800;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Payment details</div>
+        ${summaryTable(rows)}
+        ${screenshotBlock}
       `,
     }),
   }

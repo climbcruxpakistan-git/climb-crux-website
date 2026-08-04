@@ -90,6 +90,8 @@ export default function BookNow({ preselected = '' }) {
       customer_name: form['customer-name'].value,
       customer_email: form['customer-email'].value,
       customer_phone: form['customer-phone'].value,
+      emergency_contact_name: form['emergency-contact-name']?.value || '',
+      emergency_contact_phone: form['emergency-contact-phone']?.value || '',
       session_id: sessionType,
       date: form['preferred-date'].value,
       participants,
@@ -99,7 +101,7 @@ export default function BookNow({ preselected = '' }) {
     }
     try {
       const created = await createBooking(data)
-      const bookingNumber = created.booking_number || `CCP-${new Date().getFullYear()}-${(created.id || '').slice(-5)}`
+      const bookingNumber = created.booking_number || `CCS-${new Date().getFullYear()}-${(created.id || '').slice(-5)}`
       window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/payment`
     } catch (err) {
       setError('Failed to create booking. Please try again.')
@@ -139,6 +141,10 @@ export default function BookNow({ preselected = '' }) {
                   <div className="field"><label htmlFor="group-size">Number of people</label><input id="group-size" type="number" min="1" defaultValue="1" onChange={(e) => setParticipants(Math.max(1, Number(e.target.value)))} /></div>
                 </div>
                 <div className="field"><label htmlFor="preferred-date">Preferred date</label><input id="preferred-date" type="date" min={getTodayString()} /></div>
+                <div className="form-row">
+                  <div className="field"><label htmlFor="emergency-contact-name">Emergency contact (optional)</label><input id="emergency-contact-name" type="text" placeholder="Name" /></div>
+                  <div className="field"><label htmlFor="emergency-contact-phone">Emergency contact phone (optional)</label><input id="emergency-contact-phone" type="tel" placeholder="03XX-XXXXXXX" /></div>
+                </div>
               </>
             )}
             {isMembership && (

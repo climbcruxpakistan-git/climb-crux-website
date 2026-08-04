@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getBookingByNumber } from '../../lib/api'
 
-const WHATSAPP_NUMBER = '+92 313 2690377'
-const WHATSAPP_NUMBER_CLEAN = '923132690377'
-
 export default function EasyPaisaConfirmation({ bookingNumber }) {
   const [booking, setBooking] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -83,24 +80,17 @@ export default function EasyPaisaConfirmation({ bookingNumber }) {
         </div>
 
         <div className="bank-whatsapp-section" style={{ width: '100%', marginBottom: 8, textAlign: 'left' }}>
-          <h4 style={{ fontSize: '0.95rem', color: 'var(--charcoal)', marginBottom: 18 }}>📤 After you send the payment</h4>
+          <h4 style={{ fontSize: '0.95rem', color: 'var(--charcoal)', marginBottom: 18 }}>✅ Submitted for verification</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--orange)', color: 'var(--chalk)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}>1</div>
-              <div><strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--charcoal)', marginBottom: 3 }}>Send the payment</strong><p style={{ fontSize: '0.85rem', color: 'var(--stone-dark)', margin: 0 }}>Send the exact amount to the EasyPaisa account above.</p></div>
+              <div><strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--charcoal)', marginBottom: 3 }}>We review your payment</strong><p style={{ fontSize: '0.85rem', color: 'var(--stone-dark)', margin: 0 }}>Our team checks your EasyPaisa transfer and screenshot against the booking.</p></div>
             </div>
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--orange)', color: 'var(--chalk)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}>2</div>
-              <div><strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--charcoal)', marginBottom: 3 }}>Send us the proof</strong><p style={{ fontSize: '0.85rem', color: 'var(--stone-dark)', margin: 0 }}>Share the transfer screenshot or receipt on WhatsApp with your booking number.</p></div>
+              <div><strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--charcoal)', marginBottom: 3 }}>You get an email</strong><p style={{ fontSize: '0.85rem', color: 'var(--stone-dark)', margin: 0 }}>Once verified, we email you your booking confirmation. Check your inbox (including spam).</p></div>
             </div>
           </div>
-          <div className="bank-whatsapp-number" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--chalk)', border: '1px solid var(--chalk-dim)', padding: '14px 20px', borderRadius: 6, marginBottom: 16 }}>
-            <span className="bank-whatsapp-label" style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.06em', color: 'var(--stone)' }}>WhatsApp</span>
-            <span className="bank-whatsapp-value" style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--charcoal)' }}>{WHATSAPP_NUMBER}</span>
-          </div>
-          <a href={`https://wa.me/${WHATSAPP_NUMBER_CLEAN}?text=${encodeURIComponent(`I completed the EasyPaisa transfer for booking ${booking.booking_number || bookingNumber}. Please verify.`)}`} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-            Send proof on WhatsApp
-          </a>
         </div>
 
         <p style={{ fontSize: '0.82rem', color: 'var(--stone)', margin: '16px 0 0', textAlign: 'center', maxWidth: '40ch' }}>

@@ -244,6 +244,190 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
   })
 }
 
+/* ═══════════════════════ Booking PDFs ═══════════════════════ */
+
+/** Map a booking's payment status to a friendly label. */
+function bookingPaymentStatusLabel(status) {
+  const map = {
+    pending: 'Pending',
+    verification_required: 'Pending Verification',
+    paid: 'Paid',
+    failed: 'Failed',
+    refunded: 'Refunded',
+  }
+  return map[status] || clean(status)
+}
+
+/** Map a booking's payment method to a friendly label. */
+function bookingMethodLabel(method) {
+  if (method === 'bank_transfer' || method === 'bank') return 'Bank Transfer'
+  if (method === 'easypaisa') return 'EasyPaisa'
+  return clean(method)
+}
+
+/**
+ * Build a branded booking PDF — attached to the customer's confirmation and
+ * decline emails. Layout mirrors the membership PDF: a dark hero band with the
+ * Climb Crux brand + booking reference, followed by booking details, customer
+ * details and payment details, with a status footer.
+ *
+ * @param {object} booking — Booking document
+ * @param {{ status?: 'pending'|'confirmed'|'declined', sessionType?: string, time?: string }} [opts]
+ * @returns {Promise<Buffer>}
+ */
+export function generateBookingPdf(booking, { status = 'pending', sessionType = '', time = '' } = {}) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 48, bottom: 48, left: 50, right: 50 }, bufferPages: true })
+    const chunks = []
+    doc.on('data', (c) => chunks.push(c))
+    doc.on('end', () => resolve(Buffer.concat(chunks)))
+    doc.on('error', reject)
+
+    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+    const twoColX = doc.page.margins.left + pageWidth / 2
+
+    const statusTitle = status === 'confirmed'
+      ? 'Booking Confirmed'
+      : status === 'declined'
+        ? 'Booking Declined'
+        : 'Booking Request'
+    const statusLabel = status === 'confirmed'
+      ? 'CONFIRMED'
+      : status === 'declined'
+        ? 'DECLINED'
+        : 'PENDING PAYMENT VERIFICATION'
+
+    /* ── Header (hero band) ── */
+    const bandTop = 40
+    const bandHeight = 124
+    doc.rect(doc.page.margins.left, bandTop, pageWidth, bandHeight).fill(DARK)
+
+    // Brand (left side)
+    const leftX = doc.page.margins.left + 22
+    const leftW = pageWidth / 2 - 34
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(21)
+      .text('CLIMB CRUX', leftX, 58, { width: leftW })
+    doc.font('Helvetica').fontSize(10).fillColor('#b8b8b8')
+      .text('Islamabad\u2019s Premier Rock Climbing Club', leftX, 88, { width: leftW })
+    doc.font('Helvetica-Bold').fontSize(13).fillColor(ORANGE)
+      .text(statusTitle, leftX, 116, { width: leftW })
+
+    // Key information (right side, aligned label/value pairs)
+    const rightX = twoColX + 16
+    const rightW = pageWidth / 2 - 16
+    let rx = 54
+    const heroLabel = (small, big, color = '#ffffff') => {
+      doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
+      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 12, { width: rightW, align: 'right' })
+    }
+    heroLabel('BOOKING ID', clean(booking.booking_number))
+    rx += 30
+    heroLabel('SESSION', clean(sessionType || (String(booking.session_id || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session')))
+    rx += 30
+    heroLabel('STATUS', statusLabel, ORANGE)
+    rx += 30
+    heroLabel('BOOKED', clean(booking.created_at ? new Date(booking.created_at).toISOString().slice(0, 10) : (booking.approval_date || '')))
+
+    // Orange accent bar across the bottom of the band
+    doc.rect(doc.page.margins.left, bandTop + bandHeight - 4, pageWidth, 4).fill(ORANGE)
+
+    let y = bandTop + bandHeight + 22
+
+    function ensureSpace(needed) {
+      if (y + needed > doc.page.height - 60) {
+        doc.addPage()
+        y = doc.page.margins.top
+      }
+    }
+
+    function sectionTitle(title) {
+      ensureSpace(30)
+      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(title, doc.page.margins.left, y, { width: pageWidth })
+      y = doc.y + 8
+      doc.moveTo(doc.page.margins.left, y).lineTo(doc.page.margins.left + pageWidth, y).lineWidth(1).strokeColor(ORANGE).stroke()
+      y += 10
+    }
+
+    function row(labelText, value) {
+      ensureSpace(18)
+      const valueText = clean(value)
+      doc.font('Helvetica').fontSize(9.5).fillColor(GRAY).text(labelText, doc.page.margins.left, y, { width: twoColX - doc.page.margins.left - 10 })
+      doc.fillColor(DARK).text(valueText, twoColX + 10, y, { width: pageWidth / 2 - 10 })
+      y = Math.max(y + 16, doc.y + 4)
+    }
+
+    function box(title, rows) {
+      sectionTitle(title)
+      for (const [k, v] of rows) row(k, v)
+      y += 4
+    }
+
+    /* ── Booking details ── */
+    box('BOOKING DETAILS', [
+      ['Booking ID', booking.booking_number],
+      ['Booking Date', booking.created_at ? new Date(booking.created_at).toISOString().slice(0, 10) : ''],
+      ['Session', clean(sessionType || booking.session_id)],
+      ['Session Date', booking.date],
+      ['Time', time],
+      ['Participants', String(booking.participants || 1)],
+      ['Price', `PKR ${(booking.amount || 0).toLocaleString()}`],
+    ])
+
+    /* ── Customer details ── */
+    box('CUSTOMER DETAILS', [
+      ['Full Name', booking.customer_name],
+      ['Email', booking.customer_email],
+      ['Phone', booking.customer_phone],
+      ['Emergency Contact', booking.emergency_contact_name
+        ? `${booking.emergency_contact_name}${booking.emergency_contact_phone ? ` (${booking.emergency_contact_phone})` : ''}`
+        : ''],
+    ])
+
+    /* ── Payment details ── */
+    box('PAYMENT DETAILS', [
+      ['Payment Method', bookingMethodLabel(booking.payment_method)],
+      ['Payment Status', status === 'confirmed'
+        ? 'Paid'
+        : status === 'declined'
+          ? 'Failed'
+          : bookingPaymentStatusLabel(booking.payment_status)],
+    ])
+
+    if (status === 'confirmed' && booking.verified_by) {
+      box('VERIFICATION', [
+        ['Verified By', booking.verified_by],
+        ['Verified On', booking.approval_date],
+      ])
+    }
+    if (status === 'declined' && booking.rejected_by) {
+      box('REVIEW', [
+        ['Reviewed By', booking.rejected_by],
+        ['Reviewed On', booking.rejection_date],
+      ])
+    }
+
+    /* ── Footer on each page ── */
+    const range = doc.bufferedPageRange()
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i)
+      // Status banner just above the footer
+      doc.rect(doc.page.margins.left, doc.page.height - 62, pageWidth, 22).fill(LIGHT)
+      doc.fillColor(status === 'confirmed' ? '#1c7a3d' : status === 'declined' ? '#b3261e' : ORANGE)
+        .font('Helvetica-Bold').fontSize(9)
+        .text(`STATUS: ${statusLabel}`, doc.page.margins.left + 10, doc.page.height - 56, { width: pageWidth - 20 })
+      doc.fillColor(GRAY).font('Helvetica').fontSize(8)
+        .text(
+          'Climb Crux Pakistan · Margalla Hills, Islamabad · climbcruxpakistan.com',
+          doc.page.margins.left,
+          doc.page.height - 30,
+          { width: pageWidth, align: 'center' },
+        )
+    }
+
+    doc.end()
+  })
+}
+
 /**
  * Persist a generated PDF to the server storage folder.
  * @param {object} app
