@@ -27,6 +27,8 @@ const bookingSchema = new mongoose.Schema({
   // ── Emergency contact (from the booking form) ──
   emergency_contact_name: { type: String, default: '' },
   emergency_contact_phone: { type: String, default: '' },
+  // ── Accepted Terms & Conditions (liability waiver) — all must be ticked ──
+  agreed_terms: { type: [String], default: [] },
   // ── Payment proof (uploaded screenshot, Cloudinary URL) ──
   payment_screenshot_url: { type: String, default: '' },
   payment_screenshot_name: { type: String, default: '' },

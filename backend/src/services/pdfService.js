@@ -14,7 +14,7 @@ import PDFDocument from 'pdfkit'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { MEMBERSHIP_PLAN, MEMBERSHIP_FEE, MEMBERSHIP_TERMS, MEMBERSHIP_DECLARATION } from '../membershipForm.js'
+import { MEMBERSHIP_PLAN, MEMBERSHIP_FEE, MEMBERSHIP_TERMS, MEMBERSHIP_DECLARATION, BOOKING_TERMS } from '../membershipForm.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PDF_DIR = path.join(__dirname, '..', '..', 'storage', 'membership-pdfs')
@@ -392,6 +392,21 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
           ? 'Failed'
           : bookingPaymentStatusLabel(booking.payment_status)],
     ])
+
+    /* ── Terms & conditions (liability waiver) — each with a drawn checkbox ── */
+    sectionTitle('TERMS & CONDITIONS (LIABILITY WAIVER)')
+    const TERM_INDENT = 16
+    doc.font('Helvetica').fontSize(9)
+    BOOKING_TERMS.forEach((term) => {
+      const accepted = (booking.agreed_terms || []).includes(term)
+      const termWidth = pageWidth - TERM_INDENT
+      const termHeight = doc.heightOfString(term, { width: termWidth })
+      ensureSpace(termHeight + 10)
+      drawCheckBox(doc, doc.page.margins.left, y + 1, accepted)
+      doc.fillColor(DARK).text(term, doc.page.margins.left + TERM_INDENT, y, { width: termWidth })
+      y = doc.y + 8
+    })
+    y += 4
 
     if (status === 'confirmed' && booking.verified_by) {
       box('VERIFICATION', [

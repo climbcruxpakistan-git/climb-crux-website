@@ -1552,6 +1552,107 @@
   }
 }
 
+/* Terms & Conditions (Book Now — liability waiver checkboxes) */
+.terms-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.terms-card-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--charcoal);
+  margin: 0 0 4px;
+}
+
+.terms-card-desc {
+  font-size: 0.82rem;
+  color: var(--stone);
+  margin: 0 0 16px;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 10px;
+  margin: 0 -10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.terms-checkbox:hover {
+  background: var(--chalk-dim);
+}
+
+.terms-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.terms-checkbox-mark {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 2px solid var(--stone);
+  border-radius: 4px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.terms-checkbox-mark::after {
+  content: '✓';
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.15s ease;
+}
+
+.terms-checkbox input:checked + .terms-checkbox-mark {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+.terms-checkbox input:checked + .terms-checkbox-mark::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.terms-checkbox input:focus-visible + .terms-checkbox-mark {
+  outline: 3px solid rgba(243, 111, 33, 0.35);
+  outline-offset: 2px;
+}
+
+.terms-checkbox-label {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--stone-dark);
+}
+
+.terms-checkbox.is-checked .terms-checkbox-label {
+  color: var(--charcoal);
+}
+
+.terms-hint {
+  font-size: 0.78rem;
+  color: var(--orange-dark);
+  margin: 8px 0 0;
+}
+
 /* Mobile: stack bank info icon on top */
 @media (max-width: 480px) {
   .payment-bank-info {

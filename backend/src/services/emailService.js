@@ -83,7 +83,7 @@ export async function sendBookingConfirmation({ booking, sessionType }) {
 
 /** Customer booking approval (admin verified the payment) — includes the confirmed-booking PDF. */
 export async function sendBookingApprovedEmail({ booking, sessionType, pdfBuffer }) {
-  const { subject, html } = bookingApprovedEmail({ booking, sessionType })
+  const { subject, html } = bookingApprovedEmail({ booking, sessionType, whatsapp: CLIMB_CRUX_WHATSAPP })
   return send({
     to: booking.customer_email,
     subject,
@@ -96,7 +96,7 @@ export async function sendBookingApprovedEmail({ booking, sessionType, pdfBuffer
 
 /** Customer booking decline (payment or personal-information reason) — includes the booking-form PDF. */
 export async function sendBookingDeclinedEmail({ booking, sessionType, reason = 'payment', pdfBuffer }) {
-  const { subject, html } = bookingDeclinedEmail({ booking, sessionType, reason })
+  const { subject, html } = bookingDeclinedEmail({ booking, sessionType, reason, whatsapp: CLIMB_CRUX_WHATSAPP })
   return send({
     to: booking.customer_email,
     subject,

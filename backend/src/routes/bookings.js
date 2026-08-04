@@ -7,6 +7,7 @@ import cloudinary from '../cloudinary.js'
 import Booking from '../models/Booking.js'
 import Payment from '../models/Payment.js'
 import Session from '../models/Session.js'
+import { BOOKING_TERMS } from '../membershipForm.js'
 import { requireAdmin } from '../middleware/auth.js'
 import { generateBookingPdf } from '../services/pdfService.js'
 import {
@@ -81,6 +82,13 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'customer_name and customer_email are required' })
     }
 
+    // Every Terms & Conditions box must be ticked before booking
+    const agreedTerms = Array.isArray(req.body.agreed_terms) ? req.body.agreed_terms : []
+    const missingTerms = BOOKING_TERMS.filter((t) => !agreedTerms.includes(t))
+    if (missingTerms.length > 0) {
+      return res.status(400).json({ error: 'All Terms & Conditions must be accepted before you can continue to payment' })
+    }
+
     // Auto-generate booking number: CCS-YYYY-XXXXX (sequential)
     const year = new Date().getFullYear()
     const count = await Booking.countDocuments()
@@ -93,6 +101,7 @@ router.post('/', async (req, res, next) => {
       customer_phone: req.body.customer_phone || '',
       emergency_contact_name: req.body.emergency_contact_name || '',
       emergency_contact_phone: req.body.emergency_contact_phone || '',
+      agreed_terms: agreedTerms,
       session_id: req.body.session_id || '',
       date: req.body.date || '',
       participants: req.body.participants || 1,

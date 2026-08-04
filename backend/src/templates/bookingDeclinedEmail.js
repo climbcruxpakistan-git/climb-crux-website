@@ -4,15 +4,22 @@
  *   · 'payment'      → payment could not be verified
  *   · 'information'  → personal information was incorrect/incomplete
  */
-import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable } from './emailLayout.js'
+import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink } from './emailLayout.js'
 
 const STATUS = 'Declined'
 
+/** Display "+923132690377" as "+92 313 2690377" for the contact line. */
+function displayNumber(number) {
+  const digits = String(number || '').replace(/[^0-9]/g, '')
+  if (digits.length >= 12) return `+${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
+  return String(number || '')
+}
+
 /**
- * @param {{ booking: object, sessionType: 'Public Session'|'Private Session', reason: 'payment'|'information' }} props
+ * @param {{ booking: object, sessionType: 'Public Session'|'Private Session', reason: 'payment'|'information', whatsapp: string }} props
  * @returns {{ subject: string, html: string }}
  */
-export function bookingDeclinedEmail({ booking, sessionType = 'Public Session', reason = 'payment' }) {
+export function bookingDeclinedEmail({ booking, sessionType = 'Public Session', reason = 'payment', whatsapp = '' }) {
   const reference = booking.booking_number || '—'
 
   const declinedFor = reason === 'information'
@@ -54,8 +61,9 @@ export function bookingDeclinedEmail({ booking, sessionType = 'Public Session', 
         </tr>
       </table>
       <p style="margin:14px 0 0;font-size:14px;color:#444;line-height:1.7">
-        If you believe this is a mistake or need help, contact us at
-        climbcruxpakistan@gmail.com.
+        If you believe this is a mistake or have any queries, contact
+        <strong>Team Climb Crux</strong> at
+        <a href="${whatsappLink(whatsapp)}" style="color:#f36f21;font-weight:700;text-decoration:none">${displayNumber(whatsapp)}</a>.
       </p>
     `,
   })

@@ -730,6 +730,19 @@ export default function BookingsManager() {
                 </div>
               )}
 
+              {(viewing.agreed_terms || []).length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 className="detail-section-title">Terms &amp; Conditions Accepted</h4>
+                  <ul style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {(viewing.agreed_terms || []).map((t, i) => (
+                      <li key={i} style={{ fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}>
+                        <span style={{ color: '#16a34a', marginRight: 6 }}>✓</span>{t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="detail-actions" style={{ marginTop: 24 }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {viewing.booking_status !== 'confirmed' && (

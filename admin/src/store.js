@@ -175,6 +175,14 @@ export async function deleteGalleryItem(id) {
 
 /* ---------- Bookings ---------- */
 
+// Session booking Terms & Conditions (liability waiver) — every box must be
+// ticked. Kept in sync with backend/src/membershipForm.js BOOKING_TERMS.
+const BOOKING_TERMS = [
+  'I agree to follow all instructions given by Climb Crux instructors and staff.',
+  'I understand that rock climbing involves inherent risks, including the risk of injury. I voluntarily choose to participate, accept these risks and agree not to hold Climb Crux, its instructors, staff or volunteers responsible for any injury or loss resulting from my participation.',
+  'I have read, understood and agree to the Climb Crux Liability Waiver and Terms & Conditions.',
+]
+
 export async function getBookings() {
   return mapId(await request('GET', '/bookings'))
 }
@@ -185,7 +193,9 @@ export async function saveBooking(booking) {
   if (booking.id) {
     return mapId(await request('PUT', `/bookings/${booking.id}`, body))
   }
-  return mapId(await request('POST', '/bookings', body))
+  // Admin-created bookings (e.g. walk-in customers) are recorded on the
+  // customer's behalf — all Terms & Conditions are marked as accepted.
+  return mapId(await request('POST', '/bookings', { ...body, agreed_terms: BOOKING_TERMS }))
 }
 
 export async function deleteBooking(id) {

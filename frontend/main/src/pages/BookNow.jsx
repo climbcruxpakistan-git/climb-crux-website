@@ -18,6 +18,14 @@ const staticOptions = [
   { value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' },
 ]
 
+// Session booking Terms & Conditions — every box must be ticked to continue.
+// Kept in sync with backend/src/membershipForm.js BOOKING_TERMS.
+const BOOKING_TERMS = [
+  'I agree to follow all instructions given by Climb Crux instructors and staff.',
+  'I understand that rock climbing involves inherent risks, including the risk of injury. I voluntarily choose to participate, accept these risks and agree not to hold Climb Crux, its instructors, staff or volunteers responsible for any injury or loss resulting from my participation.',
+  'I have read, understood and agree to the Climb Crux Liability Waiver and Terms & Conditions.',
+]
+
 /** Parse a formatted price string like "2,500" or "15000" to a number */
 function parsePrice(val) {
   if (!val) return 0
@@ -37,6 +45,13 @@ export default function BookNow() {
   const [membership, setMembership] = useState({})
   const [planOptions, setPlanOptions] = useState([])
   const [loaded, setLoaded] = useState(false)
+  const [agreedTerms, setAgreedTerms] = useState([])
+
+  function toggleTerm(term) {
+    setAgreedTerms((prev) =>
+      prev.includes(term) ? prev.filter((t) => t !== term) : [...prev, term]
+    )
+  }
 
   // Fetch pricing info & plans from API
   useEffect(() => {
@@ -111,6 +126,10 @@ export default function BookNow() {
     e.preventDefault()
     if (isCustom) return  // custom sessions are booked via email
     if (isMembership) return  // membership is applied for via the membership section
+    if (agreedTerms.length < BOOKING_TERMS.length) {
+      setError('Please tick all three Terms & Conditions to continue')
+      return
+    }
     setError('')
     setSending(true)
 
@@ -126,6 +145,7 @@ export default function BookNow() {
       date: form['preferred-date'].value,
       participants,
       amount: totalAmount,
+      agreed_terms: agreedTerms,
       booking_status: 'pending_payment',
       payment_status: 'pending',
     }
@@ -319,9 +339,36 @@ export default function BookNow() {
                 </div>
               )}
 
+              {/* ── Terms & Conditions (must tick all 3 to continue) ── */}
+              {!isCustom && !isMembership && (
+                <div className="terms-card">
+                  <h3 className="terms-card-title">Terms &amp; Conditions</h3>
+                  <p className="terms-card-desc">
+                    Please read and accept all three statements below to continue to payment.
+                  </p>
+                  {BOOKING_TERMS.map((term) => {
+                    const checked = agreedTerms.includes(term)
+                    return (
+                      <label key={term} className={`terms-checkbox ${checked ? 'is-checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleTerm(term)}
+                        />
+                        <span className="terms-checkbox-mark" aria-hidden="true" />
+                        <span className="terms-checkbox-label">{term}</span>
+                      </label>
+                    )
+                  })}
+                  {agreedTerms.length < BOOKING_TERMS.length && (
+                    <p className="terms-hint">Tick all three boxes to continue</p>
+                  )}
+                </div>
+              )}
+
               {!isCustom && !isMembership && (
                 <div className="form-actions" style={{ flexDirection: 'column' }}>
-                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded} style={{ width: '100%', justifyContent: 'center' }}>
+                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
                     {sending ? (
                       <><span className="btn-spinner" /> Creating booking…</>
                     ) : (
