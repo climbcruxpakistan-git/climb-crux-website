@@ -317,22 +317,18 @@
 }
 
 .check-status-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(243, 111, 33, 0.12);
-  color: var(--orange-dark);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 14px;
+  flex-shrink: 0;
+  color: inherit;
 }
 
 .check-status-desc {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--stone-dark);
-  line-height: 1.7;
-  margin: 0 0 16px;
+  line-height: 1.6;
+  margin: 0 0 14px;
 }
 
 .check-status-cta {

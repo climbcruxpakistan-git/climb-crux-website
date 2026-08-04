@@ -82,7 +82,7 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
 
     /* ── Header (hero band) ── */
     const bandTop = 40
-    const bandHeight = 124
+    const bandHeight = 150
     doc.rect(doc.page.margins.left, bandTop, pageWidth, bandHeight).fill(DARK)
 
     // Brand (left side)
@@ -95,20 +95,22 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
     doc.font('Helvetica-Bold').fontSize(13).fillColor(ORANGE)
       .text('Approved Membership Application', leftX, 116, { width: leftW })
 
-    // Key information (right side, aligned label/value pairs)
+    // Key information (right side, aligned label/value pairs) — the column is
+    // inset from the band's right edge so long values are never clipped or
+    // running off the side of the black header.
     const rightX = twoColX + 16
-    const rightW = pageWidth / 2 - 16
+    const rightW = pageWidth / 2 - 34
+    let rx = 56
     const heroLabel = (small, big, color = '#ffffff') => {
       doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
-      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 12, { width: rightW, align: 'right' })
+      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 13, { width: rightW, align: 'right' })
     }
-    let rx = 54
     heroLabel('APPLICATION ID', clean(app.application_id))
-    rx += 30
+    rx += 32
     heroLabel('MEMBERSHIP ID', clean(app.membership_id))
-    rx += 30
+    rx += 32
     heroLabel('STATUS', 'APPROVED / ACTIVE', ORANGE)
-    rx += 30
+    rx += 32
     heroLabel('APPROVED', clean(app.approval_date))
 
     // Orange accent bar across the bottom of the band
@@ -226,19 +228,11 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
       ['Submitted On', app.created_at ? new Date(app.created_at).toISOString().slice(0, 10) : ''],
     ])
 
-    /* ── Footer on each page ── */
-    const range = doc.bufferedPageRange()
-    for (let i = range.start; i < range.start + range.count; i++) {
-      doc.switchToPage(i)
-      doc.fillColor(GRAY).font('Helvetica').fontSize(8)
-        .text(
-          'Climb Crux Pakistan · Margalla Hills, Islamabad · climbcruxpakistan.com',
-          doc.page.margins.left,
-          doc.page.height - 30,
-          { width: pageWidth, align: 'center' },
-        )
-    }
-
+    // No per-page footer here — the brand + reference are already shown in the
+    // hero band. A footer drawn at page.height - 30 sits below PDFKit's maxY
+    // (page height − bottom margin), so every footer write auto-added a blank
+    // page containing only the address line. Removing it (as the booking PDF
+    // already does) eliminates those stray blank pages.
     doc.end()
   })
 }
