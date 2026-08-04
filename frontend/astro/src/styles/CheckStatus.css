@@ -161,6 +161,25 @@
   letter-spacing: 0.03em;
 }
 
+/* Membership validity dates (non-personal: start + expiry only) */
+.cs-dates {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+  color: #6b675f;
+}
+
+.cs-dates strong {
+  color: var(--charcoal);
+  font-family: monospace;
+  letter-spacing: 0.03em;
+}
+
+/* Optional call-to-action (Book Again / Renew Membership) */
+.cs-cta {
+  margin-top: 20px;
+  text-decoration: none;
+}
+
 .cs-message {
   margin: 10px 0 0;
   font-size: 0.95rem;

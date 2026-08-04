@@ -9,37 +9,54 @@ import './CheckStatus.css'
  * page renders the generic status + message returned by /api/status/check.
  */
 const STATUS_META = {
+  // ── Session booking lifecycle ──
   booking_received: {
     emoji: '🟡', label: 'Booking Received', color: 'yellow',
-    message: 'We have successfully received your booking request. Please complete your payment and upload your payment proof if you haven\u2019t already.',
+    message: 'We have successfully received your booking request. Please complete your payment to continue with the verification process.',
   },
   payment_pending: {
     emoji: '🟠', label: 'Payment Pending', color: 'orange',
-    message: 'We are waiting for your payment proof to be uploaded.',
+    message: 'We are waiting for your payment proof.',
   },
   under_verification: {
     emoji: '🔵', label: 'Under Verification', color: 'blue',
-    message: 'Your payment proof has been received and is currently being reviewed by the Climb Crux team. We will notify you once verification is complete.',
+    message: 'Your payment has been received and is currently being verified by the Climb Crux team.',
   },
   booking_confirmed: {
     emoji: '🟢', label: 'Booking Confirmed', color: 'green',
-    message: 'Your booking has been confirmed. A confirmation email has been sent with all the necessary details. We look forward to climbing with you!',
+    message: 'Your booking has been confirmed. Please check your confirmation email for your session details.',
+  },
+  session_completed: {
+    emoji: '⚪', label: 'Session Completed', color: 'gray',
+    message: 'Your climbing session has been completed. Thank you for climbing with Climb Crux. We look forward to seeing you again.',
+    cta: { label: 'Book Another Session', url: '/book-now' },
   },
   booking_declined: {
     emoji: '🔴', label: 'Booking Declined', color: 'red',
-    message: 'Unfortunately, your booking could not be confirmed. Please check your email for more information or contact Climb Crux if you need assistance.',
+    message: 'Unfortunately, your booking could not be confirmed. Please check your email for more information or contact Climb Crux for assistance.',
   },
-  membership_pending: {
-    emoji: '🟠', label: 'Membership Pending Verification', color: 'orange',
-    message: 'Your membership request has been received and is awaiting payment verification.',
+  booking_expired: {
+    emoji: '⚫', label: 'Booking Expired', color: 'gray',
+    message: 'This booking request has expired because payment was not completed within the required time.',
+    cta: { label: 'Book New Session', url: '/book-now' },
+  },
+  // ── Membership lifecycle ──
+  membership_received: {
+    emoji: '🟡', label: 'Membership Received', color: 'yellow',
+    message: 'Your membership request has been received. Please complete your payment to continue with the verification process.',
   },
   membership_active: {
     emoji: '🟢', label: 'Membership Active', color: 'green',
-    message: 'Your membership has been approved successfully. Please check your email for your confirmation and membership details.',
+    message: 'Your membership is active.',
+  },
+  membership_expired: {
+    emoji: '⚪', label: 'Membership Expired', color: 'gray',
+    message: 'Your membership has expired. Renew your membership to continue enjoying member benefits.',
+    cta: { label: 'Renew Membership', url: '/membership/apply' },
   },
   membership_declined: {
     emoji: '🔴', label: 'Membership Declined', color: 'red',
-    message: 'Your membership request could not be approved. Please check your email for the reason or contact Climb Crux for assistance.',
+    message: 'Unfortunately, your membership request could not be approved. Please check your email for further information.',
   },
   not_found: {
     emoji: '⚪', label: 'No Record Found', color: 'gray',
@@ -47,30 +64,41 @@ const STATUS_META = {
   },
 }
 
-const BOOKING_STEPS = ['Booking Received', 'Payment Uploaded', 'Under Verification', 'Booking Confirmed']
-const MEMBERSHIP_STEPS = ['Application Received', 'Payment & Review', 'Membership Active']
-
 /** Simple progress tracker — shows where a request is in its flow. */
 function progressSteps(result) {
-  if (result.status === 'booking_received') {
-    return BOOKING_STEPS.map((label, i) => ({ label, state: i === 0 ? 'done' : 'todo' }))
+  if (result.type === 'membership') {
+    const steps = ['Application Received', 'Payment & Review', 'Membership Active']
+    switch (result.status) {
+      case 'membership_received':
+        return steps.map((label, i) => ({ label, state: i === 0 ? 'done' : 'todo' }))
+      case 'payment_pending':
+        return steps.map((label, i) => ({ label, state: i === 0 ? 'done' : i === 1 ? 'current' : 'todo' }))
+      case 'under_verification':
+        return steps.map((label, i) => ({ label, state: i <= 1 ? 'done' : i === 2 ? 'current' : 'todo' }))
+      case 'membership_active':
+        return steps.map((label) => ({ label, state: 'done' }))
+      case 'membership_expired':
+        return steps.map((label, i) => ({ label, state: i < 2 ? 'done' : 'todo' }))
+      default:
+        return []
+    }
   }
-  if (result.status === 'payment_pending') {
-    return BOOKING_STEPS.map((label, i) => ({ label, state: i === 0 ? 'done' : i === 1 ? 'current' : 'todo' }))
+  const steps = ['Booking Received', 'Payment Pending', 'Under Verification', 'Booking Confirmed']
+  switch (result.status) {
+    case 'booking_received':
+      return steps.map((label, i) => ({ label, state: i === 0 ? 'done' : 'todo' }))
+    case 'payment_pending':
+      return steps.map((label, i) => ({ label, state: i === 0 ? 'done' : i === 1 ? 'current' : 'todo' }))
+    case 'under_verification':
+      return steps.map((label, i) => ({ label, state: i <= 1 ? 'done' : i === 2 ? 'current' : 'todo' }))
+    case 'booking_confirmed':
+    case 'session_completed':
+      return steps.map((label) => ({ label, state: 'done' }))
+    case 'booking_expired':
+      return steps.map((label, i) => ({ label, state: i === 0 ? 'done' : 'todo' }))
+    default:
+      return []
   }
-  if (result.status === 'under_verification') {
-    return BOOKING_STEPS.map((label, i) => ({ label, state: i <= 1 ? 'done' : i === 2 ? 'current' : 'todo' }))
-  }
-  if (result.status === 'booking_confirmed') {
-    return BOOKING_STEPS.map((label) => ({ label, state: 'done' }))
-  }
-  if (result.status === 'membership_pending') {
-    return MEMBERSHIP_STEPS.map((label, i) => ({ label, state: i === 0 ? 'done' : i === 1 ? 'current' : 'todo' }))
-  }
-  if (result.status === 'membership_active') {
-    return MEMBERSHIP_STEPS.map((label) => ({ label, state: 'done' }))
-  }
-  return []
 }
 
 function ResultCard({ result }) {
@@ -86,6 +114,13 @@ function ResultCard({ result }) {
       {result.found && (
         <p className="cs-code">Reference: <strong>{result.code}</strong></p>
       )}
+      {(result.startDate || result.expiryDate) && (
+        <p className="cs-dates">
+          {result.startDate ? <span>Valid from <strong>{result.startDate}</strong></span> : null}
+          {result.startDate && result.expiryDate ? ' · ' : null}
+          {result.expiryDate ? <span>Expires <strong>{result.expiryDate}</strong></span> : null}
+        </p>
+      )}
       <p className="cs-message">{meta.message}</p>
       {steps.length > 0 && (
         <div className="cs-steps" aria-label="Progress">
@@ -98,6 +133,11 @@ function ResultCard({ result }) {
             </div>
           ))}
         </div>
+      )}
+      {meta.cta && (
+        <a className="btn btn-primary cs-cta" href={meta.cta.url}>
+          {meta.cta.label} →
+        </a>
       )}
     </div>
   )

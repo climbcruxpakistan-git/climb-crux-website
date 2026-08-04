@@ -4,6 +4,25 @@ import MembershipApplication from '../models/MembershipApplication.js'
 
 const router = Router()
 
+/** Today's date as YYYY-MM-DD in the server's local timezone. */
+function todayStr() {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
+ * A scheduled session date (YYYY-MM-DD) is considered past once the day
+ * itself is over — strictly before today. On the session day the booking
+ * still shows its confirmation status; from the following day it flips to
+ * completed (confirmed bookings) or expired (payments never completed).
+ */
+function sessionPassed(dateStr) {
+  return Boolean(dateStr) && dateStr < todayStr()
+}
+
 /**
  * Failed-lookup monitor (in-memory, single instance): per-IP consecutive
  * failure counter so repeated probing of non-existent codes is visible in the
@@ -24,20 +43,39 @@ function normalizeCode(raw) {
     .trim()
 }
 
-/** Map a booking document to one of the public status keys. */
+/** Map a booking document to one of the public lifecycle status keys. */
 export function bookingStatusKey(b) {
-  if (b.booking_status === 'confirmed') return 'booking_confirmed'
   if (b.booking_status === 'cancelled') return 'booking_declined'
+  if (b.booking_status === 'confirmed') {
+    // Automatic lifecycle: once the session date has passed, "Booking
+    // Confirmed" gives way to "Session Completed" (record is NOT overwritten).
+    return sessionPassed(b.date) ? 'session_completed' : 'booking_confirmed'
+  }
+  // Payment was never completed before the session date passed → expired.
+  if (sessionPassed(b.date)) return 'booking_expired'
   if (b.booking_status === 'pending_verification') return 'under_verification'
   // pending_payment — distinguish "just received" from "payment started"
   return b.payment_method ? 'payment_pending' : 'booking_received'
 }
 
-/** Map a membership application to one of the public status keys. */
+/** Map a membership application to one of the public lifecycle status keys. */
 export function membershipStatusKey(a) {
-  if (a.status === 'approved') return 'membership_active'
   if (a.status === 'rejected') return 'membership_declined'
-  return 'membership_pending'
+  if (a.membership_status === 'cancelled') return 'membership_declined'
+  if (a.status === 'approved') {
+    // Automatic lifecycle: expired memberships (explicit status, or expiry
+    // date in the past) take precedence over "Membership Active".
+    if (a.membership_status === 'expired') return 'membership_expired'
+    // Normalize to YYYY-MM-DD defensively (admin forms send plain dates, but a
+    // timestamp could arrive via other paths).
+    const expiry = String(a.office_expiry_date || '').slice(0, 10)
+    if (expiry && expiry < todayStr()) return 'membership_expired'
+    return 'membership_active'
+  }
+  // pending_review — how far the applicant got with the payment
+  if (a.payment_screenshot_url) return 'under_verification'
+  if (a.payment_method) return 'payment_pending'
+  return 'membership_received'
 }
 
 function recordFailure(ip) {
@@ -87,14 +125,23 @@ router.post('/check', async (req, res, next) => {
 
     if (booking) {
       clearFailures(ip)
-      return res.json({ found: true, code: booking.booking_number, status: bookingStatusKey(booking) })
+      return res.json({
+        found: true,
+        code: booking.booking_number,
+        type: 'booking',
+        status: bookingStatusKey(booking),
+      })
     }
     if (application) {
       clearFailures(ip)
       return res.json({
         found: true,
         code: application.application_id || application.membership_id,
+        type: 'membership',
         status: membershipStatusKey(application),
+        // Non-personal membership dates (shown with the Active/Expired cards)
+        startDate: application.office_start_date || '',
+        expiryDate: application.office_expiry_date || '',
       })
     }
 
