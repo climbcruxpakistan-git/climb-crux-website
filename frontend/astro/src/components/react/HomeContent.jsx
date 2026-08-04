@@ -44,7 +44,7 @@ export default function HomeContent({ initial }) {
 
   const heroTitle = content.heroTitle || 'Discover Rock Climbing in Islamabad'
   const heroLede = content.heroLede || "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers."
-  const heroPhotoUrl = content.heroPhotoUrl || ''
+  const heroPhotoUrl = content.heroPhotoUrl || 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg'
   const paths = content.paths && content.paths.length ? content.paths : DEFAULT_PATHS
   const teasers = content.teasers && content.teasers.length ? content.teasers : [
     { tag: 'Public Session · 4+' },
@@ -83,15 +83,15 @@ export default function HomeContent({ initial }) {
               {heroPhotoUrl ? (
                 <img
                   src={heroPhotoUrl}
-                  alt="Rock climbing in Islamabad — Climb Crux climbers on Margalla Hills"
-                  style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
+                  alt="Rock climbing in Islamabad — Climb Crux climbers on Saidpur Village"
+                  style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
                 />
               ) : (
-                <div className="placeholder-photo" style={{ '--ar': '4 / 3' }}>
+                <div className="placeholder-photo" style={{ '--ar': '16 / 9' }}>
                   <span className="tag">Route Topo · Live Session</span>
                 </div>
               )}
-              <figcaption className="hero-caption">Group photo from our rock climbing session on Margalla Hills, Islamabad</figcaption>
+              <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
             </figure>
           </div>
         </div>

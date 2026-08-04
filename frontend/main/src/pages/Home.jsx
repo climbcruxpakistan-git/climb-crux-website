@@ -49,7 +49,7 @@ export default function Home() {
   // Use content from API, fallback to hardcoded defaults
   const heroTitle = content?.heroTitle || 'Discover the Thrill of Rock Climbing'
   const heroLede = content?.heroLede || "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers."
-  const heroPhotoUrl = content?.heroPhotoUrl || ''
+  const heroPhotoUrl = content?.heroPhotoUrl || 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg'
   const paths = content?.paths || [
     { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
     { grade: 'Up to 7c+', label: 'Custom & Premium', title: 'Private & Premium', copy: 'Book a private slot for your group or go one-on-one with an instructor. Premium plans open the door to the hardest routes we run.', to: '/private-premium', cta: 'Explore plans' },
@@ -101,11 +101,11 @@ export default function Home() {
           <div className="hero-visual">
             <figure className="hero-figure">
               {heroPhotoUrl ? (
-                <img src={heroPhotoUrl} alt="Climb Crux" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35)' }} />
+                <img src={heroPhotoUrl} alt="Climb Crux" style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35)' }} />
               ) : (
-                <PlaceholderPhoto tag="Route Topo · Live Session" ratio="4 / 3" />
+                <PlaceholderPhoto tag="Route Topo · Live Session" ratio="16 / 9" />
               )}
-              <figcaption className="hero-caption">Group Photo From Our Successful Rock Climbing Session</figcaption>
+              <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
             </figure>
           </div>
         </div>

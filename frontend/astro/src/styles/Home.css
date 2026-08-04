@@ -60,8 +60,12 @@
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 0.72rem;
+  font-size: clamp(0.55rem, 1.7vw, 0.72rem);
   color: #c9c4b8;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hero-visual .placeholder-photo {

@@ -18,7 +18,7 @@ const teaserSchema = new mongoose.Schema({
 const homeContentSchema = new mongoose.Schema({
   heroTitle: { type: String, default: 'Discover the Thrill of Rock Climbing' },
   heroLede: { type: String, default: 'Climb Crux is Islamabad\'s premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers.' },
-  heroPhotoUrl: { type: String, default: '' },
+  heroPhotoUrl: { type: String, default: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg' },
   pathsEyebrow: { type: String, default: 'Two ways to climb with us' },
   pathsTitle: { type: String, default: 'Pick your route' },
   paths: [pathCardSchema],
