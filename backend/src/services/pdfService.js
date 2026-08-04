@@ -299,7 +299,7 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
 
     /* ── Header (hero band) ── */
     const bandTop = 40
-    const bandHeight = 124
+    const bandHeight = 150
     doc.rect(doc.page.margins.left, bandTop, pageWidth, bandHeight).fill(DARK)
 
     // Brand (left side)
@@ -315,17 +315,17 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     // Key information (right side, aligned label/value pairs)
     const rightX = twoColX + 16
     const rightW = pageWidth / 2 - 16
-    let rx = 54
+    let rx = 56
     const heroLabel = (small, big, color = '#ffffff') => {
       doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
-      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 12, { width: rightW, align: 'right' })
+      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 13, { width: rightW, align: 'right' })
     }
     heroLabel('BOOKING ID', clean(booking.booking_number))
-    rx += 30
+    rx += 32
     heroLabel('SESSION', clean(sessionType || (String(booking.session_id || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session')))
-    rx += 30
+    rx += 32
     heroLabel('STATUS', statusLabel, ORANGE)
-    rx += 30
+    rx += 32
     heroLabel('BOOKED', clean(booking.created_at ? new Date(booking.created_at).toISOString().slice(0, 10) : (booking.approval_date || '')))
 
     // Orange accent bar across the bottom of the band

@@ -128,7 +128,6 @@ export default function BookingsManager() {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('All')
-  const [paymentFilter, setPaymentFilter] = useState('All')
   const [datePreset, setDatePreset] = useState('all')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -147,7 +146,6 @@ export default function BookingsManager() {
   }
   const [form, setForm] = useState(emptyForm)
 
-  const paymentStatusOptions = ['All', 'pending', 'verification_required', 'paid', 'failed']
   const bookingStatusOptions = ['All', 'pending_payment', 'pending_verification', 'confirmed', 'cancelled']
   const bookingStatusLabels = {
     All: 'All',
@@ -304,9 +302,6 @@ export default function BookingsManager() {
   if (statusFilter !== 'All') {
     shown = shown.filter((b) => b.booking_status === statusFilter)
   }
-  if (paymentFilter !== 'All') {
-    shown = shown.filter((b) => (b.payment_status || 'pending') === paymentFilter)
-  }
   if (datePreset !== 'all' || dateFrom || dateTo) {
     shown = shown.filter(isBookingInRange)
   }
@@ -420,20 +415,6 @@ export default function BookingsManager() {
                 onClick={() => setStatusFilter(c)}
               >
                 {bookingStatusLabels[c] || c.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-              </button>
-            ))}
-            <span style={{ width: 1, height: 24, background: '#e5e0d4', margin: '0 4px' }} />
-            {/* Payment status filters */}
-            <span className="btn-admin btn-admin-sm" style={{ opacity: 0.5, cursor: 'default', fontWeight: 400 }}>
-              Payment:
-            </span>
-            {paymentStatusOptions.map((c) => (
-              <button
-                key={c}
-                className={`btn-admin btn-admin-sm ${paymentFilter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
-                onClick={() => setPaymentFilter(c)}
-              >
-                {c.charAt(0).toUpperCase() + c.slice(1).replace(/_/g, ' ')}
               </button>
             ))}
           </div>

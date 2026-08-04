@@ -7,9 +7,16 @@ import {
   summaryTable,
   referenceBox,
   statusChip,
-  closingBlock,
   escapeHtml,
+  whatsappLink,
 } from './emailLayout.js'
+
+/** Display "+923132690377" as "+92 313 2690377" for the contact line. */
+function displayNumber(number) {
+  const digits = String(number || '').replace(/[^0-9]/g, '')
+  if (digits.length >= 12) return `+${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
+  return String(number || '')
+}
 
 const STATUS = 'Pending Payment Verification'
 
@@ -54,7 +61,11 @@ export function bookingConfirmation({ booking, sessionType = 'Public Session', w
           </td>
         </tr>
       </table>
-      ${closingBlock('Please do not reply to this email. If you have any queries, reach out to Climb Crux on WhatsApp or at climbcruxpakistan@gmail.com.')}
+      <p style="margin:22px 0 0;font-size:14px;color:#444;line-height:1.7">
+        Please do not reply to this email. If you have any queries, contact
+        <strong>Team Climb Crux</strong> at
+        <a href="${whatsappLink(whatsapp)}" style="color:#f36f21;font-weight:700;text-decoration:none">${displayNumber(whatsapp)}</a>.
+      </p>
     `,
   })
 

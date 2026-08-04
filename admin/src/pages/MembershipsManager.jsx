@@ -11,8 +11,7 @@ import Modal from '../components/Modal.jsx'
 
 const DEFAULT_PLAN = 'Monthly Membership (4 Sessions)'
 const DEFAULT_FEE = 'PKR 8,000 / Month'
-const REVIEW_STATUSES = ['All', 'pending_review', 'approved', 'rejected']
-const PAYMENT_STATUSES = ['All', 'pending', 'paid', 'failed']
+const REVIEW_STATUSES = ['All', 'pending_review', 'pending_payment', 'approved', 'rejected']
 
 function label(str) {
   return String(str || '—').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
@@ -128,7 +127,6 @@ export default function MembershipsManager() {
   const [apps, setApps] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewFilter, setReviewFilter] = useState('All')
-  const [paymentFilter, setPaymentFilter] = useState('All')
   const [viewing, setViewing] = useState(null)
   const [rejecting, setRejecting] = useState(null)
   const [acting, setActing] = useState(false)
@@ -213,8 +211,11 @@ export default function MembershipsManager() {
   }
 
   let shown = apps
-  if (reviewFilter !== 'All') shown = shown.filter((a) => (a.status || 'pending_review') === reviewFilter)
-  if (paymentFilter !== 'All') shown = shown.filter((a) => (a.payment_status || 'pending') === paymentFilter)
+  if (reviewFilter === 'pending_payment') {
+    shown = shown.filter((a) => (a.payment_status || 'pending') === 'pending')
+  } else if (reviewFilter !== 'All') {
+    shown = shown.filter((a) => (a.status || 'pending_review') === reviewFilter)
+  }
 
   const stats = {
     total: apps.length,
@@ -279,16 +280,6 @@ export default function MembershipsManager() {
                 key={c}
                 className={`btn-admin btn-admin-sm ${reviewFilter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
                 onClick={() => setReviewFilter(c)}
-              >
-                {label(c)}
-              </button>
-            ))}
-            <span style={{ width: 1, height: 24, background: '#e5e0d4', margin: '0 4px' }} />
-            {PAYMENT_STATUSES.map((c) => (
-              <button
-                key={c}
-                className={`btn-admin btn-admin-sm ${paymentFilter === c ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
-                onClick={() => setPaymentFilter(c)}
               >
                 {label(c)}
               </button>
