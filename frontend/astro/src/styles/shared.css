@@ -309,61 +309,24 @@
   border: 1px solid var(--chalk-dim);
   border-top: 4px solid var(--orange);
   border-radius: 12px;
-  padding: 28px 26px;
+  padding: 22px 22px;
   box-shadow: 0 12px 32px rgba(56, 56, 57, 0.08);
   position: sticky;
   top: 32px;
-}
-
-.check-status-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(243, 111, 33, 0.12);
-  color: var(--orange-dark);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.check-status-eyebrow {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--orange-dark);
-  margin: 0 0 6px;
-}
-
-.check-status-title {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: 1.2rem;
-  color: var(--charcoal);
-  margin: 0 0 8px;
-  line-height: 1.2;
+  text-align: center;
 }
 
 .check-status-desc {
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--stone-dark);
   line-height: 1.7;
-  margin: 0 0 18px;
+  margin: 0 0 16px;
 }
 
 .check-status-cta {
   width: 100%;
   justify-content: center;
   text-decoration: none;
-}
-
-.check-status-note {
-  margin: 12px 0 0;
-  font-size: 0.72rem;
-  color: var(--stone-dark);
-  text-align: center;
 }
 
 /* Tablet & mobile: single column; the card stacks first, above the form. */
