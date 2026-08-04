@@ -127,8 +127,8 @@ export function renderEmailLayout({ headerTitle, headerSubtitle, greeting = '', 
           <td style="background:#fafafa;border-top:1px solid #eee;padding:22px 32px;text-align:center">
             <div style="font-size:13px;color:#666;line-height:1.8">
               <strong style="color:#1c1c1c">Climb Crux Pakistan</strong><br />
-              Margalla Hills, Islamabad<br />
-              <a href="mailto:${SITE_EMAIL}" style="color:#f36f21;text-decoration:none">${SITE_EMAIL}</a> &middot; <a href="${SITE_URL}" style="color:#f36f21;text-decoration:none">climbcruxpakistan.com</a>
+              <a href="${SITE_URL}" style="color:#f36f21;text-decoration:none">climbcruxpakistan.com</a><br />
+              <a href="mailto:${SITE_EMAIL}" style="color:#f36f21;text-decoration:none">${SITE_EMAIL}</a>
             </div>
             <div style="margin-top:12px;font-size:11px;color:#b8b8b8">You received this email because you submitted a request on the Climb Crux website.</div>
           </td>

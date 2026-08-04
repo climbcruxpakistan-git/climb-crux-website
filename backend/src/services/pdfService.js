@@ -409,15 +409,13 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     })
     y += 4
 
-    if (status === 'confirmed' && booking.verified_by) {
+    if (status === 'confirmed' && booking.approval_date) {
       box('VERIFICATION', [
-        ['Verified By', booking.verified_by],
         ['Verified On', booking.approval_date],
       ])
     }
-    if (status === 'declined' && booking.rejected_by) {
+    if (status === 'declined' && booking.rejection_date) {
       box('REVIEW', [
-        ['Reviewed By', booking.rejected_by],
         ['Reviewed On', booking.rejection_date],
       ])
     }
