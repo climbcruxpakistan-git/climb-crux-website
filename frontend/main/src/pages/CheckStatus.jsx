@@ -195,7 +195,7 @@ export default function CheckStatus() {
               </button>
             </form>
             <p className="cs-hint">
-              Examples: <code>CCS-00110</code> or <code>CCM-0101</code> (older formats like <code>CCS-2026-00001</code> also work)
+              Examples: <code>CCS-00110</code> or <code>CCM-0101</code>
             </p>
           </div>
 
