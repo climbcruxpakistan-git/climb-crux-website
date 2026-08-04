@@ -404,6 +404,93 @@
   }
 }
 
+/* ============================== CHECK STATUS CARD (Book Now) ============================== */
+
+/* Two-column Book Now layout: booking form (left) + Check Status card (right). */
+.book-now-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Check Status card — same visual family as the status-checker search card:
+   white surface, orange top accent, soft shadow. Sticky on desktop so it stays
+   in view while the booking form is scrolled. */
+.check-status-card {
+  background: #fff;
+  border: 1px solid var(--chalk-dim);
+  border-top: 4px solid var(--orange);
+  border-radius: 12px;
+  padding: 28px 26px;
+  box-shadow: 0 12px 32px rgba(56, 56, 57, 0.08);
+  position: sticky;
+  top: 32px;
+}
+
+.check-status-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(243, 111, 33, 0.12);
+  color: var(--orange-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.check-status-eyebrow {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--orange-dark);
+  margin: 0 0 6px;
+}
+
+.check-status-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  color: var(--charcoal);
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.check-status-desc {
+  font-size: 0.88rem;
+  color: var(--stone-dark);
+  line-height: 1.7;
+  margin: 0 0 18px;
+}
+
+.check-status-cta {
+  width: 100%;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.check-status-note {
+  margin: 12px 0 0;
+  font-size: 0.72rem;
+  color: var(--stone-dark);
+  text-align: center;
+}
+
+/* Tablet & mobile: single column; the card stacks first, above the form. */
+@media (max-width: 980px) {
+  .book-now-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .check-status-card {
+    order: -1;
+    position: static;
+  }
+}
+
 .field {
   display: flex;
   flex-direction: column;
