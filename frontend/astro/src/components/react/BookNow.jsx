@@ -260,6 +260,9 @@ export default function BookNow({ preselected = '' }) {
           </div>
 
           <aside className="check-status-card" aria-label="Check your booking or membership status">
+            <span className="check-status-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
             <p className="check-status-desc">
               Check the current status of your session booking or membership request using your unique reference number.
             </p>

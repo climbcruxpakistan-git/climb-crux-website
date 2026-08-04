@@ -309,15 +309,27 @@
   border: 1px solid var(--chalk-dim);
   border-top: 4px solid var(--orange);
   border-radius: 12px;
-  padding: 22px 22px;
+  padding: 24px 22px;
   box-shadow: 0 12px 32px rgba(56, 56, 57, 0.08);
   position: sticky;
   top: 32px;
   text-align: center;
 }
 
+.check-status-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(243, 111, 33, 0.12);
+  color: var(--orange-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
 .check-status-desc {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--stone-dark);
   line-height: 1.7;
   margin: 0 0 16px;
