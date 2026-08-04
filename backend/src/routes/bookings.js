@@ -81,6 +81,10 @@ router.post('/', async (req, res, next) => {
     if (!customer_name || !customer_email) {
       return res.status(400).json({ error: 'customer_name and customer_email are required' })
     }
+    // Emergency contact is required for every session booking
+    if (!req.body.emergency_contact_name || !req.body.emergency_contact_phone) {
+      return res.status(400).json({ error: 'Emergency contact name and phone are required' })
+    }
 
     // Every Terms & Conditions box must be ticked before booking
     const agreedTerms = Array.isArray(req.body.agreed_terms) ? req.body.agreed_terms : []

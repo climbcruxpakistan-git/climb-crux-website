@@ -140,6 +140,7 @@ export default function BookingsManager() {
 
   const emptyForm = {
     customer_name: '', customer_email: '', customer_phone: '',
+    emergency_contact_name: '', emergency_contact_phone: '',
     session_id: '', date: '', participants: 1, amount: 2500,
     booking_status: 'pending_payment',
     payment_method: '', payment_status: 'pending',
@@ -596,6 +597,16 @@ export default function BookingsManager() {
               <div className="admin-field">
                 <label>Participants</label>
                 <input type="number" min="1" value={form.participants} onChange={(e) => setForm({ ...form, participants: Number(e.target.value) })} />
+              </div>
+            </div>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Emergency Contact Name</label>
+                <input value={form.emergency_contact_name} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} />
+              </div>
+              <div className="admin-field">
+                <label>Emergency Contact Phone</label>
+                <input value={form.emergency_contact_phone} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} />
               </div>
             </div>
 

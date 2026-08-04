@@ -162,8 +162,8 @@ export default function BookNow({ preselected = '' }) {
                 </div>
                 <div className="field"><label htmlFor="preferred-date">Preferred date</label><input id="preferred-date" type="date" min={getTodayString()} /></div>
                 <div className="form-row">
-                  <div className="field"><label htmlFor="emergency-contact-name">Emergency contact (optional)</label><input id="emergency-contact-name" type="text" placeholder="Name" /></div>
-                  <div className="field"><label htmlFor="emergency-contact-phone">Emergency contact phone (optional)</label><input id="emergency-contact-phone" type="tel" placeholder="03XX-XXXXXXX" /></div>
+                  <div className="field"><label htmlFor="emergency-contact-name">Emergency contact</label><input id="emergency-contact-name" type="text" placeholder="Name" required /></div>
+                  <div className="field"><label htmlFor="emergency-contact-phone">Emergency contact phone</label><input id="emergency-contact-phone" type="tel" placeholder="03XX-XXXXXXX" required /></div>
                 </div>
               </>
             )}
