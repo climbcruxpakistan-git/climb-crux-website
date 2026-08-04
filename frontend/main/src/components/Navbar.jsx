@@ -8,7 +8,6 @@ const LINKS = [
   { to: '/our-team', label: 'Our Team' },
   { to: '/about', label: 'About' },
   { to: '/gallery', label: 'Gallery' },
-  { to: '/check-status', label: 'Check Status' },
 ]
 
 export default function Navbar() {
