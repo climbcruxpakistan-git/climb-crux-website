@@ -52,7 +52,7 @@
 
 .hero-figure {
   margin: 0;
-  transform: scale(1.2);
+  transform: scale(1.2) translateX(18px);
   transform-origin: center;
 }
 
