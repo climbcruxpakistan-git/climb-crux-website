@@ -10,6 +10,7 @@ import Session from '../models/Session.js'
 import { BOOKING_TERMS } from '../membershipForm.js'
 import { requireAdmin } from '../middleware/auth.js'
 import { generateBookingPdf } from '../services/pdfService.js'
+import { nextSequence } from '../services/sequence.js'
 import {
   sendBookingConfirmation,
   sendBookingApprovedEmail,
@@ -94,9 +95,13 @@ router.post('/', async (req, res, next) => {
     }
 
     // Auto-generate booking number: CCS-YYYY-XXXXX (sequential)
+    // Never-repeating atomic counter — two bookings can never receive the
+    // same number (even booked simultaneously, or after older bookings are
+    // deleted). The sequence starts at 18 (the highest existing booking
+    // number in production is 17, so 18 is the first safe unused number).
     const year = new Date().getFullYear()
-    const count = await Booking.countDocuments()
-    const booking_number = `CCS-${year}-${String(count + 1).padStart(5, '0')}`
+    const seq = await nextSequence('booking', 18)
+    const booking_number = `CCS-${year}-${String(seq).padStart(5, '0')}`
 
     const booking = await Booking.create({
       booking_number,

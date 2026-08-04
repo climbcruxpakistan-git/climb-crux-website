@@ -23,7 +23,6 @@ if (!fs.existsSync(PDF_DIR)) fs.mkdirSync(PDF_DIR, { recursive: true })
 const ORANGE = '#f36f21'
 const DARK = '#1c1c1c'
 const GRAY = '#666666'
-const LIGHT = '#f5f5f5'
 
 function label(str) {
   return String(str || '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
@@ -277,7 +276,7 @@ function bookingMethodLabel(method) {
  */
 export function generateBookingPdf(booking, { status = 'pending', sessionType = '', time = '' } = {}) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margins: { top: 48, bottom: 48, left: 50, right: 50 }, bufferPages: true })
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 48, bottom: 48, left: 50, right: 50 } })
     const chunks = []
     doc.on('data', (c) => chunks.push(c))
     doc.on('end', () => resolve(Buffer.concat(chunks)))
@@ -312,9 +311,11 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     doc.font('Helvetica-Bold').fontSize(13).fillColor(ORANGE)
       .text(statusTitle, leftX, 116, { width: leftW })
 
-    // Key information (right side, aligned label/value pairs)
+    // Key information (right side, aligned label/value pairs) — the column is
+    // inset from the band's right edge so long values are never clipped or
+    // running off the side of the black header.
     const rightX = twoColX + 16
-    const rightW = pageWidth / 2 - 16
+    const rightW = pageWidth / 2 - 34
     let rx = 56
     const heroLabel = (small, big, color = '#ffffff') => {
       doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
@@ -421,24 +422,9 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
       ])
     }
 
-    /* ── Footer on each page ── */
-    const range = doc.bufferedPageRange()
-    for (let i = range.start; i < range.start + range.count; i++) {
-      doc.switchToPage(i)
-      // Status banner just above the footer
-      doc.rect(doc.page.margins.left, doc.page.height - 62, pageWidth, 22).fill(LIGHT)
-      doc.fillColor(status === 'confirmed' ? '#1c7a3d' : status === 'declined' ? '#b3261e' : ORANGE)
-        .font('Helvetica-Bold').fontSize(9)
-        .text(`STATUS: ${statusLabel}`, doc.page.margins.left + 10, doc.page.height - 56, { width: pageWidth - 20 })
-      doc.fillColor(GRAY).font('Helvetica').fontSize(8)
-        .text(
-          'Climb Crux Pakistan · Margalla Hills, Islamabad · climbcruxpakistan.com',
-          doc.page.margins.left,
-          doc.page.height - 30,
-          { width: pageWidth, align: 'center' },
-        )
-    }
-
+    // No per-page footer here — the status is already shown in the hero band,
+    // and the address line added no value (it previously produced a redundant
+    // status banner on every page and an address-only final page).
     doc.end()
   })
 }

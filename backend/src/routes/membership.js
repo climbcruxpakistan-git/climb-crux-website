@@ -9,6 +9,7 @@ import { requireAdmin } from '../middleware/auth.js'
 import { sendMembershipConfirmation, sendAdminMembershipNotification } from '../services/emailService.js'
 import { approveMembership, rejectMembership } from '../services/membershipService.js'
 import { generateMembershipPdf, saveMembershipPdf, membershipPdfFullPath } from '../services/pdfService.js'
+import { nextSequence } from '../services/sequence.js'
 import { MEMBERSHIP_TERMS } from '../membershipForm.js'
 
 const router = Router()
@@ -185,9 +186,12 @@ router.post('/apply', (req, res, next) => {
     }
 
     // ── Generate application ID (sequential): CCM-YYYY-XXXXX ──
+    // Never-repeating atomic counter — two applications can never receive the
+    // same number (even submitted simultaneously, or after older applications
+    // are deleted). The sequence starts at 11.
     const year = new Date().getFullYear()
-    const count = await MembershipApplication.countDocuments()
-    const application_id = `CCM-${year}-${String(count + 1).padStart(5, '0')}`
+    const seq = await nextSequence('membership', 11)
+    const application_id = `CCM-${year}-${String(seq).padStart(5, '0')}`
 
     const application = await MembershipApplication.create({
       application_id,
