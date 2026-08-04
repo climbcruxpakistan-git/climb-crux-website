@@ -3,30 +3,42 @@ import Counter from '../models/Counter.js'
 /**
  * Get the next number in a never-repeating sequence.
  *
- * A single atomic upsert both seeds the counter on first use and increments it:
- * - On insert, `$setOnInsert` sets the base value to `firstNumber - 1` and the
- *   `$inc` immediately bumps it, so the very first number issued is exactly
- *   `firstNumber`.
- * - On every later call, only `$inc` runs, so concurrent requests always get
- *   distinct numbers and deleted records never cause a number to be reused.
+ * Implemented in two steps because MongoDB forbids using `$inc` and
+ * `$setOnInsert` on the SAME path in a single update ("would create a
+ * conflict at 'seq'").
+ *
+ *   Step 1 — seed: on first use, insert the counter with the base value
+ *            `firstNumber - 1` (via `$setOnInsert`). If a concurrent request
+ *            inserts it first, we get a duplicate-key (11000) error, which is
+ *            ignored — the counter already exists.
+ *   Step 2 — increment: a single atomic `$inc` bumps the counter. Because
+ *            `$inc` is atomic, concurrent requests always receive distinct
+ *            numbers, and deleting records never causes a number to be reused.
  *
  * @param {string} name — counter id, e.g. 'booking' or 'membership'
  * @param {number} firstNumber — the first number this sequence should issue
  * @returns {Promise<number>} the next number in the sequence
  */
 export async function nextSequence(name, firstNumber) {
-  // Retry once if a concurrent request happens to race the very first insert.
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const doc = await Counter.findOneAndUpdate(
-        { _id: name },
-        { $inc: { seq: 1 }, $setOnInsert: { seq: firstNumber - 1 } },
-        { new: true, upsert: true }
-      )
-      return doc.seq
-    } catch (err) {
-      if (err?.code !== 11000 || attempt === 2) throw err
-    }
+  // Step 1 — make sure the counter exists, seeded just below the first number.
+  try {
+    await Counter.updateOne(
+      { _id: name },
+      { $setOnInsert: { seq: firstNumber - 1 } },
+      { upsert: true }
+    )
+  } catch (err) {
+    // E11000 duplicate key — another request created the counter first. Fine.
+    if (err?.code !== 11000) throw err
   }
-  return firstNumber // unreachable — keeps the linter happy
+
+  // Step 2 — atomically take the next number.
+  const doc = await Counter.findByIdAndUpdate(
+    name,
+    { $inc: { seq: 1 } },
+    { new: true }
+  )
+  // Self-heal: if the counter was somehow deleted between steps, recreate it.
+  if (!doc) return nextSequence(name, firstNumber)
+  return doc.seq
 }
