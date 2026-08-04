@@ -44,9 +44,9 @@ export default function BankTransferConfirmation({ bookingNumber }) {
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
           </div>
-          <h3>Bank Transfer Selected</h3>
+          <h3>Payment Submitted for Verification</h3>
           <p className="success-desc" style={{ fontSize: '1rem', color: 'var(--stone-dark)', maxWidth: '40ch', marginBottom: 24 }}>
-            Thank you! Please complete the transfer to confirm your booking.
+            Thank you! Your payment proof has been submitted and our team is reviewing it.
           </p>
         </div>
 
@@ -58,26 +58,6 @@ export default function BankTransferConfirmation({ bookingNumber }) {
             <div className="bank-confirm-number" style={{ fontFamily: "'Courier New', monospace", fontSize: '1.5rem', fontWeight: 700, color: 'var(--orange-light)', letterSpacing: 2 }}>
               {booking.booking_number || bookingNumber}
             </div>
-          </div>
-        </div>
-
-        <div className="payment-bank-info" style={{ width: '100%', textAlign: 'left', display: 'flex', gap: 16, background: 'var(--chalk)', border: '1px solid var(--chalk-dim)', padding: '18px 22px', marginBottom: 20, borderLeft: '3px solid var(--orange)' }}>
-          <div className="bank-info-icon" style={{ flexShrink: 0, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--charcoal)', color: 'var(--chalk)', borderRadius: 8 }}>
-            🏦
-          </div>
-          <div>
-            <p className="bank-detail-title" style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: '0.78rem', letterSpacing: '0.06em', color: 'var(--charcoal)', marginBottom: 8 }}>
-              Our Bank Account Details
-            </p>
-            <p className="bank-detail-row" style={{ fontSize: '0.85rem', color: 'var(--stone-dark)', marginBottom: 4 }}>
-              <span className="bank-label" style={{ fontWeight: 600, color: 'var(--charcoal)' }}>Bank:</span> Bank Al Habib Limited
-            </p>
-            <p className="bank-detail-row"><span className="bank-label">Account name:</span> CLIMB CRUX</p>
-            <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK93 BAHL 5742 0081 0003 9501</p>
-            <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
-            <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
-              Amount: <strong>PKR {(booking.amount || 0).toLocaleString()}</strong>
-            </p>
           </div>
         </div>
 

@@ -358,7 +358,7 @@ export default function MembershipsManager() {
           )}
         </div>
 
-        <div className="card-admin-header">
+        <div className="card-admin-header" style={{ justifyContent: 'flex-start', gap: 18 }}>
           <h2>All Memberships ({shown.length})</h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {REVIEW_STATUSES.map((c) => (

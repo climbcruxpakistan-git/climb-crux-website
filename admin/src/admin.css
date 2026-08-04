@@ -1701,6 +1701,8 @@ tbody tr:hover {
   padding: 14px 16px;
   border-bottom: 1px solid #ede7d9;
   background: var(--admin-surface);
+  /* Keep the reference-code search compact instead of spanning the full card */
+  max-width: 420px;
 }
 
 .admin-search-icon {

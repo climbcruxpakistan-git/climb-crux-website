@@ -11,11 +11,11 @@ const { bookingNumber } = Astro.params;
 
 <MainLayout>
   <Fragment slot="head">
-    <title>EasyPaisa Payment Confirmation — Climb Crux Pakistan</title>
-    <meta name="description" content="Complete your EasyPaisa transfer to confirm your rock climbing booking in Islamabad with Climb Crux on Margalla Hills." />
+    <title>Payment Submitted for Verification — Climb Crux Pakistan</title>
+    <meta name="description" content="Your EasyPaisa payment proof has been submitted for verification — Climb Crux rock climbing bookings in Islamabad on Margalla Hills." />
   </Fragment>
-  <PageHeader title="Payment confirmation.">
-    <p slot="default">Here's what you need to complete your EasyPaisa transfer.</p>
+  <PageHeader title="Payment Submitted for Verification">
+    <p slot="default">Your payment proof has been submitted and is awaiting verification by our team.</p>
   </PageHeader>
   <EasyPaisaConfirmation client:load bookingNumber={bookingNumber} />
 </MainLayout>
