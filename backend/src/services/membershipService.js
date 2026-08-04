@@ -9,7 +9,6 @@
  *   4. Send the approval email with the PDF attached.  ← if this fails the
  *      approval is kept; the caller is told so the admin sees a clear message.
  */
-import MembershipApplication from '../models/MembershipApplication.js'
 import { generateMembershipPdf, saveMembershipPdf } from './pdfService.js'
 import { sendMembershipApprovalEmail, sendMembershipRejectionEmail } from './emailService.js'
 
@@ -21,9 +20,11 @@ import { sendMembershipApprovalEmail, sendMembershipRejectionEmail } from './ema
 export async function approveMembership(application) {
   // ── Step 1 · Membership ID + approval date ──
   if (!application.membership_id) {
-    const year = new Date().getFullYear()
-    const count = await MembershipApplication.countDocuments({ membership_id: { $ne: '', $exists: true } })
-    application.membership_id = `CM-${year}-${String(count + 1).padStart(4, '0')}`
+    // The membership reference is the application's CCM-XXXX ID — one stable
+    // reference for the lifetime of the record (no separate CM-YYYY-NNNN
+    // number, and no racy database-count lookup). Applications approved with
+    // a pre-existing membership_id (historical records) keep it unchanged.
+    application.membership_id = application.application_id
   }
   if (!application.approval_date) {
     application.approval_date = new Date().toISOString().slice(0, 10)

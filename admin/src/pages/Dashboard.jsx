@@ -47,7 +47,7 @@ export default function Dashboard() {
       value: bookings.length,
       icon: '☰',
       color: 'purple',
-      detail: `${bookings.filter((b) => b.status === 'pending').length} pending`,
+      detail: `${bookings.filter((b) => b.booking_status === 'pending_payment' || b.booking_status === 'pending_verification').length} pending`,
     },
   ]
 
@@ -102,18 +102,19 @@ export default function Dashboard() {
           ) : (
             <div className="activity-list">
               {recentBookings.map((b, i) => (
-                <div className="booking-item" key={i}>
+                <div className="booking-item" key={b.id || b._id || i}>
                   <div className="booking-avatar">
-                    {b.name ? b.name.charAt(0).toUpperCase() : '?'}
+                    {b.customer_name ? b.customer_name.charAt(0).toUpperCase() : '?'}
                   </div>
                   <div className="booking-info">
-                    <div className="booking-name">{b.name || 'Unknown'}</div>
+                    <div className="booking-name">{b.customer_name || 'Unknown'}</div>
                     <div className="booking-detail">
-                      {b.type?.replace(/-/g, ' ') || 'No type'} · {b.date || 'No date'}
+                      {b.booking_number && <span className="ref-code" style={{ marginRight: 6 }}>{b.booking_number}</span>}
+                      {b.session_id ? b.session_id.replace(/-/g, ' ') : 'No type'} · {b.date || 'No date'}
                     </div>
                   </div>
-                  <span className={`badge ${b.status === 'confirmed' ? 'badge-green' : b.status === 'cancelled' ? 'badge-red' : 'badge-yellow'}`}>
-                    {b.status || 'pending'}
+                  <span className={`badge ${b.booking_status === 'confirmed' ? 'badge-green' : b.booking_status === 'cancelled' ? 'badge-red' : 'badge-yellow'}`}>
+                    {(b.booking_status || 'pending').replace(/_/g, ' ')}
                   </span>
                 </div>
               ))}

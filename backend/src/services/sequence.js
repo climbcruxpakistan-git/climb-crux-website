@@ -42,3 +42,32 @@ export async function nextSequence(name, firstNumber) {
   if (!doc) return nextSequence(name, firstNumber)
   return doc.seq
 }
+
+/* ── Reference-number generators (new formats) ───────────────────────────
+ *
+ * Forward-only migration: brand-new counter keys ('membershipCCM' and
+ * 'bookingCCS') are used instead of the legacy 'membership' / 'booking'
+ * counters, so the pre-existing counters — and every historical record that
+ * used them — are left completely untouched.
+ *
+ *   Memberships  → CCM-XXXX   (4 digits; counter seeded at 100 → CCM-0101)
+ *   Bookings     → CCS-XXXXX  (5 digits; counter seeded at 109 → CCS-00110)
+ *
+ * The starting values live in the Counters collection (lazily seeded by
+ * nextSequence's $setOnInsert step), never in code, and are bumped with a
+ * single atomic $inc per record so concurrent submissions can never receive
+ * the same number. The numbers are never reused, even after cancellations,
+ * declines, or deletions.
+ */
+
+/** Next membership reference, e.g. CCM-0101, CCM-0102, … */
+export async function nextMembershipReference() {
+  const seq = await nextSequence('membershipCCM', 101)
+  return `CCM-${String(seq).padStart(4, '0')}`
+}
+
+/** Next booking reference, e.g. CCS-00110, CCS-00111, … */
+export async function nextBookingReference() {
+  const seq = await nextSequence('bookingCCS', 110)
+  return `CCS-${String(seq).padStart(5, '0')}`
+}

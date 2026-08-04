@@ -475,7 +475,7 @@ export default function BookingsManager() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') runSearch(searchInput, true) }}
-            placeholder="Search by Booking ID — e.g. CCS-2026-00001"
+            placeholder="Search by Booking ID — e.g. CCS-00110 (or legacy CCS-2026-00001)"
             aria-label="Search by Booking ID"
             spellCheck="false"
           />
@@ -520,6 +520,7 @@ export default function BookingsManager() {
               <table>
                 <thead>
                   <tr>
+                    <th>Booking #</th>
                     <th>Name</th>
                     <th>Contact</th>
                     <th>Type / Date</th>
@@ -534,6 +535,13 @@ export default function BookingsManager() {
                 <tbody>
                   {shown.map((b) => (
                     <tr key={b.id || b._id}>
+                      <td>
+                        {b.booking_number ? (
+                          <span className="ref-code" title={`View booking ${b.booking_number}`}>{b.booking_number}</span>
+                        ) : (
+                          <span className="cell-muted">—</span>
+                        )}
+                      </td>
                       <td><strong>{b.customer_name}</strong></td>
                       <td className="cell-truncate">
                         {b.customer_email}

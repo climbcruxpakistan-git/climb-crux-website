@@ -121,7 +121,7 @@ export default function BookNow({ preselected = '' }) {
     }
     try {
       const created = await createBooking(data)
-      const bookingNumber = created.booking_number || `CCS-${new Date().getFullYear()}-${(created.id || '').slice(-5)}`
+      const bookingNumber = created.booking_number || `CCS-${String(created.id || '').slice(-5).padStart(5, '0')}`
       window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/payment`
     } catch (err) {
       setError('Failed to create booking. Please try again.')

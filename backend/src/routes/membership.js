@@ -9,7 +9,7 @@ import { requireAdmin } from '../middleware/auth.js'
 import { sendMembershipConfirmation, sendAdminMembershipNotification } from '../services/emailService.js'
 import { approveMembership, rejectMembership } from '../services/membershipService.js'
 import { generateMembershipPdf, saveMembershipPdf, membershipPdfFullPath } from '../services/pdfService.js'
-import { nextSequence } from '../services/sequence.js'
+import { nextMembershipReference } from '../services/sequence.js'
 import { MEMBERSHIP_TERMS } from '../membershipForm.js'
 
 const router = Router()
@@ -185,13 +185,13 @@ router.post('/apply', (req, res, next) => {
       throw uploadErr
     }
 
-    // ── Generate application ID (sequential): CCM-YYYY-XXXXX ──
+    // ── Generate application ID (sequential): CCM-XXXX ──
     // Never-repeating atomic counter — two applications can never receive the
     // same number (even submitted simultaneously, or after older applications
-    // are deleted). The sequence starts at 11.
-    const year = new Date().getFullYear()
-    const seq = await nextSequence('membership', 11)
-    const application_id = `CCM-${year}-${String(seq).padStart(5, '0')}`
+    // are deleted). The counter is seeded at 100, so the first new application
+    // issued after this migration is CCM-0101. Existing applications keep their
+    // original legacy IDs (e.g. CCM-2026-00011) untouched.
+    const application_id = await nextMembershipReference()
 
     const application = await MembershipApplication.create({
       application_id,
@@ -261,7 +261,7 @@ router.get('/applications', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-// GET /api/membership/applications/search?number=CCM-2026-00001 — admin-only
+// GET /api/membership/applications/search?number=CCM-0101 — admin-only
 // exact search by application/membership ID (server-side lookup).
 router.get('/applications/search', requireAdmin, async (req, res, next) => {
   try {

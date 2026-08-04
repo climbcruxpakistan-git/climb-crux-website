@@ -341,7 +341,7 @@ export default function MembershipsManager() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') runSearch(searchInput, true) }}
-            placeholder="Search by Membership ID — e.g. CCM-2026-00001"
+            placeholder="Search by Membership ID — e.g. CCM-0101 (or legacy CCM-2026-00001)"
             aria-label="Search by Membership ID"
             spellCheck="false"
           />

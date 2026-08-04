@@ -10,7 +10,7 @@ import Session from '../models/Session.js'
 import { BOOKING_TERMS } from '../membershipForm.js'
 import { requireAdmin } from '../middleware/auth.js'
 import { generateBookingPdf } from '../services/pdfService.js'
-import { nextSequence } from '../services/sequence.js'
+import { nextBookingReference } from '../services/sequence.js'
 import {
   sendBookingConfirmation,
   sendBookingApprovedEmail,
@@ -94,14 +94,13 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'All Terms & Conditions must be accepted before you can continue to payment' })
     }
 
-    // Auto-generate booking number: CCS-YYYY-XXXXX (sequential)
+    // Auto-generate booking number: CCS-XXXXX (sequential)
     // Never-repeating atomic counter — two bookings can never receive the
     // same number (even booked simultaneously, or after older bookings are
-    // deleted). The sequence starts at 18 (the highest existing booking
-    // number in production is 17, so 18 is the first safe unused number).
-    const year = new Date().getFullYear()
-    const seq = await nextSequence('booking', 18)
-    const booking_number = `CCS-${year}-${String(seq).padStart(5, '0')}`
+    // deleted). The counter is seeded at 109, so the first new booking issued
+    // after this migration is CCS-00110. Existing bookings keep their original
+    // legacy IDs (e.g. CCS-2026-00018) untouched.
+    const booking_number = await nextBookingReference()
 
     const booking = await Booking.create({
       booking_number,
@@ -139,7 +138,7 @@ router.post('/', async (req, res, next) => {
 
 // ── Static sub-routes (MUST be before /:id) ────────────────────────
 
-// GET /api/bookings/search?number=CCS-2026-00001 — admin-only exact search.
+// GET /api/bookings/search?number=CCS-00110 — admin-only exact search.
 // Server-side lookup by booking number so the dashboard never loads the full
 // collection just to find one record.
 router.get('/search', requireAdmin, async (req, res, next) => {

@@ -501,6 +501,25 @@ tbody tr:hover {
   color: #2563eb;
 }
 
+/* =========================== REFERENCE CODES =========================== */
+
+/* Booking / Membership reference numbers (e.g. CCS-00110, CCM-0101) shown
+   as a compact monospace chip so they stand out in lists and details. */
+.ref-code {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.3px;
+  color: var(--charcoal);
+  background: var(--admin-bg);
+  border: 1px solid #e5e0d4;
+  border-radius: 5px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1.5;
+}
+
 /* =========================== BUTTONS =========================== */
 
 .btn-admin {

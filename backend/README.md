@@ -135,7 +135,7 @@ The backend uses **JWT-based authentication** with a single admin account.
 
 > **PDF lifecycle:** `public/membership-form.pdf` is the printable membership form served by `GET /api/membership/form`. It is derived from the Microsoft Word membership form (the single source of truth). Whenever the Word form changes, **replace `public/membership-form.pdf`** (and update the wording in `src/membershipForm.js` + the frontend `membershipFormData.js` files) so the online and printable versions stay synchronized.
 
-Application documents are uploaded to Cloudinary under `climb-crux/membership/…` and linked to the application record. Each new application generates an ID like `CCM-2026-00001` and sends a confirmation email to the member plus a notification to `NOTIFICATION_EMAIL`.
+Application documents are uploaded to Cloudinary under `climb-crux/membership/…` and linked to the application record. Each new application generates an ID like `CCM-0101` (and each new session booking gets `CCS-00110`) and sends a confirmation email to the member plus a notification to `NOTIFICATION_EMAIL`. Historical records keep their original legacy IDs (e.g. `CCM-2026-00011`) — both formats are supported everywhere.
 
 ---
 
