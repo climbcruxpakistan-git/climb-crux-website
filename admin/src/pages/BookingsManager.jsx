@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking } from '../store.js'
+import { useState, useEffect, useRef } from 'react'
+import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, searchBookings } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
@@ -129,6 +129,12 @@ export default function BookingsManager() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('All')
   const [datePreset, setDatePreset] = useState('all')
+  // ── Admin search by Booking ID (server-side exact match) ──
+  const [searchInput, setSearchInput] = useState('')
+  const [searchState, setSearchState] = useState({ active: false, booking: null, miss: false })
+  const [searching, setSearching] = useState(false)
+  const lastSearch = useRef('')
+  const searchRequestId = useRef(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [editing, setEditing] = useState(null)
@@ -211,6 +217,53 @@ export default function BookingsManager() {
       .finally(() => setLoading(false))
   }, [])
 
+  /** Exact-match server-side search by Booking ID. `force` re-runs for an
+   *  already-searched value (used after status actions refresh the record). */
+  async function runSearch(code, force = false) {
+    const value = (code ?? searchInput).trim()
+    if (!value) {
+      clearSearch()
+      return
+    }
+    if (!force && value === lastSearch.current) return
+    lastSearch.current = value
+    // Latest-request guard: ignore results from superseded searches so a slow
+    // earlier response can't overwrite a newer one.
+    const requestId = ++searchRequestId.current
+    setSearching(true)
+    try {
+      const res = await searchBookings(value)
+      if (requestId !== searchRequestId.current) return
+      setSearchState(
+        res.found
+          ? { active: true, booking: res.booking, miss: false }
+          : { active: true, booking: null, miss: true }
+      )
+    } catch (err) {
+      if (requestId !== searchRequestId.current) return
+      addToast(`Search failed: ${err.message}`, 'error')
+      setSearchState((s) => ({ ...s, active: false }))
+    } finally {
+      if (requestId === searchRequestId.current) setSearching(false)
+    }
+  }
+
+  function clearSearch() {
+    searchRequestId.current += 1 // invalidate any in-flight request
+    lastSearch.current = ''
+    setSearchInput('')
+    setSearchState({ active: false, booking: null, miss: false })
+  }
+
+  // Debounced live search while the admin types (400 ms) + Enter to run now.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInput.trim()) runSearch(searchInput)
+      else clearSearch()
+    }, 400)
+    return () => clearTimeout(t)
+  }, [searchInput])
+
   function openNew() {
     setForm({ ...emptyForm })
     setEditing('new')
@@ -234,6 +287,7 @@ export default function BookingsManager() {
     if (!confirm('Delete this booking?')) return
     await deleteBooking(id)
     setBookings(await getBookings())
+    if (searchState.active) await runSearch(searchInput, true)
     addToast('Booking deleted', 'success')
   }
 
@@ -241,6 +295,7 @@ export default function BookingsManager() {
     try {
       await patchBookingStatus(id, status)
       setBookings(await getBookings())
+      if (searchState.active) await runSearch(searchInput, true)
       addToast(`Booking ${status}`, 'success')
     } catch (err) {
       addToast(`Failed to update status: ${err.message}`, 'error')
@@ -251,6 +306,7 @@ export default function BookingsManager() {
     try {
       await patchPaymentStatus(id, paymentStatus)
       setBookings(await getBookings())
+      if (searchState.active) await runSearch(searchInput, true)
       addToast(`Payment ${paymentStatus}`, 'success')
     } catch (err) {
       addToast(`Failed to update payment: ${err.message}`, 'error')
@@ -263,6 +319,7 @@ export default function BookingsManager() {
     try {
       const res = await approveBooking(b.id)
       await refresh()
+      if (searchState.active) await runSearch(searchInput, true)
       if (res.emailSent === false) {
         addToast('Booking confirmed, but the confirmation email could not be sent', 'error')
       } else {
@@ -280,6 +337,7 @@ export default function BookingsManager() {
     try {
       const res = await rejectBooking(b.id, reason)
       await refresh()
+      if (searchState.active) await runSearch(searchInput, true)
       if (res.emailSent === false) {
         addToast('Booking declined, but the decline email could not be sent', 'error')
       } else {
@@ -297,13 +355,17 @@ export default function BookingsManager() {
     setBookings(await getBookings())
   }
 
-  // Apply filters (status + payment + date range)
+  // Apply filters (status + date range). An active search overrides filters.
   let shown = bookings
-  if (statusFilter !== 'All') {
-    shown = shown.filter((b) => b.booking_status === statusFilter)
-  }
-  if (datePreset !== 'all' || dateFrom || dateTo) {
-    shown = shown.filter(isBookingInRange)
+  if (searchState.active) {
+    shown = searchState.booking ? [searchState.booking] : []
+  } else {
+    if (statusFilter !== 'All') {
+      shown = shown.filter((b) => b.booking_status === statusFilter)
+    }
+    if (datePreset !== 'all' || dateFrom || dateTo) {
+      shown = shown.filter(isBookingInRange)
+    }
   }
 
   // Stats computed from filtered bookings
@@ -404,6 +466,32 @@ export default function BookingsManager() {
       </div>
 
       <div className="card-admin">
+        {/* ── Admin search by Booking ID (server-side exact match) ── */}
+        <div className="admin-search-bar">
+          <span className="admin-search-icon" aria-hidden="true">🔍</span>
+          <input
+            className="admin-search-input"
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') runSearch(searchInput, true) }}
+            placeholder="Search by Booking ID — e.g. CCS-2026-00001"
+            aria-label="Search by Booking ID"
+            spellCheck="false"
+          />
+          {searching && <span className="admin-search-spinner" aria-hidden="true" />}
+          {searchInput && (
+            <button
+              className="admin-search-clear"
+              onClick={clearSearch}
+              title="Clear search"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
         <div className="card-admin-header">
           <h2>All Bookings ({shown.length})</h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -422,9 +510,9 @@ export default function BookingsManager() {
 
         {shown.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">📋</div>
-            <h3>No bookings found</h3>
-            <p>No bookings match the current filters.</p>
+            <div className="empty-state-icon">{searchState.active ? '🔍' : '📋'}</div>
+            <h3>{searchState.active ? 'No booking found with this Booking ID.' : 'No bookings found'}</h3>
+            <p>{searchState.active ? 'Check the Booking ID and try again.' : 'No bookings match the current filters.'}</p>
           </div>
         ) : (
           <div className="table-wrap">

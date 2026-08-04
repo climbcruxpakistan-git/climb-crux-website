@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   getMembershipApplications,
   deleteMembershipApplication,
   approveMembershipApplication,
   rejectMembershipApplication,
+  searchMemberships,
   API_URL,
 } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
@@ -127,6 +128,12 @@ export default function MembershipsManager() {
   const [apps, setApps] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewFilter, setReviewFilter] = useState('All')
+  // ── Admin search by Membership ID (server-side exact match) ──
+  const [searchInput, setSearchInput] = useState('')
+  const [searchState, setSearchState] = useState({ active: false, application: null, miss: false })
+  const [searching, setSearching] = useState(false)
+  const lastSearch = useRef('')
+  const searchRequestId = useRef(0)
   const [viewing, setViewing] = useState(null)
   const [rejecting, setRejecting] = useState(null)
   const [acting, setActing] = useState(false)
@@ -142,12 +149,60 @@ export default function MembershipsManager() {
     setApps(await getMembershipApplications())
   }
 
+  /** Exact-match server-side search by Membership ID. `force` re-runs for an
+   *  already-searched value (used after approve/reject refresh the record). */
+  async function runSearch(code, force = false) {
+    const value = (code ?? searchInput).trim()
+    if (!value) {
+      clearSearch()
+      return
+    }
+    if (!force && value === lastSearch.current) return
+    lastSearch.current = value
+    // Latest-request guard: ignore results from superseded searches so a slow
+    // earlier response can't overwrite a newer one.
+    const requestId = ++searchRequestId.current
+    setSearching(true)
+    try {
+      const res = await searchMemberships(value)
+      if (requestId !== searchRequestId.current) return
+      setSearchState(
+        res.found
+          ? { active: true, application: res.application, miss: false }
+          : { active: true, application: null, miss: true }
+      )
+    } catch (err) {
+      if (requestId !== searchRequestId.current) return
+      addToast(`Search failed: ${err.message}`, 'error')
+      setSearchState((s) => ({ ...s, active: false }))
+    } finally {
+      if (requestId === searchRequestId.current) setSearching(false)
+    }
+  }
+
+  function clearSearch() {
+    searchRequestId.current += 1 // invalidate any in-flight request
+    lastSearch.current = ''
+    setSearchInput('')
+    setSearchState({ active: false, application: null, miss: false })
+  }
+
+  // Debounced live search while the admin types (400 ms) + Enter to run now.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInput.trim()) runSearch(searchInput)
+      else clearSearch()
+    }, 400)
+    return () => clearTimeout(t)
+  }, [searchInput])
+
   async function handleApprove(a) {
     if (!confirm(`Approve ${a.full_name}'s membership?\n\nThis will:\n• Mark the membership Active & payment Paid\n• Generate the approved-application PDF\n• Email it to ${a.email}`)) return
     setActing(true)
     try {
       const res = await approveMembershipApplication(a.id)
       await refresh()
+      if (searchState.active) await runSearch(searchInput, true)
       setViewing((v) => (v && (v.id === a.id) ? { ...v, ...(res.application || {}) } : v))
       if (res.emailSent === false) {
         addToast('Membership approved, but the confirmation email could not be sent', 'error')
@@ -166,6 +221,7 @@ export default function MembershipsManager() {
     try {
       const res = await rejectMembershipApplication(a.id, reason)
       await refresh()
+      if (searchState.active) await runSearch(searchInput, true)
       setViewing((v) => (v && (v.id === a.id) ? { ...v, ...(res.application || {}) } : v))
       if (res.emailSent === false) {
         addToast('Application rejected, but the rejection email could not be sent', 'error')
@@ -185,6 +241,7 @@ export default function MembershipsManager() {
     try {
       await deleteMembershipApplication(a.id)
       await refresh()
+      if (searchState.active) await runSearch(searchInput, true)
       addToast('Application deleted', 'success')
     } catch (err) {
       addToast(`Failed to delete: ${err.message}`, 'error')
@@ -211,7 +268,10 @@ export default function MembershipsManager() {
   }
 
   let shown = apps
-  if (reviewFilter === 'pending_payment') {
+  // An active search overrides the review/payment filters.
+  if (searchState.active) {
+    shown = searchState.application ? [searchState.application] : []
+  } else if (reviewFilter === 'pending_payment') {
     shown = shown.filter((a) => (a.payment_status || 'pending') === 'pending')
   } else if (reviewFilter !== 'All') {
     shown = shown.filter((a) => (a.status || 'pending_review') === reviewFilter)
@@ -272,6 +332,32 @@ export default function MembershipsManager() {
       </div>
 
       <div className="card-admin">
+        {/* ── Admin search by Membership ID (server-side exact match) ── */}
+        <div className="admin-search-bar">
+          <span className="admin-search-icon" aria-hidden="true">🔍</span>
+          <input
+            className="admin-search-input"
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') runSearch(searchInput, true) }}
+            placeholder="Search by Membership ID — e.g. CCM-2026-00001"
+            aria-label="Search by Membership ID"
+            spellCheck="false"
+          />
+          {searching && <span className="admin-search-spinner" aria-hidden="true" />}
+          {searchInput && (
+            <button
+              className="admin-search-clear"
+              onClick={clearSearch}
+              title="Clear search"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
         <div className="card-admin-header">
           <h2>All Memberships ({shown.length})</h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -289,9 +375,9 @@ export default function MembershipsManager() {
 
         {shown.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">📋</div>
-            <h3>No memberships found</h3>
-            <p>No membership applications match the current filters.</p>
+            <div className="empty-state-icon">{searchState.active ? '🔍' : '📋'}</div>
+            <h3>{searchState.active ? 'No membership found with this Membership ID.' : 'No memberships found'}</h3>
+            <p>{searchState.active ? 'Check the Membership ID and try again.' : 'No membership applications match the current filters.'}</p>
           </div>
         ) : (
           <div className="table-wrap">

@@ -202,6 +202,12 @@ export async function deleteBooking(id) {
   return request('DELETE', `/bookings/${id}`)
 }
 
+/** Admin: exact-match server-side search by booking number. */
+export async function searchBookings(number) {
+  const data = await request('GET', `/bookings/search?number=${encodeURIComponent(number)}`)
+  return { found: data.found, booking: data.booking ? mapId(data.booking) : null }
+}
+
 export async function patchBookingStatus(id, booking_status) {
   return mapId(await request('PATCH', `/bookings/${id}/booking-status`, { booking_status }))
 }
@@ -286,6 +292,12 @@ export async function deleteProductOrder(id) {
 
 export async function getMembershipApplications() {
   return mapId(await request('GET', '/membership/applications'))
+}
+
+/** Admin: exact-match server-side search by application/membership ID. */
+export async function searchMemberships(number) {
+  const data = await request('GET', `/membership/applications/search?number=${encodeURIComponent(number)}`)
+  return { found: data.found, application: data.application ? mapId(data.application) : null }
 }
 
 export async function updateMembershipApplication(id, body) {

@@ -151,6 +151,16 @@ export function getMembershipFormUrl() {
   return `${API}/membership/form`
 }
 
+/* ---------- Public Status Checker ---------- */
+
+/**
+ * Check the status of a booking or membership by its reference code.
+ * Returns ONLY `{ found, code, status }` — never personal data.
+ */
+export async function checkStatus(code) {
+  return await postJson('/status/check', { code })
+}
+
 /* ---------- Shop / Products ---------- */
 
 export async function getProducts() {

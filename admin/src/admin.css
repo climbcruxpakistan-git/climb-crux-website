@@ -1690,3 +1690,87 @@ tbody tr:hover {
     font-size: 0.95rem;
   }
 }
+
+/* ================== ADMIN REFERENCE SEARCH BAR ================== */
+
+.admin-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #ede7d9;
+  background: var(--admin-surface);
+}
+
+.admin-search-icon {
+  font-size: 0.9rem;
+  opacity: 0.45;
+  line-height: 1;
+}
+
+.admin-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55em 0.9em;
+  border: 1px solid #d8d0bc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.85rem;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-search-input::placeholder {
+  color: #a49c8b;
+}
+
+.admin-search-input:focus {
+  border-color: var(--orange);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.1);
+}
+
+.admin-search-clear {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #9a9282;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-search-clear:hover {
+  color: var(--ink);
+  border-color: #d8d0bc;
+  background: #f7f3ea;
+}
+
+.admin-search-spinner {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #e2dac8;
+  border-top-color: var(--orange);
+  animation: admin-search-spin 0.7s linear infinite;
+}
+
+@keyframes admin-search-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .admin-search-bar {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .admin-search-input {
+    font-size: 0.8rem;
+  }
+}

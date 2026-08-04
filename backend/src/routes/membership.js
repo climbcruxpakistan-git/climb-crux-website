@@ -257,6 +257,20 @@ router.get('/applications', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/membership/applications/search?number=CCM-2026-00001 — admin-only
+// exact search by application/membership ID (server-side lookup).
+router.get('/applications/search', requireAdmin, async (req, res, next) => {
+  try {
+    const code = String(req.query.number || '').trim().toUpperCase()
+    if (!code) return res.json({ found: false })
+    const application = await MembershipApplication.findOne({
+      $or: [{ application_id: code }, { membership_id: code }],
+    })
+    if (!application) return res.json({ found: false })
+    res.json({ found: true, application })
+  } catch (err) { next(err) }
+})
+
 // PATCH /api/membership/applications/:id — update review / office fields
 router.patch('/applications/:id', requireAdmin, async (req, res, next) => {
   try {

@@ -31,6 +31,7 @@ import InstructorProfile from './pages/InstructorProfile.jsx'
 import Gallery from './pages/Gallery.jsx'
 import BookNow from './pages/BookNow.jsx'
 import MembershipApply from './pages/MembershipApply.jsx'
+import CheckStatus from './pages/CheckStatus.jsx'
 import Shop from './pages/Shop.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
 import PaymentPage from './pages/PaymentPage.jsx'
@@ -54,6 +55,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/book-now" element={<BookNow />} />
           <Route path="/membership/apply" element={<MembershipApply />} />
+          <Route path="/check-status" element={<CheckStatus />} />
           <Route path="/booking/:bookingNumber/payment" element={<PaymentPage />} />
           <Route path="/booking/:bookingNumber/bank-transfer-confirmation" element={<BankTransferConfirmation />} />
           <Route path="/booking/:bookingNumber/easypaisa-confirmation" element={<EasyPaisaConfirmation />} />

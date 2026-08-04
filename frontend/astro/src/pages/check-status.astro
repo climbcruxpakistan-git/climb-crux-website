@@ -1,0 +1,19 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHeader from '../components/astro/PageHeader.astro';
+import CheckStatus from '../components/react/CheckStatus.jsx';
+import '../styles/CheckStatus.css';
+---
+
+<MainLayout>
+  <Fragment slot="head">
+    <title>Check Your Booking or Membership Status — Climb Crux Pakistan</title>
+    <meta name="description" content="Check the current status of your Climb Crux booking or membership using your Booking ID or Membership ID. No login required." />
+  </Fragment>
+
+  <PageHeader title="Check Your Booking or Membership Status" eyebrow="Track your request">
+    <p>Enter your Booking ID or Membership ID to view the current status of your request.</p>
+  </PageHeader>
+
+  <CheckStatus client:load />
+</MainLayout>

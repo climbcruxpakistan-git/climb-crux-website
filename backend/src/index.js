@@ -24,9 +24,10 @@ import paymentRoutes from './routes/payments.js'
 import productRoutes from './routes/products.js'
 import reviewRoutes from './routes/reviews.js'
 import membershipRoutes from './routes/membership.js'
+import statusRoutes from './routes/status.js'
 
 import { requireAdmin } from './middleware/auth.js'
-import { authLimiter, bookingLimiter, apiLimiter } from './middleware/rateLimiter.js'
+import { authLimiter, bookingLimiter, apiLimiter, statusLimiter } from './middleware/rateLimiter.js'
 
 const PORT = process.env.PORT || 4000
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/climb-crux'
@@ -100,6 +101,8 @@ app.use('/api/products', productRoutes)
 app.use('/api/products/:productId/reviews', reviewRoutes)
 // Membership — public apply + form download; admin endpoints protected inside
 app.use('/api/membership', membershipRoutes)
+// Public status checker — strict rate limit prevents code enumeration
+app.use('/api/status', statusLimiter, statusRoutes)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' })
 })

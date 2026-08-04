@@ -134,6 +134,19 @@ router.post('/', async (req, res, next) => {
 
 // ── Static sub-routes (MUST be before /:id) ────────────────────────
 
+// GET /api/bookings/search?number=CCS-2026-00001 — admin-only exact search.
+// Server-side lookup by booking number so the dashboard never loads the full
+// collection just to find one record.
+router.get('/search', requireAdmin, async (req, res, next) => {
+  try {
+    const code = String(req.query.number || '').trim().toUpperCase()
+    if (!code) return res.json({ found: false })
+    const booking = await Booking.findOne({ booking_number: code })
+    if (!booking) return res.json({ found: false })
+    res.json({ found: true, booking })
+  } catch (err) { next(err) }
+})
+
 // GET /api/bookings/by-number/:bookingNumber — public: find booking by number
 router.get('/by-number/:bookingNumber', async (req, res, next) => {
   try {

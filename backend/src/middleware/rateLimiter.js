@@ -35,3 +35,20 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many requests. Please try again later.' },
 })
+
+/**
+ * Strict limiter for the public status checker — prevents automated
+ * enumeration of booking/membership reference codes. 20 requests per
+ * 15 minutes per IP. Blocked attempts are logged for monitoring.
+ */
+export const statusLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please try again later.' },
+  handler: (req, res) => {
+    console.warn(`[status-check] Rate limit exceeded from IP ${req.ip}`)
+    res.status(429).json({ error: 'Too many requests. Please try again later.' })
+  },
+})
