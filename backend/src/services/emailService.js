@@ -14,6 +14,7 @@
  *   · sendAdminMembershipNotification({ application })
  *   · sendAdminPaymentProofNotification({ booking })
  *   · sendAdminOrderPaymentProofNotification({ order })
+ *   · sendManualEmail({ to, subject, html, attachments }) — admin dashboard sender
  *
  * Admin notification emails to NOTIFICATION_EMAIL are sent ONLY when a
  * customer uploads & submits their payment screenshot (booking proof, order
@@ -198,4 +199,27 @@ export async function sendAdminOrderPaymentProofNotification({ order }) {
 export async function sendAdminMembershipNotification({ application }) {
   const { subject, html } = adminMembershipNotification({ application })
   return send({ to: NOTIFICATION_EMAIL, subject, html })
+}
+
+/**
+ * Manual email from the admin dashboard (Manual Email Sender page).
+ * Unlike `send`, this THROWS on failure so the caller can surface the exact
+ * Resend error to the admin, and returns the Resend message id on success.
+ * Always sends from the Climb Crux branded sender (bookings@climbcruxpakistan.com).
+ */
+export async function sendManualEmail({ to, subject, html, attachments = [] }) {
+  const client = getClient()
+  if (!client) {
+    throw new Error('Email service is not configured — set RESEND_API_KEY')
+  }
+  if (!to) throw new Error('Recipient email is required')
+  const payload = { from: EMAIL_FROM, to, subject, html }
+  if (attachments.length > 0) payload.attachments = attachments
+  const { data, error } = await client.emails.send(payload)
+  if (error) {
+    console.error(`[email] Manual email to ${to} failed:`, error.name || '', error.message || JSON.stringify(error))
+    throw new Error(error.message || 'Failed to send email')
+  }
+  console.log(`[email] Manual email sent to ${to} (id: ${data?.id || 'n/a'})`)
+  return data
 }

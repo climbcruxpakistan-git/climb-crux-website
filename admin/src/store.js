@@ -318,6 +318,33 @@ export async function rejectMembershipApplication(id, reason = 'payment') {
   return mapId(await request('POST', `/membership/applications/${id}/reject`, { reason }))
 }
 
+/* ---------- Manual Email Sender ---------- */
+
+/** Send a manual email (multipart FormData with optional attachments). */
+export async function sendEmail(formData) {
+  const res = await fetch(`${API}/emails/send`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  })
+  const raw = await res.text()
+  let data
+  try {
+    data = raw ? JSON.parse(raw) : null
+  } catch {
+    throw new Error(`Invalid JSON response from /emails/send`)
+  }
+  if (!res.ok) {
+    throw new Error(data?.error || res.statusText || 'Request failed')
+  }
+  return data
+}
+
+/** Recent manually-sent emails (admin history). */
+export async function getEmailHistory() {
+  return mapId(await request('GET', '/emails'))
+}
+
 /* ---------- About ---------- */
 
 export async function getAbout() {

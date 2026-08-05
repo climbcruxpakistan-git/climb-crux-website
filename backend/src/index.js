@@ -25,8 +25,9 @@ import productRoutes from './routes/products.js'
 import reviewRoutes from './routes/reviews.js'
 import membershipRoutes from './routes/membership.js'
 import statusRoutes from './routes/status.js'
+import emailRoutes from './routes/emails.js'
 
-import { requireAdmin } from './middleware/auth.js'
+import { requireAdmin, requireAdminStrict } from './middleware/auth.js'
 import { authLimiter, bookingLimiter, apiLimiter, statusLimiter } from './middleware/rateLimiter.js'
 
 const PORT = process.env.PORT || 4000
@@ -104,6 +105,8 @@ app.use('/api/products/:productId/reviews', reviewRoutes)
 app.use('/api/membership', membershipRoutes)
 // Public status checker — strict rate limit prevents code enumeration
 app.use('/api/status', statusLimiter, statusRoutes)
+// Manual Email Sender — admin only (send + history)
+app.use('/api/emails', requireAdminStrict, emailRoutes)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' })
 })
