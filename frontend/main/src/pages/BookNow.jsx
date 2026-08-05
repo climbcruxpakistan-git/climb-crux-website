@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, getSessionContent, getPlans, getMembershipFormUrl } from '../api.js'
+import { createBooking, getSessionContent, getPlans, getSessions, getMembershipFormUrl } from '../api.js'
 
 /** Get today's date as YYYY-MM-DD for the min attribute on date input */
 function getTodayString() {
@@ -44,6 +44,8 @@ export default function BookNow() {
   const [pricing, setPricing] = useState({ publicPrice: 2500 })
   const [membership, setMembership] = useState({})
   const [planOptions, setPlanOptions] = useState([])
+  const [announcedSessions, setAnnouncedSessions] = useState([])
+  const [sessionsDisabled, setSessionsDisabled] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState([])
 
@@ -55,8 +57,8 @@ export default function BookNow() {
 
   // Fetch pricing info & plans from API
   useEffect(() => {
-    Promise.all([getSessionContent(), getPlans()])
-      .then(([content, plans]) => {
+    Promise.all([getSessionContent(), getPlans(), getSessions().catch(() => [])])
+      .then(([content, plans, sessions]) => {
         const publicPrice = parsePrice(content.pricingPrice) || 2500
         setPricing({ publicPrice })
         setMembership(content.membership || {})
@@ -71,6 +73,8 @@ export default function BookNow() {
             desc: `${p.title} — PKR ${p.price}/person`,
           }))
         setPlanOptions(privatePlans)
+        setAnnouncedSessions(sessions || [])
+        setSessionsDisabled(content.sessionsDisabled || false)
 
         // Set initial session type from URL param if valid
         const allValues = ['public', 'membership', 'custom-group', ...privatePlans.map((p) => p.value)]
@@ -111,6 +115,9 @@ export default function BookNow() {
 
   const isCustom = sessionType === 'custom-group'
   const isMembership = sessionType === 'membership'
+  // Public sessions are only held on announced dates — customers may only pick
+  // one of the sessions the club has scheduled (admin → Sessions).
+  const publicSessions = sessionsDisabled ? [] : (announcedSessions || [])
 
   const perPersonPrice = (type) => {
     if (type === 'public') return pricing.publicPrice
@@ -126,6 +133,10 @@ export default function BookNow() {
     e.preventDefault()
     if (isCustom) return  // custom sessions are booked via email
     if (isMembership) return  // membership is applied for via the membership section
+    if (sessionType === 'public' && publicSessions.length === 0) {
+      setError('No public sessions are announced right now. Check the Sessions page for upcoming dates or book a private session.')
+      return
+    }
     if (agreedTerms.length < BOOKING_TERMS.length) {
       setError('Please tick all three Terms & Conditions to continue')
       return
@@ -227,10 +238,33 @@ export default function BookNow() {
                     </div>
                   </div>
 
-                  <div className="field">
-                    <label htmlFor="preferred-date">Preferred date</label>
-                    <input id="preferred-date" type="date" min={getTodayString()} />
-                  </div>
+                  {sessionType === 'public' ? (
+                    publicSessions.length > 0 ? (
+                      <div className="field">
+                        <label htmlFor="preferred-date">Choose a session</label>
+                        <select id="preferred-date" required defaultValue="">
+                          <option value="" disabled>Select an announced session</option>
+                          {publicSessions.map((s) => (
+                            <option key={s.id} value={`${s.date} · ${s.time}`}>
+                              {s.date} · {s.time}{s.spots && s.spots !== 'Open' ? ` — ${s.spots}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : loaded ? (
+                      <div className="field">
+                        <label htmlFor="preferred-date">Session date</label>
+                        <div className="form-note" style={{ margin: 0, padding: '12px 14px', background: 'var(--chalk-dim)', borderRadius: 8 }}>
+                          No public sessions are announced right now. Please check the <a href="/sessions">Sessions page</a> for upcoming dates, or book a private session.
+                        </div>
+                      </div>
+                    ) : null
+                  ) : (
+                    <div className="field">
+                      <label htmlFor="preferred-date">Preferred date</label>
+                      <input id="preferred-date" type="date" min={getTodayString()} />
+                    </div>
+                  )}
 
                   <div className="form-row">
                     <div className="field">
@@ -370,7 +404,7 @@ export default function BookNow() {
 
               {!isCustom && !isMembership && (
                 <div className="form-actions" style={{ flexDirection: 'column' }}>
-                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
+                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || (sessionType === 'public' && publicSessions.length === 0) || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
                     {sending ? (
                       <><span className="btn-spinner" /> Creating booking…</>
                     ) : (

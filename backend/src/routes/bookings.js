@@ -93,6 +93,20 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'All Terms & Conditions must be accepted before you can continue to payment' })
     }
 
+    // Public sessions are only held on announced dates — customers must pick
+    // one of the sessions the club has scheduled (admin → Sessions), never an
+    // arbitrary calendar date.
+    if (String(req.body.session_id || '').toLowerCase() === 'public') {
+      const announced = await Session.find({}, 'date time').lean()
+      const chosen = String(req.body.date || '').trim()
+      const isAnnounced = announced.some(
+        (s) => chosen === s.date || chosen === `${s.date} · ${s.time}`
+      )
+      if (!isAnnounced) {
+        return res.status(400).json({ error: 'Please choose one of the announced public session dates to continue.' })
+      }
+    }
+
     // Auto-generate booking number: CCS-XXXXX (sequential)
     // Never-repeating atomic counter — two bookings can never receive the
     // same number (even booked simultaneously, or after older bookings are
