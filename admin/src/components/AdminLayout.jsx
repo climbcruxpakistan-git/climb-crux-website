@@ -19,6 +19,7 @@ const NAV_SECTIONS = [
       { to: '/gallery', label: 'Gallery', icon: '▦' },
       { to: '/photos', label: 'Photos', icon: '◧' },
       { to: '/about', label: 'About Page', icon: '⊕' },
+      { to: '/shop', label: 'The Shop', icon: '📦' },
     ],
   },
   {
@@ -27,7 +28,6 @@ const NAV_SECTIONS = [
       { to: '/bookings', label: 'Bookings', icon: '☰' },
       { to: '/memberships', label: 'Memberships', icon: '🧗' },
       { to: '/sales', label: 'Sales', icon: '🛒' },
-      { to: '/shop', label: 'Shop Products', icon: '📦' },
       { to: '/emails', label: 'Email', icon: '✉' },
     ],
   },
@@ -77,7 +77,7 @@ export default function AdminLayout() {
     '/bookings': 'Bookings',
     '/memberships': 'Memberships',
     '/sales': 'Sales',
-    '/shop': 'Shop Products',
+    '/shop': 'The Shop',
     '/emails': 'Email Sender',
   }
 

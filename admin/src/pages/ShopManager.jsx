@@ -702,7 +702,7 @@ export default function ShopManager() {
     <>
       <div className="page-header-admin">
         <div>
-          <h1>Shop Products</h1>
+          <h1>The Shop</h1>
           <p className="page-header-admin-desc">Manage products. Order fulfilment lives on the Sales page.</p>
         </div>
         <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Product</button>
