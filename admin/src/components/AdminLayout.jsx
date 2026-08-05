@@ -13,7 +13,7 @@ const NAV_SECTIONS = [
     label: 'Content',
     links: [
       { to: '/home', label: 'Home Page', icon: '⊞' },
-      { to: '/sessions', label: 'Sessions', icon: '⊡' },
+      { to: '/sessions', label: 'Public Sessions', icon: '⊡' },
       { to: '/private-premium', label: 'Private & Premium', icon: '✦' },
       { to: '/team', label: 'Team Members', icon: '⊙' },
       { to: '/gallery', label: 'Gallery', icon: '▦' },
