@@ -33,10 +33,10 @@ ADMIN_PASSWORD=your-admin-password
 FRONTEND_URL=https://climbcruxpakistan.com
 ADMIN_URL=https://climb-crux-admin.vercel.app
 
-# Email notifications (Gmail SMTP — optional)
-GMAIL_EMAIL=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-gmail-app-password
-NOTIFICATION_EMAIL=admin@climbcrux.com
+# Email notifications (Resend — optional)
+RESEND_API_KEY=re_xxxxxxxx
+EMAIL_FROM="Climb Crux" <bookings@climbcruxpakistan.com>
+NOTIFICATION_EMAIL=climbcruxpakistan@gmail.com
 
 # Cloudinary (image uploads — optional)
 CLOUDINARY_CLOUD_NAME=your-cloud
@@ -141,7 +141,14 @@ Application documents are uploaded to Cloudinary under `climb-crux/membership/�
 
 ## 📨 Email Notifications
 
-When `GMAIL_EMAIL`, `GMAIL_APP_PASSWORD`, and `NOTIFICATION_EMAIL` are configured, the server sends email notifications for new bookings (with customer details and booking number) and payment confirmations. Emails include a styled HTML template with branding and a link to the admin dashboard.
+Transactional emails are sent through **Resend** (`RESEND_API_KEY`). Customer emails (booking confirmation/approval/decline, membership confirmation/approval/rejection, order payment-received/confirmed/declined — with PDFs attached) go to the customer's address.
+
+Admin reminder emails to `NOTIFICATION_EMAIL` (e.g. `climbcruxpakistan@gmail.com`) are sent **only when a customer uploads & submits their payment screenshot**, acting as a reminder to review the payment in the admin dashboard:
+- booking payment screenshot submitted (`POST /api/bookings/:id/create-payment`)
+- equipment-order payment screenshot submitted (`POST /api/products/orders/:id/payment-proof`)
+- new membership application (the application form includes the screenshot in the same submission)
+
+No other admin notifications are sent — not on booking creation, and not on payment approval/decline (those are admin-initiated actions).
 
 ---
 

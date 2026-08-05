@@ -11,11 +11,15 @@
  *   · sendOrderPaymentReceivedEmail({ order, pdfBuffer })
  *   · sendOrderConfirmedEmail({ order, pdfBuffer })
  *   · sendOrderDeclinedEmail({ order, reason, pdfBuffer })
- *   · sendAdminBookingNotification({ booking, sessionType })
  *   · sendAdminMembershipNotification({ application })
- *   · sendAdminPaymentNotification({ booking })
  *   · sendAdminPaymentProofNotification({ booking })
  *   · sendAdminOrderPaymentProofNotification({ order })
+ *
+ * Admin notification emails to NOTIFICATION_EMAIL are sent ONLY when a
+ * customer uploads & submits their payment screenshot (booking proof, order
+ * proof, or the membership application that includes the screenshot) — they
+ * act as a reminder to the Climb Crux team. No other admin notifications are
+ * sent (no new-booking, no payment-approved alerts).
  *
  * Modular by design: each template lives in ../templates and produces
  * { subject, html }; adding a new email type later means adding one template
@@ -35,9 +39,7 @@ import { orderPaymentReceivedEmail } from '../templates/orderPaymentReceivedEmai
 import { orderConfirmedEmail } from '../templates/orderConfirmedEmail.js'
 import { orderDeclinedEmail } from '../templates/orderDeclinedEmail.js'
 import {
-  adminBookingNotification,
   adminMembershipNotification,
-  adminPaymentNotification,
   adminPaymentProofNotification,
   adminOrderPaymentProofNotification,
 } from '../templates/adminNotifications.js'
@@ -141,12 +143,6 @@ export async function sendMembershipRejectionEmail({ application, reason = 'paym
   return send({ to: application.email, subject, html })
 }
 
-/** Admin alert — new booking created. */
-export async function sendAdminBookingNotification({ booking, sessionType }) {
-  const { subject, html } = adminBookingNotification({ booking, sessionType })
-  return send({ to: NOTIFICATION_EMAIL, subject, html })
-}
-
 /** Admin alert — payment screenshot submitted, awaiting verification. */
 export async function sendAdminPaymentProofNotification({ booking }) {
   const { subject, html } = adminPaymentProofNotification({ booking })
@@ -198,14 +194,8 @@ export async function sendAdminOrderPaymentProofNotification({ order }) {
   return send({ to: NOTIFICATION_EMAIL, subject, html })
 }
 
-/** Admin alert — new membership application. */
+/** Admin alert — new membership application (includes the submitted payment screenshot). */
 export async function sendAdminMembershipNotification({ application }) {
   const { subject, html } = adminMembershipNotification({ application })
-  return send({ to: NOTIFICATION_EMAIL, subject, html })
-}
-
-/** Admin alert — payment approved / booking confirmed. */
-export async function sendAdminPaymentNotification({ booking }) {
-  const { subject, html } = adminPaymentNotification({ booking })
   return send({ to: NOTIFICATION_EMAIL, subject, html })
 }

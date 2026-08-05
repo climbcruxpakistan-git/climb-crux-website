@@ -4,7 +4,7 @@ import Payment from '../models/Payment.js'
 import Booking from '../models/Booking.js'
 import Session from '../models/Session.js'
 import { generateBookingPdf } from '../services/pdfService.js'
-import { sendAdminPaymentNotification, sendBookingApprovedEmail, sendBookingDeclinedEmail } from '../services/emailService.js'
+import { sendBookingApprovedEmail, sendBookingDeclinedEmail } from '../services/emailService.js'
 
 /** Classify a booking as Public or Private based on its session_id. */
 function bookingTypeLabel(sessionId) {
@@ -119,8 +119,9 @@ router.post('/verify', async (req, res, next) => {
         console.error('[payments] Confirmation PDF failed:', pdfErr.message)
       }
 
-      // Send admin notification + customer confirmation email (don't block response on failure)
-      sendAdminPaymentNotification({ booking }).catch(() => {})
+      // Send the customer confirmation email (don't block response on failure).
+      // No admin notification here — the admin was already alerted when the
+      // payment screenshot was submitted, and this is an admin-initiated action.
       sendBookingApprovedEmail({ booking, sessionType, pdfBuffer }).catch(() => {})
 
       res.json({

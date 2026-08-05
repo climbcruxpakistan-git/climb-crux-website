@@ -15,7 +15,6 @@ import {
   sendBookingConfirmation,
   sendBookingApprovedEmail,
   sendBookingDeclinedEmail,
-  sendAdminBookingNotification,
   sendAdminPaymentProofNotification,
 } from '../services/emailService.js'
 
@@ -128,9 +127,11 @@ router.post('/', async (req, res, next) => {
     await booking.save()
 
     // Emails fire after the booking is saved. Never block the response on failure.
+    // The customer gets their booking confirmation immediately; the admin is
+    // notified later — only when the payment screenshot is uploaded & submitted
+    // (sendAdminPaymentProofNotification in the create-payment route).
     const sessionType = bookingTypeLabel(booking.session_id)
     sendBookingConfirmation({ booking, sessionType }).catch(() => {})
-    sendAdminBookingNotification({ booking, sessionType }).catch(() => {})
 
     res.status(201).json(booking)
   } catch (err) { next(err) }
