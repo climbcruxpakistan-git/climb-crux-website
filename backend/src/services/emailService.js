@@ -50,6 +50,9 @@ const EMAIL_FROM = process.env.EMAIL_FROM || '"Climb Crux" <bookings@climbcruxpa
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || ''
 const CLIMB_CRUX_WHATSAPP = process.env.CLIMB_CRUX_WHATSAPP || '+923132690377'
 
+/** Bare address extracted from EMAIL_FROM (e.g. bookings@climbcruxpakistan.com). */
+const EMAIL_ADDRESS = String(EMAIL_FROM).match(/<([^>]+)>/)?.[1] || EMAIL_FROM
+
 let _resend = null
 function getClient() {
   if (!_resend) {
@@ -207,13 +210,17 @@ export async function sendAdminMembershipNotification({ application }) {
  * Resend error to the admin, and returns the Resend message id on success.
  * Always sends from the Climb Crux branded sender (bookings@climbcruxpakistan.com).
  */
-export async function sendManualEmail({ to, subject, html, attachments = [] }) {
+export async function sendManualEmail({ to, subject, html, text = '', attachments = [] }) {
   const client = getClient()
   if (!client) {
     throw new Error('Email service is not configured — set RESEND_API_KEY')
   }
   if (!to) throw new Error('Recipient email is required')
-  const payload = { from: EMAIL_FROM, to, subject, html }
+  const payload = { from: EMAIL_FROM, to, subject, html, reply_to: EMAIL_ADDRESS }
+  // Plain-text alternative: Gmail treats text-rich, conversational mail as
+  // person-to-person and is far more likely to route it to the Primary inbox
+  // instead of Promotions. HTML is kept minimal for the same reason.
+  if (text && String(text).trim()) payload.text = String(text)
   if (attachments.length > 0) payload.attachments = attachments
   const { data, error } = await client.emails.send(payload)
   if (error) {

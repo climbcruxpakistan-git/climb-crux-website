@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { sendEmail, getEmailHistory } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
+import Modal from '../components/Modal.jsx'
 import { formatDateTime } from '../formatDate.js'
 
 const ALLOWED_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'docx']
@@ -22,6 +23,7 @@ export default function EmailSender() {
   const [sending, setSending] = useState(false)
   const [history, setHistory] = useState([])
   const [loadingHistory, setLoadingHistory] = useState(true)
+  const [viewing, setViewing] = useState(null) // email log record open in the detail modal
 
   const loadHistory = useCallback(() => {
     getEmailHistory()
@@ -198,6 +200,11 @@ export default function EmailSender() {
         <div className="card-admin">
           <div className="card-admin-header">
             <h2>Recent Emails ({history.length})</h2>
+            {history.length > 0 && (
+              <span className="field-hint" style={{ fontSize: '0.75rem', color: 'var(--stone)' }}>
+                Click any email to view it in full
+              </span>
+            )}
           </div>
 
           {loadingHistory ? (
@@ -224,9 +231,16 @@ export default function EmailSender() {
                   </thead>
                   <tbody>
                     {history.map((m) => (
-                      <tr key={m.id || m._id}>
+                      <tr
+                        key={m.id || m._id}
+                        className="email-row-clickable"
+                        onClick={() => setViewing(m)}
+                        title="Click to view full email"
+                      >
                         <td><strong>{m.recipient}</strong></td>
-                        <td style={{ maxWidth: 240 }}>{m.subject}</td>
+                        <td className="cell-truncate" style={{ maxWidth: 240 }} title={m.subject}>
+                          {m.subject}
+                        </td>
                         <td>
                           {m.attachments?.length ? (
                             <span className="badge badge-gray" style={{ fontSize: '0.72rem' }}>
@@ -254,6 +268,58 @@ export default function EmailSender() {
           )}
         </div>
       </div>
+
+      {/* ── Full email view modal ── */}
+      {viewing && (
+        <Modal title="Email Details" onClose={() => setViewing(null)} wide>
+          <div className="email-view-meta">
+            <div className="detail-row">
+              <span className="detail-key">To</span>
+              <span className="detail-val">{viewing.recipient || '—'}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-key">Status</span>
+              <span className="detail-val">
+                <span className={`badge ${viewing.delivery_status === 'sent' ? 'badge-green' : 'badge-red'}`}>
+                  {viewing.delivery_status === 'sent' ? '✓ Sent' : '✕ Failed'}
+                </span>
+              </span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-key">Sent By</span>
+              <span className="detail-val">{viewing.sent_by || 'Admin'}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-key">Sent At</span>
+              <span className="detail-val">{formatDateTime(viewing.created_at) || '—'}</span>
+            </div>
+            {viewing.attachments?.length > 0 && (
+              <div className="detail-row">
+                <span className="detail-key">Attachments</span>
+                <span className="detail-val">
+                  {viewing.attachments.map((a) => a.name).join(', ')}
+                </span>
+              </div>
+            )}
+            {viewing.resend_message_id && (
+              <div className="detail-row">
+                <span className="detail-key">Message ID</span>
+                <span className="detail-val" style={{ fontSize: '0.72rem' }}>{viewing.resend_message_id}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="email-view-subject">{viewing.subject || '(no subject)'}</div>
+
+          <div className="email-view-body">{viewing.message || '—'}</div>
+
+          {viewing.error && (
+            <div className="email-view-error">
+              <strong>Send failed:</strong> {viewing.error}
+            </div>
+          )}
+        </Modal>
+      )}
     </>
   )
 }

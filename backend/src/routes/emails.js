@@ -127,6 +127,7 @@ router.post('/send', (req, res, next) => {
         to: String(to).trim(),
         subject: String(subject).trim(),
         html,
+        text: String(message),
         attachments,
       })
     } catch (sendErr) {
