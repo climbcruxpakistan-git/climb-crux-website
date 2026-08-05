@@ -61,17 +61,10 @@
 
 .schedule-list li {
   background: var(--chalk);
-  padding: 16px 20px;
+  padding: 20px 22px;
   border-left: 3px solid var(--orange);
   transition: all 0.25s ease;
   cursor: pointer;
-}
-
-.schedule-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .schedule-card-meta {
@@ -90,8 +83,7 @@
 
 .schedule-list li:hover .schedule-name,
 .schedule-list li:hover .schedule-date,
-.schedule-list li:hover .schedule-time,
-.schedule-list li:hover .schedule-spots {
+.schedule-list li:hover .schedule-time {
   color: var(--chalk);
 }
 
@@ -100,8 +92,7 @@
   font-weight: 600;
   font-size: 1rem;
   color: var(--charcoal);
-  flex: 1;
-  min-width: 0;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -119,14 +110,6 @@
 .schedule-time {
   color: var(--stone);
   font-size: 0.82rem;
-  transition: color 0.25s ease;
-}
-
-.schedule-spots {
-  font-size: 0.75rem;
-  color: var(--orange-dark);
-  font-weight: 600;
-  white-space: nowrap;
   transition: color 0.25s ease;
 }
 
@@ -328,15 +311,11 @@
 
 @media (max-width: 620px) {
   .schedule-list li {
-    padding: 14px 16px;
-  }
-  .schedule-card-top {
-    align-items: flex-start;
+    padding: 16px 16px;
   }
   .schedule-name { font-size: 0.95rem; }
   .schedule-date { font-size: 0.9rem; }
   .schedule-time { font-size: 0.78rem; }
-  .schedule-spots { font-size: 0.72rem; }
 }
 
 @media (max-width: 480px) {
