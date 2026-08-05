@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { getProduct, placeOrder, optimizeImage } from '../api.js'
+import { getProduct, placeOrder, submitOrderPaymentProof, optimizeImage } from '../api.js'
 import './Checkout.css'
 
 function initialQty(searchParams) {
@@ -28,6 +28,10 @@ export default function Checkout() {
   const [easypaisaSender, setEasypaisaSender] = useState('')
   const [easypaisaPhone, setEasypaisaPhone] = useState('')
 
+  // Payment screenshot — captured on this page once a method is chosen
+  const [screenshot, setScreenshot] = useState(null)
+  const [screenshotName, setScreenshotName] = useState('')
+
   const [ordering, setOrdering] = useState(false)
   const [error, setError] = useState('')
 
@@ -48,6 +52,8 @@ export default function Checkout() {
     setAccountHolder('')
     setEasypaisaSender('')
     setEasypaisaPhone('')
+    setScreenshot(null)
+    setScreenshotName('')
     setError('')
     setQuantity(initialQty(searchParams))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,6 +68,59 @@ export default function Checkout() {
     setError('')
   }
 
+  function handleScreenshotChange(e) {
+    const file = e.target.files?.[0] || null
+    if (!file) { setScreenshot(null); setScreenshotName(''); return }
+    const okType = /\.(jpe?g|png|webp)$/i.test(file.name) || ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+    if (!okType) {
+      setScreenshot(null); setScreenshotName('')
+      setError('Please upload an image file (JPG, PNG or WebP)')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setScreenshot(null); setScreenshotName('')
+      setError('Payment screenshot must be 10 MB or smaller')
+      return
+    }
+    setError('')
+    setScreenshot(file)
+    setScreenshotName(file.name)
+  }
+
+  function renderScreenshotUpload() {
+    return (
+      <div className="co-upload">
+        <div className="co-upload-head">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span>Upload payment screenshot</span>
+        </div>
+        <p className="co-upload-desc">
+          After completing the transfer, attach your payment screenshot below. It will be reviewed by the Climb Crux team.
+        </p>
+        <div className="field">
+          <input
+            id="co-screenshot"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleScreenshotChange}
+            required
+          />
+          {screenshotName ? (
+            <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>
+              📎 {screenshotName} attached — will be submitted with your order
+            </p>
+          ) : (
+            <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>
+              JPG, PNG or WebP image · max 10 MB
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   async function handlePlaceOrder(e) {
     e.preventDefault()
     setError('')
@@ -72,6 +131,11 @@ export default function Checkout() {
     }
     if (!paymentMethod) {
       setError('Please choose a payment method')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    if (!screenshot) {
+      setError('Please attach your payment screenshot before placing your order')
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
@@ -97,10 +161,21 @@ export default function Checkout() {
         orderData.payer_name = easypaisaSender
         orderData.payer_phone = easypaisaPhone
       }
+      // Create the order, then upload the payment screenshot straight away so
+      // the order moves to Verification Pending in one step.
       const result = await placeOrder(orderData)
-      // Order saved as Payment Pending — take the customer to the payment
-      // page to transfer and upload their payment screenshot.
-      navigate(`/shop/orders/${encodeURIComponent(result.order_number)}/payment`)
+      let uploadFailed = false
+      try {
+        const fd = new FormData()
+        fd.append('payment_screenshot', screenshot)
+        await submitOrderPaymentProof(result.id, fd)
+      } catch (uploadErr) {
+        // Screenshot upload failed — the order is still Payment Pending and
+        // the payment page will let the customer retry the upload.
+        uploadFailed = true
+        console.error('Payment screenshot upload failed:', uploadErr)
+      }
+      navigate(`/shop/orders/${encodeURIComponent(result.order_number)}/payment${uploadFailed ? '?upload=retry' : ''}`)
     } catch {
       setError('Failed to place order. Please try again.')
     } finally {
@@ -233,7 +308,7 @@ export default function Checkout() {
                           Please transfer <strong>PKR {totalPrice.toLocaleString()}</strong> to the account above.
                         </p>
                         <div className="co-proof-note">
-                          <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, you'll upload your payment screenshot on the next page for verification.</p>
+                          <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, attach your payment screenshot below for verification.</p>
                         </div>
                       </div>
                     </div>
@@ -268,7 +343,7 @@ export default function Checkout() {
                           Please send <strong>PKR {totalPrice.toLocaleString()}</strong> to the EasyPaisa account above.
                         </p>
                         <div className="co-proof-note">
-                          <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, you'll upload your payment screenshot on the next page for verification.</p>
+                          <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, attach your payment screenshot below for verification.</p>
                         </div>
                       </div>
                     </div>
@@ -290,6 +365,8 @@ export default function Checkout() {
                 {!paymentMethod && (
                   <p className="form-note" style={{ marginTop: 4 }}>Select a payment method to see the transfer details.</p>
                 )}
+
+                {paymentMethod && renderScreenshotUpload()}
 
                 <div className="form-actions">
                   <Link to={`/shop/${id}`} className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to product</Link>

@@ -2,23 +2,38 @@
 import MainLayout from '../../../../layouts/MainLayout.astro';
 import PageHeader from '../../../../components/astro/PageHeader.astro';
 import OrderPayment from '../../../../components/react/OrderPayment.jsx';
+import { getOrderByNumber } from '../../../../lib/api';
 import '../../../../styles/OrderPayment.css';
 
 // Rendered on-demand so any order number works right after a customer checks out.
 export const prerender = false;
 
 const { orderNumber } = Astro.params;
+
+// Server-side lookup so the page header matches the order state:
+// if the screenshot hasn't been uploaded yet the customer still needs to
+// complete the payment; otherwise the page shows the order status.
+const order = await getOrderByNumber(orderNumber).catch(() => null);
+const needsUpload = !!order && !order.payment_screenshot_url && order.status === 'pending_payment';
 ---
 
 <MainLayout>
   <Fragment slot="head">
-    <title>Complete Your Payment — Climb Crux Pakistan</title>
-    <meta name="description" content="Complete your equipment order payment via bank transfer or EasyPaisa and upload your payment screenshot for verification." />
+    <title>{needsUpload ? 'Complete Your Payment' : 'Order Status'} — Climb Crux Pakistan</title>
+    <meta name="description" content={needsUpload ? 'Complete your equipment order payment via bank transfer or EasyPaisa and upload your payment screenshot for verification.' : 'Track the status of your equipment order with Climb Crux.'} />
   </Fragment>
 
-  <PageHeader title="Complete your payment.">
-    <p slot="default">Please transfer the total amount using one of the payment methods below. After completing the payment, upload your payment screenshot for verification.</p>
-  </PageHeader>
+  {
+    needsUpload ? (
+      <PageHeader title="Complete your payment.">
+        <p slot="default">Please transfer the total amount using one of the payment methods below. After completing the payment, upload your payment screenshot for verification.</p>
+      </PageHeader>
+    ) : (
+      <PageHeader title="Order status.">
+        <p slot="default">Track the status of your equipment order below.</p>
+      </PageHeader>
+    )
+  }
 
   <OrderPayment client:load orderNumber={orderNumber} />
 </MainLayout>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { getOrderByNumber, submitOrderPaymentProof } from '../api.js'
 import './OrderPayment.css'
@@ -52,6 +52,8 @@ const ORDER_STATUS_META = {
 
 export default function OrderPayment() {
   const { orderNumber } = useParams()
+  const [searchParams] = useSearchParams()
+  const uploadRetry = searchParams.get('upload') === 'retry'
 
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -142,8 +144,10 @@ export default function OrderPayment() {
 
   return (
     <>
-      <PageHeader title="Complete your payment.">
-        <p>Please transfer the total amount using one of the payment methods below. After completing the payment, upload your payment screenshot for verification.</p>
+      <PageHeader title={needsUpload ? 'Complete your payment.' : 'Order status.'}>
+        <p>{needsUpload
+          ? 'Please transfer the total amount using one of the payment methods below. After completing the payment, upload your payment screenshot for verification.'
+          : 'Track the status of your equipment order below.'}</p>
       </PageHeader>
 
       <section className="section">
@@ -157,6 +161,12 @@ export default function OrderPayment() {
                 <p>{statusMeta.message}</p>
               </div>
             </div>
+
+            {uploadRetry && (
+              <div className="op-upload-retry" role="status">
+                Your payment screenshot couldn't be uploaded when placing your order. Please try the upload below.
+              </div>
+            )}
 
             {order.decline_reason && status === 'declined' && (
               <div className="op-decline-reason">Reason: <strong>{order.decline_reason.replace(/_/g, ' ')}</strong></div>
@@ -226,6 +236,7 @@ export default function OrderPayment() {
                   </p>
                   <div className="field">
                     <input
+                      id="op-screenshot"
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       onChange={handleScreenshotChange}

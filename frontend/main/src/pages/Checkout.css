@@ -76,6 +76,55 @@
   line-height: 1.5;
 }
 
+/* ── Payment screenshot upload (shown once a method is chosen) ── */
+.co-upload {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1.5px dashed var(--chalk-dim);
+  border-radius: 10px;
+}
+
+.co-upload-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+}
+
+.co-upload-head svg {
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.co-upload-desc {
+  font-size: 0.82rem;
+  color: var(--stone-dark);
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+
+.co-upload .field {
+  margin: 0;
+}
+
+.co-upload .field input[type="file"] {
+  padding: 10px;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 560px) {
+  .co-upload {
+    padding: 14px 12px;
+  }
+}
+
 /* ── Order summary (right column) ── */
 .co-summary {
   background: var(--charcoal);

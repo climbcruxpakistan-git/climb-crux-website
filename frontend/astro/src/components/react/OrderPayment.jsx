@@ -48,6 +48,8 @@ const ORDER_STATUS_META = {
 }
 
 export default function OrderPayment({ orderNumber }) {
+  const uploadRetry = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('upload') === 'retry'
+
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -145,6 +147,12 @@ export default function OrderPayment({ orderNumber }) {
             </div>
           </div>
 
+          {uploadRetry && (
+            <div className="op-upload-retry" role="status">
+              Your payment screenshot couldn't be uploaded when placing your order. Please try the upload below.
+            </div>
+          )}
+
           {order.decline_reason && status === 'declined' && (
             <div className="op-decline-reason">Reason: <strong>{order.decline_reason.replace(/_/g, ' ')}</strong></div>
           )}
@@ -213,6 +221,7 @@ export default function OrderPayment({ orderNumber }) {
                 </p>
                 <div className="field">
                   <input
+                    id="op-screenshot"
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     onChange={handleScreenshotChange}
