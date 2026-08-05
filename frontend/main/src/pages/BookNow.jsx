@@ -292,7 +292,7 @@ export default function BookNow() {
                             <option value="" disabled>Select an announced session</option>
                             {publicSessions.map((s) => (
                               <option key={s.id} value={s.id}>
-                                {s.title || 'Public Session'} — {formatLongDate(s.date)} · {s.startTime}–{s.endTime}
+                                {s.title || 'Public Session'}
                               </option>
                             ))}
                           </select>
