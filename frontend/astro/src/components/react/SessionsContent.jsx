@@ -97,7 +97,7 @@ export default function SessionsContent({ initial }) {
               ))}
             </ul>
           )}
-          <p className="form-note">Sessions run every other week — check back or contact us if these dates don't line up with you.</p>
+          <p className="form-note">Sessions run every other week. Check back or contact us if these dates don't line up with you.</p>
         </div>
       </section>
 
