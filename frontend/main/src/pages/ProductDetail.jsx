@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { getProduct, getProducts, placeOrder, getProductReviews, submitProductReview, optimizeImage } from '../api.js'
+import { getProduct, getProducts, getProductReviews, submitProductReview, optimizeImage } from '../api.js'
 import './ProductDetail.css'
-
-const WHATSAPP_NUMBER = '+92 313 2690377'
 
 /* ── Star Rating Component ── */
 function StarRating({ rating, size = 20, interactive = false, onChange }) {
@@ -89,22 +87,6 @@ export default function ProductDetail() {
   // Quantity
   const [quantity, setQuantity] = useState(1)
 
-  // Checkout flow
-  const [flow, setFlow] = useState(null)
-  const [checkoutForm, setCheckoutForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', customer_address: '' })
-  const [paymentMethod, setPaymentMethod] = useState('')
-  const [ordering, setOrdering] = useState(false)
-  const [orderResult, setOrderResult] = useState(null)
-  const [error, setError] = useState('')
-
-  // Bank transfer fields
-  const [bankName, setBankName] = useState('')
-  const [accountHolder, setAccountHolder] = useState('')
-
-  // EasyPaisa fields
-  const [easypaisaSender, setEasypaisaSender] = useState('')
-  const [easypaisaPhone, setEasypaisaPhone] = useState('')
-
   // Touch swipe
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
@@ -152,7 +134,6 @@ export default function ProductDetail() {
       navigator.share({ title: product.name, text, url }).catch(() => {})
     } else {
       navigator.clipboard.writeText(url).then(() => {
-        setError('') // clear any old error
         alert('Link copied to clipboard!')
       })
     }
@@ -179,56 +160,6 @@ export default function ProductDetail() {
     const y = ((e.clientY - rect.top) / rect.height) * 100
     setZoomPos({ x, y })
   }, [])
-
-  // Checkout
-  function openCheckout() {
-    setFlow('info')
-    setCheckoutForm({ customer_name: '', customer_phone: '', customer_email: '', customer_address: '' })
-    setError('')
-  }
-
-  function handleMethodSelect(method) {
-    setPaymentMethod(method)
-    if (method === 'bank_transfer') setFlow('bank-form')
-    if (method === 'easypaisa') setFlow('easypaisa-form')
-  }
-
-  async function handlePlaceOrder(e) {
-    e.preventDefault()
-    setError('')
-    if (!checkoutForm.customer_name.trim() || !checkoutForm.customer_phone.trim()) {
-      setError('Name and phone are required')
-      return
-    }
-    setOrdering(true)
-    try {
-      const orderData = {
-        product_id: product.id,
-        product_name: product.name,
-        product_price: product.price,
-        quantity,
-        total_amount: totalPrice,
-        customer_name: checkoutForm.customer_name,
-        customer_email: checkoutForm.customer_email,
-        customer_phone: checkoutForm.customer_phone,
-        customer_address: checkoutForm.customer_address,
-      }
-      if (paymentMethod === 'bank_transfer') {
-        orderData.payment_method = 'bank_transfer'
-        orderData.payer_bank = bankName
-        orderData.payer_name = accountHolder
-      } else if (paymentMethod === 'easypaisa') {
-        orderData.payment_method = 'easypaisa'
-        orderData.payer_name = easypaisaSender
-        orderData.payer_phone = easypaisaPhone
-      }
-      const result = await placeOrder(orderData)
-      setOrderResult(result)
-      setFlow(null)
-    } catch {
-      setError('Failed to place order. Please try again.')
-    } finally { setOrdering(false) }
-  }
 
   // Submit review
   async function handleSubmitReview(e) {
@@ -505,7 +436,7 @@ export default function ProductDetail() {
               <span className="pd-total-label">Total</span>
               <span className="pd-total-amount">PKR {totalPrice.toLocaleString()}</span>
             </div>
-            <button className="btn btn-primary pd-buy-btn" disabled={!product.inStock} onClick={openCheckout}>
+            <button className="btn btn-primary pd-buy-btn" disabled={!product.inStock} onClick={() => navigate(`/shop/${id}/checkout?qty=${quantity}`)}>
               {product.inStock ? `Buy Now — PKR ${totalPrice.toLocaleString()}` : 'Sold Out'}
             </button>
           </div>
@@ -695,132 +626,7 @@ export default function ProductDetail() {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-           CHECKOUT FLOW MODAL
-           ═══════════════════════════════════════════════════════════════ */}
-      {flow && !orderResult && (
-        <div className="shop-modal-overlay" onClick={() => { setFlow(null); setError('') }}>
-          <div className="shop-modal shop-modal--wide" onClick={(e) => e.stopPropagation()}>
-            <button className="shop-modal-close" onClick={() => { setFlow(null); setError('') }}>✕</button>
 
-            {flow === 'info' && (
-              <>
-                <div className="shop-modal-product" style={{ marginBottom: 20 }}>
-                  <div className="shop-modal-product-img">
-                    {product.imageUrl ? <img src={product.imageUrl} alt={product.name} /> : <div className="shop-card-image-placeholder"><span>📦</span></div>}
-                  </div>
-                  <div className="shop-modal-product-info">
-                    <h3>{product.name}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span className="shop-card-price-current">PKR {product.price.toLocaleString()}</span>
-                      <span style={{ color: 'var(--stone)', fontSize: '0.82rem' }}>× {quantity}</span>
-                      <span style={{ fontWeight: 700, color: 'var(--orange-dark)', fontSize: '1.1rem' }}>= PKR {totalPrice.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-                {error && <div className="form-error-banner">{error}</div>}
-                <div className="shop-checkout-form">
-                  <div className="shop-field"><label>Full name *</label><input value={checkoutForm.customer_name} onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_name: e.target.value })} placeholder="Your name" required /></div>
-                  <div className="shop-field"><label>Phone number *</label><input value={checkoutForm.customer_phone} onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_phone: e.target.value })} placeholder="03XX-XXXXXXX" required /></div>
-                  <div className="shop-field"><label>Email address</label><input type="email" value={checkoutForm.customer_email} onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_email: e.target.value })} placeholder="your@email.com" /></div>
-                  <div className="shop-field"><label>Delivery address</label><textarea value={checkoutForm.customer_address} onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_address: e.target.value })} placeholder="Street, city, province" rows={2} /></div>
-                  <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { setError(''); setFlow('payment-select') }}>Continue to Payment →</button>
-                </div>
-              </>
-            )}
-
-            {flow === 'payment-select' && (
-              <>
-                <h3 className="summary-title" style={{ color: 'var(--charcoal)', marginBottom: 16, fontSize: '1rem' }}>Choose payment method</h3>
-                <div className="payment-method-grid">
-                  {['bank_transfer', 'easypaisa'].map((m) => (
-                    <div key={m} className={`payment-method-card ${paymentMethod === m ? 'is-selected' : ''}`} onClick={() => handleMethodSelect(m)}>
-                      <div className="payment-method-icon">{m === 'bank_transfer' ? '🏦' : '📱'}</div>
-                      <span className="payment-method-label">{m === 'bank_transfer' ? 'Bank Transfer' : 'EasyPaisa'}</span>
-                      <div className="payment-method-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="form-actions">
-                  <button className="btn btn-outline" onClick={() => setFlow('info')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                  <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={!paymentMethod}
-                    onClick={() => { if (paymentMethod === 'bank_transfer') setFlow('bank-form'); if (paymentMethod === 'easypaisa') setFlow('easypaisa-form') }}>Continue</button>
-                </div>
-              </>
-            )}
-
-            {flow === 'bank-form' && (
-              <form onSubmit={handlePlaceOrder}>
-                <h3 className="summary-title" style={{ color: 'var(--charcoal)', marginBottom: 16, fontSize: '1rem' }}>Bank Transfer Details</h3>
-                <div className="payment-bank-info">
-                  <div className="bank-info-icon">🏦</div>
-                  <div>
-                    <p className="bank-detail-title">Transfer to our bank account</p>
-                    <p className="bank-detail-row"><span className="bank-label">Bank:</span> Bank Al Habib Limited</p>
-                    <p className="bank-detail-row"><span className="bank-label">Account name:</span> CLIMB CRUX</p>
-                    <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK93 BAHL 5742 0081 0003 9501</p>
-                    <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
-                    <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>Please transfer <strong>PKR {totalPrice.toLocaleString()}</strong> to the account above.</p>
-                    <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
-                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, send proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong>.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="field"><label>Sender bank name</label><input type="text" placeholder="e.g. HBL" required value={bankName} onChange={(e) => setBankName(e.target.value)} /></div>
-                <div className="field"><label>Account holder name</label><input type="text" placeholder="Name on account" required value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} /></div>
-                {error && <div className="form-error-banner">{error}</div>}
-                <div className="form-actions">
-                  <button type="button" className="btn btn-outline" onClick={() => setFlow('payment-select')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                  <button type="submit" className="btn btn-primary" disabled={ordering} style={{ flex: 1, justifyContent: 'center' }}>{ordering ? <><span className="btn-spinner" /> Placing Order…</> : `Place Order — PKR ${totalPrice.toLocaleString()}`}</button>
-                </div>
-              </form>
-            )}
-
-            {flow === 'easypaisa-form' && (
-              <form onSubmit={handlePlaceOrder}>
-                <h3 className="summary-title" style={{ color: 'var(--charcoal)', marginBottom: 16, fontSize: '1rem' }}>EasyPaisa Transfer Details</h3>
-                <div className="payment-bank-info">
-                  <div className="bank-info-icon">📱</div>
-                  <div>
-                    <p className="bank-detail-title">Send payment via EasyPaisa</p>
-                    <p className="bank-detail-row"><span className="bank-label">Number:</span> 0313 2690377</p>
-                    <p className="bank-detail-row"><span className="bank-label">Name:</span> Saif Ud Din</p>
-                    <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>Please send <strong>PKR {totalPrice.toLocaleString()}</strong> to the account above.</p>
-                    <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
-                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, send proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong>.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="field"><label>Sender name</label><input type="text" placeholder="Your full name" required value={easypaisaSender} onChange={(e) => setEasypaisaSender(e.target.value)} /></div>
-                <div className="field"><label>Phone number</label><input type="tel" placeholder="03XX-XXXXXXX" required value={easypaisaPhone} onChange={(e) => setEasypaisaPhone(e.target.value)} /></div>
-                {error && <div className="form-error-banner">{error}</div>}
-                <div className="form-actions">
-                  <button type="button" className="btn btn-outline" onClick={() => setFlow('payment-select')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                  <button type="submit" className="btn btn-primary" disabled={ordering} style={{ flex: 1, justifyContent: 'center' }}>{ordering ? <><span className="btn-spinner" /> Placing Order…</> : `Place Order — PKR ${totalPrice.toLocaleString()}`}</button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Order Confirmation */}
-      {orderResult && (
-        <div className="shop-modal-overlay" onClick={() => { setOrderResult(null); setFlow(null) }}>
-          <div className="shop-modal shop-modal--wide shop-modal-success" onClick={(e) => e.stopPropagation()}>
-            <div className="shop-success-icon">✅</div>
-            <h2>Order Placed!</h2>
-            <p className="shop-success-number">Order #: {orderResult.order_number}</p>
-            <p style={{ color: 'var(--stone)', marginBottom: 20 }}>Your order has been received. Please complete payment to confirm.</p>
-            <div className="pd-confirm-summary" style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
-              <div style={{ textAlign: 'center' }}><div style={{ fontSize: '0.75rem', color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Item</div><div style={{ fontWeight: 600 }}>{product.name}</div></div>
-              <div style={{ textAlign: 'center' }}><div style={{ fontSize: '0.75rem', color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Qty</div><div style={{ fontWeight: 600 }}>{quantity}</div></div>
-              <div style={{ textAlign: 'center' }}><div style={{ fontSize: '0.75rem', color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Total</div><div style={{ fontWeight: 700, color: 'var(--orange-dark)' }}>PKR {totalPrice.toLocaleString()}</div></div>
-            </div>
-            <button className="btn btn-primary" style={{ width: '100%', marginTop: 12 }} onClick={() => { setOrderResult(null); setFlow(null) }}>Done</button>
-          </div>
-        </div>
-      )}
     </>
   )
 }

@@ -1,0 +1,48 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import PageHeader from '../../../components/astro/PageHeader.astro';
+import Checkout from '../../../components/react/Checkout.jsx';
+import { getProduct } from '../../../lib/api';
+import '../../../styles/Checkout.css';
+
+// Rendered on-demand so any product works (no redeploy needed for new items).
+export const prerender = false;
+
+const { id } = Astro.params;
+
+const product = await getProduct(id).catch(() => null);
+const pageTitle = product?.name
+  ? `Checkout — ${product.name} — Climb Crux Pakistan`
+  : 'Checkout — Climb Crux Pakistan';
+---
+
+<MainLayout>
+  <Fragment slot="head">
+    <title>{pageTitle}</title>
+  </Fragment>
+
+  <PageHeader title="Checkout.">
+    <p slot="default">Review your order, enter your details, and choose how you'd like to pay.</p>
+  </PageHeader>
+
+  {
+    !product && (
+      <section class="section">
+        <div class="wrap" style="text-align:center;padding:60px 20px;">
+          <h2>Product not found</h2>
+          <a href="/shop" class="btn btn-outline" style="margin-top:16px;">← Back to shop</a>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    product && (
+      <Checkout
+        client:only="react"
+        id={id}
+        initialProduct={JSON.stringify(product)}
+      />
+    )
+  }
+</MainLayout>

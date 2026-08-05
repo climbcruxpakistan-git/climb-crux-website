@@ -1,0 +1,381 @@
+import { useState, useEffect } from 'react'
+import { getProduct, placeOrder, optimizeImage } from '../../lib/api'
+
+const WHATSAPP_NUMBER = '+92 313 2690377'
+
+/**
+ * Parse JSON-stringified initial data from Astro page props.
+ * Falls back to null if parsing fails.
+ */
+function jsonParse(str) {
+  try { return str ? JSON.parse(str) : null } catch { return null }
+}
+
+function initialQty() {
+  const params = new URLSearchParams(window.location.search)
+  const qty = parseInt(params.get('qty') || '1', 10)
+  return Number.isFinite(qty) ? Math.min(10, Math.max(1, qty)) : 1
+}
+
+export default function Checkout({ id, initialProduct }) {
+  const parsedInitialProduct = jsonParse(initialProduct)
+
+  const [product, setProduct] = useState(parsedInitialProduct)
+  const [loading, setLoading] = useState(!parsedInitialProduct)
+  const [quantity, setQuantity] = useState(() => initialQty())
+
+  // Customer info
+  const [checkoutForm, setCheckoutForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', customer_address: '' })
+
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [accountHolder, setAccountHolder] = useState('')
+  const [easypaisaSender, setEasypaisaSender] = useState('')
+  const [easypaisaPhone, setEasypaisaPhone] = useState('')
+
+  const [ordering, setOrdering] = useState(false)
+  const [orderResult, setOrderResult] = useState(null)
+  const [orderSnapshot, setOrderSnapshot] = useState(null)
+  const [error, setError] = useState('')
+
+  // Hydrate: fetch fresh data on mount for stock/pricing updates
+  useEffect(() => {
+    if (parsedInitialProduct) {
+      getProduct(id)
+        .then(setProduct)
+        .catch(() => {})
+      return
+    }
+    setLoading(true)
+    getProduct(id)
+      .then(setProduct)
+      .catch(() => { window.location.href = '/shop' })
+      .finally(() => setLoading(false))
+  }, [id])
+
+  const totalPrice = product ? product.price * quantity : 0
+  const maxQty = product ? Math.min(10, product.stockQuantity ?? 10) : 10
+  const imageUrl = product ? (product.imageUrl || product.images?.[0]) : null
+
+  function handleMethodSelect(method) {
+    setPaymentMethod(method)
+    setError('')
+  }
+
+  async function handlePlaceOrder(e) {
+    e.preventDefault()
+    setError('')
+    if (!checkoutForm.customer_name.trim() || !checkoutForm.customer_phone.trim()) {
+      setError('Name and phone number are required')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    if (!paymentMethod) {
+      setError('Please choose a payment method')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    setOrdering(true)
+    try {
+      const orderData = {
+        product_id: product.id,
+        product_name: product.name,
+        product_price: product.price,
+        quantity,
+        total_amount: totalPrice,
+        customer_name: checkoutForm.customer_name,
+        customer_email: checkoutForm.customer_email,
+        customer_phone: checkoutForm.customer_phone,
+        customer_address: checkoutForm.customer_address,
+      }
+      if (paymentMethod === 'bank_transfer') {
+        orderData.payment_method = 'bank_transfer'
+        orderData.payer_bank = bankName
+        orderData.payer_name = accountHolder
+      } else if (paymentMethod === 'easypaisa') {
+        orderData.payment_method = 'easypaisa'
+        orderData.payer_name = easypaisaSender
+        orderData.payer_phone = easypaisaPhone
+      }
+      const result = await placeOrder(orderData)
+      setOrderResult(result)
+      setOrderSnapshot({ productName: product.name, quantity, total: totalPrice })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch {
+      setError('Failed to place order. Please try again.')
+    } finally {
+      setOrdering(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <section className="section"><div className="wrap" style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <div className="btn-spinner" style={{ margin: '0 auto 16px', width: 24, height: 24, borderWidth: 3 }} />
+        <p style={{ color: 'var(--stone)' }}>Loading checkout…</p>
+      </div></section>
+    )
+  }
+
+  if (!product) return null
+
+  /* ── Order placed: success view ── */
+  if (orderResult) {
+    return (
+      <section className="section">
+        <div className="wrap">
+          <div className="co-success">
+            <div className="success-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <h3>Order Placed!</h3>
+            <p className="co-success-number">Order #: <span className="ref-code">{orderResult.order_number}</span></p>
+            <p className="success-desc">Your order has been received. Please complete your {paymentMethod === 'bank_transfer' ? 'bank transfer' : 'EasyPaisa'} payment to confirm it.</p>
+
+            <div className="success-details">
+              <div className="success-detail-row"><span>Item</span><span>{orderSnapshot ? orderSnapshot.productName : product.name}</span></div>
+              <div className="success-detail-row"><span>Quantity</span><span>{orderSnapshot ? orderSnapshot.quantity : quantity}</span></div>
+              <div className="success-detail-row"><span>Total to pay</span><span>PKR {(orderSnapshot ? orderSnapshot.total : totalPrice).toLocaleString()}</span></div>
+              <div className="success-detail-row"><span>Payment</span><span>{paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'EasyPaisa'}</span></div>
+            </div>
+
+            <div className="co-success-note">
+              <strong>📤 After sending the payment</strong>, send your payment proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong> so we can confirm your order quickly.
+            </div>
+
+            <div className="co-success-actions">
+              <a href="/shop" className="btn btn-primary">Back to Shop</a>
+              <a href={`/shop/${id}`} className="btn btn-outline">View Product</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="section">
+      <div className="wrap">
+        {!product.inStock && (
+          <div className="form-error-banner" style={{ maxWidth: 860, margin: '0 auto 24px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            This product is currently out of stock. You can still add your details, but the order can't be completed right now.
+          </div>
+        )}
+
+        {error && (
+          <div className="form-error-banner" style={{ maxWidth: 860, margin: '0 auto 24px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {error}
+          </div>
+        )}
+
+        <form className="checkout-grid" onSubmit={handlePlaceOrder}>
+          {/* ── LEFT: Form ── */}
+          <div className="checkout-form-col">
+            {/* Step 1: Your information */}
+            <div className="co-card">
+              <h3 className="co-card-title"><span className="co-step-num">1</span> Your information</h3>
+              <div className="form-row">
+                <div className="field">
+                  <label htmlFor="co-name">Full name *</label>
+                  <input id="co-name" type="text" placeholder="Your name" required autoComplete="name"
+                    value={checkoutForm.customer_name}
+                    onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_name: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label htmlFor="co-phone">Phone number *</label>
+                  <input id="co-phone" type="tel" placeholder="03XX-XXXXXXX" required autoComplete="tel"
+                    value={checkoutForm.customer_phone}
+                    onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_phone: e.target.value })} />
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="co-email">Email address</label>
+                <input id="co-email" type="email" placeholder="your@email.com" autoComplete="email"
+                  value={checkoutForm.customer_email}
+                  onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_email: e.target.value })} />
+              </div>
+              <div className="field">
+                <label htmlFor="co-address">Delivery address</label>
+                <textarea id="co-address" rows={2} placeholder="Street, city, province" autoComplete="street-address"
+                  value={checkoutForm.customer_address}
+                  onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_address: e.target.value })} />
+              </div>
+            </div>
+
+            {/* Step 2: Payment */}
+            <div className="co-card">
+              <h3 className="co-card-title"><span className="co-step-num">2</span> Payment method</h3>
+              <div className="payment-method-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                <div
+                  className={`payment-method-card ${paymentMethod === 'bank_transfer' ? 'is-selected' : ''}`}
+                  onClick={() => handleMethodSelect('bank_transfer')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleMethodSelect('bank_transfer') }}
+                >
+                  <div className="payment-method-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="16" rx="2" /><line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                  </div>
+                  <span className="payment-method-label">Bank Transfer</span>
+                  <div className="payment-method-check">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                  </div>
+                </div>
+                <div
+                  className={`payment-method-card ${paymentMethod === 'easypaisa' ? 'is-selected' : ''}`}
+                  onClick={() => handleMethodSelect('easypaisa')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleMethodSelect('easypaisa') }}
+                >
+                  <div className="payment-method-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" />
+                    </svg>
+                  </div>
+                  <span className="payment-method-label">EasyPaisa</span>
+                  <div className="payment-method-check">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                  </div>
+                </div>
+              </div>
+
+              {paymentMethod === 'bank_transfer' && (
+                <div className="co-pay-panel">
+                  <div className="payment-bank-info">
+                    <div className="bank-info-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="16" rx="2" /><line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="bank-detail-title">Transfer to our bank account</p>
+                      <p className="bank-detail-row"><span className="bank-label">Bank:</span> Bank Al Habib Limited</p>
+                      <p className="bank-detail-row"><span className="bank-label">Account name:</span> CLIMB CRUX</p>
+                      <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK93 BAHL 5742 0081 0003 9501</p>
+                      <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
+                      <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
+                        Please transfer <strong>PKR {totalPrice.toLocaleString()}</strong> to the account above.
+                      </p>
+                      <div className="co-proof-note">
+                        <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, send proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="field">
+                      <label htmlFor="co-bank-name">Sender bank name</label>
+                      <input id="co-bank-name" type="text" placeholder="e.g. HBL, Meezan Bank, UBL" required
+                        value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="co-account-holder">Account holder name</label>
+                      <input id="co-account-holder" type="text" placeholder="Name on the account" required
+                        value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'easypaisa' && (
+                <div className="co-pay-panel">
+                  <div className="payment-bank-info">
+                    <div className="bank-info-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="bank-detail-title">Send payment via EasyPaisa</p>
+                      <p className="bank-detail-row"><span className="bank-label">EasyPaisa number:</span> 0313 2690377</p>
+                      <p className="bank-detail-row"><span className="bank-label">Account name:</span> Saif Ud Din</p>
+                      <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>
+                        Please send <strong>PKR {totalPrice.toLocaleString()}</strong> to the EasyPaisa account above.
+                      </p>
+                      <div className="co-proof-note">
+                        <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, send proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="field">
+                      <label htmlFor="co-easypaisa-sender">Sender name</label>
+                      <input id="co-easypaisa-sender" type="text" placeholder="Your full name" required
+                        value={easypaisaSender} onChange={(e) => setEasypaisaSender(e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="co-easypaisa-phone">Phone number</label>
+                      <input id="co-easypaisa-phone" type="tel" placeholder="03XX-XXXXXXX" required
+                        value={easypaisaPhone} onChange={(e) => setEasypaisaPhone(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!paymentMethod && (
+                <p className="form-note" style={{ marginTop: 4 }}>Select a payment method to see the transfer details.</p>
+              )}
+
+              <div className="form-actions">
+                <a href={`/shop/${id}`} className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to product</a>
+                <button type="submit" className="btn btn-primary" disabled={ordering || !product.inStock} style={{ flex: 1, justifyContent: 'center' }}>
+                  {ordering ? <><span className="btn-spinner" /> Placing Order…</> : `Place Order — PKR ${totalPrice.toLocaleString()}`}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── RIGHT: Order summary ── */}
+          <aside className="co-summary">
+            <h3 className="co-summary-title">Order summary</h3>
+            <div className="co-summary-product">
+              <div className="co-summary-img">
+                {imageUrl ? (
+                  <img src={optimizeImage(imageUrl, 150)} alt={product.name} />
+                ) : (
+                  <span>📦</span>
+                )}
+              </div>
+              <div className="co-summary-info">
+                <span className="co-summary-name">{product.name}</span>
+                <span className="co-summary-price">PKR {product.price.toLocaleString()} each</span>
+              </div>
+            </div>
+
+            <div className="co-summary-qty">
+              <span className="co-summary-label">Quantity</span>
+              <div className="co-qty-selector">
+                <button type="button" className="co-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}>−</button>
+                <span className="co-qty-value">{quantity}</span>
+                <button type="button" className="co-qty-btn" onClick={() => setQuantity(Math.min(maxQty, quantity + 1))} disabled={quantity >= maxQty}>+</button>
+              </div>
+            </div>
+
+            <div className="co-summary-line"><span>Subtotal</span><span>PKR {totalPrice.toLocaleString()}</span></div>
+            {product.shipping?.deliveryTime && (
+              <div className="co-summary-line co-summary-muted"><span>Delivery</span><span>{product.shipping.deliveryTime}{product.shipping.freeShipping ? ' · Free' : ''}</span></div>
+            )}
+
+            <div className="co-summary-total">
+              <span>Total</span>
+              <span>PKR {totalPrice.toLocaleString()}</span>
+            </div>
+
+            <div className="co-summary-badges">
+              <span>🔒 Secure checkout</span>
+              {product.shipping?.freeShipping && <span>🚚 Free shipping</span>}
+            </div>
+          </aside>
+        </form>
+      </div>
+    </section>
+  )
+}

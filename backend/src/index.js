@@ -46,6 +46,7 @@ const allowedOrigins = [
   // Local development
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:4321',
   // Production — always include known Vercel deployments
   'https://climb-crux-admin.vercel.app',
   'https://climb-crux-frontend.vercel.app',

@@ -157,10 +157,14 @@ export default function Shop() {
                       </div>
                     )}
 
-                    {/* Buy button navigates to detail page */}
+                    {/* Buy Now goes straight to checkout */}
                     <div
                       className="btn btn-primary shop-card-btn"
-                      style={{ textAlign: 'center', pointerEvents: 'none', opacity: product.inStock ? 1 : 0.4 }}
+                      style={{ textAlign: 'center', opacity: product.inStock ? 1 : 0.4 }}
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => { if (product.inStock) { e.stopPropagation(); navigate(`/shop/${product.id}/checkout`) } }}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && product.inStock) { e.stopPropagation(); navigate(`/shop/${product.id}/checkout`) } }}
                     >
                       {product.inStock ? 'Buy Now' : 'Sold Out'}
                     </div>
