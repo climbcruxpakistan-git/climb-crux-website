@@ -86,14 +86,20 @@ export default function SessionsContent({ initial }) {
             <ul className="schedule-list">
               {sessions.map((s, i) => (
                 <li key={s.id || i}>
-                  <span className="schedule-name">{s.title || 'Public Session'}</span>
-                  <span className="schedule-date">{formatShortDate(s.date)}</span>
-                  <span className="schedule-time">{[s.startTime, s.endTime].filter(Boolean).join(' – ') || '—'}</span>
-                  <span className="schedule-spots">
-                    {Number(s.maxParticipants) > 0
-                      ? (s.remaining > 0 ? `${s.remaining} spots left` : 'Full')
-                      : 'Open'}
-                  </span>
+                  <div className="schedule-card">
+                    <div className="schedule-card-top">
+                      <span className="schedule-name">{s.title || 'Public Session'}</span>
+                      <span className="schedule-spots">
+                        {Number(s.maxParticipants) > 0
+                          ? (s.remaining > 0 ? `${s.remaining} spots left` : 'Full')
+                          : 'Open'}
+                      </span>
+                    </div>
+                    <div className="schedule-card-meta">
+                      <span className="schedule-date">{formatShortDate(s.date)}</span>
+                      <span className="schedule-time">{[s.startTime, s.endTime].filter(Boolean).join(' – ') || '—'}</span>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
