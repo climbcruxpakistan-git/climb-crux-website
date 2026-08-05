@@ -101,6 +101,43 @@ export function adminPaymentProofNotification({ booking }) {
   }
 }
 
+/** New equipment-order payment proof (screenshot) submitted → admin alert. */
+export function adminOrderPaymentProofNotification({ order }) {
+  const rows = [
+    ['Customer', order.customer_name || '—'],
+    ['Phone', order.customer_phone || '—'],
+    ['Order ID', order.order_number || '—'],
+    ['Product', order.product_name || '—'],
+    ['Quantity', String(order.quantity || 1)],
+    ['Amount', `PKR ${(order.total_amount || 0).toLocaleString()}`],
+    ['Payment Method', order.payment_method === 'bank_transfer' ? 'Bank Transfer' : order.payment_method === 'easypaisa' ? 'EasyPaisa' : order.payment_method || '—'],
+    ['Status', 'Awaiting Verification'],
+  ]
+
+  const screenshotUrl = order.payment_screenshot_url
+  const screenshotBlock = screenshotUrl
+    ? `<div style="margin:14px 0 0"><a href="${screenshotUrl}" style="display:inline-block;background:#f36f21;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 22px;border-radius:8px">View Payment Screenshot</a></div>`
+    : ''
+
+  return {
+    subject: `💳 Order Payment Proof — ${order.customer_name} (${order.order_number || ''})`,
+    html: renderEmailLayout({
+      headerTitle: 'Equipment Order Payment Proof',
+      headerSubtitle: 'A customer uploaded a payment screenshot for verification',
+      bodyHtml: `
+        <p style="margin:0 0 6px;font-size:14px;color:#444;line-height:1.7">
+          <strong>${escapeHtml(order.customer_name)}</strong> submitted their payment
+          screenshot for order <strong>${escapeHtml(order.order_number || '')}</strong>.
+          Verify it in the admin dashboard (Sales) to confirm the order.
+        </p>
+        <div style="margin:14px 0 4px;font-size:12px;font-weight:800;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Order details</div>
+        ${summaryTable(rows)}
+        ${screenshotBlock}
+      `,
+    }),
+  }
+}
+
 /** Payment approved → admin alert. */
 export function adminPaymentNotification({ booking }) {
   const rows = [

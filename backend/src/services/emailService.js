@@ -8,10 +8,14 @@
  *   · sendMembershipConfirmation({ application })
  *   · sendMembershipApprovalEmail({ application, pdfBuffer })
  *   · sendMembershipRejectionEmail({ application, reason })
+ *   · sendOrderPaymentReceivedEmail({ order, pdfBuffer })
+ *   · sendOrderConfirmedEmail({ order, pdfBuffer })
+ *   · sendOrderDeclinedEmail({ order, reason, pdfBuffer })
  *   · sendAdminBookingNotification({ booking, sessionType })
  *   · sendAdminMembershipNotification({ application })
  *   · sendAdminPaymentNotification({ booking })
  *   · sendAdminPaymentProofNotification({ booking })
+ *   · sendAdminOrderPaymentProofNotification({ order })
  *
  * Modular by design: each template lives in ../templates and produces
  * { subject, html }; adding a new email type later means adding one template
@@ -27,11 +31,15 @@ import { bookingDeclinedEmail } from '../templates/bookingDeclinedEmail.js'
 import { membershipConfirmation } from '../templates/membershipConfirmation.js'
 import { membershipApprovalEmail } from '../templates/membershipApprovalEmail.js'
 import { membershipRejectionEmail } from '../templates/membershipRejectionEmail.js'
+import { orderPaymentReceivedEmail } from '../templates/orderPaymentReceivedEmail.js'
+import { orderConfirmedEmail } from '../templates/orderConfirmedEmail.js'
+import { orderDeclinedEmail } from '../templates/orderDeclinedEmail.js'
 import {
   adminBookingNotification,
   adminMembershipNotification,
   adminPaymentNotification,
   adminPaymentProofNotification,
+  adminOrderPaymentProofNotification,
 } from '../templates/adminNotifications.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
@@ -142,6 +150,51 @@ export async function sendAdminBookingNotification({ booking, sessionType }) {
 /** Admin alert — payment screenshot submitted, awaiting verification. */
 export async function sendAdminPaymentProofNotification({ booking }) {
   const { subject, html } = adminPaymentProofNotification({ booking })
+  return send({ to: NOTIFICATION_EMAIL, subject, html })
+}
+
+/** Equipment order: first customer email — payment received, under verification (includes the order PDF). */
+export async function sendOrderPaymentReceivedEmail({ order, pdfBuffer }) {
+  const { subject, html } = orderPaymentReceivedEmail({ order, whatsapp: CLIMB_CRUX_WHATSAPP })
+  return send({
+    to: order.customer_email,
+    subject,
+    html,
+    attachments: pdfBuffer
+      ? [{ filename: `Climb-Crux-Order-${order.order_number || 'Received'}.pdf`, content: pdfBuffer }]
+      : undefined,
+  })
+}
+
+/** Equipment order: confirmation after admin verifies payment — includes the order PDF. */
+export async function sendOrderConfirmedEmail({ order, pdfBuffer }) {
+  const { subject, html } = orderConfirmedEmail({ order, whatsapp: CLIMB_CRUX_WHATSAPP })
+  return send({
+    to: order.customer_email,
+    subject,
+    html,
+    attachments: pdfBuffer
+      ? [{ filename: `Climb-Crux-Order-${order.order_number || 'Confirmed'}.pdf`, content: pdfBuffer }]
+      : undefined,
+  })
+}
+
+/** Equipment order: decline after admin review — includes the order PDF and the reason. */
+export async function sendOrderDeclinedEmail({ order, reason = '', pdfBuffer }) {
+  const { subject, html } = orderDeclinedEmail({ order, reason, whatsapp: CLIMB_CRUX_WHATSAPP })
+  return send({
+    to: order.customer_email,
+    subject,
+    html,
+    attachments: pdfBuffer
+      ? [{ filename: `Climb-Crux-Order-${order.order_number || 'Declined'}.pdf`, content: pdfBuffer }]
+      : undefined,
+  })
+}
+
+/** Admin alert — equipment order payment proof submitted, awaiting verification. */
+export async function sendAdminOrderPaymentProofNotification({ order }) {
+  const { subject, html } = adminOrderPaymentProofNotification({ order })
   return send({ to: NOTIFICATION_EMAIL, subject, html })
 }
 

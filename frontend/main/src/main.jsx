@@ -35,6 +35,7 @@ import CheckStatus from './pages/CheckStatus.jsx'
 import Shop from './pages/Shop.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
 import Checkout from './pages/Checkout.jsx'
+import OrderPayment from './pages/OrderPayment.jsx'
 import PaymentPage from './pages/PaymentPage.jsx'
 import BankTransferConfirmation from './pages/BankTransferConfirmation.jsx'
 import EasyPaisaConfirmation from './pages/EasyPaisaConfirmation.jsx'
@@ -53,6 +54,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/our-team/:id" element={<InstructorProfile />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/:id/checkout" element={<Checkout />} />
+          <Route path="/shop/orders/:orderNumber/payment" element={<OrderPayment />} />
           <Route path="/shop/:id" element={<ProductDetail />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/book-now" element={<BookNow />} />

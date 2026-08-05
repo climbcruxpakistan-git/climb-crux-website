@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getProduct, placeOrder, optimizeImage } from '../../lib/api'
 
-const WHATSAPP_NUMBER = '+92 313 2690377'
-
 /**
  * Parse JSON-stringified initial data from Astro page props.
  * Falls back to null if parsing fails.
@@ -35,8 +33,6 @@ export default function Checkout({ id, initialProduct }) {
   const [easypaisaPhone, setEasypaisaPhone] = useState('')
 
   const [ordering, setOrdering] = useState(false)
-  const [orderResult, setOrderResult] = useState(null)
-  const [orderSnapshot, setOrderSnapshot] = useState(null)
   const [error, setError] = useState('')
 
   // Hydrate: fetch fresh data on mount for stock/pricing updates
@@ -99,9 +95,9 @@ export default function Checkout({ id, initialProduct }) {
         orderData.payer_phone = easypaisaPhone
       }
       const result = await placeOrder(orderData)
-      setOrderResult(result)
-      setOrderSnapshot({ productName: product.name, quantity, total: totalPrice })
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Order saved as Payment Pending — take the customer to the payment
+      // page to transfer and upload their payment screenshot.
+      window.location.href = `/shop/orders/${encodeURIComponent(result.order_number)}/payment`
     } catch {
       setError('Failed to place order. Please try again.')
     } finally {
@@ -119,43 +115,6 @@ export default function Checkout({ id, initialProduct }) {
   }
 
   if (!product) return null
-
-  /* ── Order placed: success view ── */
-  if (orderResult) {
-    return (
-      <section className="section">
-        <div className="wrap">
-          <div className="co-success">
-            <div className="success-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-            </div>
-            <h3>Order Placed!</h3>
-            <p className="co-success-number">Order #: <span className="ref-code">{orderResult.order_number}</span></p>
-            <p className="success-desc">Your order has been received. Please complete your {paymentMethod === 'bank_transfer' ? 'bank transfer' : 'EasyPaisa'} payment to confirm it.</p>
-
-            <div className="success-details">
-              <div className="success-detail-row"><span>Item</span><span>{orderSnapshot ? orderSnapshot.productName : product.name}</span></div>
-              <div className="success-detail-row"><span>Quantity</span><span>{orderSnapshot ? orderSnapshot.quantity : quantity}</span></div>
-              <div className="success-detail-row"><span>Total to pay</span><span>PKR {(orderSnapshot ? orderSnapshot.total : totalPrice).toLocaleString()}</span></div>
-              <div className="success-detail-row"><span>Payment</span><span>{paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'EasyPaisa'}</span></div>
-            </div>
-
-            <div className="co-success-note">
-              <strong>📤 After sending the payment</strong>, send your payment proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong> so we can confirm your order quickly.
-            </div>
-
-            <div className="co-success-actions">
-              <a href="/shop" className="btn btn-primary">Back to Shop</a>
-              <a href={`/shop/${id}`} className="btn btn-outline">View Product</a>
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   return (
     <section className="section">
@@ -266,7 +225,7 @@ export default function Checkout({ id, initialProduct }) {
                         Please transfer <strong>PKR {totalPrice.toLocaleString()}</strong> to the account above.
                       </p>
                       <div className="co-proof-note">
-                        <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, send proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong>.</p>
+                        <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, you'll upload your payment screenshot on the next page for verification.</p>
                       </div>
                     </div>
                   </div>
@@ -301,7 +260,7 @@ export default function Checkout({ id, initialProduct }) {
                         Please send <strong>PKR {totalPrice.toLocaleString()}</strong> to the EasyPaisa account above.
                       </p>
                       <div className="co-proof-note">
-                        <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, send proof to WhatsApp at <strong>{WHATSAPP_NUMBER}</strong>.</p>
+                        <p><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending</strong>, you'll upload your payment screenshot on the next page for verification.</p>
                       </div>
                     </div>
                   </div>

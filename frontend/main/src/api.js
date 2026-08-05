@@ -175,6 +175,30 @@ export async function placeOrder(data) {
   return mapId(await postJson('/products/order', data))
 }
 
+/** Look up an equipment order by its Order ID (CCE-XXXXXX) — for the payment page. */
+export async function getOrderByNumber(orderNumber) {
+  const res = await fetch(`${API}/products/orders/by-number/${encodeURIComponent(orderNumber)}`)
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  return mapId(await res.json())
+}
+
+/** Upload the payment screenshot for an order — moves it to Verification Pending. */
+export async function submitOrderPaymentProof(orderId, formData) {
+  const res = await fetch(`${API}/products/orders/${orderId}/payment-proof`, {
+    method: 'POST',
+    body: formData,
+  })
+  if (!res.ok) {
+    let message = 'Failed to submit payment proof'
+    try {
+      const d = await res.json()
+      message = d.error || message
+    } catch { /* ignore */ }
+    throw new Error(message)
+  }
+  return mapId(await res.json())
+}
+
 export async function getProductReviews(productId) {
   const data = await fetchJson(`/products/${productId}/reviews`)
   // Map _id to id inside reviews array

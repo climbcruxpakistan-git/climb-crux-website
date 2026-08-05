@@ -1,0 +1,109 @@
+/* ============================================================
+   EQUIPMENT ORDER PAYMENT PAGE (manual payment verification)
+   ============================================================ */
+
+.op-card {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--chalk, #ffffff);
+  border: 1px solid var(--border, #e5e0d6);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(28, 28, 28, 0.06);
+}
+
+/* ── Status banner ── */
+.op-status {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  margin-bottom: 20px;
+}
+.op-status strong { font-size: 0.95rem; display: block; }
+.op-status p { margin: 4px 0 0; font-size: 0.82rem; line-height: 1.5; opacity: 0.9; }
+.op-status-emoji { font-size: 1.5rem; line-height: 1.2; }
+
+.op-status--orange { background: #fff7f0; border-color: #fde3d2; color: #9a3412; }
+.op-status--blue { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.op-status--green { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.op-status--red { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.op-status--gray { background: #f5f5f5; border-color: #e5e5e5; color: #525252; }
+
+.op-decline-reason {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #7f1d1d;
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: -10px 0 20px;
+}
+
+/* ── Order summary ── */
+.op-summary {
+  border: 1px solid var(--border, #e5e0d6);
+  border-radius: 12px;
+  padding: 6px 18px;
+  margin-bottom: 20px;
+}
+.op-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border, #eee);
+  font-size: 0.88rem;
+}
+.op-summary-row:last-child { border-bottom: none; }
+.op-summary-row span:first-child { color: var(--stone, #777); }
+.op-summary-total { font-weight: 700; font-size: 1rem; }
+.op-summary-total span:last-child { color: var(--orange, #f36f21); }
+
+/* ── Payment method details ── */
+.op-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.op-methods .payment-bank-info {
+  border: 1px solid var(--border, #e5e0d6);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.op-methods .payment-bank-info.is-selected {
+  border-color: var(--orange, #f36f21);
+  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.12);
+}
+
+/* ── Upload section ── */
+.op-upload {
+  border-top: 2px dashed var(--border, #e5e0d6);
+  padding-top: 20px;
+}
+.op-upload-title {
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+  color: var(--charcoal, #1c1c1c);
+}
+.op-upload-desc {
+  font-size: 0.85rem;
+  color: var(--stone, #777);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+.op-upload .field input[type="file"] {
+  padding: 10px;
+  font-size: 0.82rem;
+}
+.op-actions { margin-top: 4px; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .op-card { padding: 20px 16px; border-radius: 12px; }
+}

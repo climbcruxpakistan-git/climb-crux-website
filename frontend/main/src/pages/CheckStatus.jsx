@@ -58,14 +58,58 @@ const STATUS_META = {
     emoji: '🔴', label: 'Membership Declined', color: 'red',
     message: 'Unfortunately, your membership request could not be approved. Please check your email for further information.',
   },
+  // ── Equipment order lifecycle ──
+  order_received: {
+    emoji: '🟡', label: 'Order Received', color: 'yellow',
+    message: 'We have received your equipment order. Please complete your payment and upload your payment screenshot to continue.',
+  },
+  order_confirmed: {
+    emoji: '🟢', label: 'Order Confirmed', color: 'green',
+    message: 'Your payment has been verified and your order is confirmed. Check your email for your order confirmation.',
+  },
+  order_processing: {
+    emoji: '🟢', label: 'Order Processing', color: 'green',
+    message: 'Your order is confirmed and is now being processed by the Climb Crux team.',
+  },
+  order_ready: {
+    emoji: '🟢', label: 'Ready for Pickup', color: 'green',
+    message: 'Your order is ready for pickup. Please arrange to collect it.',
+  },
+  order_shipped: {
+    emoji: '🟢', label: 'Shipped', color: 'green',
+    message: 'Your order has been shipped. Please watch out for delivery updates.',
+  },
+  order_delivered: {
+    emoji: '⚪', label: 'Delivered', color: 'gray',
+    message: 'Your order has been delivered. Thank you for shopping with Climb Crux!',
+  },
+  order_declined: {
+    emoji: '🔴', label: 'Order Declined', color: 'red',
+    message: 'Unfortunately, your payment could not be verified, so your order has been declined. Please check your email for more information or contact Climb Crux for assistance.',
+  },
   not_found: {
     emoji: '⚪', label: 'No Record Found', color: 'gray',
-    message: 'We couldn\u2019t find a booking or membership with the reference code you entered. Please check the code and try again.',
+    message: 'We couldn\u2019t find a booking, membership or order with the reference code you entered. Please check the code and try again.',
   },
 }
 
 /** Simple progress tracker — shows where a request is in its flow. */
 function progressSteps(result) {
+  if (result.type === 'order') {
+    const steps = ['Order Received', 'Payment', 'Under Verification', 'Confirmed', 'Delivered']
+    const byStatus = {
+      order_received: ['done', 'todo', 'todo', 'todo', 'todo'],
+      payment_pending: ['done', 'current', 'todo', 'todo', 'todo'],
+      under_verification: ['done', 'done', 'current', 'todo', 'todo'],
+      order_confirmed: ['done', 'done', 'done', 'current', 'todo'],
+      order_processing: ['done', 'done', 'done', 'current', 'todo'],
+      order_ready: ['done', 'done', 'done', 'current', 'todo'],
+      order_shipped: ['done', 'done', 'done', 'current', 'todo'],
+      order_delivered: ['done', 'done', 'done', 'done', 'done'],
+    }
+    const states = byStatus[result.status] || []
+    return states.map((state, i) => ({ label: steps[i], state }))
+  }
   if (result.type === 'membership') {
     const steps = ['Application Received', 'Payment & Review', 'Membership Active']
     switch (result.status) {
@@ -153,7 +197,7 @@ export default function CheckStatus() {
     e.preventDefault()
     const code = input.trim()
     if (!code) {
-      setError('Please enter your Booking ID or Membership ID.')
+      setError('Please enter your Booking ID, Membership ID or Order ID.')
       setResult(null)
       return
     }
@@ -172,8 +216,8 @@ export default function CheckStatus() {
 
   return (
     <>
-      <PageHeader eyebrow="Track your request" title="Check Your Booking or Membership Status">
-        <p>Enter your Booking ID or Membership ID to view the current status of your request.</p>
+      <PageHeader eyebrow="Track your request" title="Check Your Booking, Membership or Order Status">
+        <p>Enter your Booking ID, Membership ID or Order ID to view the current status of your request.</p>
       </PageHeader>
 
       <section className="cs-section">
@@ -185,8 +229,8 @@ export default function CheckStatus() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Enter Booking ID or Membership ID"
-                aria-label="Booking ID or Membership ID"
+                placeholder="Enter Booking ID, Membership ID or Order ID"
+                aria-label="Booking ID, Membership ID or Order ID"
                 autoComplete="off"
                 spellCheck="false"
               />
@@ -195,7 +239,7 @@ export default function CheckStatus() {
               </button>
             </form>
             <p className="cs-hint">
-              Examples: <code>CCS-XXXXX</code> or <code>CCM-XXXX</code>
+              Examples: <code>CCS-XXXXX</code>, <code>CCM-XXXX</code> or <code>CCE-XXXXXX</code>
             </p>
           </div>
 

@@ -26,7 +26,8 @@ const NAV_SECTIONS = [
     links: [
       { to: '/bookings', label: 'Bookings', icon: '☰' },
       { to: '/memberships', label: 'Memberships', icon: '🧗' },
-      { to: '/shop', label: 'Shop', icon: '🛒' },
+      { to: '/sales', label: 'Sales', icon: '🛒' },
+      { to: '/shop', label: 'Shop Products', icon: '📦' },
     ],
   },
 ]
@@ -74,7 +75,8 @@ export default function AdminLayout() {
     '/about': 'About Page',
     '/bookings': 'Bookings',
     '/memberships': 'Memberships',
-    '/shop': 'Shop',
+    '/sales': 'Sales',
+    '/shop': 'Shop Products',
   }
 
   return (

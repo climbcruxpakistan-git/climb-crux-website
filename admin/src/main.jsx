@@ -19,6 +19,7 @@ import AboutManager from './pages/AboutManager.jsx'
 import BookingsManager from './pages/BookingsManager.jsx'
 import MembershipsManager from './pages/MembershipsManager.jsx'
 import ShopManager from './pages/ShopManager.jsx'
+import Sales from './pages/Sales.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/photos" element={<PhotosManager />} />
                 <Route path="/about" element={<AboutManager />} />
                 <Route path="/shop" element={<ShopManager />} />
+                <Route path="/sales" element={<Sales />} />
                 <Route path="/bookings" element={<BookingsManager />} />
                 <Route path="/memberships" element={<MembershipsManager />} />
                 <Route path="/membership-applications" element={<Navigate to="/memberships" replace />} />

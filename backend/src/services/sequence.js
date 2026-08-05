@@ -1,4 +1,5 @@
 import Counter from '../models/Counter.js'
+import ProductOrder from '../models/ProductOrder.js'
 
 /**
  * Get the next number in a never-repeating sequence.
@@ -70,4 +71,23 @@ export async function nextMembershipReference() {
 export async function nextBookingReference() {
   const seq = await nextSequence('bookingCCS', 110)
   return `CCS-${String(seq).padStart(5, '0')}`
+}
+
+/**
+ * Next equipment order reference — CCE-XXXXXX (Climb Crux Equipment + random
+ * 6-digit numeric code). Random per spec, not sequential. Before returning,
+ * the code is checked for uniqueness against existing orders and regenerated
+ * on collision (the spec explicitly requires this). A collision is a
+ * 1-in-900,000 chance per attempt, so the retry loop makes a repeat
+ * practically impossible; the final fallback uses a time-based suffix.
+ */
+export async function nextOrderReference() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const digits = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
+    const code = `CCE-${digits}`
+    const exists = await ProductOrder.exists({ order_number: code })
+    if (!exists) return code
+  }
+  // Pathological-case fallback: time suffix guarantees uniqueness.
+  return `CCE-${String(Date.now()).slice(-6)}`
 }

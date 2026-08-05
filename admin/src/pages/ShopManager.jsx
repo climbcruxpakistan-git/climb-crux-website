@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { getProducts, saveProduct, deleteProduct, getProductOrders, patchOrderStatus, patchOrderPayment, deleteProductOrder } from '../store.js'
+import { getProducts, saveProduct, deleteProduct } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
@@ -41,9 +41,7 @@ const EDITOR_TABS = [
 export default function ShopManager() {
   const { addToast } = useToast()
   const [products, setProducts] = useState([])
-  const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('products')
   const [editorTab, setEditorTab] = useState('general')
   const [editing, setEditing] = useState(null)
 
@@ -79,21 +77,15 @@ export default function ShopManager() {
   const mainFileRef = useRef()
   const additionalFileRef = useRef()
 
-  // Orders detail modal
-  const [viewOrder, setViewOrder] = useState(null)
-  const [payForm, setPayForm] = useState({ payment_status: 'paid', payment_method: '', payer_bank: '', payer_name: '', payer_phone: '' })
-
   useEffect(() => {
-    Promise.all([getProducts(), getProductOrders()])
-      .then(([p, o]) => { setProducts(p); setOrders(o) })
+    getProducts()
+      .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
 
   function reload() {
-    return Promise.all([getProducts(), getProductOrders()])
-      .then(([p, o]) => { setProducts(p); setOrders(o) })
-      .catch(console.error)
+    return getProducts().then(setProducts).catch(console.error)
   }
 
   // ── Derive unique categories & brands for filter dropdowns ──
@@ -332,31 +324,7 @@ export default function ShopManager() {
     setForm({ ...form, images: [...filled, ''] })
   }
 
-  // ── Orders handlers ──
-  function openOrder(order) {
-    setViewOrder(order)
-    setPayForm({ payment_status: order.payment_status === 'paid' ? 'paid' : 'paid', payment_method: order.payment_method || '', payer_bank: order.payer_bank || '', payer_name: order.payer_name || '', payer_phone: order.payer_phone || '' })
-  }
-  async function handleUpdateStatus(orderId, status) { await patchOrderStatus(orderId, status); await reload(); addToast('Order status updated', 'success') }
-  async function handleUpdatePayment(orderId) { await patchOrderPayment(orderId, payForm); await reload(); setViewOrder(null); addToast('Payment status updated', 'success') }
-  async function handleDeleteOrder(order) {
-    const label = order.order_number ? `order #${order.order_number}` : 'this order'
-    if (!confirm(`Delete ${label}? This permanently removes the order record.`)) return
-    await deleteProductOrder(order.id)
-    await reload()
-    setViewOrder(null)
-    addToast('Order deleted', 'success')
-  }
-
   // ── Badge helpers ──
-  const statusBadge = (s) => {
-    const colors = { pending_payment: 'badge-yellow', pending_verification: 'badge-yellow', confirmed: 'badge-green', shipped: 'badge-blue', cancelled: 'badge-gray' }
-    return <span className={`badge ${colors[s] || 'badge-gray'}`}>{s?.replace(/_/g, ' ')}</span>
-  }
-  const payStatusBadge = (s) => {
-    const colors = { pending: 'badge-yellow', verification_required: 'badge-yellow', paid: 'badge-green', failed: 'badge-red', refunded: 'badge-gray' }
-    return <span className={`badge ${colors[s] || 'badge-gray'}`}>{s?.replace(/_/g, ' ')}</span>
-  }
   const stockBadge = (p) => {
     const colors = { in_stock: 'badge-green', low_stock: 'badge-yellow', out_of_stock: 'badge-red', backorder: 'badge-blue' }
     const labels = { in_stock: 'In Stock', low_stock: 'Low', out_of_stock: 'Out', backorder: 'Backorder' }
@@ -734,47 +702,15 @@ export default function ShopManager() {
     <>
       <div className="page-header-admin">
         <div>
-          <h1>Shop</h1>
-          <p className="page-header-admin-desc">Manage products and track orders.</p>
+          <h1>Shop Products</h1>
+          <p className="page-header-admin-desc">Manage products. Order fulfilment lives on the Sales page.</p>
         </div>
-        {tab === 'products' && (
-          <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Product</button>
-        )}
-      </div>
-
-      {/* Stats row (orders tab only) */}
-      {tab === 'orders' && (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-          <div className="card-admin" style={{ flex: 1, minWidth: 140, padding: 16 }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Total Orders</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', marginTop: 4 }}>{orders.length}</div>
-          </div>
-          <div className="card-admin" style={{ flex: 1, minWidth: 140, padding: 16 }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pending</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#eab308', marginTop: 4 }}>{orders.filter((o) => !['confirmed', 'shipped', 'cancelled'].includes(o.status)).length}</div>
-          </div>
-          <div className="card-admin" style={{ flex: 1, minWidth: 140, padding: 16 }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Revenue (paid)</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--orange)', marginTop: 4 }}>PKR {orders.filter((o) => o.payment_status === 'paid').reduce((sum, o) => sum + (o.total_amount || 0), 0).toLocaleString()}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '2px solid var(--border)' }}>
-        <button className={`btn-admin ${tab === 'products' ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
-          style={{ borderRadius: '8px 8px 0 0', borderBottom: tab === 'products' ? '2px solid var(--orange)' : '2px solid transparent', marginBottom: -2 }}
-          onClick={() => setTab('products')}>Products ({products.length})</button>
-        <button className={`btn-admin ${tab === 'orders' ? 'btn-admin-primary' : 'btn-admin-ghost'}`}
-          style={{ borderRadius: '8px 8px 0 0', borderBottom: tab === 'orders' ? '2px solid var(--orange)' : '2px solid transparent', marginBottom: -2 }}
-          onClick={() => setTab('orders')}>Orders ({orders.length})</button>
+        <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Product</button>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          PRODUCTS TAB
+          PRODUCTS LIST
           ═══════════════════════════════════════════════════════════════ */}
-      {tab === 'products' && (
-        <>
           {/* Search + Filters bar */}
           <div className="card-admin" style={{ padding: '16px 20px', marginBottom: 16 }}>
             <div className="admin-form-row" style={{ alignItems: 'flex-end' }}>
@@ -905,57 +841,6 @@ export default function ShopManager() {
               </div>
             )}
           </div>
-        </>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          ORDERS TAB
-          ═══════════════════════════════════════════════════════════════ */}
-      {tab === 'orders' && (
-        <div className="card-admin">
-          {orders.length === 0 ? (
-            <div className="empty-state"><div className="empty-state-icon">📋</div><h3>No orders yet</h3><p>Orders from customers will appear here.</p></div>
-          ) : (
-            <div className="table-wrap" style={{ boxShadow: 'none' }}>
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Order #</th>
-                      <th>Customer</th>
-                      <th>Product</th>
-                      <th>Qty</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Payment</th>
-                      <th>Date</th>
-                      <th style={{ width: 90 }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((o) => (
-                      <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => openOrder(o)}>
-                        <td><code style={{ fontSize: '0.7rem' }}>{o.order_number}</code></td>
-                        <td><div><strong>{o.customer_name}</strong></div><div style={{ fontSize: '0.7rem', color: 'var(--stone)' }}>{o.customer_phone}</div></td>
-                        <td style={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.product_name}</td>
-                        <td>{o.quantity}</td>
-                        <td>PKR {o.total_amount?.toLocaleString()}</td>
-                        <td>{statusBadge(o.status)}</td>
-                        <td>{payStatusBadge(o.payment_status)}</td>
-                        <td style={{ fontSize: '0.75rem', color: 'var(--stone)', whiteSpace: 'nowrap' }}>{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
-                        <td style={{ whiteSpace: 'nowrap' }}>
-                          <button className="btn-admin-icon" onClick={(e) => { e.stopPropagation(); openOrder(o) }} title="View">→</button>
-                          <button className="btn-admin-icon danger" onClick={(e) => { e.stopPropagation(); handleDeleteOrder(o) }} title="Delete order">✕</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════
           TABBED PRODUCT EDITOR MODAL
@@ -980,64 +865,6 @@ export default function ShopManager() {
           <div className="editor-actions">
             <button className="btn-admin btn-admin-primary" onClick={handleSave}>Save Product</button>
             <button className="btn-admin btn-admin-outline" onClick={() => setEditing(null)}>Cancel</button>
-          </div>
-        </Modal>
-      )}
-
-      {/* Order detail modal (unchanged) */}
-      {viewOrder && (
-        <Modal title={`Order #${viewOrder.order_number}`} onClose={() => setViewOrder(null)}>
-          <div className="admin-form">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-              <div>
-                <h4 style={{ fontSize: '0.8rem', color: 'var(--stone)', marginBottom: 8 }}>Customer</h4>
-                <p style={{ margin: 0, fontWeight: 600 }}>{viewOrder.customer_name}</p>
-                {viewOrder.customer_phone && <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>📞 {viewOrder.customer_phone}</p>}
-                {viewOrder.customer_email && <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>✉ {viewOrder.customer_email}</p>}
-                {viewOrder.customer_address && <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>📍 {viewOrder.customer_address}</p>}
-              </div>
-              <div>
-                <h4 style={{ fontSize: '0.8rem', color: 'var(--stone)', marginBottom: 8 }}>Order</h4>
-                <p style={{ margin: 0 }}><strong>{viewOrder.product_name}</strong></p>
-                <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--stone)' }}>Qty: {viewOrder.quantity} × PKR {viewOrder.product_price?.toLocaleString()}</p>
-                <p style={{ margin: '4px 0', fontWeight: 700, color: 'var(--orange)' }}>Total: PKR {viewOrder.total_amount?.toLocaleString()}</p>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-              <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Status</span><div style={{ marginTop: 4 }}>{statusBadge(viewOrder.status)}</div></div>
-              <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Payment</span><div style={{ marginTop: 4 }}>{payStatusBadge(viewOrder.payment_status)}</div></div>
-              <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Method</span><div style={{ marginTop: 4, fontSize: '0.85rem', fontWeight: 500 }}>{viewOrder.payment_method || '—'}</div></div>
-              {viewOrder.paid_at && <div><span style={{ fontSize: '0.72rem', color: 'var(--stone)' }}>Paid at</span><div style={{ marginTop: 4, fontSize: '0.85rem' }}>{new Date(viewOrder.paid_at).toLocaleString()}</div></div>}
-            </div>
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
-            <h4 style={{ fontSize: '0.85rem', marginBottom: 12 }}>Update Status</h4>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-              {['pending_payment', 'pending_verification', 'confirmed', 'shipped', 'cancelled'].map((s) => (
-                <button key={s} className={`btn-admin btn-admin-sm ${viewOrder.status === s ? 'btn-admin-primary' : 'btn-admin-outline'}`}
-                  onClick={() => handleUpdateStatus(viewOrder.id, s)} disabled={viewOrder.status === s}>{s.replace(/_/g, ' ')}</button>
-              ))}
-            </div>
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
-            <h4 style={{ fontSize: '0.85rem', marginBottom: 12 }}>Update Payment</h4>
-            <div className="admin-form-row">
-              <div className="admin-field">
-                <label>Payment Status</label>
-                <select value={payForm.payment_status} onChange={(e) => setPayForm({ ...payForm, payment_status: e.target.value })}>
-                  {['pending', 'verification_required', 'paid', 'failed', 'refunded'].map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-                </select>
-              </div>
-              <div className="admin-field"><label>Method</label><input value={payForm.payment_method} onChange={(e) => setPayForm({ ...payForm, payment_method: e.target.value })} placeholder="Bank Transfer / EasyPaisa" /></div>
-            </div>
-            <div className="admin-form-row">
-              <div className="admin-field"><label>Payer Bank</label><input value={payForm.payer_bank} onChange={(e) => setPayForm({ ...payForm, payer_bank: e.target.value })} /></div>
-              <div className="admin-field"><label>Payer Name</label><input value={payForm.payer_name} onChange={(e) => setPayForm({ ...payForm, payer_name: e.target.value })} /></div>
-              <div className="admin-field"><label>Payer Phone</label><input value={payForm.payer_phone} onChange={(e) => setPayForm({ ...payForm, payer_phone: e.target.value })} /></div>
-            </div>
-            <div className="admin-form-actions">
-              <button className="btn-admin btn-admin-primary" onClick={() => handleUpdatePayment(viewOrder.id)}>Update Payment</button>
-              <button className="btn-admin btn-admin-danger" onClick={() => handleDeleteOrder(viewOrder)}>Delete Order</button>
-              <button className="btn-admin btn-admin-outline" onClick={() => setViewOrder(null)}>Close</button>
-            </div>
           </div>
         </Modal>
       )}

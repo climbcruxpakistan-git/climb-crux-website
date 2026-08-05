@@ -421,6 +421,182 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
   })
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Equipment Order PDFs (Sales module)
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Map an order's payment status to a friendly label. */
+function orderPaymentStatusLabel(status) {
+  const map = {
+    pending: 'Pending',
+    verification_required: 'Pending Verification',
+    paid: 'Paid',
+    failed: 'Failed',
+    refunded: 'Refunded',
+  }
+  return map[status] || clean(status)
+}
+
+/** Map an order's payment method to a friendly label. */
+function orderMethodLabel(method) {
+  if (method === 'bank_transfer' || method === 'bank') return 'Bank Transfer'
+  if (method === 'easypaisa') return 'EasyPaisa'
+  return clean(method)
+}
+
+/**
+ * Build a branded equipment-order PDF — attached to the customer's payment-
+ * received, order-confirmed and order-declined emails.
+ *
+ * Layout deliberately mirrors the booking PDF (which is proven not to clip
+ * the header band or emit stray blank pages): a dark hero band with the
+ * Climb Crux brand + order reference, followed by order details, customer
+ * details and payment details. Like the booking PDF, there is NO per-page
+ * footer — writing at page.height − bottom margin auto-added blank pages in
+ * older versions, so it is omitted entirely.
+ *
+ * @param {object} order — ProductOrder document
+ * @param {{ status?: 'pending'|'verification'|'confirmed'|'declined', compress?: boolean }} [opts]
+ *   pass compress:false to keep content streams readable (debugging / smoke tests)
+ * @returns {Promise<Buffer>}
+ */
+export function generateOrderPdf(order, { status = 'pending', compress = true } = {}) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', compress, margins: { top: 48, bottom: 48, left: 50, right: 50 } })
+    const chunks = []
+    doc.on('data', (c) => chunks.push(c))
+    doc.on('end', () => resolve(Buffer.concat(chunks)))
+    doc.on('error', reject)
+
+    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+    const twoColX = doc.page.margins.left + pageWidth / 2
+
+    const statusTitle = status === 'confirmed'
+      ? 'Order Confirmed'
+      : status === 'declined'
+        ? 'Order Declined'
+        : status === 'verification'
+          ? 'Payment Received – Under Verification'
+          : 'Equipment Order'
+    const statusLabel = status === 'confirmed'
+      ? 'CONFIRMED'
+      : status === 'declined'
+        ? 'DECLINED'
+        : status === 'verification'
+          ? 'PENDING VERIFICATION'
+          : 'PAYMENT PENDING'
+
+    /* ── Header (hero band) ── */
+    const bandTop = 40
+    const bandHeight = 150
+    doc.rect(doc.page.margins.left, bandTop, pageWidth, bandHeight).fill(DARK)
+
+    // Brand (left side)
+    const leftX = doc.page.margins.left + 22
+    const leftW = pageWidth / 2 - 34
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(21)
+      .text('CLIMB CRUX', leftX, 58, { width: leftW })
+    doc.font('Helvetica').fontSize(10).fillColor('#b8b8b8')
+      .text('Islamabad\u2019s Premier Rock Climbing Club', leftX, 88, { width: leftW })
+    doc.font('Helvetica-Bold').fontSize(13).fillColor(ORANGE)
+      .text(statusTitle, leftX, 116, { width: leftW })
+
+    // Key information (right side, aligned label/value pairs) — the column is
+    // inset from the band's right edge so long values are never clipped or
+    // running off the side of the black header.
+    const rightX = twoColX + 16
+    const rightW = pageWidth / 2 - 34
+    let rx = 56
+    const heroLabel = (small, big, color = '#ffffff') => {
+      doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
+      doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 13, { width: rightW, align: 'right' })
+    }
+    heroLabel('ORDER ID', clean(order.order_number))
+    rx += 32
+    heroLabel('STATUS', statusLabel, ORANGE)
+    rx += 32
+    heroLabel('ORDERED', clean(order.created_at ? new Date(order.created_at).toISOString().slice(0, 10) : (order.approval_date || '')))
+
+    // Orange accent bar across the bottom of the band
+    doc.rect(doc.page.margins.left, bandTop + bandHeight - 4, pageWidth, 4).fill(ORANGE)
+
+    let y = bandTop + bandHeight + 22
+
+    function ensureSpace(needed) {
+      if (y + needed > doc.page.height - 60) {
+        doc.addPage()
+        y = doc.page.margins.top
+      }
+    }
+
+    function sectionTitle(title) {
+      ensureSpace(30)
+      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(title, doc.page.margins.left, y, { width: pageWidth })
+      y = doc.y + 8
+      doc.moveTo(doc.page.margins.left, y).lineTo(doc.page.margins.left + pageWidth, y).lineWidth(1).strokeColor(ORANGE).stroke()
+      y += 10
+    }
+
+    function row(labelText, value) {
+      ensureSpace(18)
+      const valueText = clean(value)
+      doc.font('Helvetica').fontSize(9.5).fillColor(GRAY).text(labelText, doc.page.margins.left, y, { width: twoColX - doc.page.margins.left - 10 })
+      doc.fillColor(DARK).text(valueText, twoColX + 10, y, { width: pageWidth / 2 - 10 })
+      y = Math.max(y + 16, doc.y + 4)
+    }
+
+    function box(title, rows) {
+      sectionTitle(title)
+      for (const [k, v] of rows) row(k, v)
+      y += 4
+    }
+
+    /* ── Order details ── */
+    box('ORDER DETAILS', [
+      ['Order ID', order.order_number],
+      ['Order Date', order.created_at ? new Date(order.created_at).toISOString().slice(0, 10) : ''],
+      ['Product', order.product_name],
+      ['Quantity', String(order.quantity || 1)],
+      ['Unit Price', `PKR ${(order.product_price || 0).toLocaleString()}`],
+      ['Total Amount', `PKR ${(order.total_amount || 0).toLocaleString()}`],
+    ])
+
+    /* ── Customer details ── */
+    box('CUSTOMER DETAILS', [
+      ['Full Name', order.customer_name],
+      ['Email', order.customer_email],
+      ['Phone', order.customer_phone],
+      ['Shipping Address', order.customer_address],
+    ])
+
+    /* ── Payment details ── */
+    box('PAYMENT DETAILS', [
+      ['Payment Method', orderMethodLabel(order.payment_method)],
+      ['Payment Status', status === 'confirmed'
+        ? 'Paid'
+        : status === 'declined'
+          ? 'Failed'
+          : orderPaymentStatusLabel(order.payment_status)],
+    ])
+
+    if (status === 'confirmed' && order.approval_date) {
+      box('VERIFICATION', [
+        ['Verified On', order.approval_date],
+      ])
+    }
+    if (status === 'declined') {
+      box('REVIEW', [
+        ['Reviewed On', order.rejection_date],
+        ['Reason', order.decline_reason],
+      ])
+    }
+
+    // No per-page footer here — the status is already shown in the hero band
+    // (a footer below the bottom margin previously produced blank pages).
+    doc.end()
+  })
+}
+
 /**
  * Persist a generated PDF to the server storage folder.
  * @param {object} app

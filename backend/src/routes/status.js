@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import Booking from '../models/Booking.js'
 import MembershipApplication from '../models/MembershipApplication.js'
+import ProductOrder from '../models/ProductOrder.js'
 
 const router = Router()
 
@@ -56,6 +57,22 @@ export function bookingStatusKey(b) {
   if (b.booking_status === 'pending_verification') return 'under_verification'
   // pending_payment — distinguish "just received" from "payment started"
   return b.payment_method ? 'payment_pending' : 'booking_received'
+}
+
+/** Map an equipment order to one of the public lifecycle status keys. */
+export function orderStatusKey(o) {
+  if (o.status === 'declined' || o.status === 'cancelled') return 'order_declined'
+  switch (o.status) {
+    case 'confirmed': return 'order_confirmed'
+    case 'processing': return 'order_processing'
+    case 'ready_for_pickup': return 'order_ready'
+    case 'shipped': return 'order_shipped'
+    case 'delivered': return 'order_delivered'
+    case 'pending_verification': return 'under_verification'
+    default:
+      // pending_payment — distinguish "just placed" from "payment started"
+      return o.payment_method ? 'payment_pending' : 'order_received'
+  }
 }
 
 /** Map a membership application to one of the public lifecycle status keys. */
@@ -114,13 +131,14 @@ router.post('/check', async (req, res, next) => {
       return res.json({ found: false })
     }
 
-    // Run both lookups in parallel so response timing doesn't reveal which
+    // Run all lookups in parallel so response timing doesn't reveal which
     // record type (or whether any record) matched.
-    const [booking, application] = await Promise.all([
+    const [booking, application, order] = await Promise.all([
       Booking.findOne({ booking_number: code }),
       MembershipApplication.findOne({
         $or: [{ application_id: code }, { membership_id: code }],
       }),
+      ProductOrder.findOne({ order_number: code }),
     ])
 
     if (booking) {
@@ -142,6 +160,15 @@ router.post('/check', async (req, res, next) => {
         // Non-personal membership dates (shown with the Active/Expired cards)
         startDate: application.office_start_date || '',
         expiryDate: application.office_expiry_date || '',
+      })
+    }
+    if (order) {
+      clearFailures(ip)
+      return res.json({
+        found: true,
+        code: order.order_number,
+        type: 'order',
+        status: orderStatusKey(order),
       })
     }
 

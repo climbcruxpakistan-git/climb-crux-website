@@ -1,0 +1,24 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import PageHeader from '../../../../components/astro/PageHeader.astro';
+import OrderPayment from '../../../../components/react/OrderPayment.jsx';
+import '../../../../styles/OrderPayment.css';
+
+// Rendered on-demand so any order number works right after a customer checks out.
+export const prerender = false;
+
+const { orderNumber } = Astro.params;
+---
+
+<MainLayout>
+  <Fragment slot="head">
+    <title>Complete Your Payment — Climb Crux Pakistan</title>
+    <meta name="description" content="Complete your equipment order payment via bank transfer or EasyPaisa and upload your payment screenshot for verification." />
+  </Fragment>
+
+  <PageHeader title="Complete your payment.">
+    <p slot="default">Please transfer the total amount using one of the payment methods below. After completing the payment, upload your payment screenshot for verification.</p>
+  </PageHeader>
+
+  <OrderPayment client:load orderNumber={orderNumber} />
+</MainLayout>

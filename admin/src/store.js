@@ -280,12 +280,14 @@ export async function patchOrderStatus(id, status) {
   return mapId(await request('PATCH', `/products/orders/${id}/status`, { status }))
 }
 
-export async function patchOrderPayment(id, paymentData) {
-  return mapId(await request('PATCH', `/products/orders/${id}/payment`, paymentData))
+/** Admin approves an equipment order — confirms + marks paid + emails the customer. */
+export async function approveProductOrder(id) {
+  return mapId(await request('POST', `/products/orders/${id}/approve`))
 }
 
-export async function deleteProductOrder(id) {
-  return request('DELETE', `/products/orders/${id}`)
+/** Admin declines an equipment order — with a reason (emails the customer). */
+export async function declineProductOrder(id, reason) {
+  return mapId(await request('POST', `/products/orders/${id}/decline`, { reason }))
 }
 
 /* ---------- Membership Applications ---------- */
