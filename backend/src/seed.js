@@ -55,7 +55,7 @@ const seedTeam = [
       'Leave No Trace Master Educator',
     ],
     specialties: 'Premium route design, advanced lead climbing technique, multi-pitch safety systems, fear management coaching for advanced climbers.',
-    instagram: 'https://instagram.com/climbcrux',
+    instagram: 'https://instagram.com/climbcruxpakistan',
     facebook: 'https://facebook.com/climbcrux',
   },
   {
@@ -71,7 +71,7 @@ const seedTeam = [
       'Advanced First Aid',
     ],
     specialties: 'Movement efficiency coaching, grade progression planning, fear of heights management, technique refinement for intermediate climbers.',
-    instagram: 'https://instagram.com/climbcrux',
+    instagram: 'https://instagram.com/climbcruxpakistan',
     facebook: 'https://facebook.com/climbcrux',
   },
   {
@@ -87,7 +87,7 @@ const seedTeam = [
       'Adaptive Climbing Techniques Training',
     ],
     specialties: 'First-time climber instruction, group dynamics management, adaptive climbing techniques, youth climbing programs, safety briefing expertise.',
-    instagram: 'https://instagram.com/climbcrux',
+    instagram: 'https://instagram.com/climbcruxpakistan',
     facebook: 'https://facebook.com/climbcrux',
   },
 ]
