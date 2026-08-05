@@ -117,6 +117,15 @@ app.use((err, _req, res, _next) => {
   if (err.name === 'CastError') {
     return res.status(400).json({ error: 'Invalid ID format' })
   }
+  // Client-submitted data failed Mongoose schema validation — a 400, not a 500,
+  // and a clean message instead of leaking raw schema internals.
+  if (err.name === 'ValidationError') {
+    const msg = Object.values(err.errors || {})
+      .map((e) => e.message)
+      .filter(Boolean)
+      .join(' · ')
+    return res.status(400).json({ error: msg || 'Invalid input data' })
+  }
   res.status(500).json({ error: err.message || 'Internal server error' })
 })
 

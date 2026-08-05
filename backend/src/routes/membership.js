@@ -238,6 +238,9 @@ router.post('/apply', (req, res, next) => {
 
     res.status(201).json(application)
   } catch (err) {
+    // Clean up any temp files multer wrote to disk (e.g. when Mongoose rejects
+    // the payload after files were already uploaded) — never leak on disk.
+    cleanupFiles(files)
     next(err)
   }
 })
