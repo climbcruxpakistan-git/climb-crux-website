@@ -71,8 +71,15 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 18px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.schedule-ico {
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 0.95em;
+  line-height: 1;
 }
 
 .schedule-list li:hover {
@@ -85,6 +92,11 @@
 .schedule-list li:hover .schedule-date,
 .schedule-list li:hover .schedule-time {
   color: var(--chalk);
+}
+
+.schedule-list li:hover .schedule-date,
+.schedule-list li:hover .schedule-time {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .schedule-name {
@@ -100,17 +112,26 @@
   transition: color 0.25s ease;
 }
 
+.schedule-date,
+.schedule-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  font-size: 0.82rem;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+
 .schedule-date {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: 0.02em;
-  transition: color 0.25s ease;
 }
 
 .schedule-time {
   color: var(--stone);
-  font-size: 0.82rem;
-  transition: color 0.25s ease;
 }
 
 .pricing-section {

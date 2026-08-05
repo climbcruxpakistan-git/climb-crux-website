@@ -89,8 +89,8 @@ export default function SessionsContent({ initial }) {
                   <div className="schedule-card">
                     <span className="schedule-name">{s.title || 'Public Session'}</span>
                     <div className="schedule-card-meta">
-                      <span className="schedule-date">{formatShortDate(s.date)}</span>
-                      <span className="schedule-time">{[s.startTime, s.endTime].filter(Boolean).join(' – ') || '—'}</span>
+                      <span className="schedule-date"><span className="schedule-ico" aria-hidden="true">📅</span>{formatShortDate(s.date)}</span>
+                      <span className="schedule-time"><span className="schedule-ico" aria-hidden="true">🕒</span>{[s.startTime, s.endTime].filter(Boolean).join(' – ') || '—'}</span>
                     </div>
                   </div>
                 </li>
