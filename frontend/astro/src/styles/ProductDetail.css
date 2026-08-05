@@ -350,9 +350,6 @@
 .pd-zoom-nav-btn:hover { background: rgba(255,255,255,0.25); }
 .pd-zoom-counter { color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.04em; }
 
-/* ── Wide checkout modal ── */
-.shop-modal--wide { max-width: 620px; }
-
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .pd-price-current { font-size: 1.3rem; }
