@@ -4,6 +4,18 @@ import PageHeader from '../components/PageHeader.jsx'
 import { getProduct, getProducts, getProductReviews, submitProductReview, optimizeImage } from '../api.js'
 import './ProductDetail.css'
 
+/** Site-wide date format: Day-Month-Year (DD-MM-YYYY), e.g. 05-08-2026. */
+function formatDate(value) {
+  if (!value) return ''
+  const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return String(value)
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dd}-${mm}-${d.getFullYear()}`
+}
+
 /* ── Star Rating Component ── */
 function StarRating({ rating, size = 20, interactive = false, onChange }) {
   const stars = []
@@ -489,7 +501,7 @@ export default function ProductDetail() {
                         {r.photos.map((photo, i) => <img key={i} src={photo} alt="Review photo" className="pd-review-photo" />)}
                       </div>
                     )}
-                    <div className="pd-review-date">{new Date(r.createdAt).toLocaleDateString()}</div>
+                    <div className="pd-review-date">{formatDate(r.createdAt)}</div>
                   </div>
                 ))}
               </div>

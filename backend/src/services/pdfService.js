@@ -15,6 +15,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { MEMBERSHIP_PLAN, MEMBERSHIP_FEE, MEMBERSHIP_TERMS, MEMBERSHIP_DECLARATION, BOOKING_TERMS } from '../membershipForm.js'
+import { formatDateDDMMYYYY } from './dateFormat.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PDF_DIR = path.join(__dirname, '..', '..', 'storage', 'membership-pdfs')
@@ -111,7 +112,7 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
     rx += 32
     heroLabel('STATUS', 'APPROVED / ACTIVE', ORANGE)
     rx += 32
-    heroLabel('APPROVED', clean(app.approval_date))
+    heroLabel('APPROVED', clean(formatDateDDMMYYYY(app.approval_date)))
 
     // Orange accent bar across the bottom of the band
     doc.rect(doc.page.margins.left, bandTop + bandHeight - 4, pageWidth, 4).fill(ORANGE)
@@ -151,13 +152,13 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
     box('MEMBERSHIP DETAILS', [
       ['Membership Plan', app.membership_plan || MEMBERSHIP_PLAN],
       ['Membership Fee', MEMBERSHIP_FEE],
-      ['Membership Start Date', app.membership_start_date || app.office_start_date],
+      ['Membership Start Date', formatDateDDMMYYYY(app.membership_start_date || app.office_start_date)],
     ])
 
     /* ── Member information ── */
     box('MEMBER INFORMATION', [
       ['Full Name', app.full_name],
-      ['Date of Birth', app.date_of_birth],
+      ['Date of Birth', formatDateDDMMYYYY(app.date_of_birth)],
       ['Age', ageFromDob(app.date_of_birth)],
       ['Gender', app.gender ? label(app.gender) : ''],
       ['CNIC', app.cnic],
@@ -225,7 +226,7 @@ export function generateMembershipPdf(app, { compress = true } = {}) {
     box('DIGITAL SIGNATURE', [
       ['Signed By (Full Name)', app.signature_name],
       ['Electronic Signature Confirmed', (app.signature_confirmed === true || app.signature_confirmed === 'true') ? 'Yes' : 'No'],
-      ['Submitted On', app.created_at ? new Date(app.created_at).toISOString().slice(0, 10) : ''],
+      ['Submitted On', formatDateDDMMYYYY(app.created_at)],
     ])
 
     // No per-page footer here — the brand + reference are already shown in the
@@ -321,7 +322,7 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     rx += 32
     heroLabel('STATUS', statusLabel, ORANGE)
     rx += 32
-    heroLabel('BOOKED', clean(booking.created_at ? new Date(booking.created_at).toISOString().slice(0, 10) : (booking.approval_date || '')))
+    heroLabel('BOOKED', clean(formatDateDDMMYYYY(booking.created_at) || formatDateDDMMYYYY(booking.approval_date)))
 
     // Orange accent bar across the bottom of the band
     doc.rect(doc.page.margins.left, bandTop + bandHeight - 4, pageWidth, 4).fill(ORANGE)
@@ -360,9 +361,9 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     /* ── Booking details ── */
     box('BOOKING DETAILS', [
       ['Booking ID', booking.booking_number],
-      ['Booking Date', booking.created_at ? new Date(booking.created_at).toISOString().slice(0, 10) : ''],
+      ['Booking Date', formatDateDDMMYYYY(booking.created_at)],
       ['Session', clean(sessionType || booking.session_id)],
-      ['Session Date', booking.date],
+      ['Session Date', formatDateDDMMYYYY(booking.date)],
       ['Time', time],
       ['Participants', String(booking.participants || 1)],
       ['Price', `PKR ${(booking.amount || 0).toLocaleString()}`],
@@ -405,12 +406,12 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
 
     if (status === 'confirmed' && booking.approval_date) {
       box('VERIFICATION', [
-        ['Verified On', booking.approval_date],
+        ['Verified On', formatDateDDMMYYYY(booking.approval_date)],
       ])
     }
     if (status === 'declined' && booking.rejection_date) {
       box('REVIEW', [
-        ['Reviewed On', booking.rejection_date],
+        ['Reviewed On', formatDateDDMMYYYY(booking.rejection_date)],
       ])
     }
 
@@ -515,7 +516,7 @@ export function generateOrderPdf(order, { status = 'pending', compress = true } 
     rx += 32
     heroLabel('STATUS', statusLabel, ORANGE)
     rx += 32
-    heroLabel('ORDERED', clean(order.created_at ? new Date(order.created_at).toISOString().slice(0, 10) : (order.approval_date || '')))
+    heroLabel('ORDERED', clean(formatDateDDMMYYYY(order.created_at) || formatDateDDMMYYYY(order.approval_date)))
 
     // Orange accent bar across the bottom of the band
     doc.rect(doc.page.margins.left, bandTop + bandHeight - 4, pageWidth, 4).fill(ORANGE)
@@ -554,7 +555,7 @@ export function generateOrderPdf(order, { status = 'pending', compress = true } 
     /* ── Order details ── */
     box('ORDER DETAILS', [
       ['Order ID', order.order_number],
-      ['Order Date', order.created_at ? new Date(order.created_at).toISOString().slice(0, 10) : ''],
+      ['Order Date', formatDateDDMMYYYY(order.created_at)],
       ['Product', order.product_name],
       ['Quantity', String(order.quantity || 1)],
       ['Unit Price', `PKR ${(order.product_price || 0).toLocaleString()}`],
@@ -581,12 +582,12 @@ export function generateOrderPdf(order, { status = 'pending', compress = true } 
 
     if (status === 'confirmed' && order.approval_date) {
       box('VERIFICATION', [
-        ['Verified On', order.approval_date],
+        ['Verified On', formatDateDDMMYYYY(order.approval_date)],
       ])
     }
     if (status === 'declined') {
       box('REVIEW', [
-        ['Reviewed On', order.rejection_date],
+        ['Reviewed On', formatDateDDMMYYYY(order.rejection_date)],
         ['Reason', order.decline_reason],
       ])
     }

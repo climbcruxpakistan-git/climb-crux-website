@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, searchBookings } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+import { formatDate, formatDateTime } from '../formatDate.js'
 
 /** Cloudinary URL that forces a download instead of preview. */
 function downloadUrl(url) {
@@ -549,7 +550,7 @@ export default function BookingsManager() {
                       </td>
                       <td>
                         <span className="cell-type">{b.session_id?.replace(/-/g, ' ') || '—'}</span>
-                        {b.date ? <span className="cell-date">{b.date}</span> : ''}
+                        {b.date ? <span className="cell-date">{formatDate(b.date)}</span> : ''}
                       </td>
                       <td>{badge(b.booking_status)}</td>
                       <td>
@@ -779,7 +780,7 @@ export default function BookingsManager() {
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Date</span>
-                  <span className="detail-val">{viewing.date || '—'}</span>
+                  <span className="detail-val">{formatDate(viewing.date) || '—'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Participants</span>
@@ -806,13 +807,13 @@ export default function BookingsManager() {
                   {viewing.verified_by && (
                     <div className="detail-row">
                       <span className="detail-key">Approved By</span>
-                      <span className="detail-val">{viewing.verified_by} · {viewing.approval_date || '—'}</span>
+                      <span className="detail-val">{viewing.verified_by} · {formatDate(viewing.approval_date) || '—'}</span>
                     </div>
                   )}
                   {viewing.rejected_by && (
                     <div className="detail-row">
                       <span className="detail-key">Declined By</span>
-                      <span className="detail-val">{viewing.rejected_by} · {viewing.rejection_date || '—'}</span>
+                      <span className="detail-val">{viewing.rejected_by} · {formatDate(viewing.rejection_date) || '—'}</span>
                     </div>
                   )}
                 </div>
@@ -905,7 +906,7 @@ export default function BookingsManager() {
                     )}
                     {viewing.payment_submitted_at && (
                       <p className="cell-muted" style={{ margin: '8px 0 0', fontSize: '0.75rem' }}>
-                        Uploaded {new Date(viewing.payment_submitted_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        Uploaded {formatDateTime(viewing.payment_submitted_at)}
                       </p>
                     )}
                     <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
@@ -991,10 +992,7 @@ export default function BookingsManager() {
                   {[...viewing.history]
                     .sort((a, b) => new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt))
                     .map((event, idx) => {
-                      const date = new Date(event.timestamp || event.createdAt)
-                      const timeStr = date.toLocaleString('en-US', {
-                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                      })
+                      const timeStr = formatDateTime(event.timestamp || event.createdAt)
                       const iconMap = {
                         booking_created: '🆕',
                         payment_submitted: '📎',

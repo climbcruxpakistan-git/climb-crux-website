@@ -5,6 +5,7 @@
  */
 import { renderEmailLayout, summaryTable, escapeHtml } from './emailLayout.js'
 import { MEMBERSHIP_FEE } from '../membershipForm.js'
+import { formatDateDDMMYYYY } from '../services/dateFormat.js'
 
 /** New booking created → admin alert. */
 export function adminBookingNotification({ booking, sessionType = 'Public Session' }) {
@@ -14,7 +15,7 @@ export function adminBookingNotification({ booking, sessionType = 'Public Sessio
     ['Phone', booking.customer_phone || '—'],
     ['Booking Type', sessionType],
     ['Booking Number', booking.booking_number || '—'],
-    ['Preferred Date', booking.date || '—'],
+    ['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'],
     ['Participants', String(booking.participants || 1)],
     ['Amount', `PKR ${(booking.amount || 0).toLocaleString()}`],
     ['Status', booking.booking_status || 'pending_payment'],
@@ -45,7 +46,7 @@ export function adminMembershipNotification({ application }) {
     ['CNIC', application.cnic || '—'],
     ['City', application.city || '—'],
     ['Membership ID', application.application_id || '—'],
-    ['Membership Start', application.membership_start_date || '—'],
+    ['Membership Start', formatDateDDMMYYYY(application.membership_start_date) || '—'],
     ['Fee', MEMBERSHIP_FEE],
     ['Payment Method', application.payment_method === 'bank_transfer' ? 'Bank Transfer' : application.payment_method === 'easypaisa' ? 'EasyPaisa' : '—'],
     ['Status', 'Pending Review'],

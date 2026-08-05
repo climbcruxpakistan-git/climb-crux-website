@@ -9,6 +9,7 @@ import {
 } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+import { formatDate } from '../formatDate.js'
 
 const DEFAULT_PLAN = 'Monthly Membership (4 Sessions)'
 const DEFAULT_FEE = 'PKR 8,000 / Month'
@@ -116,11 +117,9 @@ function computeAge(dob) {
   return age
 }
 
-function formatDate(d) {
+function formatDateOrDash(d) {
   if (!d) return '—'
-  const date = new Date(d)
-  if (Number.isNaN(date.getTime())) return d
-  return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  return formatDate(d) || '—'
 }
 
 export default function MembershipsManager() {
@@ -479,11 +478,11 @@ export default function MembershipsManager() {
                 <DetailRow k="Membership ID" v={viewing.membership_id} mono />
                 <DetailRow k="Plan" v={viewing.membership_plan || DEFAULT_PLAN} />
                 <DetailRow k="Fee" v={DEFAULT_FEE} />
-                <DetailRow k="Membership Start" v={viewing.membership_start_date || viewing.office_start_date || '—'} />
-                <DetailRow k="Membership Expiry" v={viewing.office_expiry_date || '—'} />
+                <DetailRow k="Membership Start" v={formatDateOrDash(viewing.membership_start_date || viewing.office_start_date)} />
+                <DetailRow k="Membership Expiry" v={formatDateOrDash(viewing.office_expiry_date)} />
                 <DetailRow k="Verified By" v={viewing.verified_by || '—'} />
-                <DetailRow k="Approval Date" v={viewing.approval_date || '—'} />
-                <DetailRow k="Submitted On" v={formatDate(viewing.created_at)} />
+                <DetailRow k="Approval Date" v={formatDateOrDash(viewing.approval_date)} />
+                <DetailRow k="Submitted On" v={formatDateOrDash(viewing.created_at)} />
                 <div className="detail-status-row">
                   <span className="detail-key">Membership Status</span>
                   {badge(viewing.membership_status || 'pending')}
@@ -497,7 +496,7 @@ export default function MembershipsManager() {
               <h4 className="detail-section-title" style={{ marginTop: 24 }}>Member Information</h4>
               <div className="detail-fields">
                 <DetailRow k="Full Name" v={viewing.full_name} />
-                <DetailRow k="Date of Birth" v={viewing.date_of_birth} />
+                <DetailRow k="Date of Birth" v={formatDateOrDash(viewing.date_of_birth)} />
                 <DetailRow k="Age" v={computeAge(viewing.date_of_birth) !== null ? `${computeAge(viewing.date_of_birth)} years` : null} />
                 <DetailRow k="Gender" v={viewing.gender ? label(viewing.gender) : null} />
                 <DetailRow k="CNIC" v={viewing.cnic} mono />
@@ -576,8 +575,8 @@ export default function MembershipsManager() {
               <h4 className="detail-section-title" style={{ marginTop: 24 }}>Office Use (read-only)</h4>
               <div className="detail-fields">
                 <DetailRow k="Verified By" v={viewing.verified_by || '—'} />
-                <DetailRow k="Start Date" v={viewing.office_start_date || '—'} />
-                <DetailRow k="Expiry Date" v={viewing.office_expiry_date || '—'} />
+                <DetailRow k="Start Date" v={formatDateOrDash(viewing.office_start_date)} />
+                <DetailRow k="Expiry Date" v={formatDateOrDash(viewing.office_expiry_date)} />
                 <DetailRow k="Remarks" v={viewing.remarks || '—'} />
                 <DetailRow k="Approved PDF" v={viewing.pdf_path ? 'Stored on server' : 'Not yet generated'} />
               </div>
@@ -602,7 +601,7 @@ export default function MembershipsManager() {
               <div className="detail-fields">
                 <DetailRow k="Signed By" v={viewing.signature_name} />
                 <DetailRow k="Electronic Signature Confirmed" v={viewing.signature_confirmed ? 'Yes' : 'No'} />
-                <DetailRow k="Signature Date" v={viewing.signature_date} />
+                <DetailRow k="Signature Date" v={formatDateOrDash(viewing.signature_date)} />
               </div>
             </div>
           </div>

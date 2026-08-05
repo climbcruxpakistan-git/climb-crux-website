@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { getProductOrders, patchOrderStatus, approveProductOrder, declineProductOrder } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+import { formatDate, formatDateTime } from '../formatDate.js'
 
 /** Cloudinary URL that forces a download instead of preview. */
 function downloadUrl(url) {
@@ -273,7 +274,7 @@ export default function Sales() {
                     <tr key={o.id || o._id} style={{ cursor: 'pointer' }} onClick={() => setViewing(o)}>
                       <td><span className="ref-code" title={`View order ${o.order_number}`}>{o.order_number || '—'}</span></td>
                       <td style={{ fontSize: '0.78rem', color: 'var(--stone)', whiteSpace: 'nowrap' }}>
-                        {o.created_at ? new Date(o.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        {formatDate(o.created_at) || '—'}
                       </td>
                       <td><strong>{o.customer_name}</strong></td>
                       <td style={{ whiteSpace: 'nowrap' }}>{o.customer_phone || '—'}</td>
@@ -318,7 +319,7 @@ export default function Sales() {
               <h4 className="detail-section-title" style={{ marginTop: 24 }}>Order</h4>
               <div className="detail-fields">
                 <div className="detail-row"><span className="detail-key">Order ID</span><span className="detail-val ref-code" style={{ fontFamily: 'monospace' }}>{viewing.order_number || '—'}</span></div>
-                <div className="detail-row"><span className="detail-key">Order Date</span><span className="detail-val">{viewing.created_at ? new Date(viewing.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</span></div>
+                <div className="detail-row"><span className="detail-key">Order Date</span><span className="detail-val">{formatDate(viewing.created_at) || '—'}</span></div>
                 <div className="detail-row"><span className="detail-key">Product</span><span className="detail-val">{viewing.product_name}</span></div>
                 <div className="detail-row"><span className="detail-key">Quantity</span><span className="detail-val">{viewing.quantity || 1}</span></div>
                 <div className="detail-row"><span className="detail-key">Unit Price</span><span className="detail-val">PKR {(viewing.product_price || 0).toLocaleString()}</span></div>
@@ -334,13 +335,13 @@ export default function Sales() {
                   {viewing.verified_by && (
                     <div className="detail-row">
                       <span className="detail-key">Approved By</span>
-                      <span className="detail-val">{viewing.verified_by} · {viewing.approval_date || '—'}</span>
+                      <span className="detail-val">{viewing.verified_by} · {formatDate(viewing.approval_date) || '—'}</span>
                     </div>
                   )}
                   {viewing.rejected_by && (
                     <div className="detail-row">
                       <span className="detail-key">Declined By</span>
-                      <span className="detail-val">{viewing.rejected_by} · {viewing.rejection_date || '—'}</span>
+                      <span className="detail-val">{viewing.rejected_by} · {formatDate(viewing.rejection_date) || '—'}</span>
                     </div>
                   )}
                   {viewing.decline_reason && (
@@ -389,7 +390,7 @@ export default function Sales() {
                     />
                     {viewing.payment_submitted_at && (
                       <p className="cell-muted" style={{ margin: '8px 0 0', fontSize: '0.75rem' }}>
-                        Uploaded {new Date(viewing.payment_submitted_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        Uploaded {formatDateTime(viewing.payment_submitted_at)}
                       </p>
                     )}
                     <div style={{ marginTop: 10 }}>

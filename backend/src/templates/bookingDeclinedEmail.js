@@ -5,6 +5,7 @@
  *   · 'information'  → personal information was incorrect/incomplete
  */
 import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink } from './emailLayout.js'
+import { formatDateDDMMYYYY } from '../services/dateFormat.js'
 
 const STATUS = 'Declined'
 
@@ -30,7 +31,7 @@ export function bookingDeclinedEmail({ booking, sessionType = 'Public Session', 
     ['Customer', booking.customer_name || '—'],
     ['Booking Type', sessionType],
     ['Status', STATUS],
-    ['Preferred Date', booking.date || '—'],
+    ['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'],
     ['Participants', String(booking.participants || 1)],
     ['Total', `PKR ${(booking.amount || 0).toLocaleString()}`],
   ]

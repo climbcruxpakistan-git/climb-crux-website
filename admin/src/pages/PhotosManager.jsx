@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+import { formatDate } from '../formatDate.js'
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://climb-crux-backend.onrender.com/api' : '/api')
 
@@ -377,7 +378,7 @@ export default function PhotosManager() {
                     {/* Actions */}
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.65rem', color: 'var(--stone)' }}>
-                        {new Date(p.createdAt || Date.now()).toLocaleDateString()}
+                        {formatDate(p.createdAt || Date.now())}
                       </span>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button

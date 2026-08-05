@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react'
 import { getBookingByNumber, createPayment } from '../../lib/api'
 
+/** Site-wide date format: Day-Month-Year (DD-MM-YYYY), e.g. 05-08-2026. */
+function formatDate(value) {
+  if (!value) return ''
+  const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return String(value)
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dd}-${mm}-${d.getFullYear()}`
+}
+
 export default function PaymentPage({ bookingNumber }) {
   const [booking, setBooking] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -107,7 +119,7 @@ export default function PaymentPage({ bookingNumber }) {
               <div className="summary-item"><span className="summary-key">Session</span><span className="summary-val">{getSessionLabel(booking.session_id)}</span></div>
               <div className="summary-item"><span className="summary-key">Name</span><span className="summary-val">{booking.customer_name}</span></div>
               <div className="summary-item"><span className="summary-key">People</span><span className="summary-val">{booking.participants}</span></div>
-              <div className="summary-item"><span className="summary-key">Date</span><span className="summary-val">{booking.date || 'To be confirmed'}</span></div>
+              <div className="summary-item"><span className="summary-key">Date</span><span className="summary-val">{formatDate(booking.date) || 'To be confirmed'}</span></div>
               <div className="summary-item" style={{ gridColumn: '1 / -1' }}><span className="summary-key">Email / Phone</span><span className="summary-val" style={{ fontSize: '0.85rem' }}>{booking.customer_email} · {booking.customer_phone}</span></div>
             </div>
             <div className="summary-total"><span>Total to pay</span><span className="summary-amount">PKR {(booking.amount || 0).toLocaleString()}</span></div>

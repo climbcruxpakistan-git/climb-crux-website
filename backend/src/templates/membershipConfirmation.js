@@ -12,6 +12,7 @@ import {
   escapeHtml,
 } from './emailLayout.js'
 import { MEMBERSHIP_PLAN, MEMBERSHIP_FEE } from '../membershipForm.js'
+import { formatDateDDMMYYYY } from '../services/dateFormat.js'
 
 const STATUS = 'Pending Payment Verification'
 
@@ -28,7 +29,7 @@ export function membershipConfirmation({ application, whatsapp = '' }) {
     ['Member', application.full_name || '—'],
     ['Membership Plan', plan],
     ['Status', STATUS],
-    ['Membership Start', application.membership_start_date || '—'],
+    ['Membership Start', formatDateDDMMYYYY(application.membership_start_date) || '—'],
     ['Fee', MEMBERSHIP_FEE],
     ['Payment Method', application.payment_method === 'bank_transfer' ? 'Bank Transfer' : application.payment_method === 'easypaisa' ? 'EasyPaisa' : '—'],
   ]

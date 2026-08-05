@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getPendingPayments, getBookings, patchBookingStatus, patchPaymentStatus } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
+import { formatDate } from '../formatDate.js'
 
 function methodLabel(method) {
   if (method === 'bank_transfer' || method === 'bank') return 'Bank Transfer'
@@ -236,7 +237,7 @@ export default function PaymentsManager() {
                           )}
                         </td>
                         <td className="cell-muted">
-                          {b.date || (b.created_at || '').split('T')[0] || '—'}
+                          {formatDate(b.date || b.created_at) || '—'}
                         </td>
                         <td>
                           <div style={{ display: 'flex', gap: 6 }}>

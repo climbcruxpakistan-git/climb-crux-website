@@ -10,6 +10,7 @@ import {
   escapeHtml,
   whatsappLink,
 } from './emailLayout.js'
+import { formatDateDDMMYYYY } from '../services/dateFormat.js'
 
 /** Display "+923132690377" as "+92 313 2690377" for the contact line. */
 function displayNumber(number) {
@@ -32,7 +33,7 @@ export function bookingConfirmation({ booking, sessionType = 'Public Session', w
     ['Customer', booking.customer_name || '—'],
     ['Booking Type', sessionType],
     ['Status', STATUS],
-    ['Preferred Date', booking.date || '—'],
+    ['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'],
     ['Participants', String(booking.participants || 1)],
     ['Total', `PKR ${(booking.amount || 0).toLocaleString()}`],
   ]
@@ -48,6 +49,8 @@ export function bookingConfirmation({ booking, sessionType = 'Public Session', w
       </p>
       ${referenceBox('Booking Number', reference)}
       ${statusChip(STATUS)}
+      <div style="margin:18px 0 4px;font-size:12px;font-weight:800;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Booking summary</div>
+      ${summaryTable(rows)}
       <div style="margin:18px 0 4px;font-size:12px;font-weight:800;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Next steps</div>
       <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:10px 0 0;background:#fff7f0;border:1px solid #fde3d2;border-radius:12px">
         <tr>
