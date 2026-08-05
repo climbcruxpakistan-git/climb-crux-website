@@ -37,9 +37,19 @@ export function legacyTimeRange(range) {
   return [parts[0] || '', parts[1] || '']
 }
 
-/** Convert a raw session document (legacy or already structured) into the new shape. */
+/**
+ * Convert a session document (legacy or already structured) into the new shape.
+ *
+ * Accepts a plain object OR a mongoose document. `{ ...mongooseDoc }` only
+ * spreads the document internals (`$__`, `_doc`, `$errors`, `$isNew`) — never
+ * the stored fields — so mongoose docs are flattened with `toObject()` first.
+ * Without this, title/date/times/location were silently dropped from the
+ * serialized response even though they were saved to MongoDB.
+ */
 export function migrateLegacySession(raw) {
-  const s = raw && typeof raw === 'object' ? { ...raw } : {}
+  const s = raw && typeof raw === 'object'
+    ? (typeof raw.toObject === 'function' ? raw.toObject() : { ...raw })
+    : {}
   if (s.date && !/^\d{4}-\d{2}-\d{2}/.test(String(s.date))) {
     s.date = legacyDateToISO(s.date) || s.date
   }
