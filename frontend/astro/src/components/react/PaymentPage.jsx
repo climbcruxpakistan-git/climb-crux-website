@@ -116,10 +116,16 @@ export default function PaymentPage({ bookingNumber }) {
             <h3 className="summary-title">Booking summary</h3>
             <div className="summary-grid">
               <div className="summary-item"><span className="summary-key">Booking #</span><span className="summary-val ref-code">{booking.booking_number || bookingNumber}</span></div>
-              <div className="summary-item"><span className="summary-key">Session</span><span className="summary-val">{getSessionLabel(booking.session_id)}</span></div>
+              <div className="summary-item"><span className="summary-key">Session</span><span className="summary-val">{booking.session_title || getSessionLabel(booking.session_id)}</span></div>
               <div className="summary-item"><span className="summary-key">Name</span><span className="summary-val">{booking.customer_name}</span></div>
               <div className="summary-item"><span className="summary-key">People</span><span className="summary-val">{booking.participants}</span></div>
-              <div className="summary-item"><span className="summary-key">Date</span><span className="summary-val">{formatDate(booking.date) || 'To be confirmed'}</span></div>
+              <div className="summary-item"><span className="summary-key">Date</span><span className="summary-val">{formatDate(booking.session_date || booking.date) || 'To be confirmed'}</span></div>
+              {(booking.session_start_time || booking.session_end_time) && (
+                <div className="summary-item"><span className="summary-key">Time</span><span className="summary-val">{[booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')}</span></div>
+              )}
+              {booking.session_location && (
+                <div className="summary-item"><span className="summary-key">Location</span><span className="summary-val">{booking.session_location}</span></div>
+              )}
               <div className="summary-item" style={{ gridColumn: '1 / -1' }}><span className="summary-key">Email / Phone</span><span className="summary-val" style={{ fontSize: '0.85rem' }}>{booking.customer_email} · {booking.customer_phone}</span></div>
             </div>
             <div className="summary-total"><span>Total to pay</span><span className="summary-amount">PKR {(booking.amount || 0).toLocaleString()}</span></div>

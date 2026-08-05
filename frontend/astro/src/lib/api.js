@@ -36,6 +36,11 @@ export async function getSessions() {
   return mapId(await fetchJson('/sessions'))
 }
 
+/** Admin-managed public sessions that customers can actually book right now. */
+export async function getAvailableSessions() {
+  return mapId(await fetchJson('/sessions/available'))
+}
+
 export async function getPlans() {
   return mapId(await fetchJson('/plans'))
 }

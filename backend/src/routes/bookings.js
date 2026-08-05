@@ -20,6 +20,14 @@ import {
 
 const router = Router()
 
+/** Today's date as YYYY-MM-DD (server-local). */
+function todayStr() {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const tmpDir = path.join(__dirname, '..', 'tmp')
 
@@ -93,17 +101,47 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'All Terms & Conditions must be accepted before you can continue to payment' })
     }
 
-    // Public sessions are only held on announced dates — customers must pick
-    // one of the sessions the club has scheduled (admin → Sessions), never an
-    // arbitrary calendar date.
-    if (String(req.body.session_id || '').toLowerCase() === 'public') {
-      const announced = await Session.find({}, 'date time').lean()
-      const chosen = String(req.body.date || '').trim()
-      const isAnnounced = announced.some(
-        (s) => chosen === s.date || chosen === `${s.date} · ${s.time}`
-      )
-      if (!isAnnounced) {
-        return res.status(400).json({ error: 'Please choose one of the announced public session dates to continue.' })
+    // ── Public session booking ──
+    // Public bookings must reference an announced session (admin → Sessions);
+    // customers can never pick an arbitrary date. The chosen session's details
+    // are snapshotted onto the booking so later edits to the session never
+    // rewrite the historical booking record.
+    const isPublic = String(req.body.session_id || '').toLowerCase() === 'public'
+    let sessionSnapshot = null
+    if (isPublic) {
+      const sessionId = String(req.body.public_session_id || '').trim()
+      let session = null
+      if (sessionId) session = await Session.findById(sessionId)
+      else if (req.body.date) session = await Session.findOne({ date: req.body.date }) // legacy form fallback
+      if (!session) {
+        return res.status(400).json({ error: 'Please choose one of the announced public sessions to continue.' })
+      }
+      if (session.status === 'draft' || session.status === 'cancelled' || session.status === 'archived') {
+        return res.status(400).json({ error: 'This session is no longer available for booking.' })
+      }
+      if (session.registrationClosingDate && session.registrationClosingDate < todayStr()) {
+        return res.status(400).json({ error: 'Registration for this session has closed.' })
+      }
+      // Capacity check — remaining spots = maxParticipants − confirmed bookings
+      const confirmed = await Booking.countDocuments({
+        public_session_id: String(session._id),
+        booking_status: 'confirmed',
+      })
+      const max = Number(session.maxParticipants) || 0
+      if (max > 0 && confirmed >= max) {
+        return res.status(400).json({ error: 'This session is now full. Please choose another session.' })
+      }
+      sessionSnapshot = {
+        public_session_id: String(session._id),
+        session_title: session.title || '',
+        session_date: session.date || '',
+        session_start_time: session.startTime || '',
+        session_end_time: session.endTime || '',
+        session_location: session.locationName || '',
+        session_maps_url: session.mapsUrl || '',
+        session_meeting_point: session.meetingPoint || '',
+        session_meeting_point_maps_url: session.meetingPointMapsUrl || '',
+        session_meeting_time: session.meetingTime || '',
       }
     }
 
@@ -124,7 +162,11 @@ router.post('/', async (req, res, next) => {
       emergency_contact_phone: req.body.emergency_contact_phone || '',
       agreed_terms: agreedTerms,
       session_id: req.body.session_id || '',
-      date: req.body.date || '',
+      date: isPublic
+        ? (sessionSnapshot?.session_date || req.body.date || '')
+        : (req.body.date || ''),
+      time: isPublic ? '' : String(req.body.time || ''),
+      ...(sessionSnapshot || {}),
       participants: req.body.participants || 1,
       amount: req.body.amount || 0,
       booking_status: req.body.booking_status || 'pending_payment',
@@ -385,6 +427,24 @@ router.post('/:id/approve', requireAdmin, async (req, res, next) => {
       })
     }
 
+    // Capacity guard — never confirm a public-session booking past its max.
+    if (booking.public_session_id) {
+      const session = await Session.findById(booking.public_session_id)
+      const max = Number(session?.maxParticipants) || 0
+      if (max > 0) {
+        const confirmed = await Booking.countDocuments({
+          _id: { $ne: booking._id },
+          public_session_id: booking.public_session_id,
+          booking_status: 'confirmed',
+        })
+        if (confirmed >= max) {
+          return res.status(409).json({
+            error: 'This session is now full and cannot take more confirmed bookings beyond its maximum participants.',
+          })
+        }
+      }
+    }
+
     const adminEmail = req.user?.email || 'Admin'
     booking.booking_status = 'confirmed'
     booking.payment_status = 'paid'
@@ -409,12 +469,16 @@ router.post('/:id/approve', requireAdmin, async (req, res, next) => {
     )
 
     const sessionType = bookingTypeLabel(booking.session_id)
-    // Best-effort session time (from the sessions list) for the PDF
-    let sessionTime = ''
-    try {
-      const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-      sessionTime = s?.time || ''
-    } catch { /* ignore */ }
+    // Best-effort session time for the PDF — snapshot first, then legacy lookup
+    let sessionTime = booking.time || ''
+    if (booking.session_start_time || booking.session_end_time) {
+      sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+    } else if (!sessionTime) {
+      try {
+        const s = booking.date ? await Session.findOne({ date: booking.date }) : null
+        sessionTime = s?.time || ''
+      } catch { /* ignore */ }
+    }
     // Generate the confirmed-booking PDF (best-effort — never blocks approval)
     let pdfBuffer = null
     try {
@@ -474,12 +538,16 @@ router.post('/:id/reject', requireAdmin, async (req, res, next) => {
     )
 
     const sessionType = bookingTypeLabel(booking.session_id)
-    // Best-effort session time (from the sessions list) for the PDF
-    let sessionTime = ''
-    try {
-      const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-      sessionTime = s?.time || ''
-    } catch { /* ignore */ }
+    // Best-effort session time for the PDF — snapshot first, then legacy lookup
+    let sessionTime = booking.time || ''
+    if (booking.session_start_time || booking.session_end_time) {
+      sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+    } else if (!sessionTime) {
+      try {
+        const s = booking.date ? await Session.findOne({ date: booking.date }) : null
+        sessionTime = s?.time || ''
+      } catch { /* ignore */ }
+    }
     // Generate the booking-form PDF (best-effort — never blocks the decline)
     let pdfBuffer = null
     try {

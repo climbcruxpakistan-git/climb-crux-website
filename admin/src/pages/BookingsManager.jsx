@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, searchBookings } from '../store.js'
+import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, searchBookings, getSessions } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 import { formatDate, formatDateTime } from '../formatDate.js'
@@ -141,13 +141,17 @@ export default function BookingsManager() {
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
   const [rejecting, setRejecting] = useState(null)
+  const [publicSessions, setPublicSessions] = useState([])
   const [zooming, setZooming] = useState(null) // { url, name } for the screenshot lightbox
   const [acting, setActing] = useState(false)
 
   const emptyForm = {
     customer_name: '', customer_email: '', customer_phone: '',
     emergency_contact_name: '', emergency_contact_phone: '',
-    session_id: '', date: '', participants: 1, amount: 2500,
+    session_id: '', date: '', time: '', participants: 1, amount: 2500,
+    public_session_id: '', session_title: '', session_date: '', session_start_time: '', session_end_time: '',
+    session_location: '', session_maps_url: '',
+    session_meeting_point: '', session_meeting_point_maps_url: '', session_meeting_time: '',
     booking_status: 'pending_payment',
     payment_method: '', payment_status: 'pending',
   }
@@ -216,6 +220,10 @@ export default function BookingsManager() {
       .then(setBookings)
       .catch(console.error)
       .finally(() => setLoading(false))
+    // Announced public sessions — for the admin add-booking form
+    getSessions()
+      .then((list) => setPublicSessions((list || []).filter((s) => s.status === 'published')))
+      .catch(console.error)
   }, [])
 
   /** Exact-match server-side search by Booking ID. `force` re-runs for an
@@ -278,10 +286,14 @@ export default function BookingsManager() {
     const booking = editing === 'new'
       ? { id: null, ...form }
       : { id: editing, ...form }
-    await saveBooking(booking)
-    setBookings(await getBookings())
-    setEditing(null)
-    addToast('Booking saved', 'success')
+    try {
+      await saveBooking(booking)
+      setBookings(await getBookings())
+      setEditing(null)
+      addToast('Booking saved', 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
   }
 
   async function handleDelete(id) {
@@ -549,8 +561,8 @@ export default function BookingsManager() {
                         {b.customer_phone ? <span className="cell-muted"> · {b.customer_phone}</span> : ''}
                       </td>
                       <td>
-                        <span className="cell-type">{b.session_id?.replace(/-/g, ' ') || '—'}</span>
-                        {b.date ? <span className="cell-date">{formatDate(b.date)}</span> : ''}
+                        <span className="cell-type">{b.session_title || b.session_id?.replace(/-/g, ' ') || '—'}</span>
+                        {b.date ? <span className="cell-date">{formatDate(b.session_date || b.date)}</span> : ''}
                       </td>
                       <td>{badge(b.booking_status)}</td>
                       <td>
@@ -699,9 +711,47 @@ export default function BookingsManager() {
                 <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
               </div>
             </div>
-            <div className="admin-field">
-              <label>Amount (PKR)</label>
-              <input type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} />
+            {form.session_id === 'public' && (
+              <div className="admin-field">
+                <label>Public Session</label>
+                <select
+                  value={form.public_session_id || ''}
+                  onChange={(e) => {
+                    const s = publicSessions.find((x) => x.id === e.target.value)
+                    setForm({
+                      ...form,
+                      public_session_id: e.target.value,
+                      date: s ? s.date : form.date,
+                      session_title: s ? s.title : '',
+                      session_date: s ? s.date : '',
+                      session_start_time: s ? s.startTime : '',
+                      session_end_time: s ? s.endTime : '',
+                      session_location: s ? s.locationName : '',
+                      session_maps_url: s ? s.mapsUrl : '',
+                      session_meeting_point: s ? s.meetingPoint : '',
+                      session_meeting_point_maps_url: s ? s.meetingPointMapsUrl : '',
+                      session_meeting_time: s ? s.meetingTime : '',
+                    })
+                  }}
+                >
+                  <option value="">— Select an announced public session —</option>
+                  {publicSessions.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title || 'Public Session'} · {formatDate(s.date)} · {s.startTime}–{s.endTime}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Time (private sessions)</label>
+                <input value={form.time || ''} onChange={(e) => setForm({ ...form, time: e.target.value })} placeholder="e.g. 2:00 PM" />
+              </div>
+              <div className="admin-field">
+                <label>Amount (PKR)</label>
+                <input type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} />
+              </div>
             </div>
 
             <h3 className="card-admin-header" style={{ margin: '12px 0 0', fontSize: '0.85rem' }}>Status</h3>
@@ -776,12 +826,46 @@ export default function BookingsManager() {
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Session</span>
-                  <span className="detail-val">{viewing.session_id?.replace(/-/g, ' ') || '—'}</span>
+                  <span className="detail-val">{viewing.session_title || viewing.session_id?.replace(/-/g, ' ') || '—'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-key">Date</span>
-                  <span className="detail-val">{formatDate(viewing.date) || '—'}</span>
+                  <span className="detail-val">{formatDate(viewing.session_date || viewing.date) || '—'}</span>
                 </div>
+                {(viewing.session_start_time || viewing.session_end_time || viewing.time) && (
+                  <div className="detail-row">
+                    <span className="detail-key">Time</span>
+                    <span className="detail-val">{[viewing.session_start_time, viewing.session_end_time].filter(Boolean).join(' – ') || viewing.time || '—'}</span>
+                  </div>
+                )}
+                {viewing.session_location && (
+                  <div className="detail-row">
+                    <span className="detail-key">Location</span>
+                    <span className="detail-val">
+                      {viewing.session_location}
+                      {viewing.session_maps_url ? (
+                        <> · <a href={viewing.session_maps_url} target="_blank" rel="noreferrer">View Map</a></>
+                      ) : null}
+                    </span>
+                  </div>
+                )}
+                {viewing.booking_status === 'confirmed' && viewing.session_location && (
+                  <>
+                    <div className="detail-row">
+                      <span className="detail-key">Meeting Point</span>
+                      <span className="detail-val">
+                        {viewing.session_meeting_point || viewing.session_location}
+                        {(viewing.session_meeting_point_maps_url || viewing.session_maps_url) ? (
+                          <> · <a href={viewing.session_meeting_point_maps_url || viewing.session_maps_url} target="_blank" rel="noreferrer">View Map</a></>
+                        ) : null}
+                      </span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-key">Meeting Time</span>
+                      <span className="detail-val">{viewing.session_meeting_time || viewing.session_start_time || '—'}</span>
+                    </div>
+                  </>
+                )}
                 <div className="detail-row">
                   <span className="detail-key">Participants</span>
                   <span className="detail-val">{viewing.participants || '1'}</span>

@@ -10,6 +10,21 @@ const bookingSchema = new mongoose.Schema({
   participants: { type: Number, default: 1 },
   amount: { type: Number, default: 0 },
   date: { type: String, default: '' },
+  // Preferred time (private sessions only — public sessions use the announced times)
+  time: { type: String, default: '' },
+  // ── Public Session snapshot ──
+  // Copied from the chosen announced session at booking time so future edits to
+  // the session never change the historical details of existing bookings.
+  public_session_id: { type: String, default: '' },
+  session_title: { type: String, default: '' },
+  session_date: { type: String, default: '' },
+  session_start_time: { type: String, default: '' },
+  session_end_time: { type: String, default: '' },
+  session_location: { type: String, default: '' },
+  session_maps_url: { type: String, default: '' },
+  session_meeting_point: { type: String, default: '' },
+  session_meeting_point_maps_url: { type: String, default: '' },
+  session_meeting_time: { type: String, default: '' },
   booking_status: {
     type: String,
     default: 'pending_payment',

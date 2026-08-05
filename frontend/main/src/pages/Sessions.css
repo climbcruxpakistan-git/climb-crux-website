@@ -76,15 +76,26 @@
   transform: translateX(4px);
 }
 
+.schedule-list li:hover .schedule-name,
 .schedule-list li:hover .schedule-date,
 .schedule-list li:hover .schedule-time,
 .schedule-list li:hover .schedule-spots {
   color: var(--chalk);
 }
 
+.schedule-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--charcoal);
+  flex: 1;
+  margin-right: 16px;
+  text-align: left;
+  transition: color 0.25s ease;
+}
+
 .schedule-date {
   font-family: var(--font-display);
-  text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.02em;
   transition: color 0.25s ease;
@@ -306,6 +317,7 @@
     gap: 4px;
     padding: 14px 16px;
   }
+  .schedule-name { font-size: 0.95rem; }
   .schedule-date { font-size: 0.95rem; }
   .schedule-time { font-size: 0.82rem; }
   .schedule-spots { font-size: 0.76rem; }

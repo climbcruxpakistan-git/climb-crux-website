@@ -26,7 +26,7 @@ export default function Dashboard() {
       value: sessions.length,
       icon: '⊡',
       color: 'orange',
-      detail: `${sessions.filter((s) => s.spots !== 'Open').length} with limited spots`,
+      detail: `${sessions.filter((s) => Number(s.maxParticipants) > 0).length} with limited spots`,
     },
     {
       label: 'Active Team Members',

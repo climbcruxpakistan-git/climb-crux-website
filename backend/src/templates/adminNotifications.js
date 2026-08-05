@@ -46,6 +46,8 @@ export function adminPaymentProofNotification({ booking }) {
   const rows = [
     ['Customer', booking.customer_name || '—'],
     ['Booking Number', booking.booking_number || '—'],
+    ['Session', booking.session_title || (String(booking.session_id || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session')],
+    ['Session Date', formatDateDDMMYYYY(booking.session_date || booking.date) || '—'],
     ['Amount', `PKR ${(booking.amount || 0).toLocaleString()}`],
     ['Payment Method', booking.payment_method === 'bank_transfer' ? 'Bank Transfer' : booking.payment_method === 'easypaisa' ? 'EasyPaisa' : booking.payment_method || '—'],
     ['Status', 'Awaiting Verification'],

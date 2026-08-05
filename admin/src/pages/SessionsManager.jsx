@@ -2,6 +2,33 @@ import { useState, useEffect } from 'react'
 import { getSessions, saveSession, deleteSession, saveIncludedItems, saveFaqs, getSessionContent, saveSessionContent } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
+import { formatDate } from '../formatDate.js'
+
+/** Colored badge for a public session's lifecycle status. */
+function SessionStatusBadge({ status }) {
+  const map = {
+    draft: { label: 'Draft', cls: 'badge-gray' },
+    published: { label: 'Published', cls: 'badge-green' },
+    full: { label: 'Full', cls: 'badge-yellow' },
+    cancelled: { label: 'Cancelled', cls: 'badge-red' },
+    archived: { label: 'Archived', cls: 'badge-gray' },
+  }
+  const m = map[status] || { label: status || '—', cls: 'badge-gray' }
+  return <span className={`badge ${m.cls}`}>{m.label}</span>
+}
+
+/** 12-hour time display — passes through values already in that format. */
+function time12h(val) {
+  if (!val) return ''
+  const m = String(val).match(/^(\d{1,2}):(\d{2})$/) // plain "HH:MM"
+  if (m) {
+    let h = Number(m[1])
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    h = h % 12 || 12
+    return `${h}:${m[2]} ${ampm}`
+  }
+  return String(val)
+}
 
 export default function SessionsManager() {
   const { addToast } = useToast()
@@ -27,7 +54,14 @@ export default function SessionsManager() {
   const [membership, setMembership] = useState({})
   const [showSessionsContent, setShowSessionsContent] = useState(false)
   const [showPpContent, setShowPpContent] = useState(false)
-  const [form, setForm] = useState({ date: '', time: '', spots: '' })
+  const emptyForm = {
+    title: '', date: '', startTime: '', endTime: '',
+    locationName: '', mapsUrl: '', status: 'published',
+    maxParticipants: '', registrationClosingDate: '',
+    meetingPoint: '', meetingPointMapsUrl: '', meetingTime: '',
+    specialNotes: '',
+  }
+  const [form, setForm] = useState(emptyForm)
 
   useEffect(() => {
     Promise.all([getSessions(), getSessionContent()])
@@ -55,32 +89,67 @@ export default function SessionsManager() {
   }
 
   function openNew() {
-    setForm({ date: '', time: '', spots: '' })
+    setForm({ ...emptyForm })
     setEditing('new')
   }
 
   function openEdit(s) {
-    setForm({ date: s.date, time: s.time, spots: s.spots })
+    setForm({
+      title: s.title || '',
+      date: s.date || '',
+      startTime: s.startTime || '',
+      endTime: s.endTime || '',
+      locationName: s.locationName || '',
+      mapsUrl: s.mapsUrl || '',
+      status: s.status || 'published',
+      maxParticipants: s.maxParticipants || '',
+      registrationClosingDate: s.registrationClosingDate || '',
+      meetingPoint: s.meetingPoint || '',
+      meetingPointMapsUrl: s.meetingPointMapsUrl || '',
+      meetingTime: s.meetingTime || '',
+      specialNotes: s.specialNotes || '',
+    })
     setEditing(s.id)
   }
 
   async function handleSave() {
-    if (!form.date || !form.time) {
-      addToast('Date and time are required', 'error')
+    if (!form.title || !form.date || !form.startTime || !form.endTime || !form.locationName) {
+      addToast('Title, date, start time, end time and location are required', 'error')
       return
     }
     const session = editing === 'new' ? { id: null, ...form } : { id: editing, ...form }
-    await saveSession(session)
-    await reload()
-    setEditing(null)
-    addToast('Session saved', 'success')
+    try {
+      await saveSession(session)
+      await reload()
+      setEditing(null)
+      addToast('Session saved', 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
   }
 
   async function handleDelete(id) {
-    if (!confirm('Delete this session?')) return
-    await deleteSession(id)
-    await reload()
-    addToast('Session deleted', 'success')
+    if (!confirm('Delete this session? Only possible when the session has no bookings.')) return
+    try {
+      await deleteSession(id)
+      await reload()
+      addToast('Session deleted', 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }
+
+  /** Quick status change (publish / unpublish / cancel / archive / re-publish). */
+  async function setStatus(id, status) {
+    const s = sessions.find((x) => x.id === id)
+    if (!s) return
+    try {
+      await saveSession({ ...s, status })
+      await reload()
+      addToast(`Session ${status}`, 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
   }
 
   async function handleIncludedSave(items) {
@@ -180,31 +249,58 @@ export default function SessionsManager() {
             <table>
               <thead>
                 <tr>
+                  <th>Title</th>
                   <th>Date</th>
                   <th>Time</th>
-                  <th>Spots</th>
-                  <th style={{ width: 100 }}>Actions</th>
+                  <th>Location</th>
+                  <th>Capacity</th>
+                  <th>Status</th>
+                  <th style={{ width: 170 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {sessions.map((s) => (
                   <tr key={s.id}>
-                    <td><strong>{s.date}</strong></td>
-                    <td>{s.time}</td>
+                    <td><strong>{s.title || 'Untitled session'}</strong></td>
+                    <td>{formatDate(s.date) || '—'}</td>
+                    <td>{[time12h(s.startTime), time12h(s.endTime)].filter(Boolean).join(' – ') || '—'}</td>
+                    <td className="cell-truncate">{s.locationName || '—'}</td>
                     <td>
-                      <span className={`badge ${s.spots === 'Open' ? 'badge-green' : s.spots.includes('left') ? 'badge-yellow' : 'badge-gray'}`}>
-                        {s.spots}
-                      </span>
+                      {Number(s.maxParticipants) > 0 ? (
+                        <span className={`badge ${s.remaining > 0 ? 'badge-green' : 'badge-gray'}`}>
+                          {s.remaining} left
+                        </span>
+                      ) : (
+                        <span className="badge badge-green">Open</span>
+                      )}
                     </td>
+                    <td><SessionStatusBadge status={s.status} /></td>
                     <td>
-                      <div style={{ display: 'flex', gap: 4 }}>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                         <button className="btn-admin-icon" onClick={() => openEdit(s)} title="Edit">✎</button>
-                        <button className="btn-admin-icon danger" onClick={() => handleDelete(s.id)} title="Delete">✕</button>
+                        {s.status === 'draft' && (
+                          <button className="btn-admin btn-admin-sm" style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }} onClick={() => setStatus(s.id, 'published')} title="Publish — show on website">▶ Publish</button>
+                        )}
+                        {s.status === 'published' && (
+                          <>
+                            <button className="btn-admin btn-admin-sm" style={{ background: 'transparent', color: '#666', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }} onClick={() => setStatus(s.id, 'draft')} title="Unpublish — hide from website">⏸ Draft</button>
+                            <button className="btn-admin btn-admin-sm" style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }} onClick={() => setStatus(s.id, 'cancelled')} title="Cancel session">✕ Cancel</button>
+                            <button className="btn-admin btn-admin-sm" style={{ background: 'transparent', color: '#666', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }} onClick={() => setStatus(s.id, 'archived')} title="Archive session">🗄 Archive</button>
+                          </>
+                        )}
+                        {(s.status === 'full' || s.status === 'cancelled') && (
+                          <button className="btn-admin btn-admin-sm" style={{ background: 'transparent', color: '#666', border: '1px solid #ccc', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }} onClick={() => setStatus(s.id, 'archived')} title="Archive session">🗄 Archive</button>
+                        )}
+                        {s.status === 'cancelled' && (
+                          <button className="btn-admin btn-admin-sm" style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }} onClick={() => setStatus(s.id, 'published')} title="Re-publish">▶ Publish</button>
+                        )}
+                        <button className="btn-admin-icon danger" onClick={() => handleDelete(s.id)} title="Delete (only when no bookings)">🗑</button>
                       </div>
                     </td>
                   </tr>
-                ))}            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
         </div>
         </div>
         )}
@@ -350,21 +446,87 @@ export default function SessionsManager() {
       </div>
 
       {editing && (
-        <Modal title={editing === 'new' ? 'Add Session' : 'Edit Session'} onClose={() => setEditing(null)}>
+        <Modal title={editing === 'new' ? 'Add Public Session' : 'Edit Public Session'} onClose={() => setEditing(null)} wide>
           <div className="admin-form">
+            <h3 style={{ marginBottom: 12, fontSize: '0.85rem' }}>Session</h3>
             <div className="admin-field">
-              <label>Date</label>
-              <input type="text" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} placeholder="e.g. Sun, Aug 16" />
-              <span className="field-hint">Format: Day, Mon DD</span>
+              <label>Session Title *</label>
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Margalla Hills – Trail 5 Morning Climb" />
+            </div>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Date *</label>
+                <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+              </div>
+              <div className="admin-field">
+                <label>Status</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="full">Full</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+            </div>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Start Time *</label>
+                <input value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} placeholder="e.g. 08:00 AM" />
+              </div>
+              <div className="admin-field">
+                <label>End Time *</label>
+                <input value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} placeholder="e.g. 12:00 PM" />
+              </div>
+            </div>
+            <span className="field-hint">Times in 12-hour format (e.g. 08:00 AM).</span>
+
+            <h3 style={{ margin: '16px 0 12px', fontSize: '0.85rem' }}>Location</h3>
+            <div className="admin-field">
+              <label>Climbing Location Name *</label>
+              <input value={form.locationName} onChange={(e) => setForm({ ...form, locationName: e.target.value })} placeholder="e.g. Margalla Hills — Trail 5" />
             </div>
             <div className="admin-field">
-              <label>Time</label>
-              <input type="text" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} placeholder="e.g. 8:00 AM – 1:00 PM" />
+              <label>Google Maps URL</label>
+              <input value={form.mapsUrl} onChange={(e) => setForm({ ...form, mapsUrl: e.target.value })} placeholder="https://maps.google.com/?q=…" />
             </div>
+
+            <h3 style={{ margin: '16px 0 12px', fontSize: '0.85rem' }}>Capacity &amp; Registration</h3>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Maximum Participants</label>
+                <input type="number" min="0" value={form.maxParticipants} onChange={(e) => setForm({ ...form, maxParticipants: e.target.value })} placeholder="0 = unlimited" />
+                <span className="field-hint">Remaining spots = max participants − confirmed bookings. At zero the session is marked Full.</span>
+              </div>
+              <div className="admin-field">
+                <label>Registration Closing Date</label>
+                <input type="date" value={form.registrationClosingDate} onChange={(e) => setForm({ ...form, registrationClosingDate: e.target.value })} />
+                <span className="field-hint">Optional — bookings close after this date.</span>
+              </div>
+            </div>
+
+            <h3 style={{ margin: '16px 0 12px', fontSize: '0.85rem' }}>Meeting Point <span style={{ fontWeight: 400, color: '#888' }}>(optional — shown only in confirmations)</span></h3>
             <div className="admin-field">
-              <label>Spots</label>
-              <input type="text" value={form.spots} onChange={(e) => setForm({ ...form, spots: e.target.value })} placeholder="e.g. 5 spots left or Open" />
+              <label>Meeting Point</label>
+              <input value={form.meetingPoint} onChange={(e) => setForm({ ...form, meetingPoint: e.target.value })} placeholder="e.g. Trail 5 car park" />
+              <span className="field-hint">Falls back to the climbing location when empty.</span>
             </div>
+            <div className="admin-form-row">
+              <div className="admin-field">
+                <label>Meeting Point Google Maps URL</label>
+                <input value={form.meetingPointMapsUrl} onChange={(e) => setForm({ ...form, meetingPointMapsUrl: e.target.value })} placeholder="https://maps.google.com/?q=…" />
+              </div>
+              <div className="admin-field">
+                <label>Meeting Time</label>
+                <input value={form.meetingTime} onChange={(e) => setForm({ ...form, meetingTime: e.target.value })} placeholder="e.g. 07:45 AM" />
+              </div>
+            </div>
+
+            <div className="admin-field">
+              <label>Special Notes</label>
+              <textarea rows={3} value={form.specialNotes} onChange={(e) => setForm({ ...form, specialNotes: e.target.value })} placeholder="Anything customers should know about this session…" />
+            </div>
+
             <div className="admin-form-actions">
               <button className="btn-admin btn-admin-primary" onClick={handleSave}>Save</button>
               <button className="btn-admin btn-admin-outline" onClick={() => setEditing(null)}>Cancel</button>

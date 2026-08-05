@@ -2,7 +2,7 @@
  * Booking approval email — sent to the customer after an administrator
  * verifies their payment screenshot and confirms the booking.
  */
-import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink } from './emailLayout.js'
+import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink, bookingSessionRows } from './emailLayout.js'
 import { formatDateDDMMYYYY } from '../services/dateFormat.js'
 
 const STATUS = 'Confirmed'
@@ -21,14 +21,22 @@ function displayNumber(number) {
 export function bookingApprovedEmail({ booking, sessionType = 'Public Session', whatsapp = '' }) {
   const reference = booking.booking_number || '—'
 
+  // Public bookings lead with the announced Session Name instead of the generic
+  // type label (snapshot on the booking).
+  const sessionTitle = booking.session_title || sessionType
   const rows = [
     ['Customer', booking.customer_name || '—'],
-    ['Booking Type', sessionType],
-    ['Status', STATUS],
-    ['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'],
-    ['Participants', String(booking.participants || 1)],
-    ['Total', `PKR ${(booking.amount || 0).toLocaleString()}`],
   ]
+  if (!booking.session_title && !booking.session_date) rows.push(['Booking Type', sessionType])
+  rows.push(['Status', STATUS])
+  // Public sessions carry the announced-session details + meeting point (confirmed)
+  rows.push(...bookingSessionRows(booking, { confirmed: true }))
+  if (!booking.session_date) {
+    rows.push(['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'])
+    if (booking.time) rows.push(['Preferred Time', booking.time])
+  }
+  rows.push(['Participants', String(booking.participants || 1)])
+  rows.push(['Total', `PKR ${(booking.amount || 0).toLocaleString()}`])
 
   const html = renderEmailLayout({
     headerTitle: 'Booking Confirmed',
@@ -37,7 +45,7 @@ export function bookingApprovedEmail({ booking, sessionType = 'Public Session', 
     bodyHtml: `
       <p style="margin:0 0 6px;font-size:14px;color:#444;line-height:1.7">
         Great news — your payment has been <strong>verified</strong> and your
-        <strong>${escapeHtml(sessionType)}</strong> booking is now
+        <strong>${escapeHtml(sessionTitle)}</strong> booking is now
         <strong>confirmed</strong>.
       </p>
       ${referenceBox('Booking Number', reference)}

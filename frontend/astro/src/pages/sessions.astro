@@ -1,11 +1,11 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import SessionsContent from '../components/react/SessionsContent.jsx';
-import { getSessions, getSessionContent } from '../lib/api';
+import { getAvailableSessions, getSessionContent } from '../lib/api';
 import '../styles/Sessions.css';
 
 const [sessions, content] = await Promise.all([
-  getSessions().catch(() => []),
+  getAvailableSessions().catch(() => []),
   getSessionContent().catch(() => ({})),
 ]);
 

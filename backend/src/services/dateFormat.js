@@ -22,6 +22,27 @@ export function formatDateDDMMYYYY(value) {
   return `${dd}-${mm}-${d.getFullYear()}`
 }
 
+/**
+ * Format a date as "Weekday, DD-MM-YYYY" (e.g. "Saturday, 01-10-2026").
+ * Used for announced public-session dates in customer emails and the booking
+ * PDF so scheduled events read naturally while keeping the site-wide
+ * DD-MM-YYYY date standard.
+ */
+export function formatLongDate(value) {
+  if (!value) return ''
+  const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) {
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    return `${weekdays[d.getDay()]}, ${m[3]}-${m[2]}-${m[1]}`
+  }
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return String(value)
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${d.toLocaleDateString('en-US', { weekday: 'long' })}, ${dd}-${mm}-${d.getFullYear()}`
+}
+
 /** Format a datetime as "DD-MM-YYYY, HH:MM AM/PM" (e.g. 05-08-2026, 2:30 PM). */
 export function formatDateTimeDDMMYYYY(value) {
   if (!value) return ''

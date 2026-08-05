@@ -91,6 +91,16 @@ const STATUS_META = {
   },
 }
 
+/** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
+function formatStatusDate(iso) {
+  if (!iso) return ''
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return String(iso)
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  return `${weekdays[d.getDay()]}, ${m[3]}-${m[2]}-${m[1]}`
+}
+
 /** Simple progress tracker — shows where a request is in its flow. */
 function progressSteps(result) {
   if (result.type === 'order') {
@@ -162,6 +172,25 @@ function ResultCard({ result }) {
           {result.startDate && result.expiryDate ? ' · ' : null}
           {result.expiryDate ? <span>Expires <strong>{result.expiryDate}</strong></span> : null}
         </p>
+      )}
+      {result.session && (
+        <div className="cs-session">
+          {result.session.title ? <div className="cs-session-title">{result.session.title}</div> : null}
+          <div className="cs-session-row">📅 {formatStatusDate(result.session.date)}</div>
+          {(result.session.startTime || result.session.endTime) ? (
+            <div className="cs-session-row">🕘 {[result.session.startTime, result.session.endTime].filter(Boolean).join(' – ')}</div>
+          ) : null}
+          {result.session.location ? <div className="cs-session-row">📍 {result.session.location}</div> : null}
+          {(result.status === 'booking_confirmed' || result.status === 'session_completed') && (
+            <>
+              <div className="cs-session-row">🤝 Meeting point: {result.session.meetingPoint || result.session.location}</div>
+              {result.session.meetingTime ? <div className="cs-session-row">🕖 Meeting time: {result.session.meetingTime}</div> : null}
+            </>
+          )}
+          {result.session.mapsUrl ? (
+            <a className="cs-session-map" href={result.session.mapsUrl} target="_blank" rel="noreferrer">View Location →</a>
+          ) : null}
+        </div>
       )}
       <p className="cs-message">{meta.message}</p>
       {steps.length > 0 && (

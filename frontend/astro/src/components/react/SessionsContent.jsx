@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react'
-import { getSessions, getSessionContent } from '../../lib/api'
+import { getAvailableSessions, getSessionContent } from '../../lib/api'
+
+/** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
+function formatShortDate(iso) {
+  if (!iso) return ''
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return String(iso)
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  return `${weekdays[d.getDay()]}, ${m[3]}-${m[2]}-${m[1]}`
+}
 
 const DEFAULT_INCLUDED = [
   { h: 'Certified guidance', p: 'Every session is led by a certified climbing instructor, start to finish.' },
@@ -24,7 +34,7 @@ export default function SessionsContent({ initial }) {
 
   useEffect(() => {
     let active = true
-    Promise.all([getSessions().catch(() => []), getSessionContent().catch(() => ({}))])
+    Promise.all([getAvailableSessions().catch(() => []), getSessionContent().catch(() => ({}))])
       .then(([sessions, content]) => {
         if (active) setData({ sessions, content })
       })
@@ -76,9 +86,14 @@ export default function SessionsContent({ initial }) {
             <ul className="schedule-list">
               {sessions.map((s, i) => (
                 <li key={s.id || i}>
-                  <span className="schedule-date">{s.date}</span>
-                  <span className="schedule-time">{s.time}</span>
-                  <span className="schedule-spots">{s.spots}</span>
+                  <span className="schedule-name">{s.title || 'Public Session'}</span>
+                  <span className="schedule-date">{formatShortDate(s.date)}</span>
+                  <span className="schedule-time">{[s.startTime, s.endTime].filter(Boolean).join(' – ') || '—'}</span>
+                  <span className="schedule-spots">
+                    {Number(s.maxParticipants) > 0
+                      ? (s.remaining > 0 ? `${s.remaining} spots left` : 'Full')
+                      : 'Open'}
+                  </span>
                 </li>
               ))}
             </ul>

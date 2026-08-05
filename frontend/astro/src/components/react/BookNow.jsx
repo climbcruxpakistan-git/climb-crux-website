@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createBooking, getSessionContent, getPlans, getSessions, getMembershipFormUrl } from '../../lib/api'
+import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl } from '../../lib/api'
 
 function getTodayString() {
   const d = new Date()
@@ -12,6 +12,16 @@ function getTodayString() {
 function parsePrice(val) {
   if (!val) return 0
   return Number(String(val).replace(/,/g, '')) || 0
+}
+
+/** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
+function formatLongDate(iso) {
+  if (!iso) return ''
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return String(iso)
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  return `${weekdays[d.getDay()]}, ${m[3]}-${m[2]}-${m[1]}`
 }
 
 // Session booking Terms & Conditions — every box must be ticked to continue.
@@ -39,6 +49,7 @@ export default function BookNow({ preselected = '' }) {
   const [planOptions, setPlanOptions] = useState([])
   const [announcedSessions, setAnnouncedSessions] = useState([])
   const [sessionsDisabled, setSessionsDisabled] = useState(false)
+  const [selectedPublicSession, setSelectedPublicSession] = useState(null)
   const [loaded, setLoaded] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState([])
 
@@ -49,7 +60,7 @@ export default function BookNow({ preselected = '' }) {
   }
 
   useEffect(() => {
-    Promise.all([getSessionContent(), getPlans(), getSessions().catch(() => [])])
+    Promise.all([getSessionContent(), getPlans(), getAvailableSessions().catch(() => [])])
       .then(([content, plans, sessions]) => {
         const publicPrice = parsePrice(content.pricingPrice) || 2500
         setPricing({ publicPrice })
@@ -100,14 +111,25 @@ export default function BookNow({ preselected = '' }) {
     return plan ? plan.price : 0
   }
   const totalAmount = sessionType && !isCustom ? perPersonPrice(sessionType) * participants : 0
+  // Once a public session is chosen, the price summary shows its Session Name
+  // instead of the generic "Public Session" type label.
+  const sessionLabel = sessionType === 'public' && selectedPublicSession
+    ? (selectedPublicSession.title || 'Public Session')
+    : (allSessionOptions.find((t) => t.value === sessionType)?.label || sessionType)
 
   async function handleSubmit(e) {
     e.preventDefault()
     if (isCustom) return
     if (isMembership) return
-    if (sessionType === 'public' && publicSessions.length === 0) {
-      setError('No public sessions are announced right now. Check the Sessions page for upcoming dates or book a private session.')
-      return
+    if (sessionType === 'public') {
+      if (publicSessions.length === 0) {
+        setError('No public sessions are announced right now. Check the Sessions page for upcoming dates or book a private session.')
+        return
+      }
+      if (!selectedPublicSession) {
+        setError('Please choose an announced public session to continue.')
+        return
+      }
     }
     if (agreedTerms.length < BOOKING_TERMS.length) {
       setError('Please tick all three Terms & Conditions to continue')
@@ -123,7 +145,22 @@ export default function BookNow({ preselected = '' }) {
       emergency_contact_name: form['emergency-contact-name']?.value || '',
       emergency_contact_phone: form['emergency-contact-phone']?.value || '',
       session_id: sessionType,
-      date: form['preferred-date'].value,
+      date: sessionType === 'public' ? (selectedPublicSession?.date || '') : form['preferred-date'].value,
+      time: sessionType === 'public' ? '' : (form['preferred-time']?.value || ''),
+      // Snapshot of the chosen announced session — future edits to the session
+      // never change the historical details of this booking.
+      ...(sessionType === 'public' && selectedPublicSession ? {
+        public_session_id: selectedPublicSession.id,
+        session_title: selectedPublicSession.title || '',
+        session_date: selectedPublicSession.date || '',
+        session_start_time: selectedPublicSession.startTime || '',
+        session_end_time: selectedPublicSession.endTime || '',
+        session_location: selectedPublicSession.locationName || '',
+        session_maps_url: selectedPublicSession.mapsUrl || '',
+        session_meeting_point: selectedPublicSession.meetingPoint || '',
+        session_meeting_point_maps_url: selectedPublicSession.meetingPointMapsUrl || '',
+        session_meeting_time: selectedPublicSession.meetingTime || '',
+      } : {}),
       participants,
       amount: totalAmount,
       agreed_terms: agreedTerms,
@@ -156,7 +193,7 @@ export default function BookNow({ preselected = '' }) {
           <form onSubmit={handleSubmit}>
             <div className="field">
               <label htmlFor="session-type">Session type</label>
-              <select id="session-type" value={sessionType} onChange={(e) => { setSessionType(e.target.value); setParticipants(1) }} required>
+              <select id="session-type" value={sessionType} onChange={(e) => { setSessionType(e.target.value); setParticipants(1); setSelectedPublicSession(null) }} required>
                 <option value="" disabled>Choose a session type</option>
                 {allSessionOptions.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -175,17 +212,50 @@ export default function BookNow({ preselected = '' }) {
                 </div>
                 {sessionType === 'public' ? (
                   publicSessions.length > 0 ? (
-                    <div className="field">
-                      <label htmlFor="preferred-date">Choose a session</label>
-                      <select id="preferred-date" required defaultValue="">
-                        <option value="" disabled>Select an announced session</option>
-                        {publicSessions.map((s) => (
-                          <option key={s.id} value={`${s.date} · ${s.time}`}>
-                            {s.date} · {s.time}{s.spots && s.spots !== 'Open' ? ` — ${s.spots}` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <>
+                      <div className="field">
+                        <label htmlFor="preferred-date">Available public session</label>
+                        <select
+                          id="preferred-date"
+                          required
+                          value={selectedPublicSession?.id || ''}
+                          onChange={(e) => {
+                            const s = publicSessions.find((x) => x.id === e.target.value) || null
+                            setSelectedPublicSession(s)
+                          }}
+                        >
+                          <option value="" disabled>Select an announced session</option>
+                          {publicSessions.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.title || 'Public Session'} — {formatLongDate(s.date)} · {s.startTime}–{s.endTime}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {selectedPublicSession && (
+                        <div className="session-details-panel">
+                          <div className="session-details-title">{selectedPublicSession.title || 'Public Session'}</div>
+                          <div className="session-details-row">📅 {formatLongDate(selectedPublicSession.date)}</div>
+                          <div className="session-details-row">🕘 {selectedPublicSession.startTime} – {selectedPublicSession.endTime}</div>
+                          <div className="session-details-row">📍 {selectedPublicSession.locationName}</div>
+                          {selectedPublicSession.maxParticipants > 0 && (
+                            <div className="session-details-row">
+                              👥 {selectedPublicSession.remaining > 0
+                                ? `${selectedPublicSession.remaining} ${selectedPublicSession.remaining === 1 ? 'spot' : 'spots'} remaining`
+                                : 'Session full'}
+                            </div>
+                          )}
+                          {selectedPublicSession.specialNotes && (
+                            <div className="session-details-note">{selectedPublicSession.specialNotes}</div>
+                          )}
+                          {selectedPublicSession.mapsUrl ? (
+                            <a className="session-details-map-btn" href={selectedPublicSession.mapsUrl} target="_blank" rel="noreferrer">
+                              View Location →
+                            </a>
+                          ) : null}
+                        </div>
+                      )}
+                    </>
                   ) : loaded ? (
                     <div className="field">
                       <label htmlFor="preferred-date">Session date</label>
@@ -195,7 +265,10 @@ export default function BookNow({ preselected = '' }) {
                     </div>
                   ) : null
                 ) : (
-                  <div className="field"><label htmlFor="preferred-date">Preferred date</label><input id="preferred-date" type="date" min={getTodayString()} /></div>
+                  <>
+                    <div className="field"><label htmlFor="preferred-date">Preferred date</label><input id="preferred-date" type="date" min={getTodayString()} /></div>
+                    <div className="field"><label htmlFor="preferred-time">Preferred time</label><input id="preferred-time" type="time" /></div>
+                  </>
                 )}
                 <div className="form-row">
                   <div className="field"><label htmlFor="emergency-contact-name">Emergency contact</label><input id="emergency-contact-name" type="text" placeholder="Name" required /></div>
@@ -239,7 +312,7 @@ export default function BookNow({ preselected = '' }) {
               <div className="price-summary-card" style={{ background: 'var(--chalk-dim)', borderRadius: 12, padding: '20px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8 }}>
                   <div>
-                    <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>{allSessionOptions.find(t => t.value === sessionType)?.label || sessionType}</div>
+                    <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>{sessionLabel}</div>
                     <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>
                       {sessionType === 'membership' && membership.originalPrice && (
                         <span style={{ textDecoration: 'line-through', color: 'var(--stone)', marginRight: 8 }}>PKR {membership.originalPrice}</span>
@@ -284,7 +357,7 @@ export default function BookNow({ preselected = '' }) {
             )}
             {!isCustom && !isMembership && (
               <div className="form-actions" style={{ flexDirection: 'column' }}>
-                <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || (sessionType === 'public' && publicSessions.length === 0) || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
+                <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || (sessionType === 'public' && (publicSessions.length === 0 || !selectedPublicSession)) || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
                   {sending ? <><span className="btn-spinner" /> Creating booking…</> : 'Continue to payment →'}
                 </button>
               </div>

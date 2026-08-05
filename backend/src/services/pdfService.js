@@ -15,7 +15,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { MEMBERSHIP_PLAN, MEMBERSHIP_FEE, MEMBERSHIP_TERMS, MEMBERSHIP_DECLARATION, BOOKING_TERMS } from '../membershipForm.js'
-import { formatDateDDMMYYYY } from './dateFormat.js'
+import { formatDateDDMMYYYY, formatLongDate } from './dateFormat.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PDF_DIR = path.join(__dirname, '..', '..', 'storage', 'membership-pdfs')
@@ -31,6 +31,16 @@ function label(str) {
 
 function clean(value) {
   return String(value ?? '').trim() || '—'
+}
+
+/**
+ * Truncate a value to fit one line in the PDF hero band. The band positions
+ * each label at absolute offsets (no wrapping), so long Session Names must be
+ * shortened or they would overlap the STATUS / BOOKED labels below them.
+ */
+function truncateToFit(value, max = 28) {
+  const s = String(value || '').trim()
+  return s.length > max ? `${s.slice(0, max - 1)}…` : s
 }
 
 function ageFromDob(dob) {
@@ -316,9 +326,11 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
       doc.fillColor('#b8b8b8').font('Helvetica').fontSize(7.5).text(small, rightX, rx, { width: rightW, align: 'right' })
       doc.fillColor(color).font('Helvetica-Bold').fontSize(11).text(big, rightX, rx + 13, { width: rightW, align: 'right' })
     }
-    heroLabel('BOOKING ID', clean(booking.booking_number))
-    rx += 32
-    heroLabel('SESSION', clean(sessionType || (String(booking.session_id || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session')))
+    // The Session Name is the primary identifier on the PDF — the generic
+    // "Public Session" type label only appears for private/legacy bookings.
+    // Truncated so a long name never wraps over the STATUS / BOOKED labels.
+    const heroSession = truncateToFit(booking.session_title || sessionType || (String(booking.session_id || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session'))
+    heroLabel('SESSION', clean(heroSession))
     rx += 32
     heroLabel('STATUS', statusLabel, ORANGE)
     rx += 32
@@ -358,16 +370,34 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
       y += 4
     }
 
-    /* ── Booking details ── */
-    box('BOOKING DETAILS', [
+    /* ── Booking details (public sessions include the announced-session snapshot) ── */
+    const hasSessionSnapshot = Boolean(booking.session_title || booking.session_date)
+    const sessionRows = [
       ['Booking ID', booking.booking_number],
       ['Booking Date', formatDateDDMMYYYY(booking.created_at)],
-      ['Session', clean(sessionType || booking.session_id)],
-      ['Session Date', formatDateDDMMYYYY(booking.date)],
-      ['Time', time],
-      ['Participants', String(booking.participants || 1)],
-      ['Price', `PKR ${(booking.amount || 0).toLocaleString()}`],
-    ])
+      // Public bookings list the Session Name directly — never the generic label.
+      // Falls back to the type label only when the snapshot has no title.
+      ['Session', clean(booking.session_title || sessionType || booking.session_id)],
+    ]
+    sessionRows.push(['Date', hasSessionSnapshot
+      ? (formatLongDate(booking.session_date || booking.date) || booking.session_date || booking.date)
+      : formatDateDDMMYYYY(booking.date)])
+    const snapshotTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+    sessionRows.push(['Time', time || snapshotTime])
+    if (hasSessionSnapshot) {
+      sessionRows.push(['Climbing Location', booking.session_location])
+      if (booking.session_maps_url) sessionRows.push(['View Map', booking.session_maps_url])
+      if (status === 'confirmed') {
+        // Confirmed bookings also include the meeting point (falls back to the
+        // climbing location when the admin didn't provide one).
+        sessionRows.push(['Meeting Point', booking.session_meeting_point || booking.session_location])
+        sessionRows.push(['Meeting Point Map', booking.session_meeting_point_maps_url || booking.session_maps_url])
+        sessionRows.push(['Meeting Time', booking.session_meeting_time || booking.session_start_time])
+      }
+    }
+    sessionRows.push(['Participants', String(booking.participants || 1)])
+    sessionRows.push(['Price', `PKR ${(booking.amount || 0).toLocaleString()}`])
+    box('BOOKING DETAILS', sessionRows)
 
     /* ── Customer details ── */
     box('CUSTOMER DETAILS', [

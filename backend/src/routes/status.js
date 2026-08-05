@@ -115,7 +115,8 @@ function clearFailures(ip) {
  *
  * Searches session bookings AND membership applications by their reference
  * code (exact match, case-insensitive via normalization). Responds with ONLY
- * the status key + code — never names, contact details, payments, uploads or
+ * the status key + code plus non-personal session details (session title,
+ * date, times, location) — never names, contact details, payments, uploads or
  * admin notes. Not-found and invalid input both return the identical generic
  * `{ found: false }` so the endpoint cannot be used to probe which codes or
  * formats exist.
@@ -143,11 +144,27 @@ router.post('/check', async (req, res, next) => {
 
     if (booking) {
       clearFailures(ip)
+      const hasSession = Boolean(booking.session_title || booking.session_date)
       return res.json({
         found: true,
         code: booking.booking_number,
         type: 'booking',
         status: bookingStatusKey(booking),
+        // Non-personal announced-session details (public bookings) shown on the
+        // status card so customers can confirm which session they booked.
+        ...(hasSession ? {
+          session: {
+            title: booking.session_title || '',
+            date: booking.session_date || booking.date || '',
+            startTime: booking.session_start_time || '',
+            endTime: booking.session_end_time || '',
+            location: booking.session_location || '',
+            mapsUrl: booking.session_maps_url || '',
+            meetingPoint: booking.session_meeting_point || booking.session_location || '',
+            meetingPointMapsUrl: booking.session_meeting_point_maps_url || booking.session_maps_url || '',
+            meetingTime: booking.session_meeting_time || booking.session_start_time || '',
+          },
+        } : {}),
       })
     }
     if (application) {

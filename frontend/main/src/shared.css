@@ -507,6 +507,70 @@
   margin-top: 4px;
 }
 
+/* Session details panel (Book Now — admin-managed public sessions) */
+.session-details-panel {
+  background: var(--chalk-dim);
+  border: 1px solid var(--chalk-dim);
+  border-left: 3px solid var(--orange);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin: -6px 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  animation: sessionDetailsIn 0.25s ease;
+}
+
+@keyframes sessionDetailsIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.session-details-title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 2px;
+}
+
+.session-details-row {
+  font-size: 0.9rem;
+  color: var(--stone-dark);
+  line-height: 1.5;
+}
+
+.session-details-note {
+  font-size: 0.82rem;
+  color: var(--stone);
+  background: #fff;
+  border: 1px dashed #d8d0bc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 2px;
+}
+
+.session-details-map-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: 4px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.session-details-map-btn:hover {
+  background: var(--orange-dark);
+}
+
 .form-success {
   background: var(--charcoal);
   color: var(--chalk);

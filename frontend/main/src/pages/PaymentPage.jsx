@@ -180,7 +180,7 @@ export default function PaymentPage() {
                 </div>
                 <div className="summary-item">
                   <span className="summary-key">Session</span>
-                  <span className="summary-val">{getSessionLabel(booking.session_id)}</span>
+                  <span className="summary-val">{booking.session_title || getSessionLabel(booking.session_id)}</span>
                 </div>
                 <div className="summary-item">
                   <span className="summary-key">Name</span>
@@ -192,8 +192,20 @@ export default function PaymentPage() {
                 </div>
                 <div className="summary-item">
                   <span className="summary-key">Date</span>
-                  <span className="summary-val">{formatDate(booking.date) || 'To be confirmed'}</span>
+                  <span className="summary-val">{formatDate(booking.session_date || booking.date) || 'To be confirmed'}</span>
                 </div>
+                {(booking.session_start_time || booking.session_end_time) && (
+                  <div className="summary-item">
+                    <span className="summary-key">Time</span>
+                    <span className="summary-val">{[booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')}</span>
+                  </div>
+                )}
+                {booking.session_location && (
+                  <div className="summary-item">
+                    <span className="summary-key">Location</span>
+                    <span className="summary-val">{booking.session_location}</span>
+                  </div>
+                )}
                 <div className="summary-item" style={{ gridColumn: '1 / -1' }}>
                   <span className="summary-key">Email / Phone</span>
                   <span className="summary-val" style={{ fontSize: '0.85rem' }}>

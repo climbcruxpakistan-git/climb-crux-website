@@ -9,6 +9,8 @@
  * stone grays, and the site logo hosted at climbcruxpakistan.com/logo.png.
  */
 
+import { formatLongDate } from '../services/dateFormat.js'
+
 export const LOGO_URL = 'https://climbcruxpakistan.com/logo.png'
 export const SITE_URL = 'https://climbcruxpakistan.com'
 export const SITE_EMAIL = 'climbcruxpakistan@gmail.com'
@@ -37,18 +39,50 @@ export function formatWhatsApp(number) {
   return String(number || '')
 }
 
-/** Summary key/value table used in the email body. */
+/** Summary key/value table used in the email body. URL values become clickable links. */
 export function summaryTable(rows = []) {
   const body = rows
-    .map(
-      ([label, value]) => `
+    .map(([label, value]) => {
+      const safeValue = escapeHtml(value)
+      const rendered = /^https?:\/\/\S+$/i.test(String(value || '').trim())
+        ? `<a href="${safeValue}" style="color:#f36f21;font-weight:700;text-decoration:none;word-break:break-all">${safeValue}</a>`
+        : safeValue
+      return `
       <tr>
         <td style="padding:10px 0;border-bottom:1px solid #eee;font-size:12px;font-weight:700;color:#8a8a8a;text-transform:uppercase;letter-spacing:0.05em;width:42%;vertical-align:top">${escapeHtml(label)}</td>
-        <td style="padding:10px 0;border-bottom:1px solid #eee;font-size:14px;color:#1c1c1c;font-weight:600;text-align:right;vertical-align:top">${escapeHtml(value)}</td>
+        <td style="padding:10px 0;border-bottom:1px solid #eee;font-size:14px;color:#1c1c1c;font-weight:600;text-align:right;vertical-align:top">${rendered}</td>
       </tr>`
-    )
+    })
     .join('')
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${body}</table>`
+}
+
+/**
+ * Booking-summary rows for admin-managed public sessions (from the snapshot
+ * stored on the booking). Returns an empty array for private/legacy bookings.
+ *
+ * The Session Name is the primary identifier — the generic "Public Session"
+ * type label is never shown here. Meeting-point rows are only included on
+ * confirmation (confirmed = true).
+ */
+export function bookingSessionRows(booking, { confirmed = false } = {}) {
+  const hasSnapshot = Boolean(booking.session_title || booking.session_date)
+  if (!hasSnapshot) return []
+  const rows = []
+  if (booking.session_title) rows.push(['Session', booking.session_title])
+  rows.push(['Date', formatLongDate(booking.session_date || booking.date) || booking.session_date || booking.date])
+  const time = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+  if (time) rows.push(['Time', time])
+  if (booking.session_location) rows.push(['Climbing Location', booking.session_location])
+  if (booking.session_maps_url) rows.push(['View Map', booking.session_maps_url])
+  if (confirmed) {
+    // Meeting point falls back to the climbing location when not provided.
+    rows.push(['Meeting Point', booking.session_meeting_point || booking.session_location])
+    rows.push(['Meeting Point Map', booking.session_meeting_point_maps_url || booking.session_maps_url])
+    const meetingTime = booking.session_meeting_time || booking.session_start_time
+    if (meetingTime) rows.push(['Meeting Time', meetingTime])
+  }
+  return rows
 }
 
 /** Prominent reference number (Booking Number / Membership ID) card. */

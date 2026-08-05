@@ -17,10 +17,42 @@ if (dnsServers) dns.setServers(dnsServers)
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/climb-crux'
 
+// Session Names uniquely identify each scheduled event — they replace the
+// generic "Public Session" label everywhere customers see the booking.
 const seedSessions = [
-  { date: 'Sun, Aug 2', time: '8:00 AM – 1:00 PM', spots: '5 spots left' },
-  { date: 'Sun, Aug 16', time: '8:00 AM – 1:00 PM', spots: '7 spots left' },
-  { date: 'Sun, Aug 30', time: '8:00 AM – 1:00 PM', spots: 'Open' },
+  {
+    title: 'Margalla Hills – Trail 5 Morning Climb',
+    date: '2026-08-16',
+    startTime: '08:00 AM',
+    endTime: '12:00 PM',
+    locationName: 'Margalla Hills – Trail 5',
+    mapsUrl: 'https://maps.google.com/?q=Margalla+Hills+Trail+5',
+    status: 'published',
+    maxParticipants: 20,
+    meetingPoint: 'Trail 5 car park',
+    meetingPointMapsUrl: 'https://maps.google.com/?q=Margalla+Hills+Trail+5+car+park',
+    meetingTime: '07:45 AM',
+  },
+  {
+    title: 'Margalla Hills – Trail 3 Sunrise Climb',
+    date: '2026-08-23',
+    startTime: '08:00 AM',
+    endTime: '12:00 PM',
+    locationName: 'Margalla Hills – Trail 3',
+    mapsUrl: 'https://maps.google.com/?q=Margalla+Hills+Trail+3',
+    status: 'published',
+    maxParticipants: 20,
+  },
+  {
+    title: 'Margalla Hills – Trail 5 Weekend Climb',
+    date: '2026-08-30',
+    startTime: '07:30 AM',
+    endTime: '11:30 AM',
+    locationName: 'Margalla Hills – Trail 5',
+    mapsUrl: 'https://maps.google.com/?q=Margalla+Hills+Trail+5',
+    status: 'published',
+    maxParticipants: 20,
+  },
 ]
 
 const seedPlans = [

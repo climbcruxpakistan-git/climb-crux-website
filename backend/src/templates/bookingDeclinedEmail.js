@@ -4,7 +4,7 @@
  *   · 'payment'      → payment could not be verified
  *   · 'information'  → personal information was incorrect/incomplete
  */
-import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink } from './emailLayout.js'
+import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink, bookingSessionRows } from './emailLayout.js'
 import { formatDateDDMMYYYY } from '../services/dateFormat.js'
 
 const STATUS = 'Declined'
@@ -29,12 +29,17 @@ export function bookingDeclinedEmail({ booking, sessionType = 'Public Session', 
 
   const rows = [
     ['Customer', booking.customer_name || '—'],
-    ['Booking Type', sessionType],
-    ['Status', STATUS],
-    ['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'],
-    ['Participants', String(booking.participants || 1)],
-    ['Total', `PKR ${(booking.amount || 0).toLocaleString()}`],
   ]
+  // Public sessions lead with the announced Session Name (snapshot on the booking).
+  if (!booking.session_title && !booking.session_date) rows.push(['Booking Type', sessionType])
+  rows.push(['Status', STATUS])
+  rows.push(...bookingSessionRows(booking))
+  if (!booking.session_date) {
+    rows.push(['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'])
+    if (booking.time) rows.push(['Preferred Time', booking.time])
+  }
+  rows.push(['Participants', String(booking.participants || 1)])
+  rows.push(['Total', `PKR ${(booking.amount || 0).toLocaleString()}`])
 
   const html = renderEmailLayout({
     headerTitle: 'Booking Declined',

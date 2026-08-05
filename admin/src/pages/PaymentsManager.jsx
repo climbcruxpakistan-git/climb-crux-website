@@ -213,7 +213,7 @@ export default function PaymentsManager() {
                         </td>
                         <td>
                           <span className="cell-type">
-                            {(b.session_id || '').replace(/-/g, ' ') || '—'}
+                            {b.session_title || (b.session_id || '').replace(/-/g, ' ') || '—'}
                           </span>
                         </td>
                         <td>
@@ -237,7 +237,7 @@ export default function PaymentsManager() {
                           )}
                         </td>
                         <td className="cell-muted">
-                          {formatDate(b.date || b.created_at) || '—'}
+                          {formatDate(b.session_date || b.date || b.created_at) || '—'}
                         </td>
                         <td>
                           <div style={{ display: 'flex', gap: 6 }}>
