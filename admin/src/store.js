@@ -285,9 +285,14 @@ export async function approveProductOrder(id) {
   return mapId(await request('POST', `/products/orders/${id}/approve`))
 }
 
-/** Admin declines an equipment order — with a reason (emails the customer). */
+/** Admin declines an order — with a reason (emails the customer). */
 export async function declineProductOrder(id, reason) {
   return mapId(await request('POST', `/products/orders/${id}/decline`, { reason }))
+}
+
+/** Admin permanently deletes a product order / shopping request. */
+export async function deleteProductOrder(id) {
+  return mapId(await request('DELETE', `/products/orders/${id}`))
 }
 
 /* ---------- Membership Applications ---------- */

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { getProductOrders, patchOrderStatus, approveProductOrder, declineProductOrder } from '../store.js'
+import { getProductOrders, patchOrderStatus, approveProductOrder, declineProductOrder, deleteProductOrder } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 import { formatDate, formatDateTime } from '../formatDate.js'
@@ -171,6 +171,23 @@ export default function Sales() {
       addToast(`Order moved to ${stage.replace(/_/g, ' ')}`, 'success')
     } catch (err) {
       addToast(`Failed to update status: ${err.message}`, 'error')
+    } finally {
+      setActing(false)
+    }
+  }
+
+  async function handleDelete(order) {
+    const label = order.order_number || 'this order'
+    if (!confirm(`Delete ${label}?\n\nThis permanently removes the shopping request, its payment record, and any uploaded screenshot. This cannot be undone.`)) return
+    setActing(true)
+    try {
+      await deleteProductOrder(order.id)
+      const list = await refresh()
+      if (viewing) setViewing(null)
+      addToast(`Order ${order.order_number || ''} deleted`, 'success')
+      void list
+    } catch (err) {
+      addToast(`Failed to delete: ${err.message}`, 'error')
     } finally {
       setActing(false)
     }
@@ -461,6 +478,17 @@ export default function Sales() {
                 Approve marks the order Confirmed and sends the confirmation email. Decline marks it Declined and emails the customer with your reason.
               </p>
             )}
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
+              <button
+                className="btn-admin btn-admin-sm btn-admin-danger"
+                onClick={() => handleDelete(viewing)}
+                disabled={acting}
+                title="Permanently delete this shopping request"
+              >
+                🗑 Delete Request
+              </button>
+            </div>
           </div>
         </Modal>
       )}
