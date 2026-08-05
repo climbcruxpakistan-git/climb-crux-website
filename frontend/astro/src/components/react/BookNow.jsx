@@ -227,7 +227,7 @@ export default function BookNow({ preselected = '' }) {
                           <option value="" disabled>Select an announced session</option>
                           {publicSessions.map((s) => (
                             <option key={s.id} value={s.id}>
-                              {s.title || 'Public Session'}
+                              {s.title || 'Public Session'} — {formatLongDate(s.date)}
                             </option>
                           ))}
                         </select>
