@@ -57,10 +57,11 @@ const initial = {
 };
 ---
 
-<MainLayout>
+<MainLayout
+  title="Rock Climbing in Islamabad & Pakistan | Climb Crux"
+  description="Rock climbing in Islamabad & Pakistan with Climb Crux — guided sessions on the limestone crags of Margalla Hills. Beginner-friendly, all gear provided, certified instructors."
+>
   <Fragment slot="head">
-    <title>Rock Climbing in Islamabad | Climb Crux — Climbing Club on Margalla Hills</title>
-    <meta name="description" content="Rock climbing in Islamabad with Climb Crux — guided sessions on the limestone crags of Margalla Hills every other Sunday. Beginner-friendly, all gear provided, certified instructors. Book today." />
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -89,6 +90,18 @@ const initial = {
             <p>{f.a}</p>
           </details>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section local-seo-section">
+    <div class="wrap">
+      <h2>Rock climbing in Pakistan</h2>
+      <div class="local-seo-copy">
+        <p>Pakistan is home to some of the most dramatic climbing on earth — from the granite walls of the Karakoram to accessible crags close to the cities. For most climbers, the journey starts on the limestone cliffs of Margalla Hills in Islamabad, where Climb Crux runs guided sessions every other Sunday.</p>
+        <p>Whether you're in Islamabad, Rawalpindi, Lahore or Karachi, our public sessions, monthly memberships and private coaching are built for beginners and experienced climbers alike. All gear is provided and every session is led by certified instructors who handle the safety so you can focus on the climb.</p>
+        <a href="/sessions" class="btn btn-outline">See session dates &amp; pricing</a>
+        <a href="/shop" class="btn btn-outline">Shop climbing gear in Pakistan</a>
       </div>
     </div>
   </section>

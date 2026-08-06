@@ -4,11 +4,10 @@ import PageHeader from '../components/astro/PageHeader.astro';
 import Gallery from '../components/react/Gallery.jsx';
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>Gallery — Climb Crux Pakistan</title>
-    <meta name="description" content="A running record of climbing sessions on Margalla Hills, Islamabad — public climbs, private coaching and group training captured on the limestone walls." />
-  </Fragment>
+<MainLayout
+  title="Gallery — Climb Crux Pakistan"
+  description="A running record of climbing sessions on Margalla Hills, Islamabad — public climbs, private coaching and group training captured on the limestone walls."
+>
   <PageHeader title="From the wall.">
     <p slot="default">A running record of sessions on Margalla Hills. Public climbs, Private coaching and Group Training.</p>
   </PageHeader>

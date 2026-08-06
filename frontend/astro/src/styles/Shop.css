@@ -547,9 +547,57 @@
   background: var(--stone);
 }
 
+/* ── SEO copy section ── */
+.shop-seo-section {
+  background: var(--chalk-dim);
+}
+.shop-seo-section h2 {
+  max-width: 22ch;
+  margin-bottom: 0.9em;
+}
+.shop-seo-copy {
+  max-width: 72ch;
+}
+.shop-seo-copy p {
+  line-height: 1.7;
+  margin-bottom: 1em;
+  color: var(--stone-dark);
+}
+.shop-seo-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.shop-seo-cat-link {
+  display: inline-block;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  color: var(--orange-dark);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+.shop-seo-cat-link:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--chalk);
+}
+
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .shop-grid {
     grid-template-columns: 1fr;
+  }
+  .shop-seo-categories {
+    gap: 8px;
+  }
+  .shop-seo-cat-link {
+    font-size: 0.72rem;
+    padding: 6px 12px;
   }
 }

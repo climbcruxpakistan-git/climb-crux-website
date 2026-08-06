@@ -105,7 +105,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           setReviewData(reviews)
           if (p) trackRecentlyViewed(p)
           setRecentlyViewed(getRecentlyViewed(id))
-          document.title = `${p.name} — Climb Crux Pakistan`
+          document.title = p.seo?.title?.trim() || `${p.name} — Climb Crux Pakistan`
         })
         .catch(() => {})
       return
@@ -119,7 +119,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
         setReviewData(reviews)
         trackRecentlyViewed(p)
         setRecentlyViewed(getRecentlyViewed(id))
-        document.title = `${p.name} — Climb Crux Pakistan`
+        document.title = p.seo?.title?.trim() || `${p.name} — Climb Crux Pakistan`
       })
       .catch(() => window.location.href = '/shop')
       .finally(() => setLoading(false))

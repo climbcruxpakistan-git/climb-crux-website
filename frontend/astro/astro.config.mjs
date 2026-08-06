@@ -11,5 +11,6 @@ export default defineConfig({
   // booking flow pages (marked `export const prerender = false`) render on-demand
   // so any booking number works after deploy.
   output: 'hybrid',
-  site: 'https://climbcruxpakistan.com',
+  // www is the canonical domain (canonical tags, sitemap and schema all use it).
+  site: 'https://www.climbcruxpakistan.com',
 });

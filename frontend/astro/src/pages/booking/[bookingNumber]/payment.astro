@@ -9,11 +9,11 @@ export const prerender = false;
 const { bookingNumber } = Astro.params;
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>Complete Your Payment — Climb Crux Pakistan</title>
-    <meta name="description" content="Review your climbing booking and complete payment for your rock climbing session in Islamabad — bank transfer or EasyPaisa." />
-  </Fragment>
+<MainLayout
+  title="Complete Your Payment — Climb Crux Pakistan"
+  description="Review your climbing booking and complete payment for your rock climbing session in Islamabad — bank transfer or EasyPaisa."
+  noindex
+>
   <PageHeader title="Complete your payment.">
     <p slot="default">Review your booking details and choose how you'd like to pay.</p>
   </PageHeader>

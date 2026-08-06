@@ -52,7 +52,7 @@ export default function Shop() {
   })
 
   useEffect(() => {
-    document.title = 'Shop — Climb Crux Pakistan'
+    document.title = 'Climbing Gear & Equipment in Pakistan | Climb Crux'
     getProducts()
       .then(setProducts)
       .catch(console.error)

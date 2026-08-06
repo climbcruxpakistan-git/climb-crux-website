@@ -17,11 +17,11 @@ const order = await getOrderByNumber(orderNumber).catch(() => null);
 const needsUpload = !!order && !order.payment_screenshot_url && order.status === 'pending_payment';
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>{needsUpload ? 'Complete Your Payment' : 'Order Status'} — Climb Crux Pakistan</title>
-    <meta name="description" content={needsUpload ? 'Complete your equipment order payment via bank transfer or EasyPaisa and upload your payment screenshot for verification.' : 'Track the status of your equipment order with Climb Crux.'} />
-  </Fragment>
+<MainLayout
+  title={needsUpload ? 'Complete Your Payment — Climb Crux Pakistan' : 'Order Status — Climb Crux Pakistan'}
+  description={needsUpload ? 'Complete your equipment order payment via bank transfer or EasyPaisa and upload your payment screenshot for verification.' : 'Track the status of your equipment order with Climb Crux.'}
+  noindex
+>
 
   {
     needsUpload ? (

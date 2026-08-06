@@ -11,13 +11,19 @@ const { id } = Astro.params;
 
 const team = await getTeam().catch(() => []);
 const instructor = team.find((m) => (m.id || m._id) === id) || null;
+
+const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 const pageTitle = instructor?.name ? `${instructor.name} — Climb Crux Pakistan` : 'Our Team — Climb Crux Pakistan';
+const pageDescription = instructor
+  ? `${instructor.name}, ${instructor.role || 'climbing instructor'} at Climb Crux Pakistan on Margalla Hills, Islamabad. ${stripHtml(instructor.bio).slice(0, 120)}`.trim()
+  : 'Meet the certified climbing instructors at Climb Crux Pakistan. Experienced guides holding your rope on Margalla Hills, Islamabad.';
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>{pageTitle}</title>
-  </Fragment>
+<MainLayout
+  title={pageTitle}
+  description={pageDescription}
+  image={instructor?.photoUrl || undefined}
+>
   <InstructorProfile
     client:only="react"
     id={id}

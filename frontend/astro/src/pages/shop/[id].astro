@@ -8,13 +8,24 @@ import '../../styles/ProductDetail.css';
 // this deploy — gets a working page (server-rendered for SEO, no redeploy needed).
 export const prerender = false;
 
+const SITE_URL = 'https://www.climbcruxpakistan.com';
 const { id } = Astro.params;
 
 // Fetch full product data, all products, and reviews on each request
 const product = await getProduct(id).catch(() => null);
 const allProducts = await getProducts().catch(() => []);
 const reviewData = await getProductReviews(id).catch(() => ({ reviews: [], total: 0, avgRating: 0, distribution: [0,0,0,0,0] }));
-const pageTitle = product?.name ? `${product.name} — Climb Crux Pakistan` : 'Product — Climb Crux Pakistan';
+
+// Rich-text descriptions may contain HTML — strip it for the meta description.
+const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+const productName = product?.name;
+
+// Use the SEO title/meta description set in the admin when provided,
+// otherwise fall back to clean auto-generated values.
+const pageTitle = product?.seo?.title?.trim()
+  || (productName ? `${productName} — Climb Crux Pakistan` : 'Product — Climb Crux Pakistan');
+const pageDescription = product?.seo?.metaDescription?.trim()
+  || (productName ? (stripHtml(product.description).slice(0, 155) || `${productName} — climbing equipment from Climb Crux Pakistan, delivered across Pakistan.`) : '');
 
 // Build JSON-LD for server-side rendering (visible to search engines)
 let jsonLd = null;
@@ -23,13 +34,13 @@ if (product) {
     '@context': 'https://schema.org/',
     '@type': 'Product',
     name: product.name,
-    description: product.description ? product.description.slice(0, 300) : `${product.name} from Climb Crux Pakistan`,
+    description: product.description ? stripHtml(product.description).slice(0, 300) : `${product.name} from Climb Crux Pakistan`,
     sku: product.sku || undefined,
     category: product.category || undefined,
     image: [product.imageUrl, ...(product.images || [])].filter(Boolean),
     offers: {
       '@type': 'Offer',
-      url: `https://climbcruxpakistan.com/shop/${id}`,
+      url: `${SITE_URL}/shop/${id}`,
       priceCurrency: 'PKR',
       price: product.price,
       availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -51,17 +62,37 @@ if (product) {
     } : {}),
   }
 }
+
+// Breadcrumbs: Home › Shop › Product — helps Google understand site structure.
+const breadcrumbJsonLd = product ? {
+  '@context': 'https://schema.org/',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Climbing Gear & Equipment', item: `${SITE_URL}/shop/` },
+    { '@type': 'ListItem', position: 3, name: product.name, item: `${SITE_URL}/shop/${id}` },
+  ],
+} : null;
 ---
 
-<MainLayout>
+<MainLayout
+  title={pageTitle}
+  description={pageDescription}
+  image={product?.imageUrl || product?.images?.[0] || undefined}
+  canonicalUrl={product?.seo?.canonicalUrl?.trim() || undefined}
+>
   <Fragment slot="head">
-    <title>{pageTitle}</title>
+    {
+      jsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd, null, 2)} />
+      )
+    }
+    {
+      breadcrumbJsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+      )
+    }
   </Fragment>
-  {
-    jsonLd && (
-      <script type="application/ld+json" set:html={JSON.stringify(jsonLd, null, 2)} />
-    )
-  }
   {/* Product content rendered by React island using initial data — no loading spinner */}
   {
     !product && (

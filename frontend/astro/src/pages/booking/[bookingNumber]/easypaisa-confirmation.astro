@@ -9,11 +9,11 @@ export const prerender = false;
 const { bookingNumber } = Astro.params;
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>Payment Submitted for Verification — Climb Crux Pakistan</title>
-    <meta name="description" content="Your EasyPaisa payment proof has been submitted for verification — Climb Crux rock climbing bookings in Islamabad on Margalla Hills." />
-  </Fragment>
+<MainLayout
+  title="Payment Submitted for Verification — Climb Crux Pakistan"
+  description="Your EasyPaisa payment proof has been submitted for verification — Climb Crux rock climbing bookings in Islamabad on Margalla Hills."
+  noindex
+>
   <PageHeader title="Payment Submitted for Verification">
     <p slot="default">Your payment proof has been submitted and is awaiting verification by our team.</p>
   </PageHeader>

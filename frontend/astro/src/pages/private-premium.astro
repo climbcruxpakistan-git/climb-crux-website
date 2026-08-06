@@ -10,11 +10,10 @@ const [plans, content] = await Promise.all([
 ]);
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>Private & Premium Climbing — Climb Crux Pakistan</title>
-    <meta name="description" content="Private rock climbing sessions in Islamabad and premium plans on Margalla Hills. Solo coaching, group bookings, adventure events or custom climbs. Book your private session." />
-  </Fragment>
+<MainLayout
+  title="Private & Premium Climbing — Climb Crux Pakistan"
+  description="Private rock climbing sessions in Islamabad and premium plans on Margalla Hills. Solo coaching, group bookings, adventure events or custom climbs. Book your private session."
+>
 
   <PremiumContent client:load initial={{ plans, content }} />
 </MainLayout>

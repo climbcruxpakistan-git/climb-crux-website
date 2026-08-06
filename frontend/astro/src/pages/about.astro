@@ -7,11 +7,9 @@ import '../styles/About.css';
 const about = await getAbout().catch(() => null);
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>About Climb Crux — Rock Climbing Club in Islamabad</title>
-    <meta name="description" content="Learn about Climb Crux Pakistan — the rock climbing club in Islamabad making Margalla Hills accessible to everyone. Certified instructors, top safety standards, and a passion for the climb." />
-  </Fragment>
-
+<MainLayout
+  title="About Climb Crux — Rock Climbing Club in Islamabad"
+  description="Learn about Climb Crux Pakistan — the rock climbing club in Islamabad making Margalla Hills accessible to everyone. Certified instructors, top safety standards, and a passion for the climb."
+>
   <AboutContent client:load initial={{ about }} />
 </MainLayout>

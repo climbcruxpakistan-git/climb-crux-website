@@ -16,10 +16,10 @@ const pageTitle = product?.name
   : 'Checkout — Climb Crux Pakistan';
 ---
 
-<MainLayout>
-  <Fragment slot="head">
-    <title>{pageTitle}</title>
-  </Fragment>
+<MainLayout
+  title={pageTitle}
+  noindex
+>
 
   <PageHeader title="Checkout.">
     <p slot="default">Review your order, enter your details, and choose how you'd like to pay.</p>

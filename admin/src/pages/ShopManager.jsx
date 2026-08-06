@@ -634,7 +634,7 @@ export default function ShopManager() {
         </div>
         <div className="admin-field">
           <label>Canonical URL</label>
-          <input value={form.canonicalUrl} onChange={(e) => setForm({ ...form, canonicalUrl: e.target.value })} placeholder="https://climbcruxpakistan.com/shop/product-slug" />
+          <input value={form.canonicalUrl} onChange={(e) => setForm({ ...form, canonicalUrl: e.target.value })} placeholder="https://www.climbcruxpakistan.com/shop/product-slug" />
         </div>
       </div>
     )

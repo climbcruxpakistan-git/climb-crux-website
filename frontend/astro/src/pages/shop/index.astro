@@ -2,16 +2,71 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import PageHeader from '../../components/astro/PageHeader.astro';
 import Shop from '../../components/react/Shop.jsx';
+import { getProducts } from '../../lib/api';
 import '../../styles/Shop.css';
+
+// Rendered on-demand so the ItemList structured data always reflects the current
+// product catalogue — anything added in the admin shows up immediately, no redeploy.
+export const prerender = false;
+
+const SITE_URL = 'https://www.climbcruxpakistan.com';
+const products = await getProducts().catch(() => []);
+const liveProducts = products.filter((p) => p.status !== 'draft' && p.status !== 'archived');
+const categories = [...new Set(liveProducts.map((p) => p.category).filter(Boolean))];
+
+// ItemList structured data: tells Google this page represents the whole catalogue,
+// so the equipment page can rank for individual product searches too.
+const itemListJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Climbing Equipment & Gear — Climb Crux Pakistan',
+  description: 'Climbing equipment and gear from Climb Crux Pakistan — harnesses, helmets, ropes, carabiners, belay devices, climbing shoes and more, delivered across Pakistan.',
+  numberOfItems: liveProducts.length,
+  itemListElement: liveProducts.map((p, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: p.name,
+    url: `${SITE_URL}/shop/${p.id}`,
+    image: p.imageUrl || undefined,
+  })),
+};
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Climbing Gear & Equipment', item: `${SITE_URL}/shop/` },
+  ],
+};
 ---
 
-<MainLayout>
+<MainLayout
+  title="Climbing Gear & Equipment in Pakistan | Climb Crux"
+  description="Buy climbing gear in Pakistan — harnesses, helmets, ropes, carabiners, climbing shoes and more. Curated climbing equipment from Climb Crux, delivered across Pakistan."
+>
   <Fragment slot="head">
-    <title>Climbing Gear Shop — Climb Crux Pakistan</title>
-    <meta name="description" content="Curated climbing equipment for the Margalla Hills — harnesses, helmets and climbing safety hardware, with delivery across Pakistan." />
+    <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
   </Fragment>
   <PageHeader title="Gear up.">
     <p slot="default">Curated climbing equipment for the Margalla Hills, from harnesses, helmets to the climbing safety hardware.</p>
   </PageHeader>
   <Shop client:load />
+
+  <section class="section shop-seo-section">
+    <div class="wrap">
+      <h2>Climbing equipment in Pakistan</h2>
+      <div class="shop-seo-copy">
+        <p>Climb Crux stocks the climbing gear that keeps you safe on the wall — harnesses, helmets, ropes, carabiners, belay devices, climbing shoes and more. Every piece is selected for the limestone crags of Margalla Hills and delivered across Pakistan, with all safety hardware meeting climbing safety standards.</p>
+      </div>
+      {categories.length > 0 && (
+        <nav class="shop-seo-categories" aria-label="Equipment categories">
+          {categories.map((cat) => (
+            <a key={cat} class="shop-seo-cat-link" href={`/shop/?cat=${encodeURIComponent(cat)}`}>{cat}</a>
+          ))}
+        </nav>
+      )}
+    </div>
+  </section>
 </MainLayout>

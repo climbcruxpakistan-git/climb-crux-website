@@ -5,6 +5,24 @@ import { ViewTransitions } from 'astro:transitions';
 import '../styles/index.css';
 import '../styles/layout.css';
 import '../styles/shared.css';
+
+const SITE_URL = 'https://www.climbcruxpakistan.com';
+const DEFAULT_TITLE = 'Climb Crux Pakistan — Rock Climbing & Adventure in Islamabad';
+const DEFAULT_DESCRIPTION = "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers.";
+
+// Each page passes its own title/description (and optionally image / noindex /
+// canonicalUrl) so the <title>, meta description and social tags are unique.
+const {
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
+  image = `${SITE_URL}/logo.png`,
+  noindex = false,
+  canonicalUrl,
+} = Astro.props;
+
+const pageUrl = `${SITE_URL}${Astro.url.pathname}`;
+const canonical = canonicalUrl || pageUrl;
+const robots = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
 ---
 
 <!DOCTYPE html>
@@ -18,9 +36,13 @@ import '../styles/shared.css';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="icon" href="/logo.png" sizes="any" />
-    <link rel="canonical" href="https://www.climbcruxpakistan.com{Astro.url.pathname}" />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <meta name="keywords" content="rock climbing in Islamabad, adventure in Islamabad, rock climbing club Islamabad, events in Islamabad, hiking in Islamabad, rock climbing Margalla Hills, adventure activities Islamabad, outdoor activities Islamabad, climbing club Pakistan, hiking trails Islamabad, Islamabad adventure club, guided climbing Islamabad" />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={robots} />
+    <title>{title}</title>
+    {
+      description && <meta name="description" content={description} />
+    }
+    <meta name="keywords" content="rock climbing in Islamabad, rock climbing in Pakistan, rock climbing club Islamabad, climbing gear Pakistan, climbing equipment Pakistan, adventure in Islamabad, events in Islamabad, hiking in Islamabad, rock climbing Margalla Hills, adventure activities Islamabad, outdoor activities Islamabad, climbing club Pakistan, hiking trails Islamabad, Islamabad adventure club, guided climbing Islamabad" />
     <!-- Local SEO: Islamabad / Margalla Hills geo tags -->
     <meta name="geo.region" content="PK-IS" />
     <meta name="geo.placename" content="Islamabad, Margalla Hills, Pakistan" />
@@ -30,20 +52,25 @@ import '../styles/shared.css';
     <meta property="og:site_name" content="Climb Crux Pakistan" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_PK" />
-    <meta property="og:title" content="Climb Crux Pakistan — Rock Climbing & Adventure in Islamabad" />
-    <meta property="og:description" content="Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers." />
-    <meta property="og:url" content="https://www.climbcruxpakistan.com" />
-    <meta property="og:image" content="https://www.climbcruxpakistan.com/logo.png" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Climb Crux Pakistan — Rock Climbing & Adventure in Islamabad" />
-    <meta name="twitter:description" content="Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers." />
+    <meta property="og:title" content={title} />
+    {
+      description && <meta property="og:description" content={description} />
+    }
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {
+      description && <meta name="twitter:description" content={description} />
+    }
+    <meta name="twitter:image" content={image} />
     <!-- LocalBusiness structured data for local search (Islamabad) -->
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'SportsActivityLocation',
       'name': 'Climb Crux Pakistan',
       'alternateName': 'Climb Crux — Rock Climbing Club Islamabad',
-      'description': 'Guided rock climbing and adventure club in Islamabad. Public rock climbing sessions, private coaching, premium ascents, hiking and adventure events on Margalla Hills.',
+      'description': 'Guided rock climbing and adventure club in Islamabad, Pakistan. Public rock climbing sessions, private coaching, premium ascents, hiking and adventure events on Margalla Hills.',
       'url': 'https://www.climbcruxpakistan.com/',
       'telephone': '+92 313 2690377',
       'email': 'climbcruxpakistan@gmail.com',
@@ -62,13 +89,14 @@ import '../styles/shared.css';
       },
       'hasMap': 'https://www.google.com/maps/search/?api=1&query=Margalla+Hills+National+Park+Islamabad',
       'areaServed': [
+        { '@type': 'Country', 'name': 'Pakistan' },
         { '@type': 'City', 'name': 'Islamabad' },
         { '@type': 'City', 'name': 'Rawalpindi' },
         { '@type': 'Place', 'name': 'Margalla Hills' },
       ],
       'sport': ['Rock Climbing', 'Hiking', 'Adventure Sports'],
       'knowsAbout': ['Rock Climbing', 'Climbing Instruction', 'Outdoor Adventure', 'Margalla Hills', 'Adventure Sports'],
-      'keywords': 'rock climbing in Islamabad, rock climbing club Islamabad, Margalla Hills climbing, adventure Islamabad, climbing club Pakistan',
+      'keywords': 'rock climbing in Islamabad, rock climbing in Pakistan, rock climbing club Islamabad, Margalla Hills climbing, adventure Islamabad, climbing club Pakistan, climbing gear Pakistan',
       'sameAs': [
         'https://instagram.com/climbcruxpakistan',
         'https://facebook.com/climbcrux',
@@ -88,7 +116,7 @@ import '../styles/shared.css';
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       'name': 'Climb Crux Pakistan',
-      'alternateName': 'Rock Climbing Club Islamabad',
+      'alternateName': 'Rock Climbing Club Islamabad & Pakistan',
       'url': 'https://www.climbcruxpakistan.com/',
       'inLanguage': 'en-PK',
       'publisher': {
