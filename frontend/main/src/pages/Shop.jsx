@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { getProducts, optimizeImage } from '../api.js'
@@ -147,6 +147,61 @@ export default function Shop() {
 
   const categories = ['All', ...new Set(products.map((p) => p.category).filter(Boolean))]
 
+  // ── Autocomplete suggestions ──
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
+  const [activeSuggestion, setActiveSuggestion] = useState(-1)
+  const searchBoxRef = useRef(null)
+
+  const suggestions = useMemo(() => {
+    if (!query) return []
+    return products
+      .map((p, index) => ({ p, index, score: searchScore(p, query) }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .slice(0, 6)
+      .map(({ p }) => p)
+  }, [products, query])
+
+  // Reset the highlighted suggestion whenever the query changes.
+  useEffect(() => {
+    setActiveSuggestion(-1)
+  }, [query])
+
+  // Close the dropdown when clicking anywhere outside the search box.
+  useEffect(() => {
+    if (!suggestionsOpen) return
+    const onDocClick = (e) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setSuggestionsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [suggestionsOpen])
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (!suggestions.length) return
+      if (!suggestionsOpen) setSuggestionsOpen(true)
+      else setActiveSuggestion((i) => Math.min(i + 1, suggestions.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (!suggestions.length) return
+      setActiveSuggestion((i) => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
+      if (suggestionsOpen && activeSuggestion >= 0 && suggestions[activeSuggestion]) {
+        e.preventDefault()
+        navigate(`/shop/${suggestions[activeSuggestion].id}`)
+      }
+    } else if (e.key === 'Escape') {
+      setSuggestionsOpen(false)
+      setActiveSuggestion(-1)
+    }
+  }
+
+  const goToSuggestion = (id) => navigate(`/shop/${id}`)
+
   // Product recommendations: top 4 featured products (excluding current set)
   const recommended = useMemo(() => {
     const shown = new Set(filtered.map((p) => p.id))
@@ -168,7 +223,7 @@ export default function Shop() {
       {/* Search + Category Filter */}
       <section className="section shop-filter-section">
         <div className="wrap">
-          <div className="shop-search" role="search">
+          <div className="shop-search" role="search" ref={searchBoxRef}>
             <svg className="shop-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="7" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -178,11 +233,46 @@ export default function Shop() {
               className="shop-search-input"
               placeholder="Search equipment, e.g. harness, rope, carabiner…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setSuggestionsOpen(true)
+              }}
+              onFocus={() => { if (query) setSuggestionsOpen(true) }}
+              onKeyDown={handleSearchKeyDown}
               aria-label="Search products"
+              role="combobox"
+              aria-haspopup="listbox"
+              aria-expanded={suggestionsOpen && suggestions.length > 0}
+              aria-controls="shop-suggestions"
+              aria-activedescendant={activeSuggestion >= 0 ? `shop-suggestion-${activeSuggestion}` : undefined}
             />
             {query && (
-              <button type="button" className="shop-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">✕</button>
+              <button type="button" className="shop-search-clear" onClick={() => { setSearchQuery(''); setSuggestionsOpen(false) }} aria-label="Clear search">✕</button>
+            )}
+            {suggestionsOpen && suggestions.length > 0 && (
+              <ul id="shop-suggestions" className="shop-suggestions" role="listbox" aria-label="Product suggestions">
+                {suggestions.map((p, i) => (
+                  <li
+                    key={p.id}
+                    id={`shop-suggestion-${i}`}
+                    role="option"
+                    aria-selected={i === activeSuggestion}
+                    className={`shop-suggestion ${i === activeSuggestion ? 'is-active' : ''}`}
+                    onMouseDown={(e) => { e.preventDefault(); goToSuggestion(p.id) }}
+                    onMouseEnter={() => setActiveSuggestion(i)}
+                  >
+                    <span className="shop-suggestion-thumb">
+                      {p.imageUrl || p.images?.[0] ? (
+                        <img src={optimizeImage(p.imageUrl || p.images[0], 160)} alt="" loading="lazy" />
+                      ) : (
+                        <span aria-hidden="true">📦</span>
+                      )}
+                    </span>
+                    <span className="shop-suggestion-name">{p.name}</span>
+                    <span className="shop-suggestion-price">PKR {p.price.toLocaleString()}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
           <div className="shop-toolbar">
