@@ -60,25 +60,6 @@ export default function Shop() {
     }, { replace: true })
   }
 
-  const minPrice = searchParams.get('min') || ''
-  const setMinPrice = (value) => {
-    setSearchParams((prev) => {
-      const params = new URLSearchParams(prev)
-      if (value) params.set('min', value)
-      else params.delete('min')
-      return params
-    }, { replace: true })
-  }
-  const maxPrice = searchParams.get('max') || ''
-  const setMaxPrice = (value) => {
-    setSearchParams((prev) => {
-      const params = new URLSearchParams(prev)
-      if (value) params.set('max', value)
-      else params.delete('max')
-      return params
-    }, { replace: true })
-  }
-
   const sortBy = ['featured', 'price-asc', 'price-desc', 'newest'].includes(searchParams.get('sort')) ? searchParams.get('sort') : 'featured'
   const setSortBy = (value) => {
     setSearchParams((prev) => {
@@ -98,15 +79,12 @@ export default function Shop() {
   }, [])
 
   const query = searchQuery.trim().toLowerCase()
-  const minNum = parseFloat(minPrice)
-  const maxNum = parseFloat(maxPrice)
-  const hasActiveFilters = query || activeCategory !== 'All' || Number.isFinite(minNum) || Number.isFinite(maxNum)
+  const hasActiveFilters = query || activeCategory !== 'All'
 
-  // Category + price filter first, then sort. Relevance-sort applies only in the
+  // Category filter first, then sort. Relevance-sort applies only in the
   // default "featured" order when searching; original order otherwise.
   const filtered = products
     .filter((p) => activeCategory === 'All' || p.category === activeCategory)
-    .filter((p) => (!Number.isFinite(minNum) || p.price >= minNum) && (!Number.isFinite(maxNum) || p.price <= maxNum))
     .map((p, index) => ({ p, index, score: query ? searchScore(p, query) : 0 }))
     .filter(({ score }) => !query || score > 0)
     .sort((a, b) => {
@@ -128,21 +106,10 @@ export default function Shop() {
       const params = new URLSearchParams(prev)
       params.delete('q')
       params.delete('cat')
-      params.delete('min')
-      params.delete('max')
       params.delete('sort')
       return params
     }, { replace: true })
     document.querySelector('.shop-search-input')?.focus()
-  }
-
-  const clearPriceFilter = () => {
-    setSearchParams((prev) => {
-      const params = new URLSearchParams(prev)
-      params.delete('min')
-      params.delete('max')
-      return params
-    }, { replace: true })
   }
 
   const categories = ['All', ...new Set(products.map((p) => p.category).filter(Boolean))]
@@ -276,33 +243,6 @@ export default function Shop() {
             )}
           </div>
           <div className="shop-toolbar">
-            <div className="shop-price-filter">
-              <span className="shop-price-label">Price</span>
-              <div className="shop-price-range">
-                <input
-                  type="number"
-                  min="0"
-                  className="shop-price-input"
-                  placeholder="Min"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  aria-label="Minimum price"
-                />
-                <span className="shop-price-dash">—</span>
-                <input
-                  type="number"
-                  min="0"
-                  className="shop-price-input"
-                  placeholder="Max"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  aria-label="Maximum price"
-                />
-              </div>
-              {(minPrice || maxPrice) && (
-                <button type="button" className="shop-price-clear" onClick={clearPriceFilter} aria-label="Clear price filter">✕</button>
-              )}
-            </div>
             <div className="shop-sort">
               <label className="shop-sort-label" htmlFor="shop-sort">Sort</label>
               <select id="shop-sort" className="shop-sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>

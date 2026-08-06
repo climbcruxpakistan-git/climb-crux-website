@@ -45,16 +45,6 @@ export default function Shop() {
     return new URLSearchParams(window.location.search).get('cat') || 'All'
   })
 
-  const [minPrice, setMinPrice] = useState(() => {
-    if (typeof window === 'undefined') return ''
-    return new URLSearchParams(window.location.search).get('min') || ''
-  })
-
-  const [maxPrice, setMaxPrice] = useState(() => {
-    if (typeof window === 'undefined') return ''
-    return new URLSearchParams(window.location.search).get('max') || ''
-  })
-
   const [sortBy, setSortBy] = useState(() => {
     if (typeof window === 'undefined') return 'featured'
     const value = new URLSearchParams(window.location.search).get('sort')
@@ -69,7 +59,7 @@ export default function Shop() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Keep the ?q=, ?cat=, ?min=, ?max= and ?sort= URL params in sync (without adding history entries).
+  // Keep the ?q=, ?cat= and ?sort= URL params in sync (without adding history entries).
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
@@ -77,10 +67,6 @@ export default function Shop() {
     else params.delete('q')
     if (activeCategory && activeCategory !== 'All') params.set('cat', activeCategory)
     else params.delete('cat')
-    if (minPrice) params.set('min', minPrice)
-    else params.delete('min')
-    if (maxPrice) params.set('max', maxPrice)
-    else params.delete('max')
     if (sortBy && sortBy !== 'featured') params.set('sort', sortBy)
     else params.delete('sort')
     const next = params.toString()
@@ -88,18 +74,15 @@ export default function Shop() {
     if (window.location.search !== nextSearch) {
       window.history.replaceState(null, '', nextSearch || window.location.pathname)
     }
-  }, [searchQuery, activeCategory, minPrice, maxPrice, sortBy])
+  }, [searchQuery, activeCategory, sortBy])
 
   const query = searchQuery.trim().toLowerCase()
-  const minNum = parseFloat(minPrice)
-  const maxNum = parseFloat(maxPrice)
-  const hasActiveFilters = query || activeCategory !== 'All' || Number.isFinite(minNum) || Number.isFinite(maxNum)
+  const hasActiveFilters = query || activeCategory !== 'All'
 
-  // Category + price filter first, then sort. Relevance-sort applies only in the
+  // Category filter first, then sort. Relevance-sort applies only in the
   // default "featured" order when searching; original order otherwise.
   const filtered = products
     .filter((p) => activeCategory === 'All' || p.category === activeCategory)
-    .filter((p) => (!Number.isFinite(minNum) || p.price >= minNum) && (!Number.isFinite(maxNum) || p.price <= maxNum))
     .map((p, index) => ({ p, index, score: query ? searchScore(p, query) : 0 }))
     .filter(({ score }) => !query || score > 0)
     .sort((a, b) => {
@@ -115,12 +98,10 @@ export default function Shop() {
     })
     .map(({ p }) => p)
 
-  // Reset every filter (search, category, price, sort) from the empty state.
+  // Reset every filter (search, category, sort) from the empty state.
   const clearAllFilters = () => {
     setSearchQuery('')
     setActiveCategory('All')
-    setMinPrice('')
-    setMaxPrice('')
     setSortBy('featured')
     document.querySelector('.shop-search-input')?.focus()
   }
@@ -250,33 +231,6 @@ export default function Shop() {
             )}
           </div>
           <div className="shop-toolbar">
-            <div className="shop-price-filter">
-              <span className="shop-price-label">Price</span>
-              <div className="shop-price-range">
-                <input
-                  type="number"
-                  min="0"
-                  className="shop-price-input"
-                  placeholder="Min"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  aria-label="Minimum price"
-                />
-                <span className="shop-price-dash">—</span>
-                <input
-                  type="number"
-                  min="0"
-                  className="shop-price-input"
-                  placeholder="Max"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  aria-label="Maximum price"
-                />
-              </div>
-              {(minPrice || maxPrice) && (
-                <button type="button" className="shop-price-clear" onClick={() => { setMinPrice(''); setMaxPrice('') }} aria-label="Clear price filter">✕</button>
-              )}
-            </div>
             <div className="shop-sort">
               <label className="shop-sort-label" htmlFor="shop-sort">Sort</label>
               <select id="shop-sort" className="shop-sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>

@@ -150,7 +150,7 @@
   white-space: nowrap;
 }
 
-/* ── Filter toolbar (price + sort) ── */
+/* ── Filter toolbar (sort) ── */
 .shop-toolbar {
   display: flex;
   align-items: center;
@@ -158,14 +158,6 @@
   gap: 24px;
   flex-wrap: wrap;
   margin: 0 auto 22px;
-}
-
-/* ── Price filter ── */
-.shop-price-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 
 /* ── Sort dropdown ── */
@@ -211,80 +203,6 @@
   .shop-toolbar {
     gap: 14px;
   }
-}
-
-.shop-price-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--stone);
-}
-
-.shop-price-range {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.shop-price-input {
-  width: 110px;
-  font-family: inherit;
-  font-size: 0.92rem;
-  padding: 9px 14px;
-  border: 2px solid var(--chalk-dim);
-  border-radius: 100px;
-  background: #fff;
-  color: var(--charcoal);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.shop-price-input::placeholder {
-  color: #9a958a;
-}
-
-.shop-price-input:focus {
-  outline: none;
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.16);
-}
-
-/* Hide the number spinners for a cleaner look */
-.shop-price-input::-webkit-outer-spin-button,
-.shop-price-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.shop-price-input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-.shop-price-dash {
-  color: var(--stone);
-  font-size: 0.9rem;
-}
-
-.shop-price-clear {
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 50%;
-  background: var(--chalk-dim);
-  color: var(--charcoal);
-  font-size: 0.8rem;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.shop-price-clear:hover {
-  background: var(--orange);
-  color: #fff;
 }
 
 /* ── Results count ── */
