@@ -118,6 +118,7 @@ Backend (`backend/.env`):
 | `NOTIFICATION_EMAIL` | — | Where to send admin notifications |
 | `CLOUDINARY_*` | — | Cloudinary credentials for image uploads |
 | `DNS_SERVERS` | — | Custom DNS (fallback if `mongodb.net` is blocked) |
+| `CLIMB_CRUX_WHATSAPP` | — | Overrides the WhatsApp number used in emails (defaults to the value in [`shared/contact.js`](./shared/contact.js)) |
 
 ---
 

@@ -53,7 +53,7 @@ export function isValidEmail(value) {
 
 export function isValidPhone(value) {
   const digits = String(value || '').replace(/[^\d]/g, '')
-  // Pakistani numbers: 10-13 digits (e.g. 0313 2690377, +92 313 2690377)
+  // Pakistani numbers: 10-13 digits (e.g. 0313 2690377, +92 335 0044403)
   return digits.length >= 10 && digits.length <= 13
 }
 

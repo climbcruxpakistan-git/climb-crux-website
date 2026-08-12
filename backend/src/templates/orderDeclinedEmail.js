@@ -21,7 +21,7 @@ export function declineReasonLabel(reason) {
   return reason || '—'
 }
 
-/** Display "+923132690377" as "+92 313 2690377" for the contact line. */
+/** Display the WhatsApp number (see shared/contact.js) as "+92 XXX XXXXXXX" for the contact line. */
 function displayNumber(number) {
   const digits = String(number || '').replace(/[^0-9]/g, '')
   if (digits.length >= 12) return `+${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`

@@ -1,6 +1,7 @@
 ---
 import Navbar from '../components/astro/Navbar.astro';
 import Footer from '../components/astro/Footer.astro';
+import { WHATSAPP_DISPLAY } from '../../../../shared/contact.js';
 import { ViewTransitions } from 'astro:transitions';
 import '../styles/index.css';
 import '../styles/layout.css';
@@ -72,7 +73,7 @@ const robots = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview
       'alternateName': 'Climb Crux — Rock Climbing Club Islamabad',
       'description': 'Guided rock climbing and adventure club in Islamabad, Pakistan. Public rock climbing sessions, private coaching, premium ascents, hiking and adventure events on Margalla Hills.',
       'url': 'https://www.climbcruxpakistan.com/',
-      'telephone': '+92 313 2690377',
+      'telephone': WHATSAPP_DISPLAY,
       'email': 'climbcruxpakistan@gmail.com',
       'priceRange': 'PKR 2,500 - PKR 30,000',
       'image': 'https://www.climbcruxpakistan.com/logo.png',
@@ -139,14 +140,14 @@ const robots = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview
       'url': 'https://www.climbcruxpakistan.com/',
       'logo': 'https://www.climbcruxpakistan.com/logo.png',
       'email': 'climbcruxpakistan@gmail.com',
-      'telephone': '+92 313 2690377',
+      'telephone': WHATSAPP_DISPLAY,
       'sameAs': [
         'https://instagram.com/climbcruxpakistan',
         'https://facebook.com/climbcrux',
       ],
       'contactPoint': {
         '@type': 'ContactPoint',
-        'telephone': '+92 313 2690377',
+        'telephone': WHATSAPP_DISPLAY,
         'contactType': 'customer service',
         'email': 'climbcruxpakistan@gmail.com',
         'availableLanguage': ['English', 'Urdu'],

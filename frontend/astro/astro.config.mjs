@@ -13,4 +13,12 @@ export default defineConfig({
   output: 'hybrid',
   // www is the canonical domain (canonical tags, sitemap and schema all use it).
   site: 'https://www.climbcruxpakistan.com',
+  vite: {
+    server: {
+      // Allow the dev server to serve files from this project plus the shared
+      // config at ../../shared/contact.js. Providing fs.allow replaces the
+      // default list, so '.' is listed explicitly to keep the project root served.
+      fs: { allow: ['.', '../../shared'] },
+    },
+  },
 });

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl } from '../../lib/api'
+import { WHATSAPP_DISPLAY } from '../../../../../shared/contact.js'
 
 function getTodayString() {
   const d = new Date()
@@ -305,7 +306,7 @@ export default function BookNow({ preselected = '' }) {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>
                   climbcruxpakistan@gmail.com
                 </a>
-                <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>Or call / WhatsApp: <strong>+92 313 2690377</strong></p>
+                <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>Or call / WhatsApp: <strong>{WHATSAPP_DISPLAY}</strong></p>
               </div>
             )}
             {sessionType && !isCustom && !isMembership && (

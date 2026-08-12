@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl } from '../api.js'
+import { WHATSAPP_DISPLAY } from '../../../../shared/contact.js'
 
 /** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
 function formatLongDate(iso) {
@@ -415,7 +416,7 @@ export default function BookNow() {
                     climbcruxpakistan@gmail.com
                   </a>
                   <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>
-                    Or call / WhatsApp: <strong>+92 313 2690377</strong>
+                    Or call / WhatsApp: <strong>{WHATSAPP_DISPLAY}</strong>
                   </p>
                 </div>
               )}

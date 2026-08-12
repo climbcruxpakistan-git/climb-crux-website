@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import CliffEdge from './CliffEdge.jsx'
+import { WHATSAPP_DISPLAY, WHATSAPP_TEL, WHATSAPP_WA_ME } from '../../../../shared/contact.js'
 
 export default function Footer() {
   return (
@@ -29,7 +30,7 @@ export default function Footer() {
         <div className="footer-col">
           <h4>Get in touch</h4>
           <ul>
-            <li><a href="tel:+923132690377">+92 313 2690377</a></li>
+            <li><a href={WHATSAPP_TEL}>{WHATSAPP_DISPLAY}</a></li>
             <li><a href="mailto:climbcruxpakistan@gmail.com">climbcruxpakistan@gmail.com</a></li>
           </ul>
         </div>
@@ -38,7 +39,7 @@ export default function Footer() {
           <h4>Follow</h4>
           <ul className="footer-social">
             <li><a href="https://instagram.com/climbcruxpakistan" target="_blank" rel="noreferrer">Instagram</a></li>
-            <li><a href="https://wa.me/923132690377" target="_blank" rel="noreferrer">WhatsApp</a></li>
+            <li><a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">WhatsApp</a></li>
           </ul>
         </div>
       </div>

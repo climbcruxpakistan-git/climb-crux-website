@@ -25,12 +25,12 @@ export function escapeHtml(value) {
     .replace(/'/g, '&#39;')
 }
 
-/** Turn "+923132690377" into a wa.me deep link. */
+/** Turn a phone number (see shared/contact.js) into a wa.me deep link. */
 export function whatsappLink(number) {
   return `https://wa.me/${String(number || '').replace(/[^0-9]/g, '')}`
 }
 
-/** Format "+923132690377" as "+92 313 2690377" for display. */
+/** Format a phone number as "+92 XXX XXXXXXX" for display. */
 export function formatWhatsApp(number) {
   const digits = String(number || '').replace(/[^0-9]/g, '')
   if (digits.length >= 12) {

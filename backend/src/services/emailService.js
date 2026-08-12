@@ -44,11 +44,12 @@ import {
   adminPaymentProofNotification,
   adminOrderPaymentProofNotification,
 } from '../templates/adminNotifications.js'
+import { WHATSAPP_DIGITS } from '../../../shared/contact.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 const EMAIL_FROM = process.env.EMAIL_FROM || '"Climb Crux" <bookings@climbcruxpakistan.com>'
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || ''
-const CLIMB_CRUX_WHATSAPP = process.env.CLIMB_CRUX_WHATSAPP || '+923132690377'
+const CLIMB_CRUX_WHATSAPP = process.env.CLIMB_CRUX_WHATSAPP || WHATSAPP_DIGITS
 
 /** Bare address extracted from EMAIL_FROM (e.g. bookings@climbcruxpakistan.com). */
 const EMAIL_ADDRESS = String(EMAIL_FROM).match(/<([^>]+)>/)?.[1] || EMAIL_FROM
