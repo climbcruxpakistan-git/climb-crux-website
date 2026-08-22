@@ -23,25 +23,6 @@ const teasersEyebrow = content?.teasersEyebrow || 'From the wall';
 const teasersTitle = content?.teasersTitle || 'A look at recent sessions';
 const teaserSessionSlug = content?.teaserSessionSlug || '';
 
-const localFaqs = [
-  {
-    q: 'Is rock climbing in Islamabad safe?',
-    a: 'Yes. Every Climb Crux session on Margalla Hills is led by a certified instructor, starts with a full safety briefing, and uses harnesses, helmets, ropes and belay gear that meet climbing safety standards.'
-  },
-  {
-    q: 'Do I need experience to go rock climbing in Islamabad?',
-    a: 'No. Public sessions are built for first-timers with beginner-friendly routes around grade 4–6a. Your instructor walks you through technique, belay basics and route reading before anyone leaves the ground.'
-  },
-  {
-    q: 'Where does rock climbing in Islamabad happen?',
-    a: 'On the limestone crags of Margalla Hills National Park. The climbing locations, roughly 30 minutes from the city centre along the Trail 3, 4 and 5 ridges.'
-  },
-  {
-    q: 'What should I bring to a rock climbing session in Islamabad?',
-    a: 'Comfortable athletic clothing, closed toe shoes you can climb in, water and sun protection. We provide the harness, helmet, rope, belay gear and climbing shoes.'
-  },
-];
-
 const initial = {
   heroTitle,
   heroLede,
@@ -61,38 +42,8 @@ const initial = {
   title="Rock Climbing in Islamabad & Pakistan | Climb Crux"
   description="Rock climbing in Islamabad & Pakistan with Climb Crux — guided sessions on the limestone crags of Margalla Hills. Beginner-friendly, all gear provided, certified instructors."
 >
-  <Fragment slot="head">
-    <script type="application/ld+json" set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      'mainEntity': localFaqs.map((f) => ({
-        '@type': 'Question',
-        'name': f.q,
-        'acceptedAnswer': { '@type': 'Answer', 'text': f.a },
-      })),
-    })} />
-  </Fragment>
 
   <HomeContent client:load initial={initial} />
-
-  <section class="section local-seo-section">
-    <div class="wrap">
-      <h2>Rock climbing in Islamabad</h2>
-      <div class="local-seo-copy">
-        <p>Islamabad is one of the few capitals in the world with real rock climbing right on its doorstep. The limestone crags of Margalla Hills National Park along the Trail 3, 4 and 5 ridges. Just 30 minutes from the city centre and Climb Crux runs guided sessions there every other Sunday.</p>
-        <p>From your first top-rope on an easy 4+ to training lines that push 7c+, our certified instructors handle the safety and the gear so you can focus on the climb. Families, students, first-timers and seasoned climbers all find their route on Islamabad's own hillside.</p>
-        <a href="/sessions" class="btn btn-outline">See session dates &amp; pricing</a>
-      </div>
-      <div class="faq">
-        {localFaqs.map((f) => (
-          <details>
-            <summary>{f.q}</summary>
-            <p>{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </div>
-  </section>
 
   <section class="section local-seo-section">
     <div class="wrap">
