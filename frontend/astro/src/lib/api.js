@@ -206,3 +206,21 @@ export async function getProductReviews(productId) {
 export async function submitProductReview(productId, review) {
   return await postJson(`/products/${productId}/reviews`, review)
 }
+
+/* ---------- Session Reviews (Public & Private) ---------- */
+
+/**
+ * Approved reviews for one category. The backend only ever returns
+ * APPROVED reviews of that type — PUBLIC and PRIVATE lists are fetched
+ * from separate endpoints so they can never be mixed.
+ */
+export async function getSessionReviews(type) {
+  const data = await fetchJson(`/session-reviews/${type}`)
+  if (data.reviews) data.reviews = mapId(data.reviews)
+  return data
+}
+
+/** Submit a session review. The server decides the reviewType from the endpoint. */
+export async function submitSessionReview(type, review) {
+  return await postJson(`/session-reviews/${type}`, review)
+}

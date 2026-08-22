@@ -23,6 +23,7 @@ import authRoutes from './routes/auth.js'
 import paymentRoutes from './routes/payments.js'
 import productRoutes from './routes/products.js'
 import reviewRoutes from './routes/reviews.js'
+import sessionReviewRoutes from './routes/sessionReviews.js'
 import membershipRoutes from './routes/membership.js'
 import statusRoutes from './routes/status.js'
 import emailRoutes from './routes/emails.js'
@@ -101,6 +102,10 @@ app.use('/api/home', requireAdmin, homeContentRoutes)
 app.use('/api/payments', requireAdmin, paymentRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/products/:productId/reviews', reviewRoutes)
+// Session reviews — Public & Private. Public submit/list endpoints are open
+// (type separation + APPROVED-only enforced inside the route file); admin
+// approve/reject/delete/list-all endpoints require a JWT inside the route file.
+app.use('/api/session-reviews', sessionReviewRoutes)
 // Membership — public apply + form download; admin endpoints protected inside
 app.use('/api/membership', membershipRoutes)
 // Public status checker — strict rate limit prevents code enumeration

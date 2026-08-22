@@ -1,8 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import SessionsContent from '../components/react/SessionsContent.jsx';
+import ReviewsSection from '../components/react/ReviewsSection.jsx';
 import { getAvailableSessions, getSessionContent } from '../lib/api';
 import '../styles/Sessions.css';
+import '../styles/Reviews.css';
 
 const [sessions, content] = await Promise.all([
   getAvailableSessions().catch(() => []),
@@ -35,4 +37,7 @@ const faqs = content.faqs || [
   </Fragment>
 
   <SessionsContent client:load initial={{ sessions, content }} />
+
+  {/* Reviews & Ratings — Public Session reviews only (approved, type enforced server-side) */}
+  <ReviewsSection client:load type="public" />
 </MainLayout>

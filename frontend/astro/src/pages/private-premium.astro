@@ -1,8 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import PremiumContent from '../components/react/PremiumContent.jsx';
+import ReviewsSection from '../components/react/ReviewsSection.jsx';
 import { getPlans, getSessionContent } from '../lib/api';
 import '../styles/PrivatePremium.css';
+import '../styles/Reviews.css';
 
 const [plans, content] = await Promise.all([
   getPlans().catch(() => []),
@@ -16,4 +18,7 @@ const [plans, content] = await Promise.all([
 >
 
   <PremiumContent client:load initial={{ plans, content }} />
+
+  {/* Reviews & Ratings — Private Session reviews only (approved, type enforced server-side) */}
+  <ReviewsSection client:load type="private" />
 </MainLayout>

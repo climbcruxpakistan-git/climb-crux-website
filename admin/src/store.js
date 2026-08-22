@@ -359,3 +359,29 @@ export async function getAbout() {
 export async function saveAbout(data) {
   return mapId(await request('PUT', '/about', data))
 }
+
+/* ---------- Session Reviews (Public & Private) ---------- */
+
+/**
+ * All session reviews for moderation. Optionally filter server-side by
+ * reviewType ('PUBLIC' | 'PRIVATE') and/or status ('PENDING' | 'APPROVED' | 'REJECTED').
+ */
+export async function getSessionReviews(filters = {}) {
+  const qs = new URLSearchParams()
+  if (filters.type) qs.set('type', filters.type)
+  if (filters.status) qs.set('status', filters.status)
+  const query = qs.toString()
+  return mapId(await request('GET', `/session-reviews/all${query ? `?${query}` : ''}`))
+}
+
+export async function approveSessionReview(id) {
+  return mapId(await request('POST', `/session-reviews/${id}/approve`))
+}
+
+export async function rejectSessionReview(id) {
+  return mapId(await request('POST', `/session-reviews/${id}/reject`))
+}
+
+export async function deleteSessionReview(id) {
+  return request('DELETE', `/session-reviews/${id}`)
+}

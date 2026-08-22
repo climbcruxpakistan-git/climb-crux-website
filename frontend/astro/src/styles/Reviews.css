@@ -1,0 +1,290 @@
+/* ===================================================================
+   REVIEWS & RATINGS (Public + Private Sessions pages)
+   =================================================================== */
+
+.rv-section {
+  background: var(--chalk-dim);
+}
+
+.rv-summary,
+.rv-form-card,
+.rv-review-card {
+  background: var(--chalk);
+  border: 1px solid #ded5bf;
+}
+
+/* ── Average rating summary ── */
+
+.rv-summary {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  max-width: 520px;
+  margin-bottom: 28px;
+  padding: 26px 30px;
+  border-left: 3px solid var(--orange);
+}
+
+.rv-summary-score {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--charcoal);
+}
+
+.rv-summary-score::after {
+  content: ' / 5';
+  font-size: 0.45em;
+  color: var(--stone);
+  font-weight: 500;
+}
+
+.rv-summary-count {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: var(--stone-dark);
+}
+
+/* ── Stars ── */
+
+.rv-stars {
+  display: inline-flex;
+  gap: 2px;
+  line-height: 1;
+}
+
+.rv-star {
+  color: #d8d0bc;
+  transition: color 0.15s ease;
+}
+
+.rv-star-full {
+  color: var(--orange);
+}
+
+/* ── Empty state ── */
+
+.rv-empty {
+  background: var(--chalk);
+  border: 2px dashed #d8d0bc;
+  border-radius: 16px;
+  padding: 40px 28px;
+  margin-bottom: 28px;
+  max-width: 520px;
+  text-align: center;
+}
+
+.rv-empty h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+
+.rv-empty p {
+  margin: 0;
+  color: var(--stone);
+  font-size: 0.92rem;
+}
+
+/* ── Submission form ── */
+
+.rv-form-card {
+  padding: 30px 32px;
+  margin-bottom: 32px;
+  border-top: 3px solid var(--orange);
+  box-shadow: 0 10px 34px rgba(32, 31, 33, 0.06);
+}
+
+.rv-form-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 18px;
+}
+
+.rv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.rv-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.rv-field label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--stone-dark);
+}
+
+.rv-field input,
+.rv-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d8d0bc;
+  border-radius: var(--radius);
+  background: #fffdf8;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.rv-field input:focus,
+.rv-field textarea:focus {
+  outline: 3px solid rgba(243, 111, 33, 0.35);
+  outline-offset: 1px;
+  border-color: var(--orange);
+}
+
+/* Interactive star picker */
+
+.rv-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rv-picker-stars {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.rv-pick-star {
+  width: 40px;
+  height: 40px;
+  font-size: 26px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #d8d0bc;
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.rv-pick-star:hover,
+.rv-pick-star:focus-visible {
+  transform: scale(1.18);
+}
+
+.rv-pick-star.is-active {
+  color: var(--orange);
+}
+
+.rv-picker-hint {
+  font-size: 0.82rem;
+  color: var(--stone);
+}
+
+.rv-picker-hint.is-set {
+  color: var(--orange-dark);
+  font-weight: 600;
+}
+
+/* ── Approved review list ── */
+
+.rv-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.rv-review-card {
+  padding: 22px 24px;
+  border-left: 3px solid var(--orange);
+}
+
+.rv-review-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+
+.rv-review-comment {
+  margin: 8px 0 10px;
+  color: var(--stone-dark);
+  font-size: 0.93rem;
+  line-height: 1.65;
+}
+
+.rv-review-date {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--stone);
+}
+
+/* ── Success message ── */
+
+.rv-success {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+
+.rv-success-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.rv-success strong {
+  color: var(--charcoal);
+  font-size: 0.95rem;
+}
+
+.rv-success p {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: var(--stone-dark);
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 700px) {
+  .rv-list {
+    grid-template-columns: 1fr;
+  }
+
+  .rv-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 22px;
+  }
+
+  .rv-form-card {
+    padding: 24px 20px;
+  }
+
+  .rv-pick-star {
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+  }
+}

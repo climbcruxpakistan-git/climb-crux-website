@@ -37,6 +37,18 @@ export const apiLimiter = rateLimit({
 })
 
 /**
+ * Moderate limiter for public review submissions — prevents spam.
+ * 10 requests per minute per IP.
+ */
+export const reviewLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many review submissions. Please slow down.' },
+})
+
+/**
  * Strict limiter for the public status checker — prevents automated
  * enumeration of booking/membership reference codes. 20 requests per
  * 15 minutes per IP. Blocked attempts are logged for monitoring.

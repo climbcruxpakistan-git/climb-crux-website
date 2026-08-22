@@ -506,6 +506,16 @@ tbody tr:hover {
   color: #2563eb;
 }
 
+/* Session review stars (Reviews page) */
+.rv-admin-stars {
+  display: inline-flex;
+  gap: 1px;
+  font-size: 0.9rem;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+
 /* =========================== EMAIL VIEW MODAL =========================== */
 
 .email-view-meta {

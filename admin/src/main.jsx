@@ -21,6 +21,7 @@ import MembershipsManager from './pages/MembershipsManager.jsx'
 import ShopManager from './pages/ShopManager.jsx'
 import Sales from './pages/Sales.jsx'
 import EmailSender from './pages/EmailSender.jsx'
+import ReviewsManager from './pages/ReviewsManager.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -42,6 +43,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/about" element={<AboutManager />} />
                 <Route path="/shop" element={<ShopManager />} />
                 <Route path="/sales" element={<Sales />} />
+                <Route path="/reviews" element={<ReviewsManager />} />
                 <Route path="/emails" element={<EmailSender />} />
                 <Route path="/bookings" element={<BookingsManager />} />
                 <Route path="/memberships" element={<MembershipsManager />} />

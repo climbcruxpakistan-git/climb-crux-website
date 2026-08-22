@@ -28,6 +28,7 @@ const NAV_SECTIONS = [
       { to: '/bookings', label: 'Bookings', icon: '☰' },
       { to: '/memberships', label: 'Memberships', icon: '🧗' },
       { to: '/sales', label: 'Sales', icon: '🛒' },
+      { to: '/reviews', label: 'Reviews', icon: '★' },
       { to: '/emails', label: 'Email', icon: '✉' },
     ],
   },
@@ -77,6 +78,7 @@ export default function AdminLayout() {
     '/bookings': 'Bookings',
     '/memberships': 'Memberships',
     '/sales': 'Sales',
+    '/reviews': 'Reviews',
     '/shop': 'The Shop',
     '/emails': 'Email Sender',
   }
