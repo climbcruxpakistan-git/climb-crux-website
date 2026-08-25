@@ -537,6 +537,7 @@ export default function BookingsManager() {
                     <th>Name</th>
                     <th>Contact</th>
                     <th>Type / Date</th>
+                    <th>Time</th>
                     <th>Status</th>
                     <th>Payment</th>
                     <th>Payment Status</th>
@@ -563,6 +564,13 @@ export default function BookingsManager() {
                       <td>
                         <span className="cell-type">{b.session_title || b.session_id?.replace(/-/g, ' ') || '—'}</span>
                         {b.date ? <span className="cell-date">{formatDate(b.session_date || b.date)}</span> : ''}
+                      </td>
+                      <td>
+                        {(b.session_id === 'private-starter' || b.session_id === 'private-advanced') ? (
+                          b.time ? <span>{b.time}</span> : <span className="cell-muted">—</span>
+                        ) : (
+                          <span className="cell-muted">—</span>
+                        )}
                       </td>
                       <td>{badge(b.booking_status)}</td>
                       <td>
