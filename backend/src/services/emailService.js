@@ -97,7 +97,7 @@ function sendAdminCopy({ clientName, subject, html, attachments }) {
   const name = clientName || 'Unknown'
   send({
     to: BCC_EMAIL,
-    subject: `Admin's Copy - ${name} - ${subject}`,
+    subject: `Admin's Copy - ${name} - ${subject.replace(/^Your\s+/i, '')}`,
     html,
     attachments,
   }).catch(() => {})
