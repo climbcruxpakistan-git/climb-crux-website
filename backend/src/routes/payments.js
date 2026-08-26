@@ -105,12 +105,16 @@ router.post('/verify', async (req, res, next) => {
       })
       await booking.save()
 
-      // Best-effort session time (from the sessions list) for the PDF
-      let sessionTime = ''
-      try {
-        const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-        sessionTime = s?.time || ''
-      } catch { /* ignore */ }
+      // Best-effort session time for the PDF — client's preferred time first, then snapshot, then legacy lookup
+      let sessionTime = booking.time || ''
+      if (booking.session_start_time || booking.session_end_time) {
+        sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+      } else if (!sessionTime) {
+        try {
+          const s = booking.date ? await Session.findOne({ date: booking.date }) : null
+          sessionTime = s?.time || ''
+        } catch { /* ignore */ }
+      }
       // Generate the confirmed-booking PDF (best-effort)
       let pdfBuffer = null
       try {
@@ -150,12 +154,16 @@ router.post('/verify', async (req, res, next) => {
       })
       await booking.save()
 
-      // Best-effort session time (from the sessions list) for the PDF
-      let sessionTime = ''
-      try {
-        const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-        sessionTime = s?.time || ''
-      } catch { /* ignore */ }
+      // Best-effort session time for the PDF — client's preferred time first, then snapshot, then legacy lookup
+      let sessionTime = booking.time || ''
+      if (booking.session_start_time || booking.session_end_time) {
+        sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+      } else if (!sessionTime) {
+        try {
+          const s = booking.date ? await Session.findOne({ date: booking.date }) : null
+          sessionTime = s?.time || ''
+        } catch { /* ignore */ }
+      }
       // Generate the booking-form PDF (best-effort)
       let pdfBuffer = null
       try {

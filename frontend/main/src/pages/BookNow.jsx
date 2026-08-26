@@ -334,11 +334,11 @@ export default function BookNow() {
                     <>
                       <div className="field">
                         <label htmlFor="preferred-date">Preferred date</label>
-                        <input id="preferred-date" type="date" min={getTodayString()} />
+                        <input id="preferred-date" name="preferred-date" type="date" min={getTodayString()} required />
                       </div>
                       <div className="field">
                         <label htmlFor="preferred-time">Preferred time</label>
-                        <input id="preferred-time" type="time" />
+                        <input id="preferred-time" name="preferred-time" type="time" required />
                       </div>
                     </>
                   )}

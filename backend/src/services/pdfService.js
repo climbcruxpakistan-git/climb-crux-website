@@ -384,6 +384,9 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
       : formatDateDDMMYYYY(booking.date)])
     const snapshotTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
     sessionRows.push(['Time', time || snapshotTime])
+    if (booking.session_id === 'private-starter' || booking.session_id === 'private-advanced') {
+      sessionRows.push(['Preferred Time', booking.time || ''])
+    }
     if (hasSessionSnapshot) {
       sessionRows.push(['Climbing Location', booking.session_location])
       if (booking.session_maps_url) sessionRows.push(['View Map', booking.session_maps_url])

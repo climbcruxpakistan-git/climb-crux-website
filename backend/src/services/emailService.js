@@ -50,6 +50,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 const EMAIL_FROM = process.env.EMAIL_FROM || '"Climb Crux" <bookings@climbcruxpakistan.com>'
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || ''
 const CLIMB_CRUX_WHATSAPP = process.env.CLIMB_CRUX_WHATSAPP || WHATSAPP_DIGITS
+const BCC_EMAIL = process.env.BCC_EMAIL || ''
 
 /** Bare address extracted from EMAIL_FROM (e.g. bookings@climbcruxpakistan.com). */
 const EMAIL_ADDRESS = String(EMAIL_FROM).match(/<([^>]+)>/)?.[1] || EMAIL_FROM
@@ -64,7 +65,7 @@ function getClient() {
 }
 
 /** Core send helper — never throws, always logs clearly. */
-async function send({ to, subject, html, attachments }) {
+async function send({ to, subject, html, attachments, bcc }) {
   const client = getClient()
   if (!client) {
     console.warn(`[email] Resend not configured (set RESEND_API_KEY) — skipping "${subject}"`)
@@ -76,6 +77,7 @@ async function send({ to, subject, html, attachments }) {
   }
   try {
     const payload = { from: EMAIL_FROM, to, subject, html }
+    if (bcc) payload.bcc = bcc
     if (attachments && attachments.length > 0) payload.attachments = attachments
     const { data, error } = await client.emails.send(payload)
     if (error) {
@@ -93,7 +95,7 @@ async function send({ to, subject, html, attachments }) {
 /** Customer booking confirmation (Public or Private session). */
 export async function sendBookingConfirmation({ booking, sessionType }) {
   const { subject, html } = bookingConfirmation({ booking, sessionType, whatsapp: CLIMB_CRUX_WHATSAPP })
-  return send({ to: booking.customer_email, subject, html })
+  return send({ to: booking.customer_email, subject, html, bcc: BCC_EMAIL || undefined })
 }
 
 /** Customer booking approval (admin verified the payment) — includes the confirmed-booking PDF. */
@@ -103,6 +105,7 @@ export async function sendBookingApprovedEmail({ booking, sessionType, pdfBuffer
     to: booking.customer_email,
     subject,
     html,
+    bcc: BCC_EMAIL || undefined,
     attachments: pdfBuffer
       ? [{ filename: `Climb-Crux-Booking-${booking.booking_number || 'Confirmed'}.pdf`, content: pdfBuffer }]
       : undefined,
@@ -116,6 +119,7 @@ export async function sendBookingDeclinedEmail({ booking, sessionType, reason = 
     to: booking.customer_email,
     subject,
     html,
+    bcc: BCC_EMAIL || undefined,
     attachments: pdfBuffer
       ? [{ filename: `Climb-Crux-Booking-${booking.booking_number || 'Request'}.pdf`, content: pdfBuffer }]
       : undefined,

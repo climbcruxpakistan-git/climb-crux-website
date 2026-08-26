@@ -232,7 +232,7 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const {
       customer_name, customer_email, customer_phone,
-      session_id, date, participants, amount,
+      session_id, date, time, participants, amount,
       booking_status, payment_method, payment_status,
       payer_bank, payer_name, payer_phone,
     } = req.body
@@ -243,7 +243,7 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
         customer_name, customer_email, customer_phone,
         emergency_contact_name: req.body.emergency_contact_name,
         emergency_contact_phone: req.body.emergency_contact_phone,
-        session_id, date, participants, amount,
+        session_id, date, time, participants, amount,
         booking_status, payment_method, payment_status,
         payer_bank, payer_name, payer_phone,
       },

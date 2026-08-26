@@ -840,10 +840,16 @@ export default function BookingsManager() {
                   <span className="detail-key">Date</span>
                   <span className="detail-val">{formatDate(viewing.session_date || viewing.date) || '—'}</span>
                 </div>
-                {(viewing.session_start_time || viewing.session_end_time || viewing.time) && (
+                {(viewing.session_start_time || viewing.session_end_time) && (
                   <div className="detail-row">
                     <span className="detail-key">Time</span>
-                    <span className="detail-val">{[viewing.session_start_time, viewing.session_end_time].filter(Boolean).join(' – ') || viewing.time || '—'}</span>
+                    <span className="detail-val">{[viewing.session_start_time, viewing.session_end_time].filter(Boolean).join(' – ') || '—'}</span>
+                  </div>
+                )}
+                {(viewing.session_id === 'private-starter' || viewing.session_id === 'private-advanced') && (
+                  <div className="detail-row">
+                    <span className="detail-key">Preferred Time</span>
+                    <span className="detail-val">{viewing.time || 'Not specified'}</span>
                   </div>
                 )}
                 {viewing.session_location && (
