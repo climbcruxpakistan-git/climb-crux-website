@@ -92,11 +92,12 @@ async function send({ to, subject, html, attachments }) {
 }
 
 /** Fire-and-forget admin copy — prefixed subject, same content, never blocks. */
-function sendAdminCopy({ subject, html, attachments }) {
+function sendAdminCopy({ clientName, subject, html, attachments }) {
   if (!BCC_EMAIL) return
+  const name = clientName || 'Unknown'
   send({
     to: BCC_EMAIL,
-    subject: `Admin's Copy - ${subject}`,
+    subject: `Admin's Copy - ${name} - ${subject}`,
     html,
     attachments,
   }).catch(() => {})
@@ -114,7 +115,7 @@ export async function sendBookingApprovedEmail({ booking, sessionType, pdfBuffer
   const attachments = pdfBuffer
     ? [{ filename: `Climb-Crux-Booking-${booking.booking_number || 'Confirmed'}.pdf`, content: pdfBuffer }]
     : undefined
-  sendAdminCopy({ subject, html, attachments })
+  sendAdminCopy({ clientName: booking.customer_name, subject, html, attachments })
   return send({ to: booking.customer_email, subject, html, attachments })
 }
 
@@ -124,7 +125,7 @@ export async function sendBookingDeclinedEmail({ booking, sessionType, reason = 
   const attachments = pdfBuffer
     ? [{ filename: `Climb-Crux-Booking-${booking.booking_number || 'Request'}.pdf`, content: pdfBuffer }]
     : undefined
-  sendAdminCopy({ subject, html, attachments })
+  sendAdminCopy({ clientName: booking.customer_name, subject, html, attachments })
   return send({ to: booking.customer_email, subject, html, attachments })
 }
 
@@ -141,14 +142,14 @@ export async function sendMembershipApprovalEmail({ application, pdfBuffer }) {
   const attachments = pdfBuffer
     ? [{ filename: `Climb-Crux-Approved-Membership-${reference}.pdf`, content: pdfBuffer }]
     : undefined
-  sendAdminCopy({ subject, html, attachments })
+  sendAdminCopy({ clientName: application.full_name, subject, html, attachments })
   return send({ to: application.email, subject, html, attachments })
 }
 
 /** Membership rejection — reason picks the payment-failed or documentation variant. */
 export async function sendMembershipRejectionEmail({ application, reason = 'payment' }) {
   const { subject, html } = membershipRejectionEmail({ application, reason, whatsapp: CLIMB_CRUX_WHATSAPP })
-  sendAdminCopy({ subject, html })
+  sendAdminCopy({ clientName: application.full_name, subject, html })
   return send({ to: application.email, subject, html })
 }
 
@@ -164,7 +165,7 @@ export async function sendOrderPaymentReceivedEmail({ order, pdfBuffer }) {
   const attachments = pdfBuffer
     ? [{ filename: `Climb-Crux-Order-${order.order_number || 'Received'}.pdf`, content: pdfBuffer }]
     : undefined
-  sendAdminCopy({ subject, html, attachments })
+  sendAdminCopy({ clientName: order.customer_name, subject, html, attachments })
   return send({ to: order.customer_email, subject, html, attachments })
 }
 
@@ -174,7 +175,7 @@ export async function sendOrderConfirmedEmail({ order, pdfBuffer }) {
   const attachments = pdfBuffer
     ? [{ filename: `Climb-Crux-Order-${order.order_number || 'Confirmed'}.pdf`, content: pdfBuffer }]
     : undefined
-  sendAdminCopy({ subject, html, attachments })
+  sendAdminCopy({ clientName: order.customer_name, subject, html, attachments })
   return send({ to: order.customer_email, subject, html, attachments })
 }
 
@@ -184,7 +185,7 @@ export async function sendOrderDeclinedEmail({ order, reason = '', pdfBuffer }) 
   const attachments = pdfBuffer
     ? [{ filename: `Climb-Crux-Order-${order.order_number || 'Declined'}.pdf`, content: pdfBuffer }]
     : undefined
-  sendAdminCopy({ subject, html, attachments })
+  sendAdminCopy({ clientName: order.customer_name, subject, html, attachments })
   return send({ to: order.customer_email, subject, html, attachments })
 }
 

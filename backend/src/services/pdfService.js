@@ -383,9 +383,10 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
       ? (formatLongDate(booking.session_date || booking.date) || booking.session_date || booking.date)
       : formatDateDDMMYYYY(booking.date)])
     const snapshotTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
-    sessionRows.push(['Time', time || snapshotTime])
     if (booking.session_id === 'private-starter' || booking.session_id === 'private-advanced') {
       sessionRows.push(['Preferred Time', formatTime12h(booking.time) || ''])
+    } else {
+      sessionRows.push(['Time', time || snapshotTime])
     }
     if (hasSessionSnapshot) {
       sessionRows.push(['Climbing Location', booking.session_location])
