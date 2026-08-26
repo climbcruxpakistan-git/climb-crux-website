@@ -94,7 +94,7 @@ router.post('/verify', async (req, res, next) => {
       booking.payment_status = 'paid'
       booking.booking_status = 'confirmed'
       booking.verified_by = adminEmail
-      booking.approval_date = new Date().toISOString().slice(0, 10)
+      booking.approval_date = new Date().toISOString()
       booking.rejected_by = ''
       booking.rejection_date = ''
       logEvent(booking, {
@@ -145,7 +145,7 @@ router.post('/verify', async (req, res, next) => {
       booking.payment_status = 'failed'
       booking.booking_status = 'cancelled'
       booking.rejected_by = adminEmail
-      booking.rejection_date = new Date().toISOString().slice(0, 10)
+      booking.rejection_date = new Date().toISOString()
       logEvent(booking, {
         type: 'booking_rejected',
         description: 'Booking declined (payment could not be verified)',

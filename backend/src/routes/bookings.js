@@ -449,7 +449,7 @@ router.post('/:id/approve', requireAdmin, async (req, res, next) => {
     booking.booking_status = 'confirmed'
     booking.payment_status = 'paid'
     booking.verified_by = adminEmail
-    booking.approval_date = new Date().toISOString().slice(0, 10)
+    booking.approval_date = new Date().toISOString()
     booking.rejected_by = ''
     booking.rejection_date = ''
 
@@ -520,7 +520,7 @@ router.post('/:id/reject', requireAdmin, async (req, res, next) => {
     booking.booking_status = 'cancelled'
     booking.payment_status = 'failed'
     booking.rejected_by = adminEmail
-    booking.rejection_date = new Date().toISOString().slice(0, 10)
+    booking.rejection_date = new Date().toISOString()
 
     // Audit trail: declined (admin identity + timestamp)
     logEvent(booking, {

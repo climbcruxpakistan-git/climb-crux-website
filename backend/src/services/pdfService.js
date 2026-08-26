@@ -15,7 +15,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { MEMBERSHIP_PLAN, MEMBERSHIP_FEE, MEMBERSHIP_TERMS, MEMBERSHIP_DECLARATION, BOOKING_TERMS } from '../membershipForm.js'
-import { formatDateDDMMYYYY, formatLongDate } from './dateFormat.js'
+import { formatDateDDMMYYYY, formatLongDate, formatDateTimeDDMMYYYY, formatTime12h } from './dateFormat.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PDF_DIR = path.join(__dirname, '..', '..', 'storage', 'membership-pdfs')
@@ -385,7 +385,7 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     const snapshotTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
     sessionRows.push(['Time', time || snapshotTime])
     if (booking.session_id === 'private-starter' || booking.session_id === 'private-advanced') {
-      sessionRows.push(['Preferred Time', booking.time || ''])
+      sessionRows.push(['Preferred Time', formatTime12h(booking.time) || ''])
     }
     if (hasSessionSnapshot) {
       sessionRows.push(['Climbing Location', booking.session_location])
@@ -439,12 +439,12 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
 
     if (status === 'confirmed' && booking.approval_date) {
       box('VERIFICATION', [
-        ['Verified On', formatDateDDMMYYYY(booking.approval_date)],
+        ['Verified On', formatDateTimeDDMMYYYY(booking.approval_date)],
       ])
     }
     if (status === 'declined' && booking.rejection_date) {
       box('REVIEW', [
-        ['Reviewed On', formatDateDDMMYYYY(booking.rejection_date)],
+        ['Reviewed On', formatDateTimeDDMMYYYY(booking.rejection_date)],
       ])
     }
 

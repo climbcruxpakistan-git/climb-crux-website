@@ -3,7 +3,7 @@
  * verifies their payment screenshot and confirms the booking.
  */
 import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink, bookingSessionRows } from './emailLayout.js'
-import { formatDateDDMMYYYY } from '../services/dateFormat.js'
+import { formatDateDDMMYYYY, formatTime12h } from '../services/dateFormat.js'
 
 const STATUS = 'Confirmed'
 
@@ -33,7 +33,7 @@ export function bookingApprovedEmail({ booking, sessionType = 'Public Session', 
   rows.push(...bookingSessionRows(booking, { confirmed: true }))
   if (!booking.session_date) {
     rows.push(['Preferred Date', formatDateDDMMYYYY(booking.date) || '—'])
-    if (booking.time) rows.push(['Preferred Time', booking.time])
+    if (booking.time) rows.push(['Preferred Time', formatTime12h(booking.time)])
   }
   rows.push(['Participants', String(booking.participants || 1)])
   rows.push(['Total', `PKR ${(booking.amount || 0).toLocaleString()}`])

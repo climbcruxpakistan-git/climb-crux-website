@@ -53,3 +53,13 @@ export function formatDateTimeDDMMYYYY(value) {
   const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   return `${dd}-${mm}-${d.getFullYear()}, ${time}`
 }
+
+/** Convert a 24-hour time string (e.g. "14:30") to 12-hour AM/PM (e.g. "2:30 PM"). */
+export function formatTime12h(value) {
+  if (!value) return ''
+  const [h, m] = String(value).split(':').map(Number)
+  if (Number.isNaN(h)) return String(value)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h % 12 || 12
+  return `${hour12}:${String(m || 0).padStart(2, '0')} ${period}`
+}

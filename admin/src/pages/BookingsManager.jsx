@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, searchBookings, getSessions } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
-import { formatDate, formatDateTime } from '../formatDate.js'
+import { formatDate, formatDateTime, formatTime12h } from '../formatDate.js'
 
 /** Cloudinary URL that forces a download instead of preview. */
 function downloadUrl(url) {
@@ -849,7 +849,7 @@ export default function BookingsManager() {
                 {(viewing.session_id === 'private-starter' || viewing.session_id === 'private-advanced') && (
                   <div className="detail-row">
                     <span className="detail-key">Preferred Time</span>
-                    <span className="detail-val">{viewing.time || 'Not specified'}</span>
+                    <span className="detail-val">{formatTime12h(viewing.time) || 'Not specified'}</span>
                   </div>
                 )}
                 {viewing.session_location && (
@@ -905,13 +905,13 @@ export default function BookingsManager() {
                   {viewing.verified_by && (
                     <div className="detail-row">
                       <span className="detail-key">Approved By</span>
-                      <span className="detail-val">{viewing.verified_by} · {formatDate(viewing.approval_date) || '—'}</span>
+                      <span className="detail-val">{viewing.verified_by} · {formatDateTime(viewing.approval_date) || '—'}</span>
                     </div>
                   )}
                   {viewing.rejected_by && (
                     <div className="detail-row">
                       <span className="detail-key">Declined By</span>
-                      <span className="detail-val">{viewing.rejected_by} · {formatDate(viewing.rejection_date) || '—'}</span>
+                      <span className="detail-val">{viewing.rejected_by} · {formatDateTime(viewing.rejection_date) || '—'}</span>
                     </div>
                   )}
                 </div>
