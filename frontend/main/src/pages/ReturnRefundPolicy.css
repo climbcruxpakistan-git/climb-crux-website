@@ -1,0 +1,64 @@
+/* ============================== RETURN & REFUND POLICY ============================== */
+
+.policy-section {
+  background: var(--chalk);
+}
+
+.policy-wrap {
+  max-width: 860px;
+}
+
+.policy-block {
+  margin-bottom: 2.4rem;
+}
+
+.policy-block:last-child {
+  margin-bottom: 0;
+}
+
+.policy-block h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: 0.7em;
+}
+
+.policy-block p {
+  line-height: 1.75;
+  max-width: 68ch;
+}
+
+.policy-block ul {
+  margin: 0 0 1em;
+  padding-left: 1.4em;
+  list-style: disc;
+}
+
+.policy-block li {
+  color: var(--stone-dark);
+  line-height: 1.75;
+  margin-bottom: 0.35em;
+}
+
+.policy-whatsapp {
+  font-weight: 500;
+}
+
+.policy-whatsapp a {
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.policy-whatsapp a:hover {
+  color: var(--orange);
+}
+
+@media (max-width: 480px) {
+  .policy-block {
+    margin-bottom: 1.8rem;
+  }
+  .policy-block ul {
+    padding-left: 1.2em;
+  }
+}

@@ -1597,6 +1597,17 @@
   color: var(--charcoal);
 }
 
+.terms-checkbox-label a {
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.terms-checkbox-label a:hover {
+  color: var(--orange);
+}
+
 .terms-hint {
   font-size: 0.78rem;
   color: var(--orange-dark);

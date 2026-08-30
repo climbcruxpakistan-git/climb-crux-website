@@ -1,0 +1,45 @@
+/* ============================== PRIVACY POLICY ============================== */
+
+.pp-section {
+  background: var(--chalk);
+}
+
+.pp-wrap {
+  max-width: 860px;
+}
+
+.pp-block {
+  margin-bottom: 2.4rem;
+}
+
+.pp-block:last-child {
+  margin-bottom: 0;
+}
+
+.pp-block h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: 0.7em;
+}
+
+.pp-block p {
+  line-height: 1.75;
+  max-width: 68ch;
+}
+
+.pp-contact {
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pp-contact:hover {
+  color: var(--orange);
+}
+
+@media (max-width: 480px) {
+  .pp-block {
+    margin-bottom: 1.8rem;
+  }
+}

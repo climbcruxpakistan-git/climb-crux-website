@@ -1,0 +1,45 @@
+/* ============================== TERMS & CONDITIONS ============================== */
+
+.tcs-section {
+  background: var(--chalk);
+}
+
+.tcs-wrap {
+  max-width: 860px;
+}
+
+.tcs-block {
+  margin-bottom: 2.4rem;
+}
+
+.tcs-block:last-child {
+  margin-bottom: 0;
+}
+
+.tcs-block h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: 0.7em;
+}
+
+.tcs-block p {
+  line-height: 1.75;
+  max-width: 68ch;
+}
+
+.tcs-contact {
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tcs-contact:hover {
+  color: var(--orange);
+}
+
+@media (max-width: 480px) {
+  .tcs-block {
+    margin-bottom: 1.8rem;
+  }
+}

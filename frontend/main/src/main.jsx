@@ -33,6 +33,10 @@ import BookNow from './pages/BookNow.jsx'
 import MembershipApply from './pages/MembershipApply.jsx'
 import CheckStatus from './pages/CheckStatus.jsx'
 import Shop from './pages/Shop.jsx'
+import ReturnRefundPolicy from './pages/ReturnRefundPolicy.jsx'
+import TermsAndConditions from './pages/TermsAndConditions.jsx'
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx'
+import ShippingPolicy from './pages/ShippingPolicy.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
 import Checkout from './pages/Checkout.jsx'
 import OrderPayment from './pages/OrderPayment.jsx'
@@ -53,6 +57,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/our-team" element={<OurTeam />} />
           <Route path="/our-team/:id" element={<InstructorProfile />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/return-refund-policy" element={<ReturnRefundPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/shipping-policy" element={<ShippingPolicy />} />
           <Route path="/shop/:id/checkout" element={<Checkout />} />
           <Route path="/shop/orders/:orderNumber/payment" element={<OrderPayment />} />
           <Route path="/shop/:id" element={<ProductDetail />} />

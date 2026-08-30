@@ -39,6 +39,8 @@ export default function Checkout({ id, initialProduct }) {
   const [ordering, setOrdering] = useState(false)
   const [error, setError] = useState('')
 
+  const [agreed, setAgreed] = useState(false)
+
   // Hydrate: fetch fresh data on mount for stock/pricing updates
   useEffect(() => {
     if (parsedInitialProduct) {
@@ -119,6 +121,11 @@ export default function Checkout({ id, initialProduct }) {
   async function handlePlaceOrder(e) {
     e.preventDefault()
     setError('')
+    if (!agreed) {
+      setError('Please agree to the Return & Refund Policy and Terms & Conditions before placing your order.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     if (!checkoutForm.customer_name.trim() || !checkoutForm.customer_phone.trim()) {
       setError('Name and phone number are required')
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -355,6 +362,24 @@ export default function Checkout({ id, initialProduct }) {
               )}
 
               {paymentMethod && renderScreenshotUpload()}
+
+              <div className={`terms-card ${agreed ? 'is-checked' : ''}`} style={{ marginTop: 20 }}>
+                <h3 className="terms-card-title">Agreement</h3>
+                <label className={`terms-checkbox ${agreed ? 'is-checked' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    aria-invalid={!agreed && error ? true : undefined}
+                  />
+                  <span className="terms-checkbox-mark" aria-hidden="true" />
+                  <span className="terms-checkbox-label">
+                    I have read and agree to the{' '}
+                    <a href="/return-refund-policy">Return &amp; Refund Policy</a> and{' '}
+                    <a href="/terms-and-conditions">Terms &amp; Conditions</a>.
+                  </span>
+                </label>
+              </div>
 
               <div className="form-actions">
                 <a href={`/shop/${id}`} className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to product</a>

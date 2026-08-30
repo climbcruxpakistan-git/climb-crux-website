@@ -42,6 +42,17 @@ export default function Footer() {
             <li><a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">WhatsApp</a></li>
           </ul>
         </div>
+
+        <div className="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><NavLink to="/terms-and-conditions">Terms &amp; Conditions</NavLink></li>
+            <li><NavLink to="/return-refund-policy">Return &amp; Refund Policy</NavLink></li>
+            <li><NavLink to="/privacy-policy">Privacy Policy</NavLink></li>
+            <li><NavLink to="/shipping-policy">Shipping Policy</NavLink></li>
+            <li><a href={WHATSAPP_TEL}>Contact Us</a></li>
+          </ul>
+        </div>
       </div>
 
       <div className="footer-bottom">
