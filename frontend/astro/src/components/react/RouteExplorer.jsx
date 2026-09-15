@@ -1,10 +1,35 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { gradeBucket, GRADE_BUCKETS, formatGrade } from '../../data/margallaRoutes'
 
+const VALID_BUCKETS = new Set(GRADE_BUCKETS.map((b) => b.id))
+
+function readParams() {
+  if (typeof window === 'undefined') return new URLSearchParams()
+  return new URLSearchParams(window.location.search)
+}
+
+function initialGrade() {
+  const bucket = readParams().get('bucket')
+  return bucket && VALID_BUCKETS.has(bucket) ? bucket : 'all'
+}
+
+function initialArea(areas) {
+  const id = readParams().get('area')
+  return id && areas.some((a) => a.id === id) ? id : 'all'
+}
+
+function initialVenue(areas, areaId) {
+  const id = readParams().get('venue')
+  if (!id) return 'all'
+  const source = areaId === 'all' ? areas : areas.filter((a) => a.id === areaId)
+  return source.some((a) => a.venues.some((v) => v.id === id)) ? id : 'all'
+}
+
 export default function RouteExplorer({ routes, areas }) {
-  const [grade, setGrade] = useState('all')
-  const [areaId, setAreaId] = useState('all')
-  const [venue, setVenue] = useState('all')
+  const [grade, setGrade] = useState(initialGrade)
+  const [areaId, setAreaId] = useState(() => initialArea(areas))
+  const [venue, setVenue] = useState(() => initialVenue(areas, areaId))
+  const [search, setSearch] = useState(() => readParams().get('search') || '')
 
   const areaOptions = useMemo(() => {
     const set = new Map(areas.map((a) => [a.id, a.name]))
@@ -22,33 +47,40 @@ export default function RouteExplorer({ routes, areas }) {
     return [{ id: 'all', name: 'All Venues' }, ...Array.from(names.entries()).map(([id, name]) => ({ id, name }))]
   }, [areas, areaId])
 
-  useEffect(() => {
-    const onGrade = (e) => {
-      const bucket = e.detail?.bucket || 'all'
-      setGrade(bucket)
-      const el = document.getElementById('route-explorer')
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-    window.addEventListener('guide:grade-filter', onGrade)
-    return () => window.removeEventListener('guide:grade-filter', onGrade)
-  }, [])
-
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
     return routes.filter((r) => {
       if (grade !== 'all' && gradeBucket(r.grade) !== grade) return false
       if (areaId !== 'all' && r.areaId !== areaId) return false
       if (venue !== 'all' && r.venueId !== venue) return false
+      if (q && !r.name.toLowerCase().includes(q)) return false
       return true
     })
-  }, [routes, grade, areaId, venue])
+  }, [routes, grade, areaId, venue, search])
 
-  const hasFilters = grade !== 'all' || areaId !== 'all' || venue !== 'all'
+  const hasFilters = grade !== 'all' || areaId !== 'all' || venue !== 'all' || search.trim() !== ''
 
-  const reset = () => { setGrade('all'); setAreaId('all'); setVenue('all') }
+  const reset = () => {
+    setGrade('all')
+    setAreaId('all')
+    setVenue('all')
+    setSearch('')
+    window.history.replaceState({}, '', window.location.pathname)
+  }
 
   return (
     <div className="explorer-wrap">
       <div className="explorer-filters" role="search" aria-label="Filter routes">
+        <div className="explorer-search-row">
+          <input
+            type="search"
+            className="explorer-search"
+            placeholder="Search routes by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search routes by name"
+          />
+        </div>
         <fieldset>
           <legend className="visually-hidden">Grade</legend>
           <div className="filter-row">

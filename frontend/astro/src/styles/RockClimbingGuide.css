@@ -58,6 +58,31 @@
   margin-top: 36px;
 }
 
+/* Compact "browse the whole library" CTA — pairs with the guide cards. */
+.guide-cta-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-top: 4px solid var(--orange);
+  padding: clamp(22px, 3.4vw, 34px);
+}
+
+.guide-cta-strip-copy h2 {
+  font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+  margin: 0 0 6px;
+}
+
+.guide-cta-strip-copy p {
+  font-size: 0.95rem;
+  color: var(--stone-dark);
+  margin: 0;
+  max-width: 58ch;
+}
+
 @media (max-width: 480px) {
   .guide-hero-actions {
     margin-top: 30px;
@@ -525,6 +550,42 @@
   padding: 0;
 }
 
+.explorer-search-row {
+  display: flex;
+  align-items: center;
+}
+
+.explorer-search {
+  width: 100%;
+  max-width: 420px;
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  color: var(--charcoal);
+  background: var(--chalk);
+  border: 1px solid rgba(56, 56, 57, 0.35);
+  padding: 0.62em 1em;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.explorer-search::placeholder {
+  color: var(--stone);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.explorer-search:hover {
+  border-color: var(--charcoal);
+}
+
+.explorer-search:focus {
+  outline: none;
+  border-color: var(--orange);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(243, 111, 33, 0.18);
+}
+
 .filter-row {
   display: flex;
   flex-wrap: wrap;
@@ -891,6 +952,24 @@
   margin: 0;
 }
 
+.venue-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--orange-dark);
+  transition: color 0.15s ease;
+}
+
+.venue-all-link:hover {
+  color: var(--charcoal);
+}
+
 .route-pitches {
   list-style: none;
   padding: 0;
@@ -1063,6 +1142,14 @@
   .guide-hero-meta {
     flex-direction: column;
     align-items: stretch;
+  }
+  .guide-cta-strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .guide-cta-strip .btn {
+    width: 100%;
+    text-align: center;
   }
   .guide-hero-chip {
     justify-content: center;

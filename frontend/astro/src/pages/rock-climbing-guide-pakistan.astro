@@ -1,7 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import { optimizeImage } from '../lib/api';
-import RouteExplorer from '../components/react/RouteExplorer.jsx';
 import {
   AREAS,
   MARGALLA_SOURCE,
@@ -34,13 +33,6 @@ const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
 
 /* ── Route data ───────────────────────────────────────────────────── */
 const allRoutes = flattenRoutes();
-
-// Slimmed-down area/venue tree serialized into the Route Explorer island.
-const explorerAreas = AREAS.map((area) => ({
-  id: area.id,
-  name: area.name,
-  venues: area.venues.map((venue) => ({ id: venue.id, name: venue.name })),
-}));
 
 const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
 const statChips = [
@@ -175,7 +167,6 @@ const faqSchema = {
     <div class="page-header-pattern"></div>
     <div class="page-header-accent"></div>
     <div class="wrap page-header-inner guide-hero-inner">
-      <span class="eyebrow">Climbing in Pakistan</span>
       <h1>Rock Climbing Guide to Pakistan</h1>
       <div class="page-header-desc">
         <p>
@@ -183,14 +174,9 @@ const faqSchema = {
           areas, venues, routes and grades, all in one place.
         </p>
       </div>
-      <div class="guide-hero-meta">
-        <span class="guide-hero-chip"><b>Margalla Hills</b> Islamabad</span>
-        <span class="guide-hero-chip"><b>Outdoor</b> Sport climbing &amp; trad</span>
-        <span class="guide-hero-chip"><b>Guided</b> Public &amp; private sessions</span>
-      </div>
       <div class="guide-hero-actions">
         <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
-        <a class="btn btn-outline-light" href="#route-explorer">Browse All Routes</a>
+        <a class="btn btn-outline-light" href="/routes">Browse All Routes</a>
       </div>
     </div>
   </section>
@@ -256,17 +242,16 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 4. Route Explorer ─────────────────────────────────────────── */}
-  <section id="route-explorer" class="section">
+  {/* ── 4. Route library CTA ──────────────────────────────────────── */}
+  <section id="route-library-cta" class="section">
     <div class="wrap">
-      <span class="eyebrow">Interactive</span>
-      <h2>Route Explorer</h2>
-      <p class="guide-lede">
-        Every documented route on this page in one filterable list. Select a grade, an area, a
-        venue — or any combination of the three — and the list updates instantly. Selecting a grade
-        in the index below jumps straight back here.
-      </p>
-      <RouteExplorer client:load routes={allRoutes} areas={explorerAreas} />
+      <div class="guide-cta-strip">
+        <div class="guide-cta-strip-copy">
+          <h2>Explore the Complete Route Library</h2>
+          <p>Browse all documented routes by grade, area, venue, or route name.</p>
+        </div>
+        <a class="btn btn-primary" href="/routes">View All Routes &rarr;</a>
+      </div>
     </div>
   </section>
 
@@ -276,8 +261,9 @@ const faqSchema = {
       <span class="eyebrow">Where to climb</span>
       <h2>Venues &amp; Routes in Detail</h2>
       <p class="guide-lede">
-        Character, approach and every documented route, area by area. Approach times are from the
-        source guide and may change with conditions.
+        Character, approach and a few highlighted routes for each venue — a taste of what's on
+        offer. Follow the venue links to filter the complete route library. Approach times are from
+        the source guide and may change with conditions.
       </p>
 
       {AREAS.map((area) => (
@@ -313,43 +299,51 @@ const faqSchema = {
               )}
 
               {venue.routes.length > 0 && (
-                <ul class="venue-routes" role="list">
-                  {venue.routes.map((route) => (
-                    <li class="route-row">
-                      <div class="route-row-head">
-                        <span class="route-name">{route.name}</span>
-                        <span class="route-meta">
-                          <span class="route-grade">{formatGrade(route)}</span>
-                          {route.length && <span class="route-len">{route.length}m</span>}
-                          {route.type === 'multi-pitch' && <span class="route-tag">Multi-pitch</span>}
-                          {route.type === 'trad' && <span class="route-tag">Trad</span>}
-                          {route.variation && <span class="route-tag">Variation</span>}
-                        </span>
-                      </div>
-                      {route.pitches ? (
-                        <p class="route-desc">
-                          Four pitches from ~5m to 30m long; the hardest moves are 6c+. See the
-                          pitch-by-pitch breakdown below. Descent is usually by abseil — two ropes
-                          are useful to abseil 40m directly from the pitch 2 belay.
-                        </p>
-                      ) : (
-                        <p class="route-desc">{route.description}</p>
-                      )}
-                      {route.pitches && (
-                        <ul class="route-pitches" role="list">
-                          {route.pitches.map((pitch) => (
-                            <li>
-                              <span class="pitch-label">{pitch.label}</span>
-                              <span class="pitch-grade">{pitch.grade}</span>
-                              {pitch.length && <span class="pitch-len">{pitch.length}m</span>}
-                              <span class="pitch-desc">{pitch.description}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul class="venue-routes" role="list">
+                    {venue.routes.slice(0, 3).map((route) => (
+                      <li class="route-row">
+                        <div class="route-row-head">
+                          <span class="route-name">{route.name}</span>
+                          <span class="route-meta">
+                            <span class="route-grade">{formatGrade(route)}</span>
+                            {route.length && <span class="route-len">{route.length}m</span>}
+                            {route.type === 'multi-pitch' && <span class="route-tag">Multi-pitch</span>}
+                            {route.type === 'trad' && <span class="route-tag">Trad</span>}
+                            {route.variation && <span class="route-tag">Variation</span>}
+                          </span>
+                        </div>
+                        {route.pitches ? (
+                          <p class="route-desc">
+                            Four pitches from ~5m to 30m long; the hardest moves are 6c+. See the
+                            pitch-by-pitch breakdown below. Descent is usually by abseil — two ropes
+                            are useful to abseil 40m directly from the pitch 2 belay.
+                          </p>
+                        ) : (
+                          <p class="route-desc">{route.description}</p>
+                        )}
+                        {route.pitches && (
+                          <ul class="route-pitches" role="list">
+                            {route.pitches.map((pitch) => (
+                              <li>
+                                <span class="pitch-label">{pitch.label}</span>
+                                <span class="pitch-grade">{pitch.grade}</span>
+                                {pitch.length && <span class="pitch-len">{pitch.length}m</span>}
+                                <span class="pitch-desc">{pitch.description}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    class="venue-all-link"
+                    href={`/routes?area=${area.id}&venue=${venue.id}`}
+                  >
+                    View all {venue.routes.length} {venue.routes.length === 1 ? 'route' : 'routes'} &rarr;
+                  </a>
+                </>
               )}
             </article>
           ))}
@@ -364,16 +358,15 @@ const faqSchema = {
       <span class="eyebrow">Grade index</span>
       <h2>Routes by Grade</h2>
       <p class="guide-lede">
-        The complete route index, grouped by grade. Pick a grade to filter the Route Explorer for
-        routes at that difficulty.
+        The complete route index, grouped by grade. Pick a grade to open the route library with
+        routes at that difficulty already filtered.
       </p>
       <div class="grade-index-grid">
         {gradeIndex.map((group) => (
-          <button
-            type="button"
+          <a
             class="grade-index-group"
-            data-guide-bucket={group.bucket}
-            aria-label={`Show ${group.grade} routes in the Route Explorer`}
+            href={`/routes?bucket=${group.bucket}`}
+            aria-label={`Show ${group.grade} routes in the route library`}
           >
             <span class="grade-index-grade">{group.grade}</span>
             <span class="grade-index-routes">
@@ -384,7 +377,7 @@ const faqSchema = {
             <span class="grade-index-count">
               {group.routes.length} {group.routes.length === 1 ? 'route' : 'routes'}
             </span>
-          </button>
+          </a>
         ))}
       </div>
       <p class="guide-section-note">
@@ -518,25 +511,4 @@ const faqSchema = {
       </div>
     </div>
   </section>
-
-  {/* Wires the Routes-by-Grade buttons to the Route Explorer island.
-      Delegation + a one-time guard keeps this idempotent across Astro
-      view transitions. */}
-  <script is:inline>
-    (function () {
-      if (window.__guideGradeIndexWired) return;
-      window.__guideGradeIndexWired = true;
-      document.addEventListener('click', function (event) {
-        var target = event.target && event.target.closest
-          ? event.target.closest('[data-guide-bucket]')
-          : null;
-        if (!target) return;
-        window.dispatchEvent(
-          new CustomEvent('guide:grade-filter', {
-            detail: { bucket: target.getAttribute('data-guide-bucket') },
-          })
-        );
-      });
-    })();
-  </script>
 </MainLayout>

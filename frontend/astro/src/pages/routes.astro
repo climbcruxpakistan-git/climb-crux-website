@@ -1,0 +1,67 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import RouteExplorer from '../components/react/RouteExplorer.jsx';
+import { AREAS, flattenRoutes, TOTAL_ROUTES } from '../data/margallaRoutes';
+import '../styles/RockClimbingGuide.css';
+
+const allRoutes = flattenRoutes();
+
+const explorerAreas = AREAS.map((area) => ({
+  id: area.id,
+  name: area.name,
+  venues: area.venues.map((venue) => ({ id: venue.id, name: venue.name })),
+}));
+
+const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
+const statChips = [
+  { k: String(AREAS.length), v: 'Climbing areas' },
+  { k: String(totalVenues), v: 'Venues' },
+  { k: String(TOTAL_ROUTES), v: 'Named routes' },
+];
+---
+
+<MainLayout
+  title="All Climbing Routes | Islamabad & Margalla Hills | Climb Crux"
+  description="Browse and filter every documented Margalla Hills climbing route by grade, area, venue or route name — the complete Islamabad climbing route library."
+>
+  <section class="page-header route-library-header">
+    <div class="page-header-pattern"></div>
+    <div class="page-header-accent"></div>
+    <div class="wrap page-header-inner guide-hero-inner">
+      <span class="eyebrow">Route library</span>
+      <h1>All Climbing Routes</h1>
+      <div class="page-header-desc">
+        <p>
+          Browse and filter the complete Margalla Hills route library — every documented route
+          from the guide, searchable by name and filterable by grade, area or venue.
+        </p>
+      </div>
+      <div class="guide-stats" role="list">
+        {statChips.map((chip) => (
+          <div class="guide-stat" role="listitem">
+            <b>{chip.k}</b>
+            <span>{chip.v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="route-explorer" class="section">
+    <div class="wrap">
+      <RouteExplorer client:load routes={allRoutes} areas={explorerAreas} />
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .route-library-header h1 {
+    font-size: clamp(2.4rem, 5.4vw, 4rem);
+    max-width: 16ch;
+    margin-bottom: 0.55em;
+  }
+
+  .route-library-header .guide-stats {
+    margin-top: 8px;
+  }
+</style>
