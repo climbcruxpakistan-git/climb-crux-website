@@ -1,0 +1,572 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { getAvailableSessions, getGallery, getUploads, optimizeImage } from '../lib/api';
+import '../styles/RockClimbingGuide.css';
+
+/**
+ * Rock Climbing Guide to Pakistan — a static SEO / resource page.
+ *
+ * Content rules this page follows:
+ *  · Current Climb Crux information comes from the live session system, or is
+ *    described as a Climb Crux offering (public / private sessions).
+ *  · Route grades and counts taken from "Monkey Business — A Guide to Climbing
+ *    in Margalla" (John Arran, 2011) are always labelled as historical, never
+ *    presented as current.
+ *  · Anything that can change (access, meeting points, conditions, grades,
+ *    equipment availability) is written cautiously and deferred to the live
+ *    booking system.
+ */
+
+// Existing Climb Crux hero photograph — the same verified Cloudinary asset used
+// by the home-page hero (see backend/src/models/HomeContent.js). Not invented.
+const HERO_IMAGE_SOURCE = 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg';
+const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
+
+/* ── Margalla at a glance ─────────────────────────────────────────── */
+const glance = [
+  { h: 'Outdoor Sport Climbing', p: 'Bolted outdoor climbing on natural rock around the Margalla Hills.' },
+  { h: 'Islamabad', p: "Easy access to climbing areas from Pakistan's capital." },
+  { h: 'Multiple Grades', p: 'Climbing areas include routes ranging from beginner-friendly grades to harder climbing.' },
+  { h: 'Guided Options', p: 'Public and private climbing sessions are available through Climb Crux.' },
+];
+
+/* ── Why climb in Islamabad? ──────────────────────────────────────── */
+const whyCards = [
+  { h: 'Natural Rock', p: 'Climb on the limestone cliffs of the Margalla Hills rather than an indoor wall.' },
+  { h: 'Different Grades', p: 'The area has climbing suitable for different experience levels, from easier beginner routes to challenging climbing.' },
+  { h: 'Different Conditions', p: 'The Margalla Hills include crags with different aspects and shade conditions, making seasonal and time-of-day planning important.' },
+];
+
+/* ── Climbing areas ───────────────────────────────────────────────────
+   `source: 'current'`   → current Climb Crux session information.
+   `source: 'historical'` → documented in the 2011 Margalla climbing guide.
+   Both are labelled on the card so the two are never confused.            */
+const areas = [
+  {
+    name: 'Jasmin Corner',
+    grade: '4b–5a',
+    source: 'historical',
+    sourceLabel: '2011 guide',
+    p: 'A beginner-friendly climbing area with easier routes and a short approach.',
+  },
+  {
+    name: "Beetle's Nest",
+    grade: '5a–5c',
+    source: 'current',
+    sourceLabel: 'Current',
+    p: "Set in the Saidpur area. Climb Crux currently runs beginner-friendly outdoor sessions here — check the Sessions page for the latest scheduled dates.",
+  },
+  {
+    name: 'Legacy Wall',
+    grade: '6a–7c+',
+    source: 'historical',
+    sourceLabel: '2011 guide',
+    p: 'A well-known Margalla climbing area with routes extending into harder grades.',
+  },
+  {
+    name: 'Jungle Rock',
+    grade: '6b+–8a',
+    source: 'historical',
+    sourceLabel: '2011 guide',
+    p: 'A steeper climbing area suited to harder climbing.',
+  },
+];
+
+/* ── What level are you? ──────────────────────────────────────────── */
+const levels = [
+  {
+    h: 'Beginner',
+    p: 'New to outdoor rock climbing? A guided session can introduce you to climbing movement, equipment, rope systems and outdoor climbing safety.',
+  },
+  {
+    h: 'Intermediate',
+    p: 'Already climbing indoors or outdoors? Explore outdoor routes with guidance matched to your experience and goals.',
+  },
+  {
+    h: 'Advanced',
+    p: 'Looking for harder climbing? Private sessions can be arranged for experienced climbers looking to train, climb harder routes or explore Margalla climbing areas.',
+  },
+];
+
+/* ── Visiting Pakistan? ───────────────────────────────────────────── */
+const internationalClimbers = [
+  'Bring your personal climbing shoes if possible.',
+  'Let us know your climbing experience and preferred grades.',
+  'Tell us whether you are looking for a beginner experience, sport climbing or harder climbing.',
+  'We can recommend a suitable climbing area and session format.',
+  'Equipment availability should be confirmed before the session.',
+];
+
+/* ── What do I need? ──────────────────────────────────────────────── */
+const equipment = [
+  'Climbing shoes',
+  'Harness',
+  'Helmet',
+  'Rope',
+  'Quickdraws',
+  'Belay device',
+];
+
+/* ── When to climb ────────────────────────────────────────────────── */
+const seasonFactors = [
+  'Temperature',
+  'Humidity',
+  'Sun and shade',
+  'Time of day',
+  'Season',
+  'Weather',
+];
+
+/* ── Climb with Climb Crux ────────────────────────────────────────── */
+const climbOptions = [
+  {
+    h: 'Public Sessions',
+    p: 'Join a scheduled outdoor climbing session on the Margalla Hills, with certified instruction and safety cover.',
+    cta: 'View Public Sessions',
+    href: '/sessions',
+  },
+  {
+    h: 'Private Sessions',
+    p: 'Book a private climbing experience tailored to your group, your goals and your ability.',
+    cta: 'Explore Private Sessions',
+    href: '/private-premium',
+  },
+  {
+    h: 'Experienced Climbers',
+    p: 'Already climbing outdoors and want to explore Margalla climbing with local guidance? Arrange a session around the routes you want to try.',
+    cta: 'Book a Private Session',
+    href: '/book-now?type=private-starter',
+  },
+];
+
+/* ── Climb responsibly ────────────────────────────────────────────── */
+const responsible = [
+  'Leave no litter — pack out everything you bring in.',
+  'Avoid unnecessary noise; sound carries across the crags and nearby areas.',
+  'Respect local communities living around the climbing areas.',
+  'Respect park and environmental regulations.',
+  'Avoid damaging rock, vegetation or fixed equipment.',
+  'Keep climbing areas and approach paths clean.',
+  'Treat local people, park staff and other climbers respectfully.',
+];
+
+/* ── FAQ ──────────────────────────────────────────────────────────── */
+const faqs = [
+  {
+    q: 'Where can I go rock climbing in Islamabad?',
+    a: 'The Margalla Hills around Islamabad have several outdoor climbing areas. The most suitable area depends on your experience, route difficulty, conditions and access.',
+  },
+  {
+    q: 'Is rock climbing in the Margalla Hills suitable for beginners?',
+    a: 'Yes — some areas have easier routes suitable for beginners when climbed with appropriate instruction, equipment and supervision.',
+  },
+  {
+    q: 'What grades are available?',
+    a: 'Historical climbing documentation describes Margalla climbing across a broad range of French sport grades. Current route grades and conditions should be confirmed before climbing.',
+  },
+  {
+    q: 'Can international climbers join Climb Crux?',
+    a: 'Yes. Visiting climbers can contact or book Climb Crux for guided outdoor climbing based on their experience and goals.',
+  },
+  {
+    q: 'Do I need my own climbing equipment?',
+    a: 'Bring your own personal equipment where possible. Equipment availability should be confirmed with Climb Crux before booking.',
+  },
+  {
+    q: 'What is the best time to climb?',
+    a: 'Conditions vary with season, temperature, humidity, sun and shade. Early morning or evening may be more comfortable during hotter periods, depending on the climbing area.',
+  },
+];
+
+/* ── Current access information (from the live, admin-managed session system) ──
+   Meeting points are never hardcoded here. When the API is reachable at build
+   time we list the distinct climbing locations of currently announced sessions;
+   otherwise the section falls back to general guidance and points at the live
+   session/booking pages, which remain the authoritative source.              */
+const announced = await getAvailableSessions().catch(() => []);
+const announcedLocations = [];
+for (const session of Array.isArray(announced) ? announced : []) {
+  const name = String(session.locationName || '').trim();
+  if (!name) continue;
+  if (announcedLocations.some((l) => l.name.toLowerCase() === name.toLowerCase())) continue;
+  announcedLocations.push({
+    name,
+    meetingPoint: String(session.meetingPoint || '').trim(),
+    mapsUrl: String(session.meetingPointMapsUrl || session.mapsUrl || '').trim(),
+  });
+}
+
+/* ── Gallery — reuse existing uploaded / curated imagery, never external ── */
+const [uploads, galleryItems] = await Promise.all([
+  getUploads().catch(() => []),
+  getGallery().catch(() => []),
+]);
+
+const galleryPhotos = [];
+for (const photo of Array.isArray(uploads) ? uploads : []) {
+  if (galleryPhotos.length >= 6) break;
+  if (!photo?.url) continue;
+  galleryPhotos.push({
+    src: optimizeImage(photo.url, 600),
+    alt: photo.title ? `${photo.title} — Climb Crux climbing in the Margalla Hills` : 'Climb Crux climbing in the Margalla Hills, Islamabad',
+  });
+}
+if (galleryPhotos.length === 0) {
+  for (const item of Array.isArray(galleryItems) ? galleryItems : []) {
+    if (galleryPhotos.length >= 6) break;
+    if (!item?.imageUrl) continue;
+    galleryPhotos.push({
+      src: optimizeImage(item.imageUrl, 600),
+      alt: item.caption || item.tag || 'Climb Crux climbing in the Margalla Hills, Islamabad',
+    });
+  }
+}
+// Existing placeholder convention from the site's own defaults, used only when
+// no photo is available at build time (no invented image URLs).
+const galleryPlaceholders = [
+  'Public Session · Belay Practice',
+  'Private Coaching · 1-on-1',
+  'Premium Ascent · 7c+',
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<MainLayout
+  title="Rock Climbing Guide to Pakistan | Islamabad & Margalla Hills | Climb Crux"
+  description="A practical rock climbing guide to Islamabad and the Margalla Hills, including climbing areas, grades, seasons, access, equipment and guided sessions."
+  image={heroImage}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+
+  {/* ── 1. Hero ───────────────────────────────────────────────────── */}
+  <section class="page-header guide-hero">
+    <div class="page-header-pattern"></div>
+    <div class="page-header-accent"></div>
+    <div class="wrap page-header-inner guide-hero-inner">
+      <div class="guide-hero-copy">
+        <span class="eyebrow">Climbing in Pakistan</span>
+        <h1>Rock Climbing Guide to Pakistan</h1>
+        <div class="page-header-desc">
+          <p>Your guide to outdoor rock climbing in Islamabad and the Margalla Hills.</p>
+        </div>
+        <div class="guide-hero-actions">
+          <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
+          <a class="btn btn-outline-light" href="#climbing-areas">Explore Climbing Areas</a>
+        </div>
+      </div>
+      <figure class="guide-hero-figure">
+        <img
+          src={heroImage}
+          alt="Rock climbers on the limestone crags of the Margalla Hills near Saidpur Village, Islamabad"
+          width="1400"
+          height="788"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
+    </div>
+  </section>
+
+  {/* ── 2. Margalla at a glance ───────────────────────────────────── */}
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">At a glance</span>
+      <h2>Margalla at a Glance</h2>
+      <div class="info-grid">
+        {glance.map((item) => (
+          <div class="info-card">
+            <h3>{item.h}</h3>
+            <p>{item.p}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ── 3. Why climb in Islamabad? ────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Why Islamabad</span>
+      <h2>Why Climb in Islamabad?</h2>
+      <div class="info-grid">
+        {whyCards.map((item) => (
+          <div class="info-card">
+            <h3>{item.h}</h3>
+            <p>{item.p}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ── 4. Explore the climbing areas ─────────────────────────────── */}
+  <section class="section guide-anchor" id="climbing-areas">
+    <div class="wrap">
+      <span class="eyebrow">Climbing areas</span>
+      <h2>Explore the Climbing Areas</h2>
+      <p class="guide-lede">
+        Margalla climbing is spread across several small areas above and around Islamabad. Each one
+        climbs differently and suits a different level, so the right choice depends on your
+        experience and the conditions on the day.
+      </p>
+      <div class="guide-grid">
+        {areas.map((area) => (
+          <article class="guide-card">
+            <span class="grade-badge">
+              <span class="grade">{area.grade}</span>
+              <span class="label">{area.sourceLabel}</span>
+            </span>
+            <h3>{area.name}</h3>
+            <p>{area.p}</p>
+          </article>
+        ))}
+      </div>
+      <p class="guide-source-note">
+        <strong>Historical reference:</strong> Some route information on this page is based on
+        <em> Monkey Business — A Guide to Climbing in Margalla</em> by John Arran (2011). Route
+        counts, grades and fixed equipment may have changed; current conditions should be
+        independently verified before climbing.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 5. What level are you? ────────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Find your fit</span>
+      <h2>What Level Are You?</h2>
+      <div class="guide-grid">
+        {levels.map((level) => (
+          <article class="guide-card">
+            <h3>{level.h}</h3>
+            <p>{level.p}</p>
+          </article>
+        ))}
+      </div>
+      <div class="guide-hero-actions">
+        <a class="btn btn-primary" href="/private-premium">Explore Private &amp; Premium</a>
+      </div>
+    </div>
+  </section>
+
+  {/* ── 6. Visiting Pakistan? ─────────────────────────────────────── */}
+  <section class="section section-dark">
+    <div class="wrap">
+      <span class="eyebrow">International climbers</span>
+      <h2>Visiting Pakistan?</h2>
+      <p class="guide-lede">
+        Islamabad is a practical base for exploring the outdoor climbing of the Margalla Hills. If
+        you're visiting Pakistan and want to climb outdoors, Climb Crux can help you plan a guided
+        session based on your experience, preferred difficulty and available time.
+      </p>
+      <h3>International Climbers</h3>
+      <ul class="guide-list is-check">
+        {internationalClimbers.map((item) => <li>{item}</li>)}
+      </ul>
+      <div class="guide-hero-actions">
+        <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
+        <a class="btn btn-outline-light" href="/our-team">Meet Our Instructors</a>
+      </div>
+    </div>
+  </section>
+
+  {/* ── 7. What do I need? ────────────────────────────────────────── */}
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">Equipment</span>
+      <h2>What Do I Need?</h2>
+      <p class="guide-lede">
+        Outdoor rock climbing requires appropriate equipment and the experience to use it. A typical
+        sport-climbing setup includes:
+      </p>
+      <ul class="guide-list">
+        {equipment.map((item) => <li>{item}</li>)}
+      </ul>
+      <div class="guide-note">
+        <p>
+          <strong>Safety note:</strong> Outdoor rock climbing involves inherent risks. Climbers must
+          use appropriate equipment, understand the systems being used and make responsible
+          decisions about route and equipment conditions. This guide is not a substitute for
+          climbing instruction or experience.
+        </p>
+      </div>
+      <p class="guide-section-note">
+        Gear is provided on Climb Crux sessions, but availability should be confirmed before you
+        book — particularly if you need climbing shoes or a specific size.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 8. When to climb ──────────────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Planning your climb</span>
+      <h2>When to Climb</h2>
+      <p class="guide-lede">
+        Conditions in the Margalla Hills vary through the year and change from crag to crag. There is
+        no single season that behaves the same everywhere, so it is worth planning around what a
+        specific crag and day actually offer. The main factors are:
+      </p>
+      <ul class="guide-list">
+        {seasonFactors.map((item) => <li>{item}</li>)}
+      </ul>
+      <p class="guide-section-note">
+        During hotter periods, early morning and later in the day can sometimes be more comfortable
+        than the middle of the day, depending on the crag, its aspect and the forecast. Weather and
+        climbing conditions are never guaranteed — assess them on the day.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 9. Getting to the climbing areas ──────────────────────────── */}
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">Access</span>
+      <h2>Getting to the Climbing Areas</h2>
+      <p class="guide-lede">
+        Margalla climbing areas are reached on foot. Approaches usually start from a road, a parking
+        area or a nearby landmark, and the walk in varies by crag — some are short, others take
+        longer and cross steeper ground. Approach times are therefore not the same everywhere.
+      </p>
+
+      {announcedLocations.length > 0 ? (
+        <>
+          <h3>Currently scheduled climbing areas</h3>
+          <ul class="guide-list">
+            {announcedLocations.map((loc) => (
+              <li>
+                <strong>{loc.name}</strong>
+                {loc.meetingPoint ? ` — meeting point: ${loc.meetingPoint}` : ''}
+                {loc.mapsUrl ? (
+                  <> · <a href={loc.mapsUrl} target="_blank" rel="noreferrer">View meeting point map</a></>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <div class="guide-note">
+          <p>
+            The exact climbing area and meeting point for each session are published with the
+            scheduled session and confirmed with your booking. Check the
+            {' '}<a href="/sessions">upcoming sessions</a> for the current locations and dates.
+          </p>
+        </div>
+      )}
+
+      <p class="guide-section-note">
+        Paths, parking and access points can change. This page is informational and does not replace
+        the live location and meeting-point details shown when you book — always confirm the exact
+        meeting point and time on your booking confirmation.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 10. Climb with Climb Crux ─────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Guided climbing</span>
+      <h2>Climb With Climb Crux</h2>
+      <div class="guide-grid">
+        {climbOptions.map((option) => (
+          <article class="guide-card">
+            <h3>{option.h}</h3>
+            <p>{option.p}</p>
+            <a class="btn btn-primary" href={option.href}>{option.cta}</a>
+          </article>
+        ))}
+      </div>
+      <p class="guide-section-note">
+        Every climbing session is led by certified instructors — you can
+        {' '}<a href="/our-team">meet the instructors</a> behind your climb.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 11. Climb responsibly ─────────────────────────────────────── */}
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">Access &amp; ethics</span>
+      <h2>Climb Responsibly</h2>
+      <p class="guide-lede">
+        The Margalla climbing areas sit close to residential neighbourhoods and park land, and access
+        depends on keeping a good relationship with the people who live and work around them.
+      </p>
+      <ul class="guide-list">
+        {responsible.map((item) => <li>{item}</li>)}
+      </ul>
+      <p class="guide-section-note">
+        Access arrangements, seasonal restrictions and local expectations can change. Ask before you
+        climb and keep your impact on the area and the community low.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 12. Gallery ───────────────────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">From the crags</span>
+      <h2>Climbing in the Margalla Hills</h2>
+      {galleryPhotos.length > 0 ? (
+        <div class="guide-gallery-grid">
+          {galleryPhotos.map((photo, i) => (
+            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+          ))}
+        </div>
+      ) : (
+        <div class="guide-gallery-grid">
+          {galleryPlaceholders.map((tag) => (
+            <div class="placeholder-photo" style="--ar: 4 / 3;">
+              <span class="tag">{tag}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div class="guide-gallery-cta">
+        <a class="btn btn-outline" href="/gallery">View Full Gallery →</a>
+      </div>
+    </div>
+  </section>
+
+  {/* ── 13. FAQ ───────────────────────────────────────────────────── */}
+  <section class="section">
+    <div class="wrap">
+      <span class="eyebrow">Good to know</span>
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.q}</summary>
+            <p>{faq.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ── 14. Final CTA ─────────────────────────────────────────────── */}
+  <section class="section section-dark guide-final-cta">
+    <div class="wrap">
+      <h2>Ready to Climb in Islamabad?</h2>
+      <p>
+        Explore our upcoming outdoor climbing sessions or book a private climbing experience in the
+        Margalla Hills.
+      </p>
+      <div class="guide-hero-actions">
+        <a class="btn btn-primary" href="/sessions">View Public Sessions</a>
+        <a class="btn btn-outline-light" href="/book-now?type=private-starter">Book a Private Session</a>
+      </div>
+    </div>
+  </section>
+</MainLayout>

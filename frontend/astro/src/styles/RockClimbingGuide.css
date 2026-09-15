@@ -1,0 +1,288 @@
+/* ===================================================================
+   ROCK CLIMBING GUIDE TO PAKISTAN
+   Static SEO / resource page — built entirely from the site's existing
+   design tokens (charcoal, orange, chalk) and shared classes. Only the
+   layout helpers this page needs are defined here; global CSS is untouched.
+   =================================================================== */
+
+/* ============================== HERO ============================== */
+
+/* Extends the shared `.page-header` block (pattern + accent bar + h1 accent
+   rule) with a two-column copy/photo layout. */
+.guide-hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+
+.guide-hero h1 {
+  font-size: clamp(2rem, 4.2vw, 3.2rem);
+  margin-bottom: 0.45em;
+}
+
+.guide-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.guide-hero-figure {
+  margin: 0;
+}
+
+.guide-hero-figure img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 980px) {
+  .guide-hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guide-hero-actions {
+    margin-top: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .guide-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .guide-hero-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ============================== SECTION HELPERS ============================== */
+
+/* Tinted section — alternates with the default chalk background so the page
+   keeps the site's section rhythm. */
+.guide-tint {
+  background: var(--chalk-dim);
+}
+
+/* Anchor target for the hero's "Explore Climbing Areas" link. Clears the
+   sticky navbar (88px) so the heading is not covered after scrolling. */
+.guide-anchor {
+  scroll-margin-top: 110px;
+}
+
+.guide-lede {
+  font-size: 1.02rem;
+  max-width: 70ch;
+  margin-bottom: 30px;
+}
+
+.guide-section-note {
+  font-size: 0.86rem;
+  color: var(--stone);
+  max-width: 72ch;
+  margin-top: 20px;
+}
+
+/* ============================== CARDS ============================== */
+
+/* The shared `.info-card` styles its heading as an `h4`; this page nests an
+   `h3` under an `h2` for a correct heading hierarchy, so give it the same
+   treatment without touching the global stylesheet. */
+.info-grid .info-card h3 {
+  font-size: 1.02rem;
+  margin-bottom: 0.4em;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.guide-card {
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  border-left: 3px solid var(--orange);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-card h3 {
+  font-size: 1.08rem;
+  margin: 0;
+}
+
+.guide-card p {
+  font-size: 0.93rem;
+  margin: 0;
+}
+
+/* Capped to the card width and allowed to wrap so a long source label can
+   never push the badge (and the card) past the container edge. */
+.guide-card .grade-badge {
+  align-self: flex-start;
+  margin-bottom: 4px;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.guide-card .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* ============================== LISTS ============================== */
+
+.guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.95rem;
+  max-width: 70ch;
+}
+
+.guide-list li {
+  position: relative;
+  padding-left: 1.5em;
+  color: var(--stone-dark);
+  line-height: 1.6;
+}
+
+.guide-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0.15em;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+/* Advice / checklist variant */
+.guide-list.is-check li::before {
+  content: '✓';
+  left: 0;
+}
+
+.guide-list strong {
+  color: var(--charcoal);
+}
+
+/* Lists inside dark sections */
+.section-dark .guide-list li {
+  color: #c9c4b8;
+}
+
+.section-dark .guide-list strong {
+  color: var(--chalk);
+}
+
+/* ============================== NOTES ============================== */
+
+.guide-note {
+  margin-top: 26px;
+  background: var(--chalk-dim);
+  border-left: 3px solid var(--orange);
+  padding: 18px 22px;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--stone-dark);
+  max-width: 78ch;
+}
+
+.guide-note p {
+  margin: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+.guide-tint .guide-note {
+  background: var(--chalk);
+}
+
+/* Historical-reference source note (kept deliberately understated) */
+.guide-source-note {
+  margin-top: 30px;
+  background: var(--chalk-dim);
+  border-left: 3px solid var(--stone);
+  padding: 16px 20px;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--stone-dark);
+  max-width: 82ch;
+}
+
+.guide-source-note strong {
+  color: var(--charcoal);
+}
+
+.guide-tint .guide-source-note {
+  background: var(--chalk);
+}
+
+/* ============================== GALLERY ============================== */
+
+.guide-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.guide-gallery-grid img,
+.guide-gallery-grid .placeholder-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.guide-gallery-cta {
+  margin-top: 26px;
+}
+
+/* ============================== FINAL CTA ============================== */
+
+.guide-final-cta {
+  text-align: center;
+}
+
+.guide-final-cta p {
+  max-width: 64ch;
+  margin: 0 auto 30px;
+}
+
+.guide-final-cta .guide-hero-actions {
+  justify-content: center;
+  margin-top: 0;
+}
+
+/* ============================== RESPONSIVE ============================== */
+
+@media (max-width: 560px) {
+  .guide-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .guide-card {
+    padding: 20px 18px;
+  }
+  .guide-hero-figure img {
+    aspect-ratio: 16 / 10;
+  }
+  .guide-gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .guide-anchor {
+    scroll-margin-top: 84px;
+  }
+}
