@@ -1,6 +1,15 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import { optimizeImage } from '../lib/api';
+import RouteExplorer from '../components/react/RouteExplorer.jsx';
+import {
+  AREAS,
+  MARGALLA_SOURCE,
+  flattenRoutes,
+  gradeBucket,
+  formatGrade,
+  TOTAL_ROUTES,
+} from '../data/margallaRoutes';
 import '../styles/RockClimbingGuide.css';
 
 /**
@@ -9,9 +18,9 @@ import '../styles/RockClimbingGuide.css';
  * Content rules this page follows:
  *  · Current Climb Crux information comes from the live session system, or is
  *    described as a Climb Crux offering (public / private sessions).
- *  · Route grades and counts taken from "Monkey Business — A Guide to Climbing
- *    in Margalla" (John Arran, 2011) are always labelled as historical, never
- *    presented as current.
+ *  · Route names, grades and descriptions taken from "Monkey Business — A
+ *    Guide to Climbing in Margalla" (John Arran, February 2011) are always
+ *    labelled as historical, never presented as current.
  *  · Anything that can change (access, meeting points, conditions, grades,
  *    equipment availability) is written cautiously and deferred to the live
  *    booking system.
@@ -22,6 +31,61 @@ import '../styles/RockClimbingGuide.css';
 // Kept here only as the page's social share (og:image) preview.
 const HERO_IMAGE_SOURCE = 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg';
 const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
+
+/* ── Route data ───────────────────────────────────────────────────── */
+const allRoutes = flattenRoutes();
+
+// Slimmed-down area/venue tree serialized into the Route Explorer island.
+const explorerAreas = AREAS.map((area) => ({
+  id: area.id,
+  name: area.name,
+  venues: area.venues.map((venue) => ({ id: venue.id, name: venue.name })),
+}));
+
+const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
+const statChips = [
+  { k: String(AREAS.length), v: 'Climbing areas' },
+  { k: String(totalVenues), v: 'Venues' },
+  { k: String(TOTAL_ROUTES), v: 'Named routes' },
+];
+
+/* ── Grade index ──────────────────────────────────────────────────── */
+// Grouped in the order of the source guide's route index. Multi-pitch routes
+// list each pitch individually, exactly as the source does.
+const GRADE_ORDER = ['4a', '4b', '4c', '5a', '5b', '5c', '5c+', '6a', '6a+', '6b', '6b+', '6c', '6c+', '7a', '7a+', '7b', '7b+', '7c+', '8a'];
+
+const gradeIndex = (() => {
+  const groups = new Map(GRADE_ORDER.map((g) => [g, []]));
+  for (const route of allRoutes) {
+    if (route.pitches) {
+      route.pitches.forEach((pitch, i) => {
+        if (!groups.has(pitch.grade)) return;
+        groups.get(pitch.grade).push({ name: `${route.name} — Pitch ${i + 1}`, grade: pitch.grade });
+      });
+    } else if (groups.has(route.grade)) {
+      groups.get(route.grade).push({ name: route.name, grade: route.grade });
+    }
+  }
+  return GRADE_ORDER
+    .filter((g) => groups.get(g).length > 0)
+    .map((g) => ({ grade: g, bucket: gradeBucket(g), routes: groups.get(g) }));
+})();
+
+/* ── Equipment, Grades & Safety ───────────────────────────────────── */
+const gradePoints = [
+  'The Margalla crags documented on this page use French sport grades, from easy 4b beginner ground at Jasmin Corner up to sustained 8a lines at Jungle Rock and Well Hidden Rock.',
+  "A '+' marks the harder end of a grade — 6a+ sits between 6a and 6b, 6b+ between 6b and 6c.",
+  'Most lines here are sport climbs on fixed bolts. A few are different: Cultural Divide at Well Hidden Rock is a trad route graded VS (5a), and Maverick at Belvedere is not yet bolted and is only climbed on top-rope.',
+  'Grades record difficulty at the time they were documented and can change with holds, bolts and rock condition — confirm them before you set out.',
+];
+
+const safetyPoints = [
+  "Carry, place and check quickdraws for the sport routes. A 60m rope covers the tall crags; most routes need far less. Teamwork at Belvedere is four pitches — the descent is usually by abseil, and two ropes are useful for the 40m abseil directly from the pitch 2 belay.",
+  'Wear a helmet. Several route notes warn of loose rock — the first metres at God Rock are described as inherently very loose, and loose rock is reported near the tops at Said Pur View.',
+  'Treat fixed gear with care — bolts, hangers and anchors age in the open, and a few routes (such as Saxony Ramp) have had their bolts removed.',
+  'Approaches follow informal hillside paths through seasonal bush; underfoot loose rock is normal. Respect the hillside and the local area, and keep paths clear of returned bushes where you can.',
+  'Climbing is at your own risk. Conditions, access and fixed gear should always be re-verified before a visit.',
+];
 
 /* ── Visiting Pakistan? ───────────────────────────────────────────── */
 const internationalClimbers = [
@@ -58,15 +122,19 @@ const climbOptions = [
 const faqs = [
   {
     q: 'Where can I go rock climbing in Islamabad?',
-    a: 'The Margalla Hills around Islamabad have several outdoor climbing areas. The most suitable area depends on your experience, route difficulty, conditions and access.',
+    a: 'The Margalla Hills around Islamabad have several documented climbing areas, covered on this page: Daman-e-Koh, Said Pur, Trail 3 and Shaddarrah. The most suitable area depends on your experience, route difficulty, conditions and access.',
   },
   {
     q: 'Is rock climbing in the Margalla Hills suitable for beginners?',
-    a: 'Yes — some areas have easier routes suitable for beginners when climbed with appropriate instruction, equipment and supervision.',
+    a: 'Yes — venues such as Jasmin Corner, Holiday Rock and Beetle\u2019s Nest include easier routes suitable for beginners when climbed with appropriate instruction, equipment and supervision.',
   },
   {
     q: 'What grades are available?',
-    a: 'Historical climbing documentation describes Margalla climbing across a broad range of French sport grades. Current route grades and conditions should be confirmed before climbing.',
+    a: 'Historical climbing documentation describes Margalla climbing from easy 4b ground up to 8a lines on the harder crags. Current route grades and conditions should be confirmed before climbing.',
+  },
+  {
+    q: 'Where does this route information come from?',
+    a: 'Route names, grades and descriptions are taken from \u201cMonkey Business \u2013 Margalla Climbing\u201d (John Arran, February 2011). Documented conditions can change, so always confirm current access, grades and fixed gear before you set out.',
   },
   {
     q: 'Can international climbers join Climb Crux?',
@@ -78,7 +146,7 @@ const faqs = [
   },
   {
     q: 'What is the best time to climb?',
-    a: 'Conditions vary with season, temperature, humidity, sun and shade. Early morning or evening may be more comfortable during hotter periods, depending on the climbing area.',
+    a: 'Conditions vary with season, temperature, humidity, sun and shade. The route notes on this page describe which crags get sun or shade when — early morning or evening may be more comfortable during hotter periods.',
   },
 ];
 
@@ -95,7 +163,7 @@ const faqSchema = {
 
 <MainLayout
   title="Rock Climbing Guide to Pakistan | Islamabad & Margalla Hills | Climb Crux"
-  description="A practical rock climbing guide to Islamabad and the Margalla Hills, including climbing areas, grades, seasons, access, equipment and guided sessions."
+  description="A detailed rock climbing guide to Islamabad and the Margalla Hills — climbing areas, venues, route grades, safety and guided sessions."
   image={heroImage}
 >
   <Fragment slot="head">
@@ -110,21 +178,297 @@ const faqSchema = {
       <span class="eyebrow">Climbing in Pakistan</span>
       <h1>Rock Climbing Guide to Pakistan</h1>
       <div class="page-header-desc">
-        <p>Your guide to outdoor rock climbing in Islamabad and the Margalla Hills.</p>
+        <p>
+          A detailed outdoor climbing guide to the Margalla Hills around Islamabad — the climbing
+          areas, venues, routes and grades, all in one place.
+        </p>
       </div>
       <div class="guide-hero-meta">
         <span class="guide-hero-chip"><b>Margalla Hills</b> Islamabad</span>
-        <span class="guide-hero-chip"><b>Outdoor</b> Sport climbing</span>
+        <span class="guide-hero-chip"><b>Outdoor</b> Sport climbing &amp; trad</span>
         <span class="guide-hero-chip"><b>Guided</b> Public &amp; private sessions</span>
       </div>
       <div class="guide-hero-actions">
         <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
-        <a class="btn btn-outline-light" href="/sessions">Explore Climbing Sessions</a>
+        <a class="btn btn-outline-light" href="#route-explorer">Browse All Routes</a>
       </div>
     </div>
   </section>
 
-  {/* ── 2. Visiting Pakistan? ─────────────────────────────────────── */}
+  {/* ── 2. Guide introduction ─────────────────────────────────────── */}
+  <section id="guide-intro" class="section">
+    <div class="wrap">
+      <span class="eyebrow">The Margalla Hills</span>
+      <h2>A Route Guide to Islamabad's Crags</h2>
+      <p class="guide-lede">
+        The Margalla Hills are Islamabad's backyard climbing ground. The routes documented on this
+        page span four climbing areas — Daman-e-Koh, Said Pur, Trail 3 and Shaddarrah — from easy
+        beginner ground at Jasmin Corner to sustained, powerful lines like Out of Action and
+        Islamagood.
+      </p>
+      <p class="guide-lede">
+        Most routes are sport climbs on fixed bolts. A few are different: Cultural Divide at Well
+        Hidden Rock is a classic trad route, and a couple of faces are not bolted at all. Use the
+        Route Explorer to filter the whole library by grade, area or venue in an instant, then read
+        the venue notes below for character, approach, shade and rock quality before you set off.
+      </p>
+      <div class="guide-stats" role="list">
+        {statChips.map((chip) => (
+          <div class="guide-stat" role="listitem">
+            <b>{chip.k}</b>
+            <span>{chip.v}</span>
+          </div>
+        ))}
+      </div>
+      <p class="guide-section-note">
+        Route names, grades and descriptions are taken from <em>Monkey Business – Margalla Climbing</em>
+        ({MARGALLA_SOURCE.author}, {MARGALLA_SOURCE.published}). Documented conditions change — always
+        re-check access, grades and fixed gear before you climb.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 3. Climbing areas overview ────────────────────────────────── */}
+  <section id="climbing-areas" class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Areas at a glance</span>
+      <h2>Climbing Areas</h2>
+      <p class="guide-lede">
+        The crags are grouped into four areas around Islamabad. Step down to the detailed venue
+        sections below, or jump straight to a venue from its card.
+      </p>
+      <div class="guide-areas-grid">
+        {AREAS.map((area) => (
+          <article class="guide-area-card">
+            <div class="guide-area-card-head">
+              <span class="guide-area-num" aria-hidden="true">{String(AREAS.indexOf(area) + 1).padStart(2, '0')}</span>
+              <h3><a href={`#${area.id}`}>{area.name}</a></h3>
+            </div>
+            <p>{area.lede}</p>
+            <ul class="guide-venue-links">
+              {area.venues.map((venue) => (
+                <li><a href={`#${venue.id}`}>{venue.name}</a></li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ── 4. Route Explorer ─────────────────────────────────────────── */}
+  <section id="route-explorer" class="section">
+    <div class="wrap">
+      <span class="eyebrow">Interactive</span>
+      <h2>Route Explorer</h2>
+      <p class="guide-lede">
+        Every documented route on this page in one filterable list. Select a grade, an area, a
+        venue — or any combination of the three — and the list updates instantly. Selecting a grade
+        in the index below jumps straight back here.
+      </p>
+      <RouteExplorer client:load routes={allRoutes} areas={explorerAreas} />
+    </div>
+  </section>
+
+  {/* ── 5. Venues & routes in detail ──────────────────────────────── */}
+  <section id="routes" class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Where to climb</span>
+      <h2>Venues &amp; Routes in Detail</h2>
+      <p class="guide-lede">
+        Character, approach and every documented route, area by area. Approach times are from the
+        source guide and may change with conditions.
+      </p>
+
+      {AREAS.map((area) => (
+        <div class="guide-area" id={area.id}>
+          <h3 class="guide-area-name">{area.name}</h3>
+          {area.lede && <p class="guide-area-lede">{area.lede}</p>}
+
+          {area.venues.map((venue) => (
+            <article class="venue-block" id={venue.id}>
+              <header class="venue-head">
+                <h4>{venue.name}</h4>
+                <span class="venue-meta">
+                  {venue.gradeRange}
+                  {venue.routes.length > 0
+                    ? <> · {venue.routes.length} {venue.routes.length === 1 ? 'route' : 'routes'}</>
+                    : <> · No individual routes documented</>}
+                </span>
+              </header>
+
+              {venue.character && <p class="venue-character">{venue.character}</p>}
+
+              {venue.approach && (
+                <div class="venue-approach">
+                  <h5>Approach</h5>
+                  <p>{venue.approach}</p>
+                </div>
+              )}
+
+              {venue.notes?.length > 0 && (
+                <ul class="venue-notes">
+                  {venue.notes.map((note) => <li>{note}</li>)}
+                </ul>
+              )}
+
+              {venue.routes.length > 0 && (
+                <ul class="venue-routes" role="list">
+                  {venue.routes.map((route) => (
+                    <li class="route-row">
+                      <div class="route-row-head">
+                        <span class="route-name">{route.name}</span>
+                        <span class="route-meta">
+                          <span class="route-grade">{formatGrade(route)}</span>
+                          {route.length && <span class="route-len">{route.length}m</span>}
+                          {route.type === 'multi-pitch' && <span class="route-tag">Multi-pitch</span>}
+                          {route.type === 'trad' && <span class="route-tag">Trad</span>}
+                          {route.variation && <span class="route-tag">Variation</span>}
+                        </span>
+                      </div>
+                      {route.pitches ? (
+                        <p class="route-desc">
+                          Four pitches from ~5m to 30m long; the hardest moves are 6c+. See the
+                          pitch-by-pitch breakdown below. Descent is usually by abseil — two ropes
+                          are useful to abseil 40m directly from the pitch 2 belay.
+                        </p>
+                      ) : (
+                        <p class="route-desc">{route.description}</p>
+                      )}
+                      {route.pitches && (
+                        <ul class="route-pitches" role="list">
+                          {route.pitches.map((pitch) => (
+                            <li>
+                              <span class="pitch-label">{pitch.label}</span>
+                              <span class="pitch-grade">{pitch.grade}</span>
+                              {pitch.length && <span class="pitch-len">{pitch.length}m</span>}
+                              <span class="pitch-desc">{pitch.description}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          ))}
+        </div>
+      ))}
+    </div>
+  </section>
+
+  {/* ── 6. Routes by grade ────────────────────────────────────────── */}
+  <section id="grade-index" class="section">
+    <div class="wrap">
+      <span class="eyebrow">Grade index</span>
+      <h2>Routes by Grade</h2>
+      <p class="guide-lede">
+        The complete route index, grouped by grade. Pick a grade to filter the Route Explorer for
+        routes at that difficulty.
+      </p>
+      <div class="grade-index-grid">
+        {gradeIndex.map((group) => (
+          <button
+            type="button"
+            class="grade-index-group"
+            data-guide-bucket={group.bucket}
+            aria-label={`Show ${group.grade} routes in the Route Explorer`}
+          >
+            <span class="grade-index-grade">{group.grade}</span>
+            <span class="grade-index-routes">
+              {group.routes.map((r, i) => (
+                <span key={r.name}>{r.name}{i < group.routes.length - 1 ? ', ' : ''}</span>
+              ))}
+            </span>
+            <span class="grade-index-count">
+              {group.routes.length} {group.routes.length === 1 ? 'route' : 'routes'}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p class="guide-section-note">
+        Trad and multi-pitch lines are grouped by their overall grade — Cultural Divide (VS 5a)
+        appears under 5a, Teamwork under its hardest pitch, 6c+.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 7. Equipment, Grades & Safety ─────────────────────────────── */}
+  <section id="equipment-safety" class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">On the rock</span>
+      <h2>Equipment, Grades &amp; Safety</h2>
+      <p class="guide-lede">
+        How the grades work on these crags, and the essentials for climbing safely. Details below
+        are drawn from the source guide's route notes plus general safe practice.
+      </p>
+      <div class="guide-safety-grid">
+        <div class="guide-safety-col">
+          <h3>Grades &amp; route names</h3>
+          <ul class="guide-list is-check">
+            {gradePoints.map((point) => <li>{point}</li>)}
+          </ul>
+        </div>
+        <div class="guide-safety-col">
+          <h3>Equipment &amp; safety</h3>
+          <ul class="guide-list is-check">
+            {safetyPoints.map((point) => <li>{point}</li>)}
+          </ul>
+        </div>
+      </div>
+      <p class="guide-section-note">
+        These crags are undeveloped, informal climbing areas — routes, bolts and access are not
+        managed. Climb at your own risk, re-check everything on the ground, and ask Climb Crux or
+        local climbers for current conditions.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 8. Source & Credit ────────────────────────────────────────── */}
+  <section id="source-credit" class="section">
+    <div class="wrap">
+      <span class="eyebrow">Source</span>
+      <h2>Source &amp; Credit</h2>
+      <div class="guide-credit">
+        <p>
+          The route information on this page is drawn from <em>Monkey Business – Margalla Climbing</em>,
+          the guidebook that documents the climbing history of these crags.
+        </p>
+        <blockquote>
+          Climb Crux's Margalla Hills Guide draws on Hike &amp; Climb Pakistan's <em>Monkey Business
+          – Margalla Climbing</em> by John Arran (February 2011) and other sources to give an overview
+          of Islamabad's crags. It is provided for general information and to help you understand the
+          history and scale of the climbing here. For accurate, up-to-date conditions before you set
+          out, please check with Climb Crux or your local contacts.
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  {/* ── 9. Climb with Climb Crux ──────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <span class="eyebrow">Guided climbing</span>
+      <h2>Climb With Climb Crux</h2>
+      <div class="guide-grid">
+        {climbOptions.map((option, i) => (
+          <article class="guide-card">
+            <span class="guide-card-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{option.h}</h3>
+            <p>{option.p}</p>
+            <a class="btn btn-primary" href={option.href}>{option.cta}</a>
+          </article>
+        ))}
+      </div>
+      <p class="guide-section-note">
+        Every climbing session is led by certified instructors — you can
+        {' '}<a href="/our-team">meet the instructors</a> behind your climb.
+      </p>
+    </div>
+  </section>
+
+  {/* ── 10. Visiting Pakistan? ────────────────────────────────────── */}
   <section class="section">
     <div class="wrap">
       <div class="guide-intl-grid">
@@ -151,29 +495,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 3. Climb with Climb Crux ─────────────────────────────────── */}
-  <section class="section guide-tint">
-    <div class="wrap">
-      <span class="eyebrow">Guided climbing</span>
-      <h2>Climb With Climb Crux</h2>
-      <div class="guide-grid">
-        {climbOptions.map((option, i) => (
-          <article class="guide-card">
-            <span class="guide-card-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{option.h}</h3>
-            <p>{option.p}</p>
-            <a class="btn btn-primary" href={option.href}>{option.cta}</a>
-          </article>
-        ))}
-      </div>
-      <p class="guide-section-note">
-        Every climbing session is led by certified instructors — you can
-        {' '}<a href="/our-team">meet the instructors</a> behind your climb.
-      </p>
-    </div>
-  </section>
-
-  {/* ── 4. FAQ ───────────────────────────────────────────────────── */}
+  {/* ── 11. FAQ ───────────────────────────────────────────────────── */}
   <section class="section guide-faq">
     <div class="wrap">
       <div class="guide-faq-grid">
@@ -196,4 +518,25 @@ const faqSchema = {
       </div>
     </div>
   </section>
+
+  {/* Wires the Routes-by-Grade buttons to the Route Explorer island.
+      Delegation + a one-time guard keeps this idempotent across Astro
+      view transitions. */}
+  <script is:inline>
+    (function () {
+      if (window.__guideGradeIndexWired) return;
+      window.__guideGradeIndexWired = true;
+      document.addEventListener('click', function (event) {
+        var target = event.target && event.target.closest
+          ? event.target.closest('[data-guide-bucket]')
+          : null;
+        if (!target) return;
+        window.dispatchEvent(
+          new CustomEvent('guide:grade-filter', {
+            detail: { bucket: target.getAttribute('data-guide-bucket') },
+          })
+        );
+      });
+    })();
+  </script>
 </MainLayout>
