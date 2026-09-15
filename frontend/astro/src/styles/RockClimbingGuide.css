@@ -68,12 +68,6 @@
   background: var(--chalk-dim);
 }
 
-/* Anchor target for the hero's "Explore Climbing Areas" link. Clears the
-   sticky navbar (88px) so the heading is not covered after scrolling. */
-.guide-anchor {
-  scroll-margin-top: 110px;
-}
-
 .guide-lede {
   font-size: 1.02rem;
   max-width: 70ch;
@@ -88,14 +82,6 @@
 }
 
 /* ============================== CARDS ============================== */
-
-/* The shared `.info-card` styles its heading as an `h4`; this page nests an
-   `h3` under an `h2` for a correct heading hierarchy, so give it the same
-   treatment without touching the global stylesheet. */
-.info-grid .info-card h3 {
-  font-size: 1.02rem;
-  margin-bottom: 0.4em;
-}
 
 .guide-grid {
   display: grid;
@@ -122,15 +108,6 @@
 .guide-card p {
   font-size: 0.93rem;
   margin: 0;
-}
-
-/* Capped to the card width and allowed to wrap so a long source label can
-   never push the badge (and the card) past the container edge. */
-.guide-card .grade-badge {
-  align-self: flex-start;
-  margin-bottom: 4px;
-  max-width: 100%;
-  flex-wrap: wrap;
 }
 
 .guide-card .btn {
@@ -185,86 +162,6 @@
   color: var(--chalk);
 }
 
-/* ============================== NOTES ============================== */
-
-.guide-note {
-  margin-top: 26px;
-  background: var(--chalk-dim);
-  border-left: 3px solid var(--orange);
-  padding: 18px 22px;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: var(--stone-dark);
-  max-width: 78ch;
-}
-
-.guide-note p {
-  margin: 0;
-  font-size: inherit;
-  color: inherit;
-}
-
-.guide-tint .guide-note {
-  background: var(--chalk);
-}
-
-/* Historical-reference source note (kept deliberately understated) */
-.guide-source-note {
-  margin-top: 30px;
-  background: var(--chalk-dim);
-  border-left: 3px solid var(--stone);
-  padding: 16px 20px;
-  font-size: 0.85rem;
-  line-height: 1.65;
-  color: var(--stone-dark);
-  max-width: 82ch;
-}
-
-.guide-source-note strong {
-  color: var(--charcoal);
-}
-
-.guide-tint .guide-source-note {
-  background: var(--chalk);
-}
-
-/* ============================== GALLERY ============================== */
-
-.guide-gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.guide-gallery-grid img,
-.guide-gallery-grid .placeholder-photo {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--radius);
-}
-
-.guide-gallery-cta {
-  margin-top: 26px;
-}
-
-/* ============================== FINAL CTA ============================== */
-
-.guide-final-cta {
-  text-align: center;
-}
-
-.guide-final-cta p {
-  max-width: 64ch;
-  margin: 0 auto 30px;
-}
-
-.guide-final-cta .guide-hero-actions {
-  justify-content: center;
-  margin-top: 0;
-}
-
 /* ============================== RESPONSIVE ============================== */
 
 @media (max-width: 560px) {
@@ -277,12 +174,5 @@
   }
   .guide-hero-figure img {
     aspect-ratio: 16 / 10;
-  }
-  .guide-gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .guide-anchor {
-    scroll-margin-top: 84px;
   }
 }
