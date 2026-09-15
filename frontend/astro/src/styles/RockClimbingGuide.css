@@ -1,57 +1,66 @@
 /* ===================================================================
    ROCK CLIMBING GUIDE TO PAKISTAN
-   Static SEO / resource page — built entirely from the site's existing
-   design tokens (charcoal, orange, chalk) and shared classes. Only the
-   layout helpers this page needs are defined here; global CSS is untouched.
+   Field-guide styling — built from the site's existing design tokens
+   (charcoal, orange, limestone chalk) and the shared component classes.
+   Page-specific layout only; global CSS is untouched.
    =================================================================== */
 
 /* ============================== HERO ============================== */
 
-/* Extends the shared `.page-header` block (pattern + accent bar + h1 accent
-   rule) with a two-column copy/photo layout. */
+/* Extends the shared charcoal `.page-header` block (topo pattern + orange
+   accent bar + under-title rule). With no photo, the copy owns the full
+   width, so give the type more room and let it breathe. */
 .guide-hero-inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  gap: clamp(28px, 4vw, 56px);
-  align-items: center;
+  padding-top: clamp(64px, 9vw, 120px);
+  padding-bottom: clamp(56px, 8vw, 108px);
 }
 
 .guide-hero h1 {
-  font-size: clamp(2rem, 4.2vw, 3.2rem);
-  margin-bottom: 0.45em;
+  font-size: clamp(2.4rem, 5.4vw, 4rem);
+  max-width: 16ch;
+  margin-bottom: 0.55em;
+}
+
+/* Route-summary chips — a quiet "grade tape" that takes the place the
+   photo used to occupy. */
+.guide-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.guide-hero-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a9a49a;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.55em 1.05em;
+  white-space: nowrap;
+}
+
+.guide-hero-chip b {
+  color: var(--chalk);
+  font-weight: 600;
+  letter-spacing: 0.12em;
 }
 
 .guide-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 28px;
-}
-
-.guide-hero-figure {
-  margin: 0;
-}
-
-.guide-hero-figure img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: var(--radius);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-}
-
-@media (max-width: 980px) {
-  .guide-hero-inner {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .guide-hero-actions {
-    margin-top: 22px;
-  }
+  margin-top: 36px;
 }
 
 @media (max-width: 480px) {
   .guide-hero-actions {
+    margin-top: 30px;
     flex-direction: column;
     align-items: stretch;
   }
@@ -62,15 +71,16 @@
 
 /* ============================== SECTION HELPERS ============================== */
 
-/* Tinted section — alternates with the default chalk background so the page
-   keeps the site's section rhythm. */
+/* Tinted section — alternates with the chalk background for rhythm. */
 .guide-tint {
   background: var(--chalk-dim);
 }
 
 .guide-lede {
-  font-size: 1.02rem;
-  max-width: 70ch;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--stone-dark);
+  max-width: 58ch;
   margin-bottom: 30px;
 }
 
@@ -81,38 +91,75 @@
   margin-top: 20px;
 }
 
-/* ============================== CARDS ============================== */
+/* ============================== INTERNATIONAL CLIMBERS ============================== */
 
-.guide-grid {
+.guide-intl-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-  align-items: stretch;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(36px, 6vw, 80px);
+  align-items: center;
 }
 
-.guide-card {
-  background: var(--chalk);
-  border: 1px solid var(--chalk-dim);
-  border-left: 3px solid var(--orange);
-  padding: 26px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.guide-intl-copy h2 {
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  margin-bottom: 0.5em;
 }
 
-.guide-card h3 {
-  font-size: 1.08rem;
-  margin: 0;
+.guide-intl-copy .guide-lede {
+  margin-bottom: 0;
 }
 
-.guide-card p {
-  font-size: 0.93rem;
-  margin: 0;
+.guide-intl-copy .guide-hero-actions {
+  margin-top: 32px;
 }
 
-.guide-card .btn {
-  margin-top: auto;
-  align-self: flex-start;
+/* The dark checklist panel — the charcoal anchor of this section. */
+.guide-intl-panel {
+  position: relative;
+  background: var(--charcoal);
+  padding: clamp(28px, 3.6vw, 46px);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  box-shadow: 0 26px 60px rgba(32, 31, 33, 0.22);
+}
+
+.guide-intl-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--orange);
+}
+
+.guide-intl-panel h3 {
+  color: var(--chalk);
+  font-size: 0.92rem;
+  letter-spacing: 0.14em;
+  margin: 0 0 20px;
+}
+
+.guide-intl-panel .guide-list {
+  margin-top: 0;
+}
+
+.guide-intl-panel .guide-list li {
+  color: #c9c4b8;
+}
+
+.guide-intl-panel .guide-list.is-check li::before {
+  color: var(--orange-light);
+}
+
+@media (max-width: 980px) {
+  .guide-intl-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    align-items: start;
+  }
+  .guide-intl-panel {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  }
 }
 
 /* ============================== LISTS ============================== */
@@ -143,7 +190,6 @@
   font-weight: 700;
 }
 
-/* Advice / checklist variant */
 .guide-list.is-check li::before {
   content: '✓';
   left: 0;
@@ -153,26 +199,171 @@
   color: var(--charcoal);
 }
 
-/* Lists inside dark sections */
-.section-dark .guide-list li {
-  color: #c9c4b8;
+/* ============================== CARDS ============================== */
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  align-items: stretch;
 }
 
-.section-dark .guide-list strong {
-  color: var(--chalk);
+.guide-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 30px 28px 28px;
+  box-shadow: 0 1px 0 rgba(32, 31, 33, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+/* Route tape along the top — orange segment with a chalk infill tail. */
+.guide-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--orange) 0 42%, var(--chalk-dim) 42% 100%);
+}
+
+.guide-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 26px;
+  height: 4px;
+  background: var(--orange-dark);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.guide-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 44px rgba(32, 31, 33, 0.13);
+  border-color: transparent;
+}
+
+.guide-card:hover::after {
+  opacity: 1;
+}
+
+.guide-card-num {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+
+.guide-card-num::after {
+  content: '';
+  height: 2px;
+  width: 28px;
+  background: var(--chalk-dim);
+}
+
+.guide-card h3 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.guide-card p {
+  font-size: 0.93rem;
+  margin: 0;
+}
+
+.guide-card .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* ============================== FAQ ============================== */
+
+.guide-faq-grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: clamp(40px, 6vw, 96px);
+  align-items: start;
+}
+
+.guide-faq-intro {
+  position: sticky;
+  top: 120px;
+}
+
+.guide-faq-intro h2 {
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  margin-bottom: 0.5em;
+}
+
+.guide-faq-intro .guide-lede {
+  margin-bottom: 0;
+}
+
+/* Accordion — shared `.faq` component restyled as clean rules rather
+   than boxes, so it reads like a stacked route list. */
+.guide-faq .faq {
+  max-width: none;
+  gap: 0;
+}
+
+.guide-faq .faq details {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 1px solid rgba(140, 133, 120, 0.35);
+  border-radius: 0;
+  padding: 20px 0;
+  transition: border-color 0.15s ease;
+}
+
+.guide-faq .faq details:hover {
+  border-color: var(--orange) var(--orange) rgba(140, 133, 120, 0.35);
+}
+
+.guide-faq .faq summary {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.guide-faq .faq summary::after {
+  color: var(--orange);
+}
+
+@media (max-width: 980px) {
+  .guide-faq-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .guide-faq-intro {
+    position: static;
+  }
 }
 
 /* ============================== RESPONSIVE ============================== */
 
 @media (max-width: 560px) {
+  .guide-hero-meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .guide-hero-chip {
+    justify-content: center;
+  }
   .guide-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 18px;
   }
   .guide-card {
-    padding: 20px 18px;
-  }
-  .guide-hero-figure img {
-    aspect-ratio: 16 / 10;
+    padding: 26px 22px 24px;
   }
 }

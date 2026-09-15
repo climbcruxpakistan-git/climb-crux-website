@@ -19,6 +19,7 @@ import '../styles/RockClimbingGuide.css';
 
 // Existing Climb Crux hero photograph — the same verified Cloudinary asset used
 // by the home-page hero (see backend/src/models/HomeContent.js). Not invented.
+// Kept here only as the page's social share (og:image) preview.
 const HERO_IMAGE_SOURCE = 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg';
 const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
 
@@ -106,47 +107,46 @@ const faqSchema = {
     <div class="page-header-pattern"></div>
     <div class="page-header-accent"></div>
     <div class="wrap page-header-inner guide-hero-inner">
-      <div class="guide-hero-copy">
-        <span class="eyebrow">Climbing in Pakistan</span>
-        <h1>Rock Climbing Guide to Pakistan</h1>
-        <div class="page-header-desc">
-          <p>Your guide to outdoor rock climbing in Islamabad and the Margalla Hills.</p>
-        </div>
-        <div class="guide-hero-actions">
-          <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
-          <a class="btn btn-outline-light" href="/sessions">Explore Climbing Sessions</a>
-        </div>
+      <span class="eyebrow">Climbing in Pakistan</span>
+      <h1>Rock Climbing Guide to Pakistan</h1>
+      <div class="page-header-desc">
+        <p>Your guide to outdoor rock climbing in Islamabad and the Margalla Hills.</p>
       </div>
-      <figure class="guide-hero-figure">
-        <img
-          src={heroImage}
-          alt="Rock climbers on the limestone crags of the Margalla Hills near Saidpur Village, Islamabad"
-          width="1400"
-          height="788"
-          loading="eager"
-          decoding="async"
-        />
-      </figure>
+      <div class="guide-hero-meta">
+        <span class="guide-hero-chip"><b>Margalla Hills</b> Islamabad</span>
+        <span class="guide-hero-chip"><b>Outdoor</b> Sport climbing</span>
+        <span class="guide-hero-chip"><b>Guided</b> Public &amp; private sessions</span>
+      </div>
+      <div class="guide-hero-actions">
+        <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
+        <a class="btn btn-outline-light" href="/sessions">Explore Climbing Sessions</a>
+      </div>
     </div>
   </section>
 
   {/* ── 2. Visiting Pakistan? ─────────────────────────────────────── */}
-  <section class="section section-dark">
+  <section class="section">
     <div class="wrap">
-      <span class="eyebrow">International climbers</span>
-      <h2>Visiting Pakistan?</h2>
-      <p class="guide-lede">
-        Islamabad is a practical base for exploring the outdoor climbing of the Margalla Hills. If
-        you're visiting Pakistan and want to climb outdoors, Climb Crux can help you plan a guided
-        session based on your experience, preferred difficulty and available time.
-      </p>
-      <h3>International Climbers</h3>
-      <ul class="guide-list is-check">
-        {internationalClimbers.map((item) => <li>{item}</li>)}
-      </ul>
-      <div class="guide-hero-actions">
-        <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
-        <a class="btn btn-outline-light" href="/our-team">Meet Our Instructors</a>
+      <div class="guide-intl-grid">
+        <div class="guide-intl-copy">
+          <span class="eyebrow">International climbers</span>
+          <h2>Visiting Pakistan?</h2>
+          <p class="guide-lede">
+            Islamabad is a practical base for exploring the outdoor climbing of the Margalla Hills. If
+            you're visiting Pakistan and want to climb outdoors, Climb Crux can help you plan a guided
+            session based on your experience, preferred difficulty and available time.
+          </p>
+          <div class="guide-hero-actions">
+            <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
+            <a class="btn btn-outline" href="/our-team">Meet Our Instructors</a>
+          </div>
+        </div>
+        <aside class="guide-intl-panel">
+          <h3>Before you arrive</h3>
+          <ul class="guide-list is-check">
+            {internationalClimbers.map((item) => <li>{item}</li>)}
+          </ul>
+        </aside>
       </div>
     </div>
   </section>
@@ -157,8 +157,9 @@ const faqSchema = {
       <span class="eyebrow">Guided climbing</span>
       <h2>Climb With Climb Crux</h2>
       <div class="guide-grid">
-        {climbOptions.map((option) => (
+        {climbOptions.map((option, i) => (
           <article class="guide-card">
+            <span class="guide-card-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             <h3>{option.h}</h3>
             <p>{option.p}</p>
             <a class="btn btn-primary" href={option.href}>{option.cta}</a>
@@ -173,17 +174,25 @@ const faqSchema = {
   </section>
 
   {/* ── 4. FAQ ───────────────────────────────────────────────────── */}
-  <section class="section">
+  <section class="section guide-faq">
     <div class="wrap">
-      <span class="eyebrow">Good to know</span>
-      <h2>Frequently Asked Questions</h2>
-      <div class="faq">
-        {faqs.map((faq) => (
-          <details>
-            <summary>{faq.q}</summary>
-            <p>{faq.a}</p>
-          </details>
-        ))}
+      <div class="guide-faq-grid">
+        <div class="guide-faq-intro">
+          <span class="eyebrow">Good to know</span>
+          <h2>Frequently Asked Questions</h2>
+          <p class="guide-lede">
+            The essentials for climbing outdoors with Climb Crux in the Margalla Hills — areas,
+            grades, equipment and seasons.
+          </p>
+        </div>
+        <div class="faq">
+          {faqs.map((faq) => (
+            <details>
+              <summary>{faq.q}</summary>
+              <p>{faq.a}</p>
+            </details>
+          ))}
+        </div>
       </div>
     </div>
   </section>
