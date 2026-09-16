@@ -1,14 +1,15 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import RouteExplorer from '../components/react/RouteExplorer.jsx';
 import { optimizeImage } from '../lib/api';
 import {
   AREAS,
   MARGALLA_SOURCE,
   flattenRoutes,
-  gradeBucket,
   formatGrade,
   TOTAL_ROUTES,
 } from '../data/margallaRoutes';
+import { routeLibraryHref } from '../lib/routeFilters';
 import '../styles/RockClimbingGuide.css';
 
 /**
@@ -34,34 +35,26 @@ const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
 /* ── Route data ───────────────────────────────────────────────────── */
 const allRoutes = flattenRoutes();
 
+// Shape the areas into what the explorer expects (id, name, venues) — the same
+// data the route library passes to its full-mode explorer.
+const explorerAreas = AREAS.map((area) => ({
+  id: area.id,
+  name: area.name,
+  venues: area.venues.map((venue) => ({ id: venue.id, name: venue.name })),
+}));
+
+// Documented routes per climbing area — drives the area-card links into the
+// route library, so the count can never drift from the data.
+const routeCountByArea = new Map(
+  AREAS.map((area) => [area.id, area.venues.reduce((n, venue) => n + venue.routes.length, 0)])
+);
+
 const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
 const statChips = [
   { k: String(AREAS.length), v: 'Climbing areas' },
   { k: String(totalVenues), v: 'Venues' },
   { k: String(TOTAL_ROUTES), v: 'Named routes' },
 ];
-
-/* ── Grade index ──────────────────────────────────────────────────── */
-// Grouped in the order of the source guide's route index. Multi-pitch routes
-// list each pitch individually, exactly as the source does.
-const GRADE_ORDER = ['4a', '4b', '4c', '5a', '5b', '5c', '5c+', '6a', '6a+', '6b', '6b+', '6c', '6c+', '7a', '7a+', '7b', '7b+', '7c+', '8a'];
-
-const gradeIndex = (() => {
-  const groups = new Map(GRADE_ORDER.map((g) => [g, []]));
-  for (const route of allRoutes) {
-    if (route.pitches) {
-      route.pitches.forEach((pitch, i) => {
-        if (!groups.has(pitch.grade)) return;
-        groups.get(pitch.grade).push({ name: `${route.name} — Pitch ${i + 1}`, grade: pitch.grade });
-      });
-    } else if (groups.has(route.grade)) {
-      groups.get(route.grade).push({ name: route.name, grade: route.grade });
-    }
-  }
-  return GRADE_ORDER
-    .filter((g) => groups.get(g).length > 0)
-    .map((g) => ({ grade: g, bucket: gradeBucket(g), routes: groups.get(g) }));
-})();
 
 /* ── Equipment, Grades & Safety ───────────────────────────────────── */
 const gradePoints = [
@@ -221,7 +214,8 @@ const faqSchema = {
       <h2>Climbing Areas</h2>
       <p class="guide-lede">
         The crags are grouped into four areas around Islamabad. Step down to the detailed venue
-        sections below, or jump straight to a venue from its card.
+        sections below, jump straight to a venue from its card, or open the complete route library
+        with that area's routes already filtered.
       </p>
       <div class="guide-areas-grid">
         {AREAS.map((area) => (
@@ -236,22 +230,33 @@ const faqSchema = {
                 <li><a href={`#${venue.id}`}>{venue.name}</a></li>
               ))}
             </ul>
+            {routeCountByArea.get(area.id) > 0 && (
+              <a class="guide-area-card-link" href={routeLibraryHref({ area: area.id })}>
+                View all {routeCountByArea.get(area.id)} routes in {area.name} &rarr;
+              </a>
+            )}
           </article>
         ))}
       </div>
     </div>
   </section>
 
-  {/* ── 4. Route library CTA ──────────────────────────────────────── */}
-  <section id="route-library-cta" class="section">
+  {/* ── 4. Explore routes by grade (compact explorer) ─────────────── */}
+  <section id="explore-routes" class="section">
     <div class="wrap">
-      <div class="guide-cta-strip">
-        <div class="guide-cta-strip-copy">
-          <h2>Explore the Complete Route Library</h2>
-          <p>Browse all documented routes by grade, area, venue, or route name.</p>
-        </div>
-        <a class="btn btn-primary" href="/routes">View All Routes &rarr;</a>
-      </div>
+      <span class="eyebrow">Plan your climb</span>
+      <h2>Explore Routes by Grade</h2>
+      <p class="guide-lede">
+        Find routes that match your climbing level using the grade range below. Drag either handle
+        to set a minimum and maximum grade — the results update as you go, ordered by climbing
+        grade rather than alphabetically. The complete, searchable library lives on the
+        {' '}<a href="/routes">route library page</a>.
+      </p>
+      <RouteExplorer client:load mode="compact" routes={allRoutes} areas={explorerAreas} />
+      <p class="guide-section-note">
+        Grades are the source guide's French sport grades. Multi-pitch lines are graded by their
+        hardest pitch, so Teamwork is listed under 6c+ even though its first pitch is 4a.
+      </p>
     </div>
   </section>
 
@@ -339,7 +344,7 @@ const faqSchema = {
                   </ul>
                   <a
                     class="venue-all-link"
-                    href={`/routes?area=${area.id}&venue=${venue.id}`}
+                    href={routeLibraryHref({ area: area.id, venue: venue.id })}
                   >
                     View all {venue.routes.length} {venue.routes.length === 1 ? 'route' : 'routes'} &rarr;
                   </a>
@@ -352,43 +357,8 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 6. Routes by grade ────────────────────────────────────────── */}
-  <section id="grade-index" class="section">
-    <div class="wrap">
-      <span class="eyebrow">Grade index</span>
-      <h2>Routes by Grade</h2>
-      <p class="guide-lede">
-        The complete route index, grouped by grade. Pick a grade to open the route library with
-        routes at that difficulty already filtered.
-      </p>
-      <div class="grade-index-grid">
-        {gradeIndex.map((group) => (
-          <a
-            class="grade-index-group"
-            href={`/routes?bucket=${group.bucket}`}
-            aria-label={`Show ${group.grade} routes in the route library`}
-          >
-            <span class="grade-index-grade">{group.grade}</span>
-            <span class="grade-index-routes">
-              {group.routes.map((r, i) => (
-                <span key={r.name}>{r.name}{i < group.routes.length - 1 ? ', ' : ''}</span>
-              ))}
-            </span>
-            <span class="grade-index-count">
-              {group.routes.length} {group.routes.length === 1 ? 'route' : 'routes'}
-            </span>
-          </a>
-        ))}
-      </div>
-      <p class="guide-section-note">
-        Trad and multi-pitch lines are grouped by their overall grade — Cultural Divide (VS 5a)
-        appears under 5a, Teamwork under its hardest pitch, 6c+.
-      </p>
-    </div>
-  </section>
-
-  {/* ── 7. Equipment, Grades & Safety ─────────────────────────────── */}
-  <section id="equipment-safety" class="section guide-tint">
+  {/* ── 6. Equipment, Grades & Safety ─────────────────────────────── */}
+  <section id="equipment-safety" class="section">
     <div class="wrap">
       <span class="eyebrow">On the rock</span>
       <h2>Equipment, Grades &amp; Safety</h2>
@@ -418,7 +388,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 8. Source & Credit ────────────────────────────────────────── */}
+  {/* ── 7. Source & Credit ────────────────────────────────────────── */}
   <section id="source-credit" class="section">
     <div class="wrap">
       <span class="eyebrow">Source</span>
@@ -439,7 +409,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 9. Climb with Climb Crux ──────────────────────────────────── */}
+  {/* ── 8. Climb with Climb Crux ──────────────────────────────────── */}
   <section class="section guide-tint">
     <div class="wrap">
       <span class="eyebrow">Guided climbing</span>
@@ -461,7 +431,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 10. Visiting Pakistan? ────────────────────────────────────── */}
+  {/* ── 9. Visiting Pakistan? ────────────────────────────────────── */}
   <section class="section">
     <div class="wrap">
       <div class="guide-intl-grid">
@@ -488,7 +458,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 11. FAQ ───────────────────────────────────────────────────── */}
+  {/* ── 10. FAQ ──────────────────────────────────────────────────── */}
   <section class="section guide-faq">
     <div class="wrap">
       <div class="guide-faq-grid">

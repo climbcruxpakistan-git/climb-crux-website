@@ -33,7 +33,8 @@ const statChips = [
       <div class="page-header-desc">
         <p>
           Browse and filter the complete Margalla Hills route library — every documented route
-          from the guide, searchable by name and filterable by grade, area or venue.
+          from the guide, searchable by name and filterable by climbing area, grade range or venue.
+          The filters are kept in the URL, so any filtered view can be shared or bookmarked.
         </p>
       </div>
       <div class="guide-stats" role="list">
@@ -49,7 +50,9 @@ const statChips = [
 
   <section id="route-explorer" class="section">
     <div class="wrap">
-      <RouteExplorer client:load routes={allRoutes} areas={explorerAreas} />
+      {/* Full mode: search + climbing area + grade range + venue, with the
+          filter state mirrored into the URL so views can be shared. */}
+      <RouteExplorer client:load mode="full" routes={allRoutes} areas={explorerAreas} />
     </div>
   </section>
 </MainLayout>

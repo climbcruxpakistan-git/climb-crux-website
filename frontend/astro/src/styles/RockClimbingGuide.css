@@ -58,31 +58,6 @@
   margin-top: 36px;
 }
 
-/* Compact "browse the whole library" CTA — pairs with the guide cards. */
-.guide-cta-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-  background: var(--chalk);
-  border: 1px solid var(--chalk-dim);
-  border-top: 4px solid var(--orange);
-  padding: clamp(22px, 3.4vw, 34px);
-}
-
-.guide-cta-strip-copy h2 {
-  font-size: clamp(1.3rem, 2.4vw, 1.7rem);
-  margin: 0 0 6px;
-}
-
-.guide-cta-strip-copy p {
-  font-size: 0.95rem;
-  color: var(--stone-dark);
-  margin: 0;
-  max-width: 58ch;
-}
-
 @media (max-width: 480px) {
   .guide-hero-actions {
     margin-top: 30px;
@@ -395,7 +370,7 @@
 #climbing-areas,
 #route-explorer,
 #routes,
-#grade-index,
+#explore-routes,
 #equipment-safety,
 #source-credit {
   scroll-margin-top: 120px;
@@ -408,7 +383,7 @@
   #climbing-areas,
   #route-explorer,
   #routes,
-  #grade-index,
+  #explore-routes,
   #equipment-safety,
   #source-credit {
     scroll-margin-top: 90px;
@@ -502,6 +477,21 @@
   margin: 0;
 }
 
+/* "View all N routes in this area" — opens the route library pre-filtered. */
+.guide-area-card-link {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--orange-dark);
+}
+
+.guide-area-card-link:hover {
+  color: var(--charcoal);
+}
+
 .guide-venue-links {
   list-style: none;
   padding: 0;
@@ -557,7 +547,6 @@
 
 .explorer-search {
   width: 100%;
-  max-width: 420px;
   font-family: var(--font-display);
   font-size: 0.86rem;
   letter-spacing: 0.04em;
@@ -586,36 +575,284 @@
   box-shadow: 0 0 0 2px rgba(243, 111, 33, 0.18);
 }
 
-.filter-row {
+/* Filter fields — route name, climbing area, venue. Grid so the controls sit
+   on one line on desktop and stack cleanly on smaller screens. */
+.explorer-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+  align-items: end;
+}
+
+.explorer-field {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
 }
 
-.filter-btn {
+.explorer-label,
+.grade-range-label {
   font-family: var(--font-display);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.5em 1em;
-  background: transparent;
-  border: 1px solid rgba(56, 56, 57, 0.35);
-  color: var(--charcoal);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  letter-spacing: 0.08em;
+  color: var(--stone-dark);
 }
 
-.filter-btn:hover {
+.explorer-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: var(--font-display);
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  color: var(--charcoal);
+  background-color: var(--chalk);
+  /* Chevron drawn with gradients — no extra image request. */
+  background-image: linear-gradient(45deg, transparent 50%, var(--charcoal) 50%),
+    linear-gradient(135deg, var(--charcoal) 50%, transparent 50%);
+  background-position: calc(100% - 17px) calc(50% + 1px), calc(100% - 12px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(56, 56, 57, 0.35);
+  padding: 0.62em 2.4em 0.62em 0.9em;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.explorer-select:hover {
   border-color: var(--charcoal);
 }
 
-.filter-btn.active {
+.explorer-select:focus-visible {
+  outline: none;
+  border-color: var(--orange);
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(243, 111, 33, 0.18);
+}
+
+.explorer-clear {
+  flex: none;
+  margin-left: 10px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.55em 0.9em;
+  background: transparent;
+  border: 1px solid var(--stone);
+  color: var(--stone-dark);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.explorer-clear:hover {
   background: var(--charcoal);
   border-color: var(--charcoal);
   color: var(--chalk);
 }
 
-.filter-btn:focus-visible {
-  outline-offset: -1px;
+/* ── Grade range: two handles on one bar, ordered by climbing progression ── */
+.grade-range {
+  border-top: 1px solid var(--chalk-dim);
+  padding-top: 14px;
+}
+
+.grade-range-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.grade-range-readout {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  color: var(--charcoal);
+}
+
+.grade-range-readout b {
+  font-weight: 700;
+  color: var(--orange-dark);
+}
+
+.grade-range-dash {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--stone);
+}
+
+.grade-slider {
+  position: relative;
+  height: 36px;
+  margin-top: 10px;
+}
+
+.grade-slider-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 15px;
+  height: 6px;
+  background: var(--chalk-dim);
+  box-shadow: inset 0 0 0 1px rgba(56, 56, 57, 0.15);
+  pointer-events: none;
+}
+
+.grade-slider-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--orange);
+}
+
+/* Two native range inputs stacked over the bar: only the thumbs take pointer
+   events, so both handles stay grabbable (mouse, touch and keyboard). */
+.grade-slider-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.grade-slider-input:focus {
+  outline: none;
+}
+
+.grade-slider-input::-webkit-slider-runnable-track {
+  height: 36px;
+  background: transparent;
+  border: 0;
+}
+
+.grade-slider-input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--chalk);
+  border: 3px solid var(--charcoal);
+  box-shadow: 0 1px 4px rgba(32, 31, 33, 0.25);
+  pointer-events: auto;
+  cursor: grab;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.grade-slider-input::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--chalk);
+  border: 3px solid var(--charcoal);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.grade-slider-input:hover::-webkit-slider-thumb,
+.grade-slider-input:hover::-moz-range-thumb {
+  border-color: var(--orange);
+}
+
+/* Visible focus ring on the handle itself — keyboard users need to see which
+   end of the range they are moving. */
+.grade-slider-input:focus-visible::-webkit-slider-thumb {
+  border-color: var(--orange-dark);
+  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.3);
+}
+
+.grade-slider-input:focus-visible::-moz-range-thumb {
+  border-color: var(--orange-dark);
+  box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.3);
+}
+
+.grade-slider-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--stone);
+}
+
+/* Compact results (guide page) — name, grade, area · venue. */
+.explorer-hits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2px;
+}
+
+.explorer-hit {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 14px;
+  align-items: baseline;
+  background: var(--chalk);
+  border: 1px solid var(--chalk-dim);
+  padding: 13px 16px;
+  transition: border-color 0.15s ease;
+}
+
+.explorer-hit:hover {
+  border-color: rgba(243, 111, 33, 0.55);
+}
+
+.explorer-hit-name {
+  font-family: var(--font-display);
+  font-size: 0.94rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--charcoal);
+}
+
+.explorer-hit-grade {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+}
+
+.explorer-hit-where {
+  grid-column: 1 / -1;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--stone);
+}
+
+/* "View All Routes" footer of the compact explorer. */
+.explorer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--chalk-dim);
+}
+
+.explorer-actions .explorer-reset {
+  margin-right: auto;
 }
 
 .explorer-count {
@@ -1014,64 +1251,6 @@
   line-height: 1.55;
 }
 
-/* ============================== GRADE INDEX ============================== */
-
-.grade-index-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
-}
-
-.grade-index-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  text-align: left;
-  background: var(--chalk);
-  border: 1px solid var(--chalk-dim);
-  border-top: 4px solid var(--orange);
-  padding: 16px 16px 14px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.grade-index-group:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 30px rgba(32, 31, 33, 0.1);
-  border-color: transparent;
-}
-
-.grade-index-group:focus-visible {
-  outline-offset: 2px;
-}
-
-.grade-index-grade {
-  font-family: var(--font-display);
-  font-size: 1.7rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--charcoal);
-}
-
-.grade-index-routes {
-  font-size: 0.84rem;
-  line-height: 1.5;
-  color: var(--stone-dark);
-  max-height: calc(1.5em * 6);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 6;
-  -webkit-box-orient: vertical;
-}
-
-.grade-index-count {
-  font-family: var(--font-display);
-  font-size: 0.74rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--orange-dark);
-  margin-top: auto;
-}
-
 /* ============================== EQUIPMENT, GRADES & SAFETY ============================== */
 
 .guide-safety-grid {
@@ -1136,20 +1315,19 @@
   .pitch-len {
     display: none;
   }
+  /* Filters stack onto two rows; the search keeps the full width. */
+  .explorer-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .explorer-field-search {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 560px) {
   .guide-hero-meta {
     flex-direction: column;
     align-items: stretch;
-  }
-  .guide-cta-strip {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .guide-cta-strip .btn {
-    width: 100%;
-    text-align: center;
   }
   .guide-hero-chip {
     justify-content: center;
@@ -1181,7 +1359,23 @@
   .venue-meta {
     white-space: normal;
   }
-  .grade-index-grid {
+  .explorer-fields {
+    grid-template-columns: 1fr;
+  }
+  .explorer-field-search {
+    grid-column: auto;
+  }
+  .explorer-search-row {
+    flex-wrap: wrap;
+  }
+  .explorer-clear {
+    margin: 8px 0 0;
+  }
+  .explorer-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+  .explorer-hits {
     grid-template-columns: 1fr;
   }
 }

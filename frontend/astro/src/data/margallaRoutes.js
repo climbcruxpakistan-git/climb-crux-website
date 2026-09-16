@@ -7,7 +7,13 @@
  * the page (never faked). This is a single source of truth for the guide page
  * and is structured so it can later drive venue pages, route pages, a grade
  * index or a route search.
+ *
+ * Grade ordering lives in `../lib/grades` and filtering in
+ * `../lib/routeFilters` — the data model itself stays: area → venue → route →
+ * grade, with climbing area and venue kept as separate fields.
  */
+
+import { compareGrades, sortGrades } from '../lib/grades.js'
 
 export const MARGALLA_SOURCE = {
   title: 'Monkey Business – Margalla Climbing',
@@ -464,27 +470,6 @@ export const AREAS = [
 
 /* ── Helpers ─────────────────────────────────────────────────────────── */
 
-export const GRADE_BUCKETS = [
-  { id: 'all', label: 'All' },
-  { id: '4a-4c', label: '4a–4c' },
-  { id: '5a-5c', label: '5a–5c' },
-  { id: '6a-6c', label: '6a–6c' },
-  { id: '7a-7c', label: '7a–7c' },
-  { id: '8a+', label: '8a+' },
-]
-
-/** Map a grade like "6b+", "5a" or the trad "VS (5a)" string to a bucket id. */
-export function gradeBucket(grade) {
-  const num = parseInt(String(grade), 10)
-  if (!Number.isFinite(num)) return null
-  if (num >= 8) return '8a+'
-  if (num === 7) return '7a-7c'
-  if (num === 6) return '6a-6c'
-  if (num === 5) return '5a-5c'
-  if (num === 4) return '4a-4c'
-  return null
-}
-
 /** Display grade — adds the trad tag for graded trad lines, e.g. "VS (5a)". */
 export function formatGrade(route) {
   if (route.type === 'trad' && route.tradGrade) {
@@ -514,6 +499,35 @@ export function flattenRoutes() {
     }
   }
   return out
+}export const TOTAL_ROUTES = flattenRoutes().length
+
+/**
+ * Every grade a documented route is actually graded at, in climbing order.
+ * Derived from the data, never hard-coded, so the guide-page grade range and
+ * the route-library grade range always offer exactly the grades that exist.
+ * (Multi-pitch routes are graded by their hardest pitch, matching the source
+ * guide's route index.)
+ */
+export const AVAILABLE_GRADES = sortGrades([...new Set(flattenRoutes().map((route) => route.grade))])
+
+/**
+ * Coarse grade buckets used by the old `/routes?bucket=…` links. Kept only so
+ * those shared/bookmarked URLs keep resolving to a sensible grade range.
+ */
+export const LEGACY_GRADE_BUCKETS = {
+  '4a-4c': ['4a', '4c'],
+  '5a-5c': ['5a', '5c+'],
+  '6a-6c': ['6a', '6c+'],
+  '7a-7c': ['7a', '7c+'],
+  '8a+': ['8a', '8a'],
 }
 
-export const TOTAL_ROUTES = flattenRoutes().length
+/**
+ * Sort routes hardest-to-easiest by climbing-grade progression, then by name.
+ * Shares the grade ordering with the filters and the guide-page explorer.
+ */
+export function sortRoutesByGrade(routes) {
+  return [...routes].sort(
+    (a, b) => compareGrades(a.grade, b.grade) || a.name.localeCompare(b.name)
+  )
+}
