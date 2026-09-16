@@ -364,25 +364,17 @@
 }
 
 /* Anchored sections must clear the sticky site header when jumped to. */
-.guide-area,
-.venue-block,
 #guide-intro,
-#route-explorer,
-#routes,
 #explore-routes,
-#equipment-safety,
+#route-explorer,
 #source-credit {
   scroll-margin-top: 120px;
 }
 
 @media (max-width: 980px) {
-  .guide-area,
-  .venue-block,
   #guide-intro,
-    #route-explorer,
-  #routes,
   #explore-routes,
-  #equipment-safety,
+  #route-explorer,
   #source-credit {
     scroll-margin-top: 90px;
   }
@@ -912,265 +904,6 @@
   line-height: 1.55;
 }
 
-/* ============================== VENUES & ROUTES IN DETAIL ============================== */
-
-.guide-area {
-  padding-top: 10px;
-}
-
-.guide-area + .guide-area {
-  margin-top: clamp(36px, 5vw, 56px);
-  border-top: 1px solid rgba(140, 133, 120, 0.3);
-}
-
-.guide-area-name {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  margin: 0 0 6px;
-}
-
-.guide-area-lede {
-  font-size: 0.95rem;
-  color: var(--stone-dark);
-  margin: 0 0 22px;
-}
-
-.venue-block {
-  margin: 26px 0;
-}
-
-.venue-block + .venue-block {
-  border-top: 1px dashed rgba(140, 133, 120, 0.4);
-  padding-top: 26px;
-  margin-top: 26px;
-}
-
-.venue-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-bottom: 10px;
-}
-
-.venue-head h4 {
-  font-size: 1.3rem;
-  margin: 0;
-}
-
-.venue-meta {
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--orange-dark);
-  background: var(--chalk);
-  border: 1px solid var(--chalk-dim);
-  padding: 0.45em 0.9em;
-  white-space: nowrap;
-}
-
-.venue-character {
-  font-size: 0.95rem;
-  color: var(--stone-dark);
-  max-width: 78ch;
-  margin: 0 0 14px;
-  line-height: 1.65;
-}
-
-.venue-approach {
-  margin-bottom: 14px;
-  padding-left: 16px;
-  border-left: 3px solid var(--chalk-dim);
-}
-
-.venue-approach h5 {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--orange-dark);
-  margin: 0 0 4px;
-}
-
-.venue-approach p {
-  font-size: 0.9rem;
-  color: var(--stone-dark);
-  max-width: 78ch;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.venue-notes {
-  list-style: none;
-  padding: 10px 14px;
-  margin: 0 0 16px;
-  background: rgba(243, 111, 33, 0.06);
-  border-left: 3px solid var(--orange);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 78ch;
-}
-
-.venue-notes li {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--stone-dark);
-}
-
-.venue-routes {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.route-row {
-  background: var(--chalk);
-  border: 1px solid var(--chalk-dim);
-  padding: 16px 18px;
-}
-
-.route-row-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-bottom: 6px;
-}
-
-.route-name {
-  font-family: var(--font-display);
-  font-size: 1.02rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: var(--charcoal);
-}
-
-.route-meta {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-}
-
-.route-grade {
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--orange-dark);
-  border: 2px solid var(--orange);
-  padding: 0.15em 0.5em;
-  background: var(--chalk);
-}
-
-.route-len {
-  color: var(--stone);
-  text-transform: none;
-}
-
-.route-tag {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--charcoal);
-  background: var(--chalk-dim);
-  padding: 0.25em 0.55em;
-}
-
-.route-desc {
-  font-size: 0.92rem;
-  line-height: 1.6;
-  color: var(--stone-dark);
-  max-width: none;
-  margin: 0;
-}
-
-.venue-all-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 14px;
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  color: var(--orange-dark);
-  transition: color 0.15s ease;
-}
-
-.venue-all-link:hover {
-  color: var(--charcoal);
-}
-
-.route-pitches {
-  list-style: none;
-  padding: 0;
-  margin: 12px 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-left: 3px solid var(--orange);
-}
-
-.route-pitches li {
-  display: grid;
-  grid-template-columns: auto auto auto 1fr;
-  gap: 10px;
-  align-items: baseline;
-  background: #fff;
-  padding: 9px 12px;
-  font-size: 0.9rem;
-  color: var(--stone-dark);
-}
-
-.pitch-label {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--charcoal);
-}
-
-.pitch-grade {
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--orange-dark);
-}
-
-.pitch-len {
-  color: var(--stone);
-}
-
-.pitch-desc {
-  line-height: 1.55;
-}
-
-/* ============================== EQUIPMENT, GRADES & SAFETY ============================== */
-
-.guide-safety-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(28px, 5vw, 56px);
-  align-items: start;
-}
-
-.guide-safety-col h3 {
-  font-size: 1.1rem;
-  margin: 0 0 14px;
-}
-
-.guide-safety-col .guide-list {
-  margin-top: 0;
-}
-
 /* ============================== SOURCE & CREDIT ============================== */
 
 .guide-credit {
@@ -1202,16 +935,10 @@
 /* ============================== RESPONSIVE ============================== */
 
 @media (max-width: 980px) {
-  .guide-safety-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  .explorer-pitch,
-  .route-pitches li {
+  .explorer-pitch {
     grid-template-columns: auto auto 1fr;
   }
-  .explorer-pitch-len,
-  .pitch-len {
+  .explorer-pitch-len {
     display: none;
   }
   /* Filters stack onto two rows; the search keeps the full width. */
@@ -1248,14 +975,11 @@
   .explorer-wrap {
     padding: 16px;
   }
-  .explorer-card-head,
-  .route-row-head,
-  .venue-head {
+  .explorer-card-head {
     flex-direction: column;
     align-items: flex-start;
   }
-  .explorer-card-meta,
-  .venue-meta {
+  .explorer-card-meta {
     white-space: normal;
   }
   .explorer-fields {

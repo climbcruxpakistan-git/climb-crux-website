@@ -6,10 +6,8 @@ import {
   AREAS,
   MARGALLA_SOURCE,
   flattenRoutes,
-  formatGrade,
   TOTAL_ROUTES,
 } from '../data/margallaRoutes';
-import { routeLibraryHref } from '../lib/routeFilters';
 import '../styles/RockClimbingGuide.css';
 
 /**
@@ -48,22 +46,6 @@ const statChips = [
   { k: String(AREAS.length), v: 'Climbing areas' },
   { k: String(totalVenues), v: 'Venues' },
   { k: String(TOTAL_ROUTES), v: 'Named routes' },
-];
-
-/* ── Equipment, Grades & Safety ───────────────────────────────────── */
-const gradePoints = [
-  'The Margalla crags documented on this page use French sport grades, from easy 4b beginner ground at Jasmin Corner up to sustained 8a lines at Jungle Rock and Well Hidden Rock.',
-  "A '+' marks the harder end of a grade — 6a+ sits between 6a and 6b, 6b+ between 6b and 6c.",
-  'Most lines here are sport climbs on fixed bolts. A few are different: Cultural Divide at Well Hidden Rock is a trad route graded VS (5a), and Maverick at Belvedere is not yet bolted and is only climbed on top-rope.',
-  'Grades record difficulty at the time they were documented and can change with holds, bolts and rock condition — confirm them before you set out.',
-];
-
-const safetyPoints = [
-  "Carry, place and check quickdraws for the sport routes. A 60m rope covers the tall crags; most routes need far less. Teamwork at Belvedere is four pitches — the descent is usually by abseil, and two ropes are useful for the 40m abseil directly from the pitch 2 belay.",
-  'Wear a helmet. Several route notes warn of loose rock — the first metres at God Rock are described as inherently very loose, and loose rock is reported near the tops at Said Pur View.',
-  'Treat fixed gear with care — bolts, hangers and anchors age in the open, and a few routes (such as Saxony Ramp) have had their bolts removed.',
-  'Approaches follow informal hillside paths through seasonal bush; underfoot loose rock is normal. Respect the hillside and the local area, and keep paths clear of returned bushes where you can.',
-  'Climbing is at your own risk. Conditions, access and fixed gear should always be re-verified before a visit.',
 ];
 
 /* ── Visiting Pakistan? ───────────────────────────────────────────── */
@@ -174,16 +156,15 @@ const faqSchema = {
       <span class="eyebrow">The Margalla Hills</span>
       <h2>A Route Guide to Islamabad's Crags</h2>
       <p class="guide-lede">
-        The Margalla Hills are Islamabad's backyard climbing ground. The routes documented on this
-        page span four climbing areas — Daman-e-Koh, Said Pur, Trail 3 and Shaddarrah — from easy
-        beginner ground at Jasmin Corner to sustained, powerful lines like Out of Action and
-        Islamagood.
+        The Margalla Hills are Islamabad's backyard climbing ground. The routes in this guide span
+        four climbing areas — Daman-e-Koh, Said Pur, Trail 3 and Shaddarrah — from easy beginner
+        ground at Jasmin Corner to sustained, powerful lines like Out of Action and Islamagood.
       </p>
       <p class="guide-lede">
         Most routes are sport climbs on fixed bolts. A few are different: Cultural Divide at Well
-        Hidden Rock is a classic trad route, and a couple of faces are not bolted at all. Use the
-        Route Explorer to filter the whole library by grade, area or venue in an instant, then read
-        the venue notes below for character, approach, shade and rock quality before you set off.
+        Hidden Rock is a classic trad route, and a couple of faces are not bolted at all. Set a grade
+        range below to see what matches your level, then open the full route library to search by
+        climbing area, venue or route name.
       </p>
       <div class="guide-stats" role="list">
         {statChips.map((chip) => (
@@ -220,135 +201,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 4. Venues & routes in detail ──────────────────────────────── */}
-  <section id="routes" class="section guide-tint">
-    <div class="wrap">
-      <span class="eyebrow">Where to climb</span>
-      <h2>Venues &amp; Routes in Detail</h2>
-      <p class="guide-lede">
-        Character, approach and a few highlighted routes for each venue — a taste of what's on
-        offer. Follow the venue links to filter the complete route library. Approach times are from
-        the source guide and may change with conditions.
-      </p>
-
-      {AREAS.map((area) => (
-        <div class="guide-area" id={area.id}>
-          <h3 class="guide-area-name">{area.name}</h3>
-          {area.lede && <p class="guide-area-lede">{area.lede}</p>}
-
-          {area.venues.map((venue) => (
-            <article class="venue-block" id={venue.id}>
-              <header class="venue-head">
-                <h4>{venue.name}</h4>
-                <span class="venue-meta">
-                  {venue.gradeRange}
-                  {venue.routes.length > 0
-                    ? <> · {venue.routes.length} {venue.routes.length === 1 ? 'route' : 'routes'}</>
-                    : <> · No individual routes documented</>}
-                </span>
-              </header>
-
-              {venue.character && <p class="venue-character">{venue.character}</p>}
-
-              {venue.approach && (
-                <div class="venue-approach">
-                  <h5>Approach</h5>
-                  <p>{venue.approach}</p>
-                </div>
-              )}
-
-              {venue.notes?.length > 0 && (
-                <ul class="venue-notes">
-                  {venue.notes.map((note) => <li>{note}</li>)}
-                </ul>
-              )}
-
-              {venue.routes.length > 0 && (
-                <>
-                  <ul class="venue-routes" role="list">
-                    {venue.routes.slice(0, 3).map((route) => (
-                      <li class="route-row">
-                        <div class="route-row-head">
-                          <span class="route-name">{route.name}</span>
-                          <span class="route-meta">
-                            <span class="route-grade">{formatGrade(route)}</span>
-                            {route.length && <span class="route-len">{route.length}m</span>}
-                            {route.type === 'multi-pitch' && <span class="route-tag">Multi-pitch</span>}
-                            {route.type === 'trad' && <span class="route-tag">Trad</span>}
-                            {route.variation && <span class="route-tag">Variation</span>}
-                          </span>
-                        </div>
-                        {route.pitches ? (
-                          <p class="route-desc">
-                            Four pitches from ~5m to 30m long; the hardest moves are 6c+. See the
-                            pitch-by-pitch breakdown below. Descent is usually by abseil — two ropes
-                            are useful to abseil 40m directly from the pitch 2 belay.
-                          </p>
-                        ) : (
-                          <p class="route-desc">{route.description}</p>
-                        )}
-                        {route.pitches && (
-                          <ul class="route-pitches" role="list">
-                            {route.pitches.map((pitch) => (
-                              <li>
-                                <span class="pitch-label">{pitch.label}</span>
-                                <span class="pitch-grade">{pitch.grade}</span>
-                                {pitch.length && <span class="pitch-len">{pitch.length}m</span>}
-                                <span class="pitch-desc">{pitch.description}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    class="venue-all-link"
-                    href={routeLibraryHref({ area: area.id, venue: venue.id })}
-                  >
-                    View all {venue.routes.length} {venue.routes.length === 1 ? 'route' : 'routes'} &rarr;
-                  </a>
-                </>
-              )}
-            </article>
-          ))}
-        </div>
-      ))}
-    </div>
-  </section>
-
-  {/* ── 5. Equipment, Grades & Safety ─────────────────────────────── */}
-  <section id="equipment-safety" class="section">
-    <div class="wrap">
-      <span class="eyebrow">On the rock</span>
-      <h2>Equipment, Grades &amp; Safety</h2>
-      <p class="guide-lede">
-        How the grades work on these crags, and the essentials for climbing safely. Details below
-        are drawn from the source guide's route notes plus general safe practice.
-      </p>
-      <div class="guide-safety-grid">
-        <div class="guide-safety-col">
-          <h3>Grades &amp; route names</h3>
-          <ul class="guide-list is-check">
-            {gradePoints.map((point) => <li>{point}</li>)}
-          </ul>
-        </div>
-        <div class="guide-safety-col">
-          <h3>Equipment &amp; safety</h3>
-          <ul class="guide-list is-check">
-            {safetyPoints.map((point) => <li>{point}</li>)}
-          </ul>
-        </div>
-      </div>
-      <p class="guide-section-note">
-        These crags are undeveloped, informal climbing areas — routes, bolts and access are not
-        managed. Climb at your own risk, re-check everything on the ground, and ask Climb Crux or
-        local climbers for current conditions.
-      </p>
-    </div>
-  </section>
-
-  {/* ── 6. Source & Credit ────────────────────────────────────────── */}
+  {/* ── 4. Source & Credit ────────────────────────────────────────── */}
   <section id="source-credit" class="section">
     <div class="wrap">
       <span class="eyebrow">Source</span>
@@ -369,7 +222,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 7. Climb with Climb Crux ──────────────────────────────────── */}
+  {/* ── 5. Climb with Climb Crux ──────────────────────────────────── */}
   <section class="section guide-tint">
     <div class="wrap">
       <span class="eyebrow">Guided climbing</span>
@@ -391,7 +244,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 8. Visiting Pakistan? ────────────────────────────────────── */}
+  {/* ── 6. Visiting Pakistan? ────────────────────────────────────── */}
   <section class="section">
     <div class="wrap">
       <div class="guide-intl-grid">
@@ -418,7 +271,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 9. FAQ ──────────────────────────────────────────────────── */}
+  {/* ── 7. FAQ ──────────────────────────────────────────────────── */}
   <section class="section guide-faq">
     <div class="wrap">
       <div class="guide-faq-grid">
