@@ -43,12 +43,6 @@ const explorerAreas = AREAS.map((area) => ({
   venues: area.venues.map((venue) => ({ id: venue.id, name: venue.name })),
 }));
 
-// Documented routes per climbing area — drives the area-card links into the
-// route library, so the count can never drift from the data.
-const routeCountByArea = new Map(
-  AREAS.map((area) => [area.id, area.venues.reduce((n, venue) => n + venue.routes.length, 0)])
-);
-
 const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
 const statChips = [
   { k: String(AREAS.length), v: 'Climbing areas' },
@@ -207,41 +201,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 3. Climbing areas overview ────────────────────────────────── */}
-  <section id="climbing-areas" class="section guide-tint">
-    <div class="wrap">
-      <span class="eyebrow">Areas at a glance</span>
-      <h2>Climbing Areas</h2>
-      <p class="guide-lede">
-        The crags are grouped into four areas around Islamabad. Step down to the detailed venue
-        sections below, jump straight to a venue from its card, or open the complete route library
-        with that area's routes already filtered.
-      </p>
-      <div class="guide-areas-grid">
-        {AREAS.map((area) => (
-          <article class="guide-area-card">
-            <div class="guide-area-card-head">
-              <span class="guide-area-num" aria-hidden="true">{String(AREAS.indexOf(area) + 1).padStart(2, '0')}</span>
-              <h3><a href={`#${area.id}`}>{area.name}</a></h3>
-            </div>
-            <p>{area.lede}</p>
-            <ul class="guide-venue-links">
-              {area.venues.map((venue) => (
-                <li><a href={`#${venue.id}`}>{venue.name}</a></li>
-              ))}
-            </ul>
-            {routeCountByArea.get(area.id) > 0 && (
-              <a class="guide-area-card-link" href={routeLibraryHref({ area: area.id })}>
-                View all {routeCountByArea.get(area.id)} routes in {area.name} &rarr;
-              </a>
-            )}
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  {/* ── 4. Explore routes by grade (compact explorer) ─────────────── */}
+  {/* ── 3. Explore routes by grade (compact explorer) ─────────────── */}
   <section id="explore-routes" class="section">
     <div class="wrap">
       <span class="eyebrow">Plan your climb</span>
@@ -260,7 +220,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 5. Venues & routes in detail ──────────────────────────────── */}
+  {/* ── 4. Venues & routes in detail ──────────────────────────────── */}
   <section id="routes" class="section guide-tint">
     <div class="wrap">
       <span class="eyebrow">Where to climb</span>
@@ -357,7 +317,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 6. Equipment, Grades & Safety ─────────────────────────────── */}
+  {/* ── 5. Equipment, Grades & Safety ─────────────────────────────── */}
   <section id="equipment-safety" class="section">
     <div class="wrap">
       <span class="eyebrow">On the rock</span>
@@ -388,7 +348,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 7. Source & Credit ────────────────────────────────────────── */}
+  {/* ── 6. Source & Credit ────────────────────────────────────────── */}
   <section id="source-credit" class="section">
     <div class="wrap">
       <span class="eyebrow">Source</span>
@@ -409,7 +369,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 8. Climb with Climb Crux ──────────────────────────────────── */}
+  {/* ── 7. Climb with Climb Crux ──────────────────────────────────── */}
   <section class="section guide-tint">
     <div class="wrap">
       <span class="eyebrow">Guided climbing</span>
@@ -431,7 +391,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 9. Visiting Pakistan? ────────────────────────────────────── */}
+  {/* ── 8. Visiting Pakistan? ────────────────────────────────────── */}
   <section class="section">
     <div class="wrap">
       <div class="guide-intl-grid">
@@ -458,7 +418,7 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 10. FAQ ──────────────────────────────────────────────────── */}
+  {/* ── 9. FAQ ──────────────────────────────────────────────────── */}
   <section class="section guide-faq">
     <div class="wrap">
       <div class="guide-faq-grid">
