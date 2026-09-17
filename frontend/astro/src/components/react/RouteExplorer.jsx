@@ -113,23 +113,34 @@ function GradeRange({ idPrefix, minGrade, maxGrade, onChange }) {
   )
 }
 
-/** The grade shown as a stand-out badge so it reads independently of the rest. */
-function GradeBadge({ grade }) {
-  return <span className="explorer-badge">{grade}</span>
+/** Difficulty tone for the grade badge — banded by the leading numeral. */
+function gradeTone(grade = '') {
+  const n = String(grade).charAt(0)
+  if (n === '4') return 'g4'
+  if (n === '5') return 'g5'
+  if (n === '6') return 'g6'
+  if (n === '7') return 'g7'
+  return 'g8'
 }
 
-/** Area → venue as a labelled location line, separate from the grade and name. */
-function LocationLine({ area, venue }) {
+/** The grade shown as a colour-coded badge so hardness reads instantly,
+    independent of the name or where the route lives. */
+function GradeBadge({ grade, tone }) {
+  return <span className={`explorer-badge is-${tone}`}>{grade}</span>
+}
+
+/** Area and venue as two separate labelled tags, kept visually distinct
+    from the grade badge and the route name. */
+function LocationTags({ area, venue }) {
   return (
     <span className="explorer-loc">
-      <span className="explorer-loc-item">
-        <span className="explorer-loc-label">Area</span>
-        {area}
-      </span>
-      <span className="explorer-loc-arrow" aria-hidden="true">→</span>
-      <span className="explorer-loc-item">
-        <span className="explorer-loc-label">Venue</span>
+      <span className="explorer-tag is-venue">
+        <b>Venue</b>
         {venue}
+      </span>
+      <span className="explorer-tag is-area">
+        <b>Area</b>
+        {area}
       </span>
     </span>
   )
@@ -139,25 +150,27 @@ function LocationLine({ area, venue }) {
 function RouteCard({ route }) {
   return (
     <li className="explorer-card">
-      <div className="explorer-card-row">
-        <GradeBadge grade={formatGrade(route)} />
-        <span className="explorer-card-name">{route.name}</span>
-        {route.length ? <span className="explorer-card-len">{route.length}m</span> : null}
+      <GradeBadge grade={formatGrade(route)} tone={gradeTone(route.grade)} />
+      <div className="explorer-card-body">
+        <div className="explorer-card-title">
+          <h3 className="explorer-card-name">{route.name}</h3>
+          {route.length ? <span className="explorer-card-len">{route.length}m</span> : null}
+        </div>
+        <LocationTags area={route.area} venue={route.venue} />
+        <p className="explorer-card-desc">{route.description}</p>
+        {route.pitches && (
+          <ul className="explorer-pitches" role="list">
+            {route.pitches.map((pitch) => (
+              <li key={pitch.label} className="explorer-pitch">
+                <span className="explorer-pitch-label">{pitch.label}</span>
+                <span className="explorer-pitch-grade">{pitch.grade}</span>
+                {pitch.length ? <span className="explorer-pitch-len">{pitch.length}m</span> : null}
+                <span className="explorer-pitch-desc">{pitch.description}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-      <LocationLine area={route.area} venue={route.venue} />
-      <p className="explorer-card-desc">{route.description}</p>
-      {route.pitches && (
-        <ul className="explorer-pitches" role="list">
-          {route.pitches.map((pitch) => (
-            <li key={pitch.label} className="explorer-pitch">
-              <span className="explorer-pitch-label">{pitch.label}</span>
-              <span className="explorer-pitch-grade">{pitch.grade}</span>
-              {pitch.length ? <span className="explorer-pitch-len">{pitch.length}m</span> : null}
-              <span className="explorer-pitch-desc">{pitch.description}</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </li>
   )
 }
@@ -166,10 +179,10 @@ function RouteCard({ route }) {
 function RouteHit({ route }) {
   return (
     <li className="explorer-hit">
-      <GradeBadge grade={formatGrade(route)} />
+      <GradeBadge grade={formatGrade(route)} tone={gradeTone(route.grade)} />
       <div className="explorer-hit-main">
-        <span className="explorer-hit-name">{route.name}</span>
-        <LocationLine area={route.area} venue={route.venue} />
+        <h3 className="explorer-hit-name">{route.name}</h3>
+        <LocationTags area={route.area} venue={route.venue} />
       </div>
     </li>
   )
