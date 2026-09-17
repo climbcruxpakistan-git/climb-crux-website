@@ -821,7 +821,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-/* Compact results (guide page) — grade, name, quiet venue · area. */
+/* Compact results (guide page) — grade, name, length, labelled venue + area. */
 .explorer-hits {
   list-style: none;
   padding: 0;
@@ -893,6 +893,22 @@
   letter-spacing: 0.03em;
   line-height: 1.25;
   color: var(--charcoal);
+}
+
+.explorer-hit .explorer-card-length {
+  font-size: 0.78rem;
+}
+
+.explorer-hit .explorer-card-meta {
+  padding-top: 10px;
+}
+
+.explorer-hit .explorer-meta-label {
+  font-size: 0.58rem;
+}
+
+.explorer-hit .explorer-meta-value {
+  font-size: 0.84rem;
 }
 
 /* "View All Routes" footer of the compact explorer. */
@@ -1042,26 +1058,63 @@
   color: var(--tone, var(--orange-dark));
 }
 
-.explorer-card-len {
-  flex: none;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--stone-dark);
-  background: var(--chalk);
-  border: 1px solid var(--chalk-dim);
-  padding: 0.3em 0.55em;
-}
-
-.explorer-card-location {
+/* Route length — secondary climbing info, kept visually below the name. */
+.explorer-card-length {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  line-height: 1.55;
+  line-height: 1.4;
   color: var(--stone-dark);
-  max-width: none;
+}
+
+/* Venue and area as labelled metadata. By default the items stack with a
+   hairline between them; on wider cards they sit side by side. */
+.explorer-card-meta {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--chalk-dim);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px 20px;
+}
+
+.explorer-meta-item + .explorer-meta-item {
+  padding-top: 10px;
+  border-top: 1px solid var(--chalk-dim);
+}
+
+@media (min-width: 640px) {
+  .explorer-card .explorer-card-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .explorer-card .explorer-meta-item + .explorer-meta-item {
+    padding-top: 0;
+    border-top: 0;
+    border-left: 1px solid var(--chalk-dim);
+    padding-left: 20px;
+  }
+}
+
+.explorer-meta-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--stone);
+  margin-bottom: 2px;
+}
+
+.explorer-meta-value {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--stone-dark);
+  overflow-wrap: anywhere;
 }
 
 .explorer-card-desc {
