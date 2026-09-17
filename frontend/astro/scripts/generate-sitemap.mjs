@@ -57,6 +57,7 @@ const STATIC_SIGNALS = {
   '/sessions/': { priority: '0.9', changefreq: 'weekly' },
   '/shop/': { priority: '0.9', changefreq: 'weekly' },
   '/private-premium/': { priority: '0.8', changefreq: 'monthly' },
+  '/routes/': { priority: '0.9', changefreq: 'weekly' },
   '/rock-climbing-guide-islamabad/': { priority: '0.8', changefreq: 'monthly' },
   '/membership/apply/': { priority: '0.8', changefreq: 'monthly' },
   '/about/': { priority: '0.7', changefreq: 'monthly' },

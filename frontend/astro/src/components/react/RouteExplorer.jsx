@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AVAILABLE_GRADES, formatGrade, sortRoutesByGrade } from '../../data/margallaRoutes'
+import { AVAILABLE_GRADES, formatGrade, routeSlug, sortRoutesByGrade } from '../../data/margallaRoutes'
 import { gradeColor } from '../../lib/gradeColors'
 import {
   defaultFilters,
@@ -151,6 +151,7 @@ function RouteCard({ route }) {
   const tone = gradeColor(route.grade)
   return (
     <li
+      id={routeSlug(route.name)}
       className="explorer-card"
       style={{ '--tone': tone.tone, '--tone-ink': tone.ink, '--tone-accent': tone.accent }}
     >

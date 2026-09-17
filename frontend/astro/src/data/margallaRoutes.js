@@ -14,6 +14,7 @@
  */
 
 import { compareGrades, sortGrades } from '../lib/grades.js'
+import { slugify } from '../lib/slug.js'
 
 export const MARGALLA_SOURCE = {
   title: 'Monkey Business – Margalla Climbing',
@@ -476,6 +477,11 @@ export function formatGrade(route) {
     return `${route.tradGrade} (${route.grade})`
   }
   return route.grade
+}
+
+/** Stable anchor id for a route, e.g. "Dog's Dinner" → "route-dogs-dinner". */
+export function routeSlug(name) {
+  return `route-${slugify(name)}`
 }
 
 /**
