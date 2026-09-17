@@ -113,20 +113,38 @@ function GradeRange({ idPrefix, minGrade, maxGrade, onChange }) {
   )
 }
 
+/** The grade shown as a stand-out badge so it reads independently of the rest. */
+function GradeBadge({ grade }) {
+  return <span className="explorer-badge">{grade}</span>
+}
+
+/** Area → venue as a labelled location line, separate from the grade and name. */
+function LocationLine({ area, venue }) {
+  return (
+    <span className="explorer-loc">
+      <span className="explorer-loc-item">
+        <span className="explorer-loc-label">Area</span>
+        {area}
+      </span>
+      <span className="explorer-loc-arrow" aria-hidden="true">→</span>
+      <span className="explorer-loc-item">
+        <span className="explorer-loc-label">Venue</span>
+        {venue}
+      </span>
+    </span>
+  )
+}
+
 /** Full route card — the library presentation (description, pitches, tags). */
 function RouteCard({ route }) {
   return (
     <li className="explorer-card">
-      <div className="explorer-card-head">
+      <div className="explorer-card-row">
+        <GradeBadge grade={formatGrade(route)} />
         <span className="explorer-card-name">{route.name}</span>
-        <span className="explorer-card-meta">
-          {formatGrade(route)}
-          {route.length ? <> · {route.length}m</> : null}
-          <span className="explorer-card-venue">
-            {route.area} · {route.venue}
-          </span>
-        </span>
+        {route.length ? <span className="explorer-card-len">{route.length}m</span> : null}
       </div>
+      <LocationLine area={route.area} venue={route.venue} />
       <p className="explorer-card-desc">{route.description}</p>
       {route.pitches && (
         <ul className="explorer-pitches" role="list">
@@ -144,15 +162,15 @@ function RouteCard({ route }) {
   )
 }
 
-/** Compact result row — name, grade, area · venue. */
+/** Compact result row — grade badge, name, labelled area · venue. */
 function RouteHit({ route }) {
   return (
     <li className="explorer-hit">
-      <span className="explorer-hit-name">{route.name}</span>
-      <span className="explorer-hit-grade">{formatGrade(route)}</span>
-      <span className="explorer-hit-where">
-        {route.area} · {route.venue}
-      </span>
+      <GradeBadge grade={formatGrade(route)} />
+      <div className="explorer-hit-main">
+        <span className="explorer-hit-name">{route.name}</span>
+        <LocationLine area={route.area} venue={route.venue} />
+      </div>
     </li>
   )
 }
