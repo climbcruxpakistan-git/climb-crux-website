@@ -91,6 +91,19 @@
   margin-top: 20px;
 }
 
+/* Make the inline link read as clickable (global anchors are not underlined). */
+.guide-section-note a {
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+.guide-section-note a:hover {
+  color: var(--charcoal);
+}
+
 /* ============================== INTERNATIONAL CLIMBERS ============================== */
 
 .guide-intl-grid {
