@@ -28,7 +28,6 @@ const statChips = [
     <div class="page-header-pattern"></div>
     <div class="page-header-accent"></div>
     <div class="wrap page-header-inner guide-hero-inner">
-      <span class="eyebrow">Route library</span>
       <h1>All Climbing Routes</h1>
       <div class="page-header-desc">
         <p>
@@ -66,5 +65,17 @@ const statChips = [
 
   .route-library-header .guide-stats {
     margin-top: 8px;
+  }
+
+  /* Stat chips: solid orange with black text. */
+  .route-library-header .guide-stat {
+    background: var(--orange);
+    border-color: var(--orange-dark);
+    border-left-color: var(--orange-dark);
+  }
+
+  .route-library-header .guide-stat b,
+  .route-library-header .guide-stat span {
+    color: var(--charcoal-deep);
   }
 </style>
