@@ -132,7 +132,11 @@ const urls = htmlFiles
     const stats = statSync(filePath)
     const lastmod = stats.mtime.toISOString().split('T')[0] // YYYY-MM-DD
 
-    return { loc, lastmod, ...(STATIC_SIGNALS[urlPath] || {}) }
+    // Every individual route page inherits a lighter monthly signal.
+    const signals = STATIC_SIGNALS[urlPath]
+      || (urlPath.startsWith('/routes/') ? { priority: '0.6', changefreq: 'monthly' } : {})
+
+    return { loc, lastmod, ...signals }
   })
   .filter(Boolean)
 

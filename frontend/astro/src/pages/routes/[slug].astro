@@ -1,0 +1,289 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PageHeader from '../../components/astro/PageHeader.astro';
+import { flattenRoutes, formatGrade, routeSlug } from '../../data/margallaRoutes';
+import { slugify } from '../../lib/slug.js';
+import { gradeColor } from '../../lib/gradeColors.js';
+
+const SITE_URL = 'https://www.climbcruxpakistan.com';
+
+// One static page per documented route, generated from the same data that
+// renders the library, so pages can never drift from the list.
+export function getStaticPaths() {
+  return flattenRoutes().map((route) => ({
+    params: { slug: slugify(route.name) },
+    props: { route },
+  }));
+}
+
+const { route } = Astro.props;
+const grade = formatGrade(route);
+const tone = gradeColor(route.grade);
+
+const path = `/routes/${slugify(route.name)}/`;
+const canonical = `${SITE_URL}${path}`;
+const typeLabel =
+  route.type === 'multi-pitch' ? 'Multi-pitch' : route.type === 'trad' ? 'Trad' : 'Sport';
+
+const pageTitle = `${route.name} (${grade}) — Margalla Hills Climbing Route | Climb Crux`;
+
+const description = (route.description || '').replace(/\s+/g, ' ').trim();
+const location = [route.venue, route.area].filter(Boolean).join(', ');
+let metaDescription = `${route.name} is a ${grade} ${typeLabel.toLowerCase()} rock climbing route${location ? ` at ${location}` : ''} in the Margalla Hills, Islamabad.${route.length ? ` It is ${route.length} m long.` : ''} ${description}`.trim();
+if (metaDescription.length > 157) {
+  metaDescription = `${metaDescription.slice(0, 154).replace(/[\s,;:.\-–—]+$/, '')}…`;
+}
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  '@id': `${canonical}#breadcrumb`,
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Routes', item: `${SITE_URL}/routes/` },
+    { '@type': 'ListItem', position: 3, name: route.name, item: canonical },
+  ],
+};
+
+const webpageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: `${route.name} (${grade})`,
+  description: metaDescription,
+  url: canonical,
+  isPartOf: { '@type': 'WebSite', name: 'Climb Crux Pakistan', url: `${SITE_URL}/` },
+  about: {
+    '@type': 'Place',
+    name: 'Margalla Hills',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Islamabad',
+      addressRegion: 'Islamabad Capital Territory',
+      addressCountry: 'PK',
+    },
+  },
+  breadcrumb: { '@id': `${canonical}#breadcrumb` },
+};
+---
+
+<MainLayout title={pageTitle} description={metaDescription} canonicalUrl={canonical}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(webpageJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+  </Fragment>
+
+  <PageHeader title={route.name} eyebrow={location ? `${location} · Margalla Hills` : 'Margalla Hills'}>
+    <div class="route-hero-meta">
+      <span class="route-badge" style={`--tone:${tone.tone};--tone-ink:${tone.ink};`}>{grade}</span>
+      {route.length && <span class="route-hero-fact"><b>{route.length} m</b> long</span>}
+      <span class="route-hero-fact">{typeLabel}</span>
+      {route.variation && <span class="route-hero-fact">Variation</span>}
+    </div>
+  </PageHeader>
+
+  <section class="section">
+    <div class="wrap route-detail">
+      <p class="route-detail-back">
+        <a href={`/routes/#${routeSlug(route.name)}`}>← All climbing routes</a>
+      </p>
+
+      <h2>About {route.name}</h2>
+      <p class="route-detail-desc">{route.description}</p>
+
+      {
+        route.pitches && (
+          <div class="route-detail-pitches">
+            <h2>Pitches</h2>
+            <ol class="route-pitch-list">
+              {route.pitches.map((pitch) => (
+                <li class="route-pitch">
+                  <span class="route-pitch-label">{pitch.label}</span>
+                  <span class="route-pitch-grade">{pitch.grade}</span>
+                  {pitch.length ? <span class="route-pitch-len">{pitch.length} m</span> : null}
+                  <span class="route-pitch-desc">{pitch.description}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )
+      }
+
+      <div class="route-detail-links">
+        <p>
+          {route.venue ? (
+            <>
+              Find more lines at <a href={`/routes/?venue=${route.venueId}`}>{route.venue}</a> in the route library, or
+              read the <a href="/rock-climbing-guide-islamabad">guide to climbing the Margalla Hills</a>.
+            </>
+          ) : (
+            <>
+              Browse the <a href="/routes/">full route library</a> or read the{' '}
+              <a href="/rock-climbing-guide-islamabad">guide to climbing the Margalla Hills</a>.
+            </>
+          )}
+        </p>
+        <p>
+          Ready to climb it? <a href="/sessions">Book a guided rock climbing session</a> with Climb Crux.
+        </p>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .route-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+    margin-top: 4px;
+  }
+
+  .route-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.4rem;
+    padding: 0.55em 0.8em;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--tone-ink, #fff);
+    background: var(--tone, var(--orange-dark));
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .route-hero-fact {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: #c9c4b8;
+  }
+
+  .route-hero-fact b {
+    color: var(--chalk);
+  }
+
+  .route-detail {
+    max-width: 72ch;
+  }
+
+  .route-detail-back {
+    margin-bottom: 1.6em;
+  }
+
+  .route-detail-back a {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--orange-dark);
+    text-decoration: none;
+  }
+
+  .route-detail-back a:hover {
+    text-decoration: underline;
+  }
+
+  .route-detail h2 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 1.5rem;
+    color: var(--charcoal);
+    margin-bottom: 0.5em;
+  }
+
+  .route-detail-desc {
+    font-size: 1.08rem;
+    line-height: 1.8;
+    color: var(--stone-dark);
+  }
+
+  .route-detail-pitches {
+    margin-top: 2.2em;
+  }
+
+  .route-pitch-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .route-pitch {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    gap: 4px 14px;
+    align-items: baseline;
+    background: #fff;
+    border: 1px solid var(--chalk-dim);
+    border-left: 3px solid var(--orange);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .route-pitch-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--stone);
+  }
+
+  .route-pitch-grade {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--charcoal);
+  }
+
+  .route-pitch-len {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--stone);
+  }
+
+  .route-pitch-desc {
+    grid-column: 1 / -1;
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: var(--stone-dark);
+  }
+
+  .route-detail-links {
+    margin-top: 2.4em;
+    padding-top: 1.6em;
+    border-top: 1px solid var(--chalk-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .route-detail-links p {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--stone-dark);
+  }
+
+  .route-detail-links a {
+    color: var(--orange-dark);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .route-detail-links a:hover {
+    color: var(--charcoal);
+  }
+
+  @media (max-width: 560px) {
+    .route-pitch {
+      grid-template-columns: auto auto 1fr;
+    }
+  }
+</style>

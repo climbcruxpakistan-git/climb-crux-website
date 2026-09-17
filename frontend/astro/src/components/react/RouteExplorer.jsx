@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AVAILABLE_GRADES, formatGrade, routeSlug, sortRoutesByGrade } from '../../data/margallaRoutes'
+import { slugify } from '../../lib/slug'
 import { gradeColor } from '../../lib/gradeColors'
 import {
   defaultFilters,
@@ -158,8 +159,12 @@ function RouteCard({ route }) {
       <GradeBadge grade={formatGrade(route)} />
       <div className="explorer-card-body">
         <div className="explorer-card-header">
-          <h3 className="explorer-card-name">{route.name}</h3>
-          <span className="explorer-card-arrow" aria-hidden="true">↗</span>
+          <h3 className="explorer-card-name">
+            <a className="explorer-card-link" href={`/routes/${slugify(route.name)}/`}>
+              {route.name}
+              <span className="explorer-card-arrow" aria-hidden="true">↗</span>
+            </a>
+          </h3>
         </div>
         {route.length ? <p className="explorer-card-length">{route.length}m</p> : null}
         <RouteMeta area={route.area} venue={route.venue} />

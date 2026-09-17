@@ -1,7 +1,8 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteExplorer from '../components/react/RouteExplorer.jsx';
-import { AREAS, AVAILABLE_GRADES, flattenRoutes, routeSlug, sortRoutesByGrade, TOTAL_ROUTES } from '../data/margallaRoutes';
+import { AREAS, AVAILABLE_GRADES, flattenRoutes, sortRoutesByGrade, TOTAL_ROUTES } from '../data/margallaRoutes';
+import { slugify } from '../lib/slug.js';
 import '../styles/RockClimbingGuide.css';
 
 const SITE_URL = 'https://www.climbcruxpakistan.com';
@@ -30,7 +31,7 @@ const itemListJsonLd = {
     '@type': 'ListItem',
     position: index + 1,
     name: route.name,
-    url: `${SITE_URL}/routes/#${routeSlug(route.name)}`,
+    url: `${SITE_URL}/routes/${slugify(route.name)}/`,
   })),
 };
 
