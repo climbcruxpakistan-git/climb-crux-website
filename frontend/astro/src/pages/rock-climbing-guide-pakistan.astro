@@ -153,32 +153,42 @@ const faqSchema = {
   {/* ── 2. Route guide + climb-by-grade explorer ──────────────────── */}
   <section id="guide-intro" class="section">
     <div class="wrap">
-      <h2>A Route Guide to Islamabad's Crags</h2>
-      <p class="guide-lede">
-        The Margalla Hills are Islamabad's backyard climbing ground. The routes in this guide span
-        four climbing areas:
-      </p>
-      <ol class="guide-list is-numbered">
-        <li>Daman-e-Koh</li>
-        <li>Said Pur Village</li>
-        <li>Trail 3</li>
-        <li>Shaddarrah</li>
-      </ol>
-      <div class="guide-stats" role="list">
-        {statChips.map((chip) => (
-          <div class="guide-stat" role="listitem">
-            <b>{chip.k}</b>
-            <span>{chip.v}</span>
+      <div class="guide-overview">
+        <div class="guide-overview-copy">
+          <h2>A Route Guide to Islamabad's Crags</h2>
+          <p class="guide-lede">
+            The Margalla Hills are Islamabad's backyard climbing ground. The routes in this guide span
+            four climbing areas:
+          </p>
+          <ol class="guide-list is-numbered">
+            <li>Daman-e-Koh</li>
+            <li>Said Pur Village</li>
+            <li>Trail 3</li>
+            <li>Shaddarrah</li>
+          </ol>
+        </div>
+        <aside class="guide-overview-panel">
+          <span class="guide-overview-tag">The guide at a glance</span>
+          <div class="guide-stats" role="list">
+            {statChips.map((chip) => (
+              <div class="guide-stat" role="listitem">
+                <b>{chip.k}</b>
+                <span>{chip.v}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </aside>
       </div>
-      <h2>Explore Routes by Grade</h2>
-      <p class="guide-lede">
-        Find routes that match your climbing level using the grade range below.
-      </p>
+
+      <div class="guide-explorer-head">
+        <h2>Explore Routes by Grade</h2>
+        <p class="guide-lede">
+          Find routes that match your climbing level using the grade range below.
+        </p>
+      </div>
       <RouteExplorer client:load mode="compact" routes={allRoutes} areas={explorerAreas} />
 
-      <h2>Source &amp; Credit</h2>
+      <h2 class="guide-credit-heading">Source &amp; Credit</h2>
       <div class="guide-credit">
         <p>
           The route information on this page is drawn from <em>Monkey Business – Margalla Climbing</em>,

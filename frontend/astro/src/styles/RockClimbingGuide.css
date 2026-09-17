@@ -396,6 +396,79 @@
 
 /* ============================== GUIDE INTRO / STATS ============================== */
 
+.guide-overview {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(36px, 6vw, 80px);
+  align-items: stretch;
+}
+
+.guide-overview-copy h2 {
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  margin-bottom: 0.5em;
+}
+
+.guide-overview-panel {
+  position: relative;
+  background: var(--charcoal);
+  padding: clamp(28px, 3.6vw, 46px);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  box-shadow: 0 26px 60px rgba(32, 31, 33, 0.22);
+}
+
+.guide-overview-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--orange);
+}
+
+.guide-overview-tag {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--orange-light);
+  margin-bottom: 20px;
+}
+
+.guide-overview-panel .guide-stats {
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+
+.guide-overview-panel .guide-stat {
+  background: transparent;
+  border: 1px solid rgba(201, 196, 184, 0.28);
+  border-left: 3px solid var(--orange);
+}
+
+.guide-overview-panel .guide-stat b {
+  color: var(--chalk);
+}
+
+.guide-overview-panel .guide-stat span {
+  color: #c9c4b8;
+}
+
+.guide-explorer-head {
+  margin-top: clamp(48px, 6vw, 72px);
+}
+
+.guide-explorer-head h2 {
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  margin-bottom: 0.5em;
+}
+
+.guide-explorer-head .guide-lede {
+  margin-bottom: 0;
+}
+
 .guide-stats {
   display: flex;
   flex-wrap: wrap;
@@ -927,6 +1000,10 @@
 
 /* ============================== SOURCE & CREDIT ============================== */
 
+.guide-credit-heading {
+  margin-top: clamp(48px, 6vw, 72px);
+}
+
 .guide-credit {
   background: var(--chalk-dim);
   border: 1px solid var(--chalk-dim);
@@ -956,6 +1033,13 @@
 /* ============================== RESPONSIVE ============================== */
 
 @media (max-width: 980px) {
+  .guide-overview {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .guide-overview-panel {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  }
   .explorer-pitch {
     grid-template-columns: auto auto 1fr;
   }
