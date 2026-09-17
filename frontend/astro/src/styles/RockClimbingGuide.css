@@ -456,17 +456,17 @@
 }
 
 .guide-overview-panel .guide-stat {
-  background: transparent;
-  border: 1px solid rgba(201, 196, 184, 0.28);
+  background: #000;
+  border: 1px solid #000;
   border-left: 3px solid var(--orange);
 }
 
 .guide-overview-panel .guide-stat b {
-  color: var(--chalk);
+  color: var(--orange);
 }
 
 .guide-overview-panel .guide-stat span {
-  color: #c9c4b8;
+  color: var(--orange);
 }
 
 .guide-explorer-head {
