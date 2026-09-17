@@ -123,27 +123,23 @@ function gradeTone(grade = '') {
   return 'g8'
 }
 
-/** The grade shown as a colour-coded badge so hardness reads instantly,
-    independent of the name or where the route lives. */
+/** The grade shown as a strong rectangular badge with a small label above it,
+    so hardness reads independently of the name or where the route lives. */
 function GradeBadge({ grade, tone }) {
-  return <span className={`explorer-badge is-${tone}`}>{grade}</span>
+  return (
+    <div className="explorer-card-grade">
+      <span className="explorer-grade-label">Grade</span>
+      <span className={`explorer-badge is-${tone}`}>{grade}</span>
+    </div>
+  )
 }
 
-/** Area and venue as two separate labelled tags, kept visually distinct
-    from the grade badge and the route name. */
-function LocationTags({ area, venue }) {
-  return (
-    <span className="explorer-loc">
-      <span className="explorer-tag is-venue">
-        <b>Venue</b>
-        {venue}
-      </span>
-      <span className="explorer-tag is-area">
-        <b>Area</b>
-        {area}
-      </span>
-    </span>
-  )
+/** Venue · area as one quiet secondary line. Missing values are omitted,
+    never rendered as empty text with a dangling separator. */
+function LocationLine({ area, venue }) {
+  const parts = [venue, area].filter(Boolean)
+  if (parts.length === 0) return null
+  return <p className="explorer-card-location">{parts.join(' · ')}</p>
 }
 
 /** Full route card — the library presentation (description, pitches, tags). */
@@ -153,11 +149,12 @@ function RouteCard({ route }) {
     <li className={`explorer-card is-${tone}`}>
       <GradeBadge grade={formatGrade(route)} tone={tone} />
       <div className="explorer-card-body">
-        <div className="explorer-card-title">
+        <div className="explorer-card-header">
           <h3 className="explorer-card-name">{route.name}</h3>
           {route.length ? <span className="explorer-card-len">{route.length}m</span> : null}
+          <span className="explorer-card-arrow" aria-hidden="true">↗</span>
         </div>
-        <LocationTags area={route.area} venue={route.venue} />
+        <LocationLine area={route.area} venue={route.venue} />
         <p className="explorer-card-desc">{route.description}</p>
         {route.pitches && (
           <ul className="explorer-pitches" role="list">
@@ -176,7 +173,7 @@ function RouteCard({ route }) {
   )
 }
 
-/** Compact result row — grade badge, name, labelled area · venue. */
+/** Compact result row — grade, name, quiet venue · area. */
 function RouteHit({ route }) {
   const tone = gradeTone(route.grade)
   return (
@@ -184,7 +181,7 @@ function RouteHit({ route }) {
       <GradeBadge grade={formatGrade(route)} tone={tone} />
       <div className="explorer-hit-main">
         <h3 className="explorer-hit-name">{route.name}</h3>
-        <LocationTags area={route.area} venue={route.venue} />
+        <LocationLine area={route.area} venue={route.venue} />
       </div>
     </li>
   )

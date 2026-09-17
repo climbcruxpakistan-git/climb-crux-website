@@ -771,10 +771,8 @@
   color: var(--stone);
 }
 
-/* Grade badge — a colour-coded chip so hardness reads instantly, independent
-   of the name or where the route lives. Tones are banded by difficulty and
-   cascade from the card via `--tone`, so the badge, the accent bar and the
-   hover glow all share one colour per route. */
+/* Difficulty tones cascade from the card via `--tone`, so the badge and the
+   compact accent bar share one colour per route. */
 .explorer-card.is-g4,
 .explorer-hit.is-g4 { --tone: #5f8a4e; }
 .explorer-card.is-g5,
@@ -786,68 +784,44 @@
 .explorer-card.is-g8,
 .explorer-hit.is-g8 { --tone: #5d4a8f; }
 
+/* Grade column — the label plus the badge stack as one fixed-width block so
+   every grade in the list lines up vertically. */
+.explorer-card-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.explorer-grade-label {
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--stone);
+}
+
 .explorer-badge {
   flex: none;
-  align-self: start;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 3.2rem;
+  padding: 0.62em 0.72em;
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.03em;
-  padding: 0.55em 0.7em;
-  border-radius: 6px;
+  letter-spacing: 0.02em;
   color: #fff;
-  text-align: center;
   background: var(--tone, var(--orange-dark));
+  border-radius: 7px;
+  text-align: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-/* Area and venue as two separate pill tags. Each has its own colour and its
-   own label, so the two location names never blend together. */
-.explorer-loc {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 2px;
-}
-
-.explorer-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1;
-  padding: 0.45em 0.75em;
-  border-radius: 999px;
-}
-
-.explorer-tag b {
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  opacity: 0.75;
-}
-
-.explorer-tag.is-venue {
-  background: var(--charcoal);
-  color: var(--chalk);
-}
-
-.explorer-tag.is-area {
-  background: #fff;
-  border: 1px dashed var(--tone, var(--orange));
-  color: var(--charcoal);
-}
-
-/* Compact results (guide page) — grade badge, name, location tags. */
+/* Compact results (guide page) — grade, name, quiet venue · area. */
 .explorer-hits {
   list-style: none;
   padding: 0;
@@ -860,13 +834,13 @@
 .explorer-hit {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 14px;
   align-items: start;
   background: #fff;
   border: 1px solid var(--chalk-dim);
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 14px;
+  padding: 16px 18px;
   box-shadow: 0 1px 2px rgba(32, 31, 33, 0.05);
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
@@ -874,11 +848,11 @@
 .explorer-hit::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: 14px;
+  bottom: 14px;
   left: 0;
-  bottom: 0;
-  width: 4px;
-  border-radius: 8px 0 0 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
   background: var(--tone, var(--orange));
 }
 
@@ -888,10 +862,25 @@
   box-shadow: 0 16px 32px rgba(32, 31, 33, 0.12);
 }
 
+.explorer-hit .explorer-card-grade {
+  gap: 5px;
+}
+
+.explorer-hit .explorer-grade-label {
+  font-size: 0.56rem;
+}
+
+.explorer-hit .explorer-badge {
+  font-size: 0.88rem;
+  min-width: 2.9rem;
+  padding: 0.55em 0.6em;
+  border-radius: 6px;
+}
+
 .explorer-hit-main {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -904,11 +893,6 @@
   letter-spacing: 0.03em;
   line-height: 1.25;
   color: var(--charcoal);
-}
-
-.explorer-hit .explorer-badge {
-  font-size: 0.9rem;
-  min-width: 2.9rem;
 }
 
 /* "View All Routes" footer of the compact explorer. */
@@ -993,49 +977,40 @@
 .explorer-card {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0 18px;
+  grid-template-columns: 6.4rem 1fr;
+  gap: 4px 22px;
+  align-items: start;
   background: #fff;
   border: 1px solid var(--chalk-dim);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 20px 22px;
   box-shadow: 0 1px 3px rgba(32, 31, 33, 0.05);
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
-.explorer-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 5px;
-  border-radius: 10px 0 0 10px;
-  background: var(--tone, var(--orange));
-}
-
 .explorer-card:hover {
   transform: translateY(-3px);
-  border-color: var(--tone, rgba(243, 111, 33, 0.55));
+  border-color: rgba(32, 31, 33, 0.28);
   box-shadow: 0 20px 40px rgba(32, 31, 33, 0.12);
 }
 
 .explorer-card .explorer-badge {
-  align-self: start;
-  font-size: 1.1rem;
-  min-width: 3.4rem;
+  align-self: flex-start;
+  font-size: 1.15rem;
+  min-width: 3.6rem;
+  padding: 0.7em 0.74em;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .explorer-card-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
-.explorer-card-title {
+.explorer-card-header {
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -1045,17 +1020,26 @@
 .explorer-card-name {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   line-height: 1.2;
   color: var(--charcoal);
-  background-image: linear-gradient(var(--tone, var(--orange)), var(--tone, var(--orange)));
-  background-size: 100% 3px;
-  background-repeat: no-repeat;
-  background-position: 0 calc(100% - 4px);
-  padding-bottom: 4px;
+}
+
+.explorer-card-arrow {
+  flex: none;
+  margin-left: auto;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--stone);
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.explorer-card:hover .explorer-card-arrow {
+  transform: translate(2px, -2px);
+  color: var(--tone, var(--orange-dark));
 }
 
 .explorer-card-len {
@@ -1065,13 +1049,19 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--stone-dark);
-  background: #fff;
+  background: var(--chalk);
   border: 1px solid var(--chalk-dim);
-  padding: 0.35em 0.6em;
+  padding: 0.3em 0.55em;
 }
 
-.explorer-card .explorer-loc {
+.explorer-card-location {
   margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--stone-dark);
+  max-width: none;
 }
 
 .explorer-card-desc {
@@ -1208,12 +1198,22 @@
   .explorer-wrap {
     padding: 16px;
   }
-  .explorer-card-head {
-    flex-direction: column;
-    align-items: flex-start;
+  .explorer-card {
+    grid-template-columns: 4.5rem 1fr;
+    gap: 4px 14px;
+    padding: 16px 16px;
   }
-  .explorer-card-meta {
-    white-space: normal;
+  .explorer-card .explorer-badge {
+    font-size: 1rem;
+    min-width: 3rem;
+  }
+  .explorer-hit {
+    grid-template-columns: 3.6rem 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .explorer-hits {
+    grid-template-columns: 1fr;
   }
   .explorer-fields {
     grid-template-columns: 1fr;
@@ -1230,8 +1230,5 @@
   .explorer-actions .btn {
     width: 100%;
     text-align: center;
-  }
-  .explorer-hits {
-    grid-template-columns: 1fr;
   }
 }
