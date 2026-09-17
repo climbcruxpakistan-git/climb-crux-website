@@ -784,13 +784,9 @@
   color: var(--stone);
 }
 
-/* Difficulty tones cascade from the card via `--tone`, so the badge and the
-   accent bar share one colour per route. */
-.explorer-card.is-g4 { --tone: #5f8a4e; }
-.explorer-card.is-g5 { --tone: #2f7c86; }
-.explorer-card.is-g6 { --tone: var(--orange-dark); }
-.explorer-card.is-g7 { --tone: #c0392b; }
-.explorer-card.is-g8 { --tone: #5d4a8f; }
+/* Difficulty tone cascades from the card via `--tone` / `--tone-ink`, set per
+   route from the grade spectrum in lib/gradeColors.js, so the badge and the
+   accent share one colour per route. */
 
 /* Grade column — the label plus the badge stack as one fixed-width block so
    every grade in the list lines up vertically. */
@@ -822,7 +818,7 @@
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: #fff;
+  color: var(--tone-ink, #fff);
   background: var(--tone, var(--orange-dark));
   border-radius: 7px;
   text-align: center;

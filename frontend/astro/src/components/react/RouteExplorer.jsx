@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AVAILABLE_GRADES, formatGrade, sortRoutesByGrade } from '../../data/margallaRoutes'
+import { gradeColor } from '../../lib/gradeColors'
 import {
   defaultFilters,
   filterRoutes,
@@ -112,23 +113,14 @@ function GradeRange({ idPrefix, minGrade, maxGrade, onChange }) {
   )
 }
 
-/** Difficulty tone for the grade badge — banded by the leading numeral. */
-function gradeTone(grade = '') {
-  const n = String(grade).charAt(0)
-  if (n === '4') return 'g4'
-  if (n === '5') return 'g5'
-  if (n === '6') return 'g6'
-  if (n === '7') return 'g7'
-  return 'g8'
-}
-
 /** The grade shown as a strong rectangular badge with a small label above it,
-    so hardness reads independently of the name or where the route lives. */
-function GradeBadge({ grade, tone }) {
+    so hardness reads independently of the name or where the route lives. The
+    difficulty colour cascades from the card as `--tone` / `--tone-ink`. */
+function GradeBadge({ grade }) {
   return (
     <div className="explorer-card-grade">
       <span className="explorer-grade-label">Grade</span>
-      <span className={`explorer-badge is-${tone}`}>{grade}</span>
+      <span className="explorer-badge">{grade}</span>
     </div>
   )
 }
@@ -156,10 +148,10 @@ function RouteMeta({ area, venue }) {
 
 /** Full route card — the library presentation (description, pitches). */
 function RouteCard({ route }) {
-  const tone = gradeTone(route.grade)
+  const tone = gradeColor(route.grade)
   return (
-    <li className={`explorer-card is-${tone}`}>
-      <GradeBadge grade={formatGrade(route)} tone={tone} />
+    <li className="explorer-card" style={{ '--tone': tone.tone, '--tone-ink': tone.ink }}>
+      <GradeBadge grade={formatGrade(route)} />
       <div className="explorer-card-body">
         <div className="explorer-card-header">
           <h3 className="explorer-card-name">{route.name}</h3>
