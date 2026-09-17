@@ -1,54 +1,93 @@
 /**
  * Route difficulty colours — the single source of truth for the badge palette
- * that runs from easy green, through yellow, amber, orange and red, to hard
- * magenta and purple.
+ * that runs from easy green, through yellow, orange and red, to hard purple.
  *
- * Colours are interpolated by climbing-grade rank (see lib/grades.js) between a
- * small set of control points, so every grade in the data — including "+"
- * variants — gets its own position on one continuous, muted spectrum instead of
- * falling into coarse bands. Grades beyond the control points extrapolate, so
- * the scale keeps working if the route data ever grows a new grade.
+ * Each grade has an explicit colour. A "+" grade is a slightly darker, more
+ * saturated version of its base grade, so it reads as "a bit harder" without
+ * jumping to a new hue. Any other grade (or one added to the data later) is
+ * interpolated between the nearest defined grades, so the scale never falls
+ * back to a wrong colour.
  *
- * `gradeColor()` returns both the background (`tone`) and the text colour
- * (`ink`) to use on it; the ink is picked from the background's luminance so
- * the grade stays legible on every colour in the spectrum.
+ * `gradeColor()` returns three things:
+ *  · `tone`   — the badge background
+ *  · `ink`    — the badge text colour, picked for contrast on `tone`
+ *  · `accent` — a darkened copy of `tone` that stays visible on a white card,
+ *               used for the card's hover arrow
  */
 
-import { gradeRank } from './grades.js'
+import { gradeRank, parseGrade } from './grades.js'
 
-/* Control points: grade → hue, saturation (%), lightness (%). Hue falls
-   monotonically from green (138) through red (0) into negative degrees for
-   magenta and purple, so interpolation never wraps the wrong way around the
-   colour wheel. */
-const STOPS = [
-  { grade: '4a', h: 138, s: 30, l: 38 },
-  { grade: '4c', h: 100, s: 34, l: 41 },
-  { grade: '5b', h: 62, s: 42, l: 43 },
-  { grade: '6a', h: 42, s: 55, l: 46 },
-  { grade: '6b', h: 30, s: 62, l: 46 },
-  { grade: '6c', h: 16, s: 58, l: 44 },
-  { grade: '7a', h: 4, s: 55, l: 43 },
-  { grade: '7b', h: -22, s: 48, l: 43 },
-  { grade: '8a', h: -68, s: 42, l: 43 },
-].map((stop) => ({ ...stop, rank: gradeRank(stop.grade) }))
+/* The defined grades: rank → colour. */
+const BASE = [
+  [400, '#16A34A'], // 4a
+  [410, '#22C55E'], // 4b
+  [420, '#84CC16'], // 4c
+  [500, '#EAB308'], // 5a
+  [510, '#FACC15'], // 5b
+  [520, '#FFC800'], // 5c
+  [600, '#FFA500'], // 6a
+  [610, '#FF8C00'], // 6b
+  [620, '#FF6B00'], // 6c
+  [700, '#FF3B30'], // 7a
+  [710, '#E11D48'], // 7b
+  [721, '#9333EA'], // 7c+
+  [800, '#6D28D9'], // 8a
+]
 
 const INK_LIGHT = '#ffffff'
 const INK_DARK = '#201f21'
 const INK_DARK_LUMINANCE = relativeLuminance(hexToRgb(INK_DARK))
 
+/* Contrast a colour must reach against white to be used as the hover arrow. */
+const ACCENT_MIN_CONTRAST = 4.5
+
 /* Brand orange, used for anything unparseable so a bad grade never renders
    without a readable badge. */
-const FALLBACK = { tone: '#cf5711', ink: INK_LIGHT }
+const FALLBACK = { tone: '#cf5711', ink: INK_LIGHT, accent: '#cf5711' }
 
-function lerp(a, b, t) {
-  return a + (b - a) * t
+function hexToRgb(hex) {
+  const value = hex.replace('#', '')
+  return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16))
+}
+
+function rgbToHex([r, g, b]) {
+  return `#${[r, g, b]
+    .map((channel) => Math.round(clamp(channel, 0, 255)).toString(16).padStart(2, '0'))
+    .join('')}`
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function rgbToHsl([r, g, b]) {
+  const red = r / 255
+  const green = g / 255
+  const blue = b / 255
+  const max = Math.max(red, green, blue)
+  const min = Math.min(red, green, blue)
+  const lightness = (max + min) / 2
+  const delta = max - min
+
+  let hue = 0
+  let saturation = 0
+  if (delta) {
+    saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min)
+    if (max === red) hue = (green - blue) / delta + (green < blue ? 6 : 0)
+    else if (max === green) hue = (blue - red) / delta + 2
+    else hue = (red - green) / delta + 4
+    hue /= 6
+  }
+  return [hue * 360, saturation * 100, lightness * 100]
 }
 
 function hslToRgb(h, s, l) {
   const hue = ((h % 360) + 360) % 360
-  const c = (1 - Math.abs((2 * l) / 100 - 1)) * (s / 100)
+  const saturation = clamp(s, 0, 100) / 100
+  const lightness = clamp(l, 0, 100) / 100
+  const c = (1 - Math.abs(2 * lightness - 1)) * saturation
   const x = c * (1 - Math.abs(((hue / 60) % 2) - 1))
-  const m = l / 100 - c / 2
+  const m = lightness - c / 2
 
   let rgb
   if (hue < 60) rgb = [c, x, 0]
@@ -58,16 +97,7 @@ function hslToRgb(h, s, l) {
   else if (hue < 300) rgb = [x, 0, c]
   else rgb = [c, 0, x]
 
-  return rgb.map((channel) => Math.round((channel + m) * 255))
-}
-
-function hexToRgb(hex) {
-  const value = hex.replace('#', '')
-  return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16))
-}
-
-function rgbToHex([r, g, b]) {
-  return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+  return rgb.map((channel) => (channel + m) * 255)
 }
 
 function relativeLuminance([r, g, b]) {
@@ -90,33 +120,74 @@ function pickInk(rgb) {
     : INK_DARK
 }
 
-/**
- * The badge colours for a climbing grade: `{ tone, ink }`. Tone is a muted hex
- * background, ink is a readable text colour. Unknown grades get the fallback.
- */
-export function gradeColor(grade) {
-  const rank = gradeRank(grade)
-  if (rank === null) return { ...FALLBACK }
+/** Darken a colour until it is legible on a white background. */
+function pickAccent(rgb) {
+  let [h, s, l] = rgbToHsl(rgb)
+  if (contrast(relativeLuminance(rgb), 1) >= ACCENT_MIN_CONTRAST) return rgbToHex(rgb)
+  while (l > 2 && contrast(relativeLuminance(hslToRgb(h, s, l)), 1) < ACCENT_MIN_CONTRAST) {
+    l -= 3
+  }
+  return rgbToHex(hslToRgb(h, s, l))
+}
 
-  let lower = STOPS[0]
-  let upper = STOPS[STOPS.length - 1]
-  for (let i = 0; i < STOPS.length - 1; i += 1) {
-    if (rank >= STOPS[i].rank && rank <= STOPS[i + 1].rank) {
-      lower = STOPS[i]
-      upper = STOPS[i + 1]
+/** A "+" grade reads as slightly harder: darker and a little more saturated. */
+function shadePlus(rgb) {
+  const [h, s, l] = rgbToHsl(rgb)
+  return hslToRgb(h, s + 8, l - 6)
+}
+
+/** Interpolate (or extrapolate) a colour by grade rank between the base grades. */
+function interpolate(rank) {
+  let lower = BASE[0]
+  let upper = BASE[BASE.length - 1]
+  for (let i = 0; i < BASE.length - 1; i += 1) {
+    if (rank >= BASE[i][0] && rank <= BASE[i + 1][0]) {
+      lower = BASE[i]
+      upper = BASE[i + 1]
       break
     }
   }
-  if (rank < STOPS[0].rank) {
-    lower = STOPS[0]
-    upper = STOPS[1]
-  } else if (rank > STOPS[STOPS.length - 1].rank) {
-    lower = STOPS[STOPS.length - 2]
-    upper = STOPS[STOPS.length - 1]
+  if (rank < BASE[0][0]) {
+    lower = BASE[0]
+    upper = BASE[1]
+  } else if (rank > BASE[BASE.length - 1][0]) {
+    lower = BASE[BASE.length - 2]
+    upper = BASE[BASE.length - 1]
   }
 
-  const span = upper.rank - lower.rank
-  const t = span ? (rank - lower.rank) / span : 0
-  const rgb = hslToRgb(lerp(lower.h, upper.h, t), lerp(lower.s, upper.s, t), lerp(lower.l, upper.l, t))
-  return { tone: rgbToHex(rgb), ink: pickInk(rgb) }
+  const t = (rank - lower[0]) / (upper[0] - lower[0])
+  const from = hexToRgb(lower[1])
+  const to = hexToRgb(upper[1])
+  return from.map((channel, i) => channel + (to[i] - channel) * t)
+}
+
+/** Resolve a grade to an RGB background colour. */
+function toneRgb(grade) {
+  const rank = gradeRank(grade)
+  if (rank === null) return null
+
+  const exact = BASE.find(([stop]) => stop === rank)
+  if (exact) return hexToRgb(exact[1])
+
+  const parsed = parseGrade(grade)
+  if (parsed?.plus) {
+    const baseRank = rank - 1
+    const base = BASE.find(([stop]) => stop === baseRank)
+    return shadePlus(base ? hexToRgb(base[1]) : interpolate(baseRank))
+  }
+
+  return interpolate(rank)
+}
+
+/**
+ * The badge colours for a climbing grade. Unknown grades get the fallback.
+ */
+export function gradeColor(grade) {
+  const rgb = toneRgb(grade)
+  if (!rgb) return { ...FALLBACK }
+  return {
+    tone: rgbToHex(rgb),
+    ink: pickInk(rgb),
+    accent: pickAccent(rgb),
+  }
 }

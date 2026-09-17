@@ -150,7 +150,10 @@ function RouteMeta({ area, venue }) {
 function RouteCard({ route }) {
   const tone = gradeColor(route.grade)
   return (
-    <li className="explorer-card" style={{ '--tone': tone.tone, '--tone-ink': tone.ink }}>
+    <li
+      className="explorer-card"
+      style={{ '--tone': tone.tone, '--tone-ink': tone.ink, '--tone-accent': tone.accent }}
+    >
       <GradeBadge grade={formatGrade(route)} />
       <div className="explorer-card-body">
         <div className="explorer-card-header">

@@ -784,9 +784,9 @@
   color: var(--stone);
 }
 
-/* Difficulty tone cascades from the card via `--tone` / `--tone-ink`, set per
-   route from the grade spectrum in lib/gradeColors.js, so the badge and the
-   accent share one colour per route. */
+/* Difficulty tone cascades from the card via `--tone` / `--tone-ink` /
+   `--tone-accent`, set per route from the grade palette in
+   lib/gradeColors.js, so the badge and the accent share one colour per route. */
 
 /* Grade column — the label plus the badge stack as one fixed-width block so
    every grade in the list lines up vertically. */
@@ -996,7 +996,7 @@
 
 .explorer-card:hover .explorer-card-arrow {
   transform: translate(2px, -2px);
-  color: var(--tone, var(--orange-dark));
+  color: var(--tone-accent, var(--tone, var(--orange-dark)));
 }
 
 /* Route length — secondary climbing info, kept visually below the name. */
