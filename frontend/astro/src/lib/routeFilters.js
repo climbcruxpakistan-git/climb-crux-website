@@ -149,7 +149,13 @@ export function filterRoutes(routes, filters) {
     if (filters.area !== ALL && route.areaId !== filters.area) return false
     if (filters.venue !== ALL && route.venueId !== filters.venue) return false
     if (!gradeInRange(route.grade, filters.minGrade, filters.maxGrade)) return false
-    if (query && !route.name.toLowerCase().includes(query)) return false
+    if (query) {
+      const haystack = [route.name, route.venue, route.area]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      if (!haystack.includes(query)) return false
+    }
     return true
   })
 }

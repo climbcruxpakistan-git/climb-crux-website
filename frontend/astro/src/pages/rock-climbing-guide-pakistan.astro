@@ -156,15 +156,14 @@ const faqSchema = {
       <h2>A Route Guide to Islamabad's Crags</h2>
       <p class="guide-lede">
         The Margalla Hills are Islamabad's backyard climbing ground. The routes in this guide span
-        four climbing areas — Daman-e-Koh, Said Pur, Trail 3 and Shaddarrah — from easy beginner
-        ground at Jasmin Corner to sustained, powerful lines like Out of Action and Islamagood.
+        four climbing areas:
       </p>
-      <p class="guide-lede">
-        Most routes are sport climbs on fixed bolts. A few are different: Cultural Divide at Well
-        Hidden Rock is a classic trad route, and a couple of faces are not bolted at all. Set a grade
-        range below to see what matches your level, then open the full route library to search by
-        climbing area, venue or route name.
-      </p>
+      <ol class="guide-list is-numbered">
+        <li>Daman-e-Koh</li>
+        <li>Said Pur Village</li>
+        <li>Trail 3</li>
+        <li>Shaddarrah</li>
+      </ol>
       <div class="guide-stats" role="list">
         {statChips.map((chip) => (
           <div class="guide-stat" role="listitem">
@@ -181,10 +180,7 @@ const faqSchema = {
 
       <h2>Explore Routes by Grade</h2>
       <p class="guide-lede">
-        Find routes that match your climbing level using the grade range below. Drag either handle
-        to set a minimum and maximum grade — the results update as you go, ordered by climbing
-        grade rather than alphabetically. The complete, searchable library lives on the
-        {' '}<a href="/routes">route library page</a>.
+        Find routes that match your climbing level using the grade range below.
       </p>
       <RouteExplorer client:load mode="compact" routes={allRoutes} areas={explorerAreas} />
       <p class="guide-section-note">

@@ -199,6 +199,20 @@
   color: var(--charcoal);
 }
 
+.guide-list.is-numbered {
+  counter-reset: guide-list;
+}
+
+.guide-list.is-numbered li {
+  counter-increment: guide-list;
+}
+
+.guide-list.is-numbered li::before {
+  content: counter(guide-list);
+  left: 0;
+  font-weight: 700;
+}
+
 /* ============================== CARDS ============================== */
 
 .guide-grid {

@@ -238,14 +238,14 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
           <div className="explorer-fields">
             <div className="explorer-field explorer-field-search">
               <label className="explorer-label" htmlFor={`${idPrefix}-search`}>
-                Route name
+                Route search
               </label>
               <div className="explorer-search-row">
                 <input
                   id={`${idPrefix}-search`}
                   type="search"
                   className="explorer-search"
-                  placeholder="Search route name..."
+                  placeholder="Search by route name, venue or area..."
                   value={filters.search}
                   onChange={(event) => update({ search: event.target.value })}
                 />
@@ -254,7 +254,7 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
                     type="button"
                     className="explorer-clear"
                     onClick={() => update({ search: '' })}
-                    aria-label="Clear the route name search"
+                    aria-label="Clear the route search"
                   >
                     Clear
                   </button>
