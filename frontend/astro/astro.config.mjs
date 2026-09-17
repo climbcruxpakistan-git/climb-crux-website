@@ -13,6 +13,11 @@ export default defineConfig({
   output: 'hybrid',
   // www is the canonical domain (canonical tags, sitemap and schema all use it).
   site: 'https://www.climbcruxpakistan.com',
+  // The guide page was renamed to target "islamabad"; keep the old URL working
+  // with a permanent redirect so existing links and search results survive.
+  redirects: {
+    '/rock-climbing-guide-pakistan': '/rock-climbing-guide-islamabad',
+  },
   vite: {
     server: {
       // Allow the dev server to serve files from this project plus the shared
