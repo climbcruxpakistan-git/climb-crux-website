@@ -899,16 +899,14 @@
   font-size: 0.78rem;
 }
 
-.explorer-hit .explorer-card-meta {
-  padding-top: 10px;
-}
-
-.explorer-hit .explorer-meta-label {
-  font-size: 0.58rem;
-}
-
-.explorer-hit .explorer-meta-value {
+.explorer-hit .explorer-card-location {
+  margin: 0;
+  font-family: var(--font-body);
   font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--stone);
+  max-width: none;
 }
 
 /* "View All Routes" footer of the compact explorer. */

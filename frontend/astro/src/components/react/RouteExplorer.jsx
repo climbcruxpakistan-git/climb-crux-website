@@ -155,6 +155,14 @@ function RouteMeta({ area, venue }) {
   )
 }
 
+/** Venue · area as one quiet secondary line. Missing values are omitted,
+    never rendered as empty text with a dangling separator. */
+function LocationLine({ area, venue }) {
+  const parts = [venue, area].filter(Boolean)
+  if (parts.length === 0) return null
+  return <p className="explorer-card-location">{parts.join(' · ')}</p>
+}
+
 /** Full route card — the library presentation (description, pitches). */
 function RouteCard({ route }) {
   const tone = gradeTone(route.grade)
@@ -185,7 +193,7 @@ function RouteCard({ route }) {
   )
 }
 
-/** Compact result row — grade, name, length, labelled venue and area. */
+/** Compact result row — grade, name, length, quiet venue · area. */
 function RouteHit({ route }) {
   const tone = gradeTone(route.grade)
   return (
@@ -197,7 +205,7 @@ function RouteHit({ route }) {
           <span className="explorer-card-arrow" aria-hidden="true">↗</span>
         </div>
         {route.length ? <p className="explorer-card-length">{route.length}m</p> : null}
-        <RouteMeta area={route.area} venue={route.venue} />
+        <LocationLine area={route.area} venue={route.venue} />
       </div>
     </li>
   )
