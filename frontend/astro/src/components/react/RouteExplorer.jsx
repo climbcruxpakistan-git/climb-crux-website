@@ -8,6 +8,8 @@ import {
   filtersFromParams,
   filtersToParams,
   hasActiveFilters,
+  routeDetailHref,
+  routeLibraryHref,
   venueOptions,
 } from '../../lib/routeFilters'
 
@@ -18,9 +20,9 @@ import {
  *    search plus a grade range bar, with all matching routes in a scrollable
  *    list using the same full route cards as the library, and a link to the
  *    library.
- *  · `full` — the route library at /routes: search + climbing area + grade
- *    range + venue, with the filter state kept in the URL so filtered views can
- *    be bookmarked or shared.
+ *  · `full` — the route library at /rock-climbing-guide-islamabad/routes:
+ *    search + climbing area + grade range + venue, with the filter state kept in
+ *    the URL so filtered views can be bookmarked or shared.
  *
  * Filtering, grade ordering and the URL conventions all come from
  * `lib/routeFilters` and `lib/grades`.
@@ -160,7 +162,7 @@ function RouteCard({ route }) {
       <div className="explorer-card-body">
         <div className="explorer-card-header">
           <h3 className="explorer-card-name">
-            <a className="explorer-card-link" href={`/routes/${slugify(route.name)}/`}>
+            <a className="explorer-card-link" href={routeDetailHref(slugify(route.name))}>
               {route.name}
               <span className="explorer-card-arrow" aria-hidden="true">↗</span>
             </a>
@@ -385,7 +387,7 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
               Reset filters
             </button>
           )}
-          <a className="btn btn-primary" href="/routes">
+          <a className="btn btn-primary" href={routeLibraryHref()}>
             View All Routes →
           </a>
         </div>

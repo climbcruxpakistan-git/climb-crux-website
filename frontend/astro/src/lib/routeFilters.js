@@ -31,6 +31,20 @@ export const ROUTE_PARAMS = {
   bucket: 'bucket',
 }
 
+/**
+ * Public path of the route library. The library lives *under* the climbing
+ * guide so every library and route URL carries the "rock climbing guide
+ * Islamabad" keywords while the guide itself keeps the exact-match URL.
+ * Nothing else may hard-code this path — see `routeLibraryHref()` /
+ * `routeDetailHref()`.
+ */
+export const ROUTE_LIBRARY_BASE = '/rock-climbing-guide-islamabad/routes'
+
+/** Path of one documented route's page, under the library. */
+export function routeDetailHref(slug) {
+  return `${ROUTE_LIBRARY_BASE}/${slug}/`
+}
+
 export const DEFAULT_GRADE_MIN = AVAILABLE_GRADES[0]
 export const DEFAULT_GRADE_MAX = AVAILABLE_GRADES[AVAILABLE_GRADES.length - 1]
 
@@ -136,7 +150,7 @@ export function routeLibraryHref(overrides = {}) {
     if (typeof overrides[key] === 'string' && overrides[key] !== '') filters[key] = overrides[key]
   }
   const query = filtersToParams(filters).toString()
-  return query ? `/routes?${query}` : '/routes'
+  return query ? `${ROUTE_LIBRARY_BASE}?${query}` : ROUTE_LIBRARY_BASE
 }
 
 /**

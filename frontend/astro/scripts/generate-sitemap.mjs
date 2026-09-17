@@ -57,7 +57,7 @@ const STATIC_SIGNALS = {
   '/sessions/': { priority: '0.9', changefreq: 'weekly' },
   '/shop/': { priority: '0.9', changefreq: 'weekly' },
   '/private-premium/': { priority: '0.8', changefreq: 'monthly' },
-  '/routes/': { priority: '0.9', changefreq: 'weekly' },
+  '/rock-climbing-guide-islamabad/routes/': { priority: '0.9', changefreq: 'weekly' },
   '/rock-climbing-guide-islamabad/': { priority: '0.8', changefreq: 'monthly' },
   '/membership/apply/': { priority: '0.8', changefreq: 'monthly' },
   '/about/': { priority: '0.7', changefreq: 'monthly' },
@@ -134,7 +134,9 @@ const urls = htmlFiles
 
     // Every individual route page inherits a lighter monthly signal.
     const signals = STATIC_SIGNALS[urlPath]
-      || (urlPath.startsWith('/routes/') ? { priority: '0.6', changefreq: 'monthly' } : {})
+      || (urlPath.startsWith('/rock-climbing-guide-islamabad/routes/')
+        ? { priority: '0.6', changefreq: 'monthly' }
+        : {})
 
     return { loc, lastmod, ...signals }
   })

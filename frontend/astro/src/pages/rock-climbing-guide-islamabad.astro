@@ -2,6 +2,7 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteExplorer from '../components/react/RouteExplorer.jsx';
 import { optimizeImage } from '../lib/api';
+import { routeLibraryHref } from '../lib/routeFilters';
 import {
   AREAS,
   MARGALLA_SOURCE,
@@ -146,7 +147,7 @@ const faqSchema = {
       </div>
       <div class="guide-hero-actions">
         <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
-        <a class="btn btn-outline-light" href="/routes">Browse All Routes</a>
+        <a class="btn btn-outline-light" href={routeLibraryHref()}>Browse All Routes</a>
       </div>
     </div>
   </section>

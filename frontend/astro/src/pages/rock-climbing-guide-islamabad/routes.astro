@@ -1,11 +1,15 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
-import RouteExplorer from '../components/react/RouteExplorer.jsx';
-import { AREAS, AVAILABLE_GRADES, flattenRoutes, sortRoutesByGrade, TOTAL_ROUTES } from '../data/margallaRoutes';
-import { slugify } from '../lib/slug.js';
-import '../styles/RockClimbingGuide.css';
+import MainLayout from '../../layouts/MainLayout.astro';
+import RouteExplorer from '../../components/react/RouteExplorer.jsx';
+import { AREAS, AVAILABLE_GRADES, flattenRoutes, sortRoutesByGrade, TOTAL_ROUTES } from '../../data/margallaRoutes';
+import { ROUTE_LIBRARY_BASE } from '../../lib/routeFilters';
+import { slugify } from '../../lib/slug.js';
+import '../../styles/RockClimbingGuide.css';
 
 const SITE_URL = 'https://www.climbcruxpakistan.com';
+const GUIDE_URL = `${SITE_URL}/rock-climbing-guide-islamabad`;
+// The library is nested under the guide, so its URLs carry the guide keywords.
+const LIBRARY_URL = `${SITE_URL}${ROUTE_LIBRARY_BASE}`;
 const allRoutes = flattenRoutes();
 
 const explorerAreas = AREAS.map((area) => ({
@@ -24,14 +28,14 @@ const gradeRange = `${AVAILABLE_GRADES[0]}–${AVAILABLE_GRADES[AVAILABLE_GRADES
 const itemListJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  '@id': `${SITE_URL}/routes/#route-list`,
+  '@id': `${LIBRARY_URL}/#route-list`,
   name: 'Rock climbing routes in Islamabad and the Margalla Hills',
   numberOfItems: routesByGrade.length,
   itemListElement: routesByGrade.map((route, index) => ({
     '@type': 'ListItem',
     position: index + 1,
     name: route.name,
-    url: `${SITE_URL}/routes/${slugify(route.name)}/`,
+    url: `${LIBRARY_URL}/${slugify(route.name)}/`,
   })),
 };
 
@@ -40,7 +44,7 @@ const collectionPageJsonLd = {
   '@type': 'CollectionPage',
   name: 'Rock Climbing Routes in Islamabad',
   description: `A filterable directory of every documented rock climbing route in Islamabad and the Margalla Hills, graded from ${gradeRange}.`,
-  url: `${SITE_URL}/routes/`,
+  url: `${LIBRARY_URL}/`,
   isPartOf: { '@type': 'WebSite', name: 'Climb Crux Pakistan', url: `${SITE_URL}/` },
   about: {
     '@type': 'Place',
@@ -52,7 +56,7 @@ const collectionPageJsonLd = {
       addressCountry: 'PK',
     },
   },
-  mainEntity: { '@id': `${SITE_URL}/routes/#route-list` },
+  mainEntity: { '@id': `${LIBRARY_URL}/#route-list` },
 };
 
 const breadcrumbJsonLd = {
@@ -60,7 +64,8 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Routes', item: `${SITE_URL}/routes/` },
+    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Guide Islamabad', item: `${GUIDE_URL}/` },
+    { '@type': 'ListItem', position: 3, name: 'Margalla Hills Route Library', item: `${LIBRARY_URL}/` },
   ],
 };
 

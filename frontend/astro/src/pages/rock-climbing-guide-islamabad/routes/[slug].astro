@@ -1,9 +1,10 @@
 ---
-import MainLayout from '../../layouts/MainLayout.astro';
-import PageHeader from '../../components/astro/PageHeader.astro';
-import { flattenRoutes, formatGrade, routeSlug } from '../../data/margallaRoutes';
-import { slugify } from '../../lib/slug.js';
-import { gradeColor } from '../../lib/gradeColors.js';
+import MainLayout from '../../../layouts/MainLayout.astro';
+import PageHeader from '../../../components/astro/PageHeader.astro';
+import { flattenRoutes, formatGrade, routeSlug } from '../../../data/margallaRoutes';
+import { ROUTE_LIBRARY_BASE } from '../../../lib/routeFilters';
+import { slugify } from '../../../lib/slug.js';
+import { gradeColor } from '../../../lib/gradeColors.js';
 
 const SITE_URL = 'https://www.climbcruxpakistan.com';
 
@@ -20,7 +21,7 @@ const { route } = Astro.props;
 const grade = formatGrade(route);
 const tone = gradeColor(route.grade);
 
-const path = `/routes/${slugify(route.name)}/`;
+const path = `${ROUTE_LIBRARY_BASE}/${slugify(route.name)}/`;
 const canonical = `${SITE_URL}${path}`;
 const typeLabel =
   route.type === 'multi-pitch' ? 'Multi-pitch' : route.type === 'trad' ? 'Trad' : 'Sport';
@@ -40,8 +41,9 @@ const breadcrumbJsonLd = {
   '@id': `${canonical}#breadcrumb`,
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Routes', item: `${SITE_URL}/routes/` },
-    { '@type': 'ListItem', position: 3, name: route.name, item: canonical },
+    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Guide Islamabad', item: `${SITE_URL}/rock-climbing-guide-islamabad/` },
+    { '@type': 'ListItem', position: 3, name: 'Margalla Hills Route Library', item: `${SITE_URL}${ROUTE_LIBRARY_BASE}/` },
+    { '@type': 'ListItem', position: 4, name: route.name, item: canonical },
   ],
 };
 
@@ -84,7 +86,7 @@ const webpageJsonLd = {
   <section class="section">
     <div class="wrap route-detail">
       <p class="route-detail-back">
-        <a href={`/routes/#${routeSlug(route.name)}`}>← All climbing routes</a>
+        <a href={`${ROUTE_LIBRARY_BASE}/#${routeSlug(route.name)}`}>← All climbing routes</a>
       </p>
 
       <h2>About {route.name}</h2>
@@ -112,12 +114,12 @@ const webpageJsonLd = {
         <p>
           {route.venue ? (
             <>
-              Find more lines at <a href={`/routes/?venue=${route.venueId}`}>{route.venue}</a> in the route library, or
+              Find more lines at <a href={`${ROUTE_LIBRARY_BASE}/?venue=${route.venueId}`}>{route.venue}</a> in the route library, or
               read the <a href="/rock-climbing-guide-islamabad">guide to climbing the Margalla Hills</a>.
             </>
           ) : (
             <>
-              Browse the <a href="/routes/">full route library</a> or read the{' '}
+              Browse the <a href={`${ROUTE_LIBRARY_BASE}/`}>full route library</a> or read the{' '}
               <a href="/rock-climbing-guide-islamabad">guide to climbing the Margalla Hills</a>.
             </>
           )}

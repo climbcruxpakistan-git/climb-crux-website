@@ -15,8 +15,13 @@ export default defineConfig({
   site: 'https://www.climbcruxpakistan.com',
   // The guide page was renamed to target "islamabad"; keep the old URL working
   // with a permanent redirect so existing links and search results survive.
+  // The route library now lives under the guide (/rock-climbing-guide-islamabad/
+  // routes) so its URLs carry the "rock climbing guide Islamabad" keywords —
+  // the old /routes hub and every /routes/<route>/ page 301 to their new homes.
   redirects: {
     '/rock-climbing-guide-pakistan': '/rock-climbing-guide-islamabad',
+    '/routes': '/rock-climbing-guide-islamabad/routes',
+    '/routes/[slug]': '/rock-climbing-guide-islamabad/routes/[slug]',
   },
   vite: {
     server: {

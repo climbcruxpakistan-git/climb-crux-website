@@ -517,7 +517,7 @@ export function flattenRoutes() {
 export const AVAILABLE_GRADES = sortGrades([...new Set(flattenRoutes().map((route) => route.grade))])
 
 /**
- * Coarse grade buckets used by the old `/routes?bucket=…` links. Kept only so
+ * Coarse grade buckets used by the old `?bucket=…` library links. Kept only so
  * those shared/bookmarked URLs keep resolving to a sensible grade range.
  */
 export const LEGACY_GRADE_BUCKETS = {
