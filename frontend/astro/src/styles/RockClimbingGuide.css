@@ -895,9 +895,9 @@
   gap: 14px;
 }
 
-/* Guide-page list: show three cards at a time and scroll for the rest. */
+/* Guide-page list: show two cards at a time and scroll for the rest. */
 .explorer-scroll {
-  max-height: 30rem;
+  max-height: 19.5rem;
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-gutter: stable;
