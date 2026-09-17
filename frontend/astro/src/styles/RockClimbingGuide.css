@@ -895,11 +895,12 @@
   gap: 14px;
 }
 
-/* Guide-page list: show a few cards at a time and scroll for the rest. */
+/* Guide-page list: show three cards at a time and scroll for the rest. */
 .explorer-scroll {
-  max-height: 34rem;
+  max-height: 30rem;
   overflow-y: auto;
   padding-right: 8px;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--stone) transparent;
 }
@@ -1182,9 +1183,6 @@
   .explorer-card .explorer-badge {
     font-size: 1rem;
     min-width: 3rem;
-  }
-  .explorer-scroll {
-    max-height: 30rem;
   }
   .explorer-fields {
     grid-template-columns: 1fr;

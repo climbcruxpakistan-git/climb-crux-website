@@ -12,9 +12,10 @@ import {
 /**
  * The route explorer, used in two modes so both stay on one implementation:
  *
- *  · `compact` — the guide page's "Explore Routes by Grade" block: a grade
- *    range bar plus all matching routes in a scrollable list, using the same
- *    full route cards as the library, with a link to the library.
+ *  · `compact` — the guide page's "Explore Routes by Grade" block: a route
+ *    search plus a grade range bar, with all matching routes in a scrollable
+ *    list using the same full route cards as the library, and a link to the
+ *    library.
  *  · `full` — the route library at /routes: search + climbing area + grade
  *    range + venue, with the filter state kept in the URL so filtered views can
  *    be bookmarked or shared.
@@ -183,6 +184,38 @@ function RouteCard({ route }) {
   )
 }
 
+/** Route search input, shared by both explorer modes. Matches route name,
+    venue and area, so the guide page can search without the full filter set. */
+function RouteSearch({ idPrefix, value, onChange, onClear }) {
+  return (
+    <div className="explorer-field explorer-field-search">
+      <label className="explorer-label" htmlFor={`${idPrefix}-search`}>
+        Route search
+      </label>
+      <div className="explorer-search-row">
+        <input
+          id={`${idPrefix}-search`}
+          type="search"
+          className="explorer-search"
+          placeholder="Search by route name, venue or area..."
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        {value.trim() !== '' && (
+          <button
+            type="button"
+            className="explorer-clear"
+            onClick={onClear}
+            aria-label="Clear the route search"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function RouteExplorer({ routes, areas, mode = 'full' }) {
   const isCompact = mode === 'compact'
   // Only the route library owns its URL state; the guide page stays clean.
@@ -224,10 +257,12 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
   const update = (patch) => setFilters((current) => ({ ...current, ...patch }))
   const reset = () => setFilters(defaultFilters())
 
+  const searchActive = filters.search.trim() !== ''
+
   const count = (
     <p className="explorer-count" role="status">
       {isCompact && matched.length === 0 ? (
-        <>No routes found for this grade range.</>
+        <>{searchActive ? 'No routes match your search.' : 'No routes found for this grade range.'}</>
       ) : (
         <>
           <strong>{matched.length}</strong> {matched.length === 1 ? 'route' : 'routes'} found
@@ -245,36 +280,17 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
     <div className="explorer-wrap">
       <div
         className="explorer-filters"
-        role={isCompact ? undefined : 'search'}
-        aria-label={isCompact ? undefined : 'Filter routes'}
+        role="search"
+        aria-label={isCompact ? 'Search and filter routes' : 'Filter routes'}
       >
         {!isCompact && (
           <div className="explorer-fields">
-            <div className="explorer-field explorer-field-search">
-              <label className="explorer-label" htmlFor={`${idPrefix}-search`}>
-                Route search
-              </label>
-              <div className="explorer-search-row">
-                <input
-                  id={`${idPrefix}-search`}
-                  type="search"
-                  className="explorer-search"
-                  placeholder="Search by route name, venue or area..."
-                  value={filters.search}
-                  onChange={(event) => update({ search: event.target.value })}
-                />
-                {filters.search.trim() !== '' && (
-                  <button
-                    type="button"
-                    className="explorer-clear"
-                    onClick={() => update({ search: '' })}
-                    aria-label="Clear the route search"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
+            <RouteSearch
+              idPrefix={idPrefix}
+              value={filters.search}
+              onChange={(search) => update({ search })}
+              onClear={() => update({ search: '' })}
+            />
 
             <div className="explorer-field">
               <label className="explorer-label" htmlFor={`${idPrefix}-area`}>
@@ -318,6 +334,15 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
           </div>
         )}
 
+        {isCompact && (
+          <RouteSearch
+            idPrefix={idPrefix}
+            value={filters.search}
+            onChange={(search) => update({ search })}
+            onClear={() => update({ search: '' })}
+          />
+        )}
+
         <GradeRange
           idPrefix={idPrefix}
           minGrade={filters.minGrade}
@@ -356,7 +381,7 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
           </p>
           {matched.length === 0 && (
             <button type="button" className="explorer-reset" onClick={reset}>
-              Reset grade range
+              Reset filters
             </button>
           )}
           <a className="btn btn-primary" href="/routes">
