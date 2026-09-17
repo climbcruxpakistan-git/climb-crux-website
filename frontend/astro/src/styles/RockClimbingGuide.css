@@ -763,6 +763,13 @@
   margin-right: auto;
 }
 
+.explorer-actions .explorer-note {
+  margin-right: auto;
+  max-width: 52ch;
+  font-size: 0.86rem;
+  color: var(--stone);
+}
+
 .explorer-count {
   display: flex;
   align-items: center;
