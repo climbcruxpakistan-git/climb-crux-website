@@ -1117,14 +1117,6 @@
   overflow-wrap: anywhere;
 }
 
-.explorer-card-desc {
-  font-size: 0.92rem;
-  line-height: 1.6;
-  color: var(--stone-dark);
-  max-width: none;
-  margin: 4px 0 0;
-}
-
 .explorer-pitches {
   list-style: none;
   padding: 0;

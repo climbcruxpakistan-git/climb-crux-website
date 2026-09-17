@@ -168,7 +168,6 @@ function RouteCard({ route }) {
         </div>
         {route.length ? <p className="explorer-card-length">{route.length}m</p> : null}
         <RouteMeta area={route.area} venue={route.venue} />
-        <p className="explorer-card-desc">{route.description}</p>
         {route.pitches && (
           <ul className="explorer-pitches" role="list">
             {route.pitches.map((pitch) => (
