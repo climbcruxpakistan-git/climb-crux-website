@@ -338,8 +338,8 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
       {isCompact && (
         <div className="explorer-actions">
           <p className="explorer-note">
-            Grades are the source guide's French sport grades. Multi-pitch lines are graded by their
-            hardest pitch, so Teamwork is listed under 6c+ even though its first pitch is 4a.
+            Multi-pitch lines are graded by their hardest pitch, so Teamwork is listed under 6c+ even
+            though its first pitch is 4a.
           </p>
           {matched.length === 0 && (
             <button type="button" className="explorer-reset" onClick={reset}>

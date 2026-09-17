@@ -177,10 +177,6 @@ const faqSchema = {
         Find routes that match your climbing level using the grade range below.
       </p>
       <RouteExplorer client:load mode="compact" routes={allRoutes} areas={explorerAreas} />
-      <p class="guide-section-note">
-        Grades are the source guide's French sport grades. Multi-pitch lines are graded by their
-        hardest pitch, so Teamwork is listed under 6c+ even though its first pitch is 4a.
-      </p>
 
       <h2>Source &amp; Credit</h2>
       <div class="guide-credit">
@@ -199,34 +195,11 @@ const faqSchema = {
     </div>
   </section>
 
-  {/* ── 5. Climb with Climb Crux ──────────────────────────────────── */}
-  <section class="section guide-tint">
-    <div class="wrap">
-      <span class="eyebrow">Guided climbing</span>
-      <h2>Climb With Climb Crux</h2>
-      <div class="guide-grid">
-        {climbOptions.map((option, i) => (
-          <article class="guide-card">
-            <span class="guide-card-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{option.h}</h3>
-            <p>{option.p}</p>
-            <a class="btn btn-primary" href={option.href}>{option.cta}</a>
-          </article>
-        ))}
-      </div>
-      <p class="guide-section-note">
-        Every climbing session is led by certified instructors — you can
-        {' '}<a href="/our-team">meet the instructors</a> behind your climb.
-      </p>
-    </div>
-  </section>
-
-  {/* ── 6. Visiting Pakistan? ────────────────────────────────────── */}
+  {/* ── 5. Visiting Pakistan? ────────────────────────────────────── */}
   <section class="section">
     <div class="wrap">
       <div class="guide-intl-grid">
         <div class="guide-intl-copy">
-          <span class="eyebrow">International climbers</span>
           <h2>Visiting Pakistan?</h2>
           <p class="guide-lede">
             Islamabad is a practical base for exploring the outdoor climbing of the Margalla Hills. If
@@ -248,12 +221,32 @@ const faqSchema = {
     </div>
   </section>
 
+  {/* ── 6. Climb with Climb Crux ──────────────────────────────────── */}
+  <section class="section guide-tint">
+    <div class="wrap">
+      <h2>Rock Climbing With Climb Crux</h2>
+      <div class="guide-grid">
+        {climbOptions.map((option, i) => (
+          <article class="guide-card">
+            <span class="guide-card-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{option.h}</h3>
+            <p>{option.p}</p>
+            <a class="btn btn-primary" href={option.href}>{option.cta}</a>
+          </article>
+        ))}
+      </div>
+      <p class="guide-section-note">
+        Every climbing session is led by certified instructors — you can
+        {' '}<a href="/our-team">meet the instructors</a> behind your climb.
+      </p>
+    </div>
+  </section>
+
   {/* ── 7. FAQ ──────────────────────────────────────────────────── */}
   <section class="section guide-faq">
     <div class="wrap">
       <div class="guide-faq-grid">
         <div class="guide-faq-intro">
-          <span class="eyebrow">Good to know</span>
           <h2>Frequently Asked Questions</h2>
           <p class="guide-lede">
             The essentials for climbing outdoors with Climb Crux in the Margalla Hills — areas,
