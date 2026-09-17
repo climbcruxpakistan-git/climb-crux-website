@@ -148,9 +148,10 @@ function LocationTags({ area, venue }) {
 
 /** Full route card — the library presentation (description, pitches, tags). */
 function RouteCard({ route }) {
+  const tone = gradeTone(route.grade)
   return (
-    <li className="explorer-card">
-      <GradeBadge grade={formatGrade(route)} tone={gradeTone(route.grade)} />
+    <li className={`explorer-card is-${tone}`}>
+      <GradeBadge grade={formatGrade(route)} tone={tone} />
       <div className="explorer-card-body">
         <div className="explorer-card-title">
           <h3 className="explorer-card-name">{route.name}</h3>
@@ -177,9 +178,10 @@ function RouteCard({ route }) {
 
 /** Compact result row — grade badge, name, labelled area · venue. */
 function RouteHit({ route }) {
+  const tone = gradeTone(route.grade)
   return (
-    <li className="explorer-hit">
-      <GradeBadge grade={formatGrade(route)} tone={gradeTone(route.grade)} />
+    <li className={`explorer-hit is-${tone}`}>
+      <GradeBadge grade={formatGrade(route)} tone={tone} />
       <div className="explorer-hit-main">
         <h3 className="explorer-hit-name">{route.name}</h3>
         <LocationTags area={route.area} venue={route.venue} />
