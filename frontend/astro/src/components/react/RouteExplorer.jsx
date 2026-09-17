@@ -13,7 +13,8 @@ import {
  * The route explorer, used in two modes so both stay on one implementation:
  *
  *  · `compact` — the guide page's "Explore Routes by Grade" block: a grade
- *    range bar plus a small set of matching routes and a link to the library.
+ *    range bar plus all matching routes in a scrollable list, using the same
+ *    full route cards as the library, with a link to the library.
  *  · `full` — the route library at /routes: search + climbing area + grade
  *    range + venue, with the filter state kept in the URL so filtered views can
  *    be bookmarked or shared.
@@ -23,9 +24,6 @@ import {
  */
 
 const ALL = 'all'
-
-/** How many routes the compact (guide page) explorer shows at most. */
-const COMPACT_LIMIT = 6
 
 const LAST_GRADE_INDEX = AVAILABLE_GRADES.length - 1
 
@@ -155,14 +153,6 @@ function RouteMeta({ area, venue }) {
   )
 }
 
-/** Venue · area as one quiet secondary line. Missing values are omitted,
-    never rendered as empty text with a dangling separator. */
-function LocationLine({ area, venue }) {
-  const parts = [venue, area].filter(Boolean)
-  if (parts.length === 0) return null
-  return <p className="explorer-card-location">{parts.join(' · ')}</p>
-}
-
 /** Full route card — the library presentation (description, pitches). */
 function RouteCard({ route }) {
   const tone = gradeTone(route.grade)
@@ -188,24 +178,6 @@ function RouteCard({ route }) {
             ))}
           </ul>
         )}
-      </div>
-    </li>
-  )
-}
-
-/** Compact result row — grade, name, length, quiet venue · area. */
-function RouteHit({ route }) {
-  const tone = gradeTone(route.grade)
-  return (
-    <li className={`explorer-hit is-${tone}`}>
-      <GradeBadge grade={formatGrade(route)} tone={tone} />
-      <div className="explorer-hit-main">
-        <div className="explorer-card-header">
-          <h3 className="explorer-hit-name">{route.name}</h3>
-          <span className="explorer-card-arrow" aria-hidden="true">↗</span>
-        </div>
-        {route.length ? <p className="explorer-card-length">{route.length}m</p> : null}
-        <LocationLine area={route.area} venue={route.venue} />
       </div>
     </li>
   )
@@ -247,8 +219,6 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
 
   const matched = useMemo(() => sortRoutesByGrade(filterRoutes(routes, filters)), [routes, filters])
 
-  // The guide page shows a compact set, never the whole database.
-  const visible = isCompact ? matched.slice(0, COMPACT_LIMIT) : matched
   const active = hasActiveFilters(filters)
 
   const update = (patch) => setFilters((current) => ({ ...current, ...patch }))
@@ -256,18 +226,8 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
 
   const count = (
     <p className="explorer-count" role="status">
-      {isCompact ? (
-        matched.length === 0 ? (
-          <>No routes found for this grade range.</>
-        ) : visible.length < matched.length ? (
-          <>
-            Showing <strong>{visible.length}</strong> of {matched.length} routes
-          </>
-        ) : (
-          <>
-            Showing <strong>{matched.length}</strong> {matched.length === 1 ? 'route' : 'routes'}
-          </>
-        )
+      {isCompact && matched.length === 0 ? (
+        <>No routes found for this grade range.</>
       ) : (
         <>
           <strong>{matched.length}</strong> {matched.length === 1 ? 'route' : 'routes'} found
@@ -377,15 +337,14 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
         </div>
       )}
 
-      {visible.length > 0 && (
-        <ul className={isCompact ? 'explorer-hits' : 'explorer-list'} role="list">
-          {visible.map((route) =>
-            isCompact ? (
-              <RouteHit key={`${route.venueId}-${route.name}`} route={route} />
-            ) : (
-              <RouteCard key={`${route.venueId}-${route.name}`} route={route} />
-            )
-          )}
+      {matched.length > 0 && (
+        <ul
+          className={isCompact ? 'explorer-list explorer-scroll' : 'explorer-list'}
+          role="list"
+        >
+          {matched.map((route) => (
+            <RouteCard key={`${route.venueId}-${route.name}`} route={route} />
+          ))}
         </ul>
       )}
 
