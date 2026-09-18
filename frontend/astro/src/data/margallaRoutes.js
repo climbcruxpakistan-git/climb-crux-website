@@ -31,6 +31,7 @@ export const AREAS = [
       {
         id: 'jungle-rock',
         name: 'Jungle Rock',
+        mapsUrl: 'https://www.google.com/maps?q=33.743178,73.050936',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713500/climb-crux/venues/jungle-rock-crag-photo.jpg',
@@ -105,6 +106,7 @@ export const AREAS = [
       {
         id: 'jasmin-corner',
         name: 'Jasmin Corner',
+        mapsUrl: 'https://www.google.com/maps?q=33.747337,73.056132',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713503/climb-crux/venues/jasmin-corner-routes-photo.jpg',
@@ -129,6 +131,7 @@ export const AREAS = [
       {
         id: 'music-lounge',
         name: 'Music Lounge',
+        mapsUrl: 'https://www.google.com/maps?q=33.749442,73.060525',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713504/climb-crux/venues/music-lounge-photo-1.jpg',
@@ -178,6 +181,7 @@ export const AREAS = [
       {
         id: 'said-pur-view',
         name: 'Said Pur View',
+        mapsUrl: 'https://www.google.com/maps?q=33.747261,73.064302',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713506/climb-crux/venues/said-pur-view-crag-photo.jpg',
@@ -241,6 +245,7 @@ export const AREAS = [
       {
         id: 'god-rock',
         name: 'God Rock',
+        mapsUrl: 'https://www.google.com/maps?q=33.751315,73.066186',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713506/climb-crux/venues/god-rock-crag-photo.jpg',
@@ -268,6 +273,7 @@ export const AREAS = [
       {
         id: 'belvedere',
         name: 'Belvedere',
+        mapsUrl: 'https://www.google.com/maps?q=33.750945,73.066168',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713508/climb-crux/venues/belvedere-crag-photo.jpg',
@@ -335,6 +341,7 @@ export const AREAS = [
       {
         id: 'beetles-nest',
         name: "Beetle's Nest",
+        mapsUrl: 'https://www.google.com/maps?q=33.750945,73.067021',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713509/climb-crux/venues/beetles-nest-crag-photo.jpg',
@@ -400,6 +407,7 @@ export const AREAS = [
       {
         id: 'legacy-wall',
         name: 'Legacy Wall',
+        mapsUrl: 'https://www.google.com/maps?q=33.744336,73.076446',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713511/climb-crux/venues/legacy-wall-crag-photo.jpg',
@@ -481,6 +489,7 @@ export const AREAS = [
       {
         id: 'hidden-rock',
         name: 'Hidden Rock',
+        mapsUrl: 'https://www.google.com/maps?q=33.749099,73.081578',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713511/climb-crux/venues/hidden-rock-crag-photo.jpg',
@@ -506,6 +515,7 @@ export const AREAS = [
       {
         id: 'well-hidden-rock',
         name: 'Well Hidden Rock',
+        mapsUrl: 'https://www.google.com/maps?q=33.749719,73.081366',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713512/climb-crux/venues/well-hidden-rock-crag-photo.jpg',
@@ -558,6 +568,7 @@ export const AREAS = [
       {
         id: 'shaddarrah',
         name: 'Shaddarrah',
+        mapsUrl: 'https://www.google.com/maps?q=33.774457,73.1741',
         gradeRange: '~5c',
         character:
           'A few kilometres north-east of Islamabad, reached by turning left off Murree Road after passing Lake View Park (site of excellent Ibex climbing wall) and continuing into a gorge in the hills. Small wall adjacent to road on the left.',
@@ -602,6 +613,7 @@ export function flattenRoutes() {
           areaId: area.id,
           area: area.name,
           images: venue.images || [],
+          mapsUrl: venue.mapsUrl,
         })
       }
     }
