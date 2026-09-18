@@ -326,6 +326,7 @@ export default function Shop() {
 
                   {/* Info */}
                   <div className="shop-card-body">
+                    {product.brand && <span className="shop-card-brand">{product.brand}</span>}
                     <h3 className="shop-card-title">{product.name}</h3>
 
 
@@ -422,6 +423,7 @@ export default function Shop() {
                     )}
                   </div>
                   <div className="shop-card-body">
+                    {product.brand && <span className="shop-card-brand">{product.brand}</span>}
                     <h3 className="shop-card-title">{product.name}</h3>
                     <div className="shop-card-price">
                       <span className="shop-card-price-current">PKR {product.price.toLocaleString()}</span>

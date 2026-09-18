@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 const productSchema = new mongoose.Schema({
   // ── Basic Information ──
   name: { type: String, required: true },
+  brand: { type: String, default: '' },
   slug: { type: String, default: '' },
   sku: { type: String, default: '' },
   category: { type: String, default: 'Uncategorized' },

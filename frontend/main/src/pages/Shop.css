@@ -412,6 +412,14 @@
   color: var(--ink);
 }
 
+.shop-card-brand {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--orange);
+}
+
 .shop-card-sku {
   font-size: 0.68rem;
   font-family: monospace;

@@ -297,6 +297,8 @@ export default function ProductDetail() {
           {/* ══════ RIGHT COLUMN: Product Info ══════ */}
           <div className="pd-info">
 
+            {product.brand && <span className="pd-brand">{product.brand}</span>}
+
             <h1 className="pd-title">{product.name}</h1>
 
             {/* Rating */}

@@ -297,6 +297,7 @@ export default function Shop({ initial = [] }) {
                     )}
                   </div>
                   <div className="shop-card-body">
+                    {product.brand && <span className="shop-card-brand">{product.brand}</span>}
                     <h3 className="shop-card-title">
                       <a
                         className="shop-card-name-link"
@@ -359,6 +360,7 @@ export default function Shop({ initial = [] }) {
                     {product.imageUrl || product.images?.[0] ? <img src={optimizeImage(product.imageUrl || product.images[0], 400)} alt={product.name} loading="lazy" /> : <div className="shop-card-image-placeholder"><span>📦</span></div>}
                   </div>
                   <div className="shop-card-body">
+                    {product.brand && <span className="shop-card-brand">{product.brand}</span>}
                     <h3 className="shop-card-title">
                       <a
                         className="shop-card-name-link"

@@ -225,6 +225,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
         </div>
 
         <div className="pd-info">
+          {product.brand && <span className="pd-brand">{product.brand}</span>}
           <h1 className="pd-title">{product.name}</h1>
           {reviewData.total > 0 && (
             <div className="pd-rating-row">

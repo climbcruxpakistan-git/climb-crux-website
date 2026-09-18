@@ -437,6 +437,7 @@ router.post('/', requireAdmin, async (req, res, next) => {
     const product = await Product.create({
       name,
       price,
+      brand: req.body.brand || '',
       slug: req.body.slug || '',
       sku: req.body.sku || '',
       category: req.body.category || 'Uncategorized',
@@ -471,7 +472,7 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
     const fields = [
-      'name', 'slug', 'sku', 'category',
+      'name', 'brand', 'slug', 'sku', 'category',
       'price', 'compareAtPrice', 'originalPrice',
       'description',
       'imageUrl', 'images',
