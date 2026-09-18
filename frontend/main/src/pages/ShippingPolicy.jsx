@@ -36,8 +36,8 @@ export default function ShippingPolicy() {
           <section className="sp-block">
             <h2>3. Shipping Costs</h2>
             <p>
-              Shipping costs, if any, are shown at checkout before you confirm your order. Where free shipping
-              applies, this is indicated on the product and at checkout.
+              Shipping costs, if any, are shown at checkout before you confirm your order. FREE SHIPPING
+              on orders over PKR 10,000, Only if Shipping charges are up to PKR 1,000.
             </p>
           </section>
 
