@@ -5,6 +5,7 @@ import { flattenRoutes, formatGrade, routeSlug } from '../../../data/margallaRou
 import { ROUTE_LIBRARY_BASE } from '../../../lib/routeFilters';
 import { slugify } from '../../../lib/slug.js';
 import { gradeColor } from '../../../lib/gradeColors.js';
+import { optimizeImage } from '../../../lib/api';
 
 const SITE_URL = 'https://www.climbcruxpakistan.com';
 
@@ -25,6 +26,9 @@ const path = `${ROUTE_LIBRARY_BASE}/${slugify(route.name)}/`;
 const canonical = `${SITE_URL}${path}`;
 const typeLabel =
   route.type === 'multi-pitch' ? 'Multi-pitch' : route.type === 'trad' ? 'Trad' : 'Sport';
+
+// The venue's first crag photo doubles as this page's social-share image.
+const heroImage = route.images?.[0] ? optimizeImage(route.images[0].url, 1200) : undefined;
 
 const pageTitle = `${route.name} (${grade}) — Margalla Hills Climbing Route | Climb Crux`;
 
@@ -53,6 +57,7 @@ const webpageJsonLd = {
   name: `${route.name} (${grade})`,
   description: metaDescription,
   url: canonical,
+  image: heroImage,
   isPartOf: { '@type': 'WebSite', name: 'Climb Crux Pakistan', url: `${SITE_URL}/` },
   about: {
     '@type': 'Place',
@@ -68,7 +73,7 @@ const webpageJsonLd = {
 };
 ---
 
-<MainLayout title={pageTitle} description={metaDescription} canonicalUrl={canonical}>
+<MainLayout title={pageTitle} description={metaDescription} canonicalUrl={canonical} image={heroImage}>
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(webpageJsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
@@ -91,6 +96,23 @@ const webpageJsonLd = {
 
       <h2>About {route.name}</h2>
       <p class="route-detail-desc">{route.description}</p>
+
+      {
+        route.images && route.images.length > 0 && (
+          <div class="route-detail-photos">
+            {route.images.map((image, index) => (
+              <figure class="route-detail-photo">
+                <img
+                  src={optimizeImage(image.url, 1200)}
+                  alt={`${image.caption} — ${route.venue} (${route.area}), Margalla Hills, Islamabad`}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+                <figcaption>{image.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+        )
+      }
 
       {
         route.pitches && (
@@ -200,6 +222,37 @@ const webpageJsonLd = {
     font-size: 1.08rem;
     line-height: 1.8;
     color: var(--stone-dark);
+  }
+
+  .route-detail-photos {
+    margin-top: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .route-detail-photo {
+    margin: 0;
+    background: #fff;
+    border: 1px solid var(--chalk-dim);
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .route-detail-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .route-detail-photo figcaption {
+    margin-top: 10px;
+    padding: 0 4px 2px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--stone);
   }
 
   .route-detail-pitches {

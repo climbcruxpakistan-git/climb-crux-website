@@ -31,6 +31,16 @@ export const AREAS = [
       {
         id: 'jungle-rock',
         name: 'Jungle Rock',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713500/climb-crux/venues/jungle-rock-crag-photo.jpg',
+            caption: 'Jungle Rock crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713498/climb-crux/venues/jungle-rock-approach-map.jpg',
+            caption: 'Jungle Rock approach map',
+          },
+        ],
         gradeRange: '6b+ – 8a',
         character:
           "Margalla's premier crag for harder climbing. Every route is overhanging. Excellent rock, long and continuous routes, sustained and pumpy. Gets shade from early afternoon; stays dry in all but prolonged rain.",
@@ -95,6 +105,16 @@ export const AREAS = [
       {
         id: 'jasmin-corner',
         name: 'Jasmin Corner',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713503/climb-crux/venues/jasmin-corner-routes-photo.jpg',
+            caption: 'Jasmin Corner routes photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713501/climb-crux/venues/jasmin-corner-approach-map.jpg',
+            caption: 'Jasmin Corner approach map',
+          },
+        ],
         gradeRange: '4b – 5a',
         character:
           'Very accessible, convenient crag for beginners. Short, easy, solid routes. Shade during much of the day except summer.',
@@ -109,6 +129,16 @@ export const AREAS = [
       {
         id: 'music-lounge',
         name: 'Music Lounge',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713504/climb-crux/venues/music-lounge-photo-1.jpg',
+            caption: 'Music Lounge crag photo 1',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713504/climb-crux/venues/music-lounge-photo-2.jpg',
+            caption: 'Music Lounge crag photo 2',
+          },
+        ],
         gradeRange: '5b – 6c',
         character:
           'A small crag in the Jasmin Corner area. Details not explicitly stated in the source, but it sits near Jasmin Corner and Holiday Rock.',
@@ -124,6 +154,7 @@ export const AREAS = [
       {
         id: 'holiday-rock',
         name: 'Holiday Rock',
+        images: [],
         gradeRange: '5b',
         character:
           'Excellent for summer shade and gentle climbing. Quiet atmosphere, great view over hills and city. Routes relatively sustained and clean but take care with loose rock. Help prevent bushes from returning, particularly to Eid Mubarak.',
@@ -147,6 +178,16 @@ export const AREAS = [
       {
         id: 'said-pur-view',
         name: 'Said Pur View',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713506/climb-crux/venues/said-pur-view-crag-photo.jpg',
+            caption: 'Said Pur View crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713505/climb-crux/venues/said-pur-view-approach-map.jpg',
+            caption: 'Said Pur View approach map',
+          },
+        ],
         gradeRange: '5c – 8a',
         approach: undefined,
         routes: [
@@ -200,6 +241,16 @@ export const AREAS = [
       {
         id: 'god-rock',
         name: 'God Rock',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713506/climb-crux/venues/god-rock-crag-photo.jpg',
+            caption: 'God Rock crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713507/climb-crux/venues/said-pur-area-approach-map.jpg',
+            caption: 'Said Pur area approach map',
+          },
+        ],
         gradeRange: '6b+ – 7b',
         character:
           'Radically overhanging face, gets no sun at all (good for summer). Stays dry in rain. All three routes are fine and generally solid higher up, but first few metres are inherently very loose — great care needed. Once past loose band, Blame God is magnificent.',
@@ -217,6 +268,16 @@ export const AREAS = [
       {
         id: 'belvedere',
         name: 'Belvedere',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713508/climb-crux/venues/belvedere-crag-photo.jpg',
+            caption: 'Belvedere crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713507/climb-crux/venues/said-pur-area-approach-map.jpg',
+            caption: 'Said Pur area approach map',
+          },
+        ],
         gradeRange: '5b – 7b+',
         character:
           'Great technical challenges on superb rock; difficulties often short-lived. Sun on face most of the day — great winter venue, only suitable late in day in summer.',
@@ -274,6 +335,16 @@ export const AREAS = [
       {
         id: 'beetles-nest',
         name: "Beetle's Nest",
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713509/climb-crux/venues/beetles-nest-crag-photo.jpg',
+            caption: "Beetle's Nest crag photo",
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713507/climb-crux/venues/said-pur-area-approach-map.jpg',
+            caption: 'Said Pur area approach map',
+          },
+        ],
         gradeRange: '4c – 6b+',
         character:
           'Close to God Rock and Belvedere in the Said Pur area. Details not explicitly stated in the source.',
@@ -329,6 +400,16 @@ export const AREAS = [
       {
         id: 'legacy-wall',
         name: 'Legacy Wall',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713511/climb-crux/venues/legacy-wall-crag-photo.jpg',
+            caption: 'Legacy Wall crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713510/climb-crux/venues/trail-3-area-approach-map.jpg',
+            caption: 'Trail 3 area approach map',
+          },
+        ],
         gradeRange: '6a – 7c+',
         approach:
           'From car park at foot of Trail 3, take left path. Follow until almost level with foot of crag, then find small path on left through bushes. ~15 minutes walk.',
@@ -400,6 +481,16 @@ export const AREAS = [
       {
         id: 'hidden-rock',
         name: 'Hidden Rock',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713511/climb-crux/venues/hidden-rock-crag-photo.jpg',
+            caption: 'Hidden Rock crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713510/climb-crux/venues/trail-3-area-approach-map.jpg',
+            caption: 'Trail 3 area approach map',
+          },
+        ],
         gradeRange: '6a – 6c',
         character:
           'Good clean rock in a fine location high overlooking the city. Shade arrives shortly after lunch.',
@@ -415,6 +506,16 @@ export const AREAS = [
       {
         id: 'well-hidden-rock',
         name: 'Well Hidden Rock',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713512/climb-crux/venues/well-hidden-rock-crag-photo.jpg',
+            caption: 'Well Hidden Rock crag photo',
+          },
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713510/climb-crux/venues/trail-3-area-approach-map.jpg',
+            caption: 'Trail 3 area approach map',
+          },
+        ],
         gradeRange: '5a – 8a',
         character:
           'A secluded crag of contrasts with plenty of potential for more new lines. What little sun it gets disappears during the morning.',
@@ -500,6 +601,7 @@ export function flattenRoutes() {
           venue: venue.name,
           areaId: area.id,
           area: area.name,
+          images: venue.images || [],
         })
       }
     }
