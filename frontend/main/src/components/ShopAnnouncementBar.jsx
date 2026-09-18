@@ -9,13 +9,14 @@ export default function ShopAnnouncementBar() {
         {[...Array(COPIES)].map((_, i) => (
           <span className="sa-group" key={i}>
             <span className="sa-item">
-              FREE SHIPPING on orders over PKR 10,000 <span className="sa-bullet">•</span>{' '}
-              Shipping charges up to PKR 1,000
+              FREE SHIPPING on orders above PKR 10,000 <span className="sa-bullet">•</span>{' '}
+              Shipping charges up to PKR 1,000{' '}
+              <span className="sa-bullet">•</span> Shipping available nationwide
             </span>
           </span>
         ))}
       </div>
-      <span className="sa-sr">FREE SHIPPING on orders over PKR 10,000 • Shipping charges up to PKR 1,000</span>
+      <span className="sa-sr">FREE SHIPPING on orders above PKR 10,000 • Shipping charges up to PKR 1,000 • Shipping available nationwide</span>
     </div>
   )
 }

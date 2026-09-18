@@ -2,7 +2,7 @@
 // Thin, continuously moving announcement strip shown only on shopping pages.
 // Included once per shop route via this shared component — no duplicated markup.
 const ANNOUNCEMENT =
-  'FREE SHIPPING on orders over PKR 10,000 • Shipping charges up to PKR 1,000';
+  'FREE SHIPPING on orders above PKR 10,000 • Shipping charges up to PKR 1,000 • Shipping available nationwide';
 const COPIES = 6;
 ---
 
@@ -12,8 +12,9 @@ const COPIES = 6;
       [...Array(COPIES)].map((_, i) => (
         <span class="sa-group">
           <span class="sa-item">
-            FREE SHIPPING on orders over PKR 10,000 <span class="sa-bullet">•</span>{' '}
-            Shipping charges up to PKR 1,000
+            FREE SHIPPING on orders above PKR 10,000 <span class="sa-bullet">•</span>{' '}
+            Shipping charges up to PKR 1,000{' '}
+            <span class="sa-bullet">•</span> Shipping available nationwide
           </span>
         </span>
       ))
