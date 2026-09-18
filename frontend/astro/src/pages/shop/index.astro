@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import PageHeader from '../../components/astro/PageHeader.astro';
+import ShopAnnouncementBar from '../../components/astro/ShopAnnouncementBar.astro';
 import Shop from '../../components/react/Shop.jsx';
 import { getProducts } from '../../lib/api';
 import '../../styles/Shop.css';
@@ -49,6 +50,7 @@ const breadcrumbJsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
   </Fragment>
+  <ShopAnnouncementBar />
   <PageHeader title="Gear up.">
     <p slot="default">Curated climbing equipment for the Margalla Hills, from harnesses, helmets to the climbing safety hardware.</p>
   </PageHeader>

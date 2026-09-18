@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
 import PageHeader from '../../../../components/astro/PageHeader.astro';
+import ShopAnnouncementBar from '../../../../components/astro/ShopAnnouncementBar.astro';
 import OrderPayment from '../../../../components/react/OrderPayment.jsx';
 import { getOrderByNumber } from '../../../../lib/api';
 import '../../../../styles/OrderPayment.css';
@@ -22,6 +23,8 @@ const needsUpload = !!order && !order.payment_screenshot_url && order.status ===
   description={needsUpload ? 'Complete your equipment order payment via bank transfer or EasyPaisa and upload your payment screenshot for verification.' : 'Track the status of your equipment order with Climb Crux.'}
   noindex
 >
+
+  <ShopAnnouncementBar />
 
   {
     needsUpload ? (

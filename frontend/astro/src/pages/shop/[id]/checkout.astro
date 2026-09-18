@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import PageHeader from '../../../components/astro/PageHeader.astro';
+import ShopAnnouncementBar from '../../../components/astro/ShopAnnouncementBar.astro';
 import Checkout from '../../../components/react/Checkout.jsx';
 import { getProduct } from '../../../lib/api';
 import '../../../styles/Checkout.css';
@@ -20,6 +21,8 @@ const pageTitle = product?.name
   title={pageTitle}
   noindex
 >
+
+  <ShopAnnouncementBar />
 
   <PageHeader title="Checkout.">
     <p slot="default">Review your order, enter your details, and choose how you'd like to pay.</p>

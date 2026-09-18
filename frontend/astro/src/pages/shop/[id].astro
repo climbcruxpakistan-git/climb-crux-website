@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
+import ShopAnnouncementBar from '../../components/astro/ShopAnnouncementBar.astro';
 import ProductDetail from '../../components/react/ProductDetail.jsx';
 import { getProduct, getProducts, getProductReviews } from '../../lib/api';
 import '../../styles/ProductDetail.css';
@@ -93,6 +94,7 @@ const breadcrumbJsonLd = product ? {
       )
     }
   </Fragment>
+  <ShopAnnouncementBar />
   {/* Product content rendered by React island using initial data — no loading spinner */}
   {
     !product && (
