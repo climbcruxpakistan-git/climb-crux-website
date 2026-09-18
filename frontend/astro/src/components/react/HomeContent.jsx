@@ -74,8 +74,8 @@ export default function HomeContent({ initial }) {
             </h1>
             <p className="hero-lede">{heroLede}</p>
             <div className="hero-actions">
-              <a href="/sessions" className="btn btn-primary">Join a Public Session</a>
-              <a href="/shop" className="btn btn-outline">Shop Climbing Equipment</a>
+              <a href="/sessions/" className="btn btn-primary">Join a Public Session</a>
+              <a href="/shop/" className="btn btn-outline">Shop Climbing Equipment</a>
             </div>
           </div>
           <div className="hero-visual">
@@ -137,7 +137,7 @@ export default function HomeContent({ initial }) {
                   )
                 ))}
           </div>
-          <a href="/gallery" className="btn btn-outline" style={{ marginTop: 24 }}>View full gallery</a>
+          <a href="/gallery/" className="btn btn-outline" style={{ marginTop: 24 }}>View full gallery</a>
         </div>
       </section>
     </>

@@ -38,11 +38,11 @@ export const ROUTE_PARAMS = {
  * Nothing else may hard-code this path — see `routeLibraryHref()` /
  * `routeDetailHref()`.
  */
-export const ROUTE_LIBRARY_BASE = '/rock-climbing-guide-islamabad/routes'
+export const ROUTE_LIBRARY_BASE = '/rock-climbing-guide-islamabad/routes/'
 
 /** Path of one documented route's page, under the library. */
 export function routeDetailHref(slug) {
-  return `${ROUTE_LIBRARY_BASE}/${slug}/`
+  return `${ROUTE_LIBRARY_BASE}${slug}/`
 }
 
 export const DEFAULT_GRADE_MIN = AVAILABLE_GRADES[0]

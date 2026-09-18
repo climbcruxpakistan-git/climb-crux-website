@@ -27,7 +27,7 @@ const itemListJsonLd = {
     '@type': 'ListItem',
     position: i + 1,
     name: p.name,
-    url: `${SITE_URL}/shop/${p.id}`,
+    url: `${SITE_URL}/shop/${p.id}/`,
     image: p.imageUrl || undefined,
   })),
 };
@@ -54,7 +54,10 @@ const breadcrumbJsonLd = {
   <PageHeader title="Gear up.">
     <p slot="default">Curated climbing equipment for the Margalla Hills, from harnesses, helmets to the climbing safety hardware.</p>
   </PageHeader>
-  <Shop client:load />
+  {/* `initial` is the catalogue already fetched above (line 14) — passing it in makes
+      the product grid, names, prices and /shop/<id>/ links part of the initial HTML
+      instead of only appearing after the island's client-side fetch. */}
+  <Shop client:load initial={liveProducts} />
 
   <section class="section shop-seo-section">
     <div class="wrap">

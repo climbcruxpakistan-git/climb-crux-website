@@ -65,19 +65,19 @@ const climbOptions = [
     h: 'Public Sessions',
     p: 'Join a scheduled outdoor climbing session on the Margalla Hills, with certified instruction and safety cover.',
     cta: 'View Public Sessions',
-    href: '/sessions',
+    href: '/sessions/',
   },
   {
     h: 'Private Sessions',
     p: 'Book a private climbing experience tailored to your group, your goals and your ability.',
     cta: 'Explore Private Sessions',
-    href: '/private-premium',
+    href: '/private-premium/',
   },
   {
     h: 'Experienced Climbers',
     p: 'Already climbing outdoors and want to explore Margalla climbing with local guidance? Arrange a session around the routes you want to try.',
     cta: 'Book a Private Session',
-    href: '/book-now?type=private-starter',
+    href: '/book-now/?type=private-starter',
   },
 ];
 
@@ -146,7 +146,7 @@ const faqSchema = {
         </p>
       </div>
       <div class="guide-hero-actions">
-        <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
+        <a class="btn btn-primary" href="/book-now/?type=public">Book a Climbing Session</a>
         <a class="btn btn-outline-light" href={routeLibraryHref()}>Browse All Routes</a>
       </div>
     </div>
@@ -219,8 +219,8 @@ const faqSchema = {
             session based on your experience, preferred difficulty and available time.
           </p>
           <div class="guide-hero-actions">
-            <a class="btn btn-primary" href="/book-now?type=public">Book a Climbing Session</a>
-            <a class="btn btn-outline" href="/our-team">Meet Our Instructors</a>
+            <a class="btn btn-primary" href="/book-now/?type=public">Book a Climbing Session</a>
+            <a class="btn btn-outline" href="/our-team/">Meet Our Instructors</a>
           </div>
         </div>
         <aside class="guide-intl-panel">
@@ -249,7 +249,7 @@ const faqSchema = {
       </div>
       <p class="guide-section-note">
         Every climbing session is led by certified instructors. You can
-        {' '}<a href="/our-team">meet the instructors</a> behind your climb.
+        {' '}<a href="/our-team/">meet the instructors</a> behind your climb.
       </p>
     </div>
   </section>

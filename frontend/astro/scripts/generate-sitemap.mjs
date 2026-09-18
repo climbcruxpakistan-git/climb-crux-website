@@ -72,6 +72,10 @@ async function fetchDynamicUrls() {
   // The shop listing renders on-demand (fresh ItemList JSON-LD), so add it here.
   urls.push({ loc: `${SITE_URL}/shop/`, lastmod: today, priority: '0.9', changefreq: 'weekly' })
 
+  // /book-now renders on-demand too (it reads the ?type= param per request) and
+  // is an indexable landing page, so it never shows up in the static scan above.
+  urls.push({ loc: `${SITE_URL}/book-now/`, lastmod: today, priority: '0.9', changefreq: 'weekly' })
+
   try {
     const res = await fetch(`${API_BASE}/products`)
     const products = await res.json()
@@ -83,7 +87,7 @@ async function fetchDynamicUrls() {
       if (p.status === 'draft' || p.status === 'archived') continue
       const images = [p.imageUrl, ...(p.images || [])].filter(Boolean).slice(0, 5)
       urls.push({
-        loc: `${SITE_URL}/shop/${id}`,
+        loc: `${SITE_URL}/shop/${id}/`,
         lastmod: (p.updatedAt || today).split('T')[0],
         priority: '0.8',
         changefreq: 'weekly',
@@ -98,7 +102,7 @@ async function fetchDynamicUrls() {
       const id = m.id || m._id
       if (!id) continue
       urls.push({
-        loc: `${SITE_URL}/our-team/${id}`,
+        loc: `${SITE_URL}/our-team/${id}/`,
         lastmod: (m.updatedAt || today).split('T')[0],
         priority: '0.6',
         changefreq: 'monthly',

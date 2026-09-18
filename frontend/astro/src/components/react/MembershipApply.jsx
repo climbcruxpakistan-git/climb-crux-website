@@ -264,7 +264,7 @@ export default function MembershipApply() {
               <li>Once approved, you'll receive your membership ID and activation details by email at <a href="mailto:bookings@climbcruxpakistan.com">bookings@climbcruxpakistan.com</a>.</li>
             </ul>
             <div className="form-actions" style={{ flexDirection: 'column' }}>
-              <a href="/book-now" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+              <a href="/book-now/" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                 Back to Book a Session
               </a>
               <a href="/" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>

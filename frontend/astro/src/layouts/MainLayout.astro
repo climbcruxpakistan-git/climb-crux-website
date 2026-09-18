@@ -12,18 +12,29 @@ const DEFAULT_TITLE = 'Climb Crux Pakistan — Rock Climbing & Adventure in Isla
 const DEFAULT_DESCRIPTION = "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers.";
 
 // Each page passes its own title/description (and optionally image / noindex /
-// canonicalUrl) so the <title>, meta description and social tags are unique.
+// canonicalUrl / robots / noCanonical) so the <title>, meta description and
+// social tags are unique.
 const {
   title = DEFAULT_TITLE,
   description = DEFAULT_DESCRIPTION,
   image = `${SITE_URL}/logo.png`,
   noindex = false,
   canonicalUrl,
+  // Opt-out for pages that must not declare a canonical at all (e.g. the 404).
+  noCanonical = false,
+  // Explicit robots directive, for pages that need something other than the
+  // index/noindex defaults (e.g. `noindex, follow`).
+  robots: robotsOverride,
 } = Astro.props;
 
-const pageUrl = `${SITE_URL}${Astro.url.pathname}`;
+// Trailing slash is the single canonical URL shape (astro.config.mjs
+// `trailingSlash: 'always'`, which also makes Vercel 308 the slashless variant),
+// so normalize the rendered path before building the URL — every indexable page
+// canonicalizes to itself, with slash.
+const pathname = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const pageUrl = `${SITE_URL}${pathname}`;
 const canonical = canonicalUrl || pageUrl;
-const robots = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+const robots = robotsOverride || (noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
 ---
 
 <!DOCTYPE html>
@@ -37,7 +48,9 @@ const robots = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="canonical" href={canonical} />
+    {
+      !noCanonical && <link rel="canonical" href={canonical} />
+    }
     <meta name="robots" content={robots} />
     <title>{title}</title>
     {

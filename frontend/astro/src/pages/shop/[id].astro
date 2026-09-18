@@ -17,16 +17,49 @@ const product = await getProduct(id).catch(() => null);
 const allProducts = await getProducts().catch(() => []);
 const reviewData = await getProductReviews(id).catch(() => ({ reviews: [], total: 0, avgRating: 0, distribution: [0,0,0,0,0] }));
 
+// An unknown id is a 404, not an indexable page: the response status is set
+// here, the layout drops the canonical and marks the page `noindex, follow`,
+// and the not-found copy is rendered by this page rather than by an island, so
+// it does not depend on JavaScript.
+const notFound = !product;
+if (notFound) {
+  Astro.response.status = 404;
+  // Astro rewrites 404 responses to the /404 page by default; this directive
+  // (Astro's REROUTE_DIRECTIVE_HEADER) keeps this page's own "Product not found"
+  // body instead. If it were ever ignored, the site-wide /404 page renders
+  // instead — still a real 404, still noindex, still no canonical.
+  Astro.response.headers.set('X-Astro-Reroute', 'no');
+}
+
 // Rich-text descriptions may contain HTML — strip it for the meta description.
 const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 const productName = product?.name;
 
+// Two catalogue records can share a name (the shop currently has two
+// "Carabiner - G View" listings), which used to produce byte-identical titles
+// and meta descriptions for two different pages. When the generated title would
+// collide, disambiguate it with an attribute the listings genuinely differ by —
+// the colour the shop records in `features` ("Color: Silver"), otherwise the
+// SKU, otherwise the first variant. Admin SEO values always win over this.
+const liveProducts = allProducts.filter((p) => p.status !== 'draft' && p.status !== 'archived');
+function distinguishingAttribute(p) {
+  const colour = (p.features || []).map(String).find((f) => /^color\s*:/i.test(f));
+  if (colour) return colour.split(':').slice(1).join(':').trim();
+  if (p.sku) return p.sku;
+  const variant = (p.variants || [])[0];
+  if (variant) return [variant.name, variant.value].filter(Boolean).join(' ').trim();
+  return '';
+}
+const nameCollides = !!product && liveProducts.some((p) => (p.id || p._id) !== id && p.name === product.name);
+const disambiguator = nameCollides ? distinguishingAttribute(product) : '';
+const displayName = productName && disambiguator ? `${productName} (${disambiguator})` : productName;
+
 // Use the SEO title/meta description set in the admin when provided,
 // otherwise fall back to clean auto-generated values.
 const pageTitle = product?.seo?.title?.trim()
-  || (productName ? `${productName} — Climb Crux Pakistan` : 'Product — Climb Crux Pakistan');
+  || (displayName ? `${displayName} — Climb Crux Pakistan` : 'Product not found — Climb Crux Pakistan');
 const pageDescription = product?.seo?.metaDescription?.trim()
-  || (productName ? (stripHtml(product.description).slice(0, 155) || `${productName} — climbing equipment from Climb Crux Pakistan, delivered across Pakistan.`) : '');
+  || (displayName ? (stripHtml(product.description).slice(0, 155) || `${displayName} — climbing equipment from Climb Crux Pakistan, delivered across Pakistan.`) : '');
 
 // Build JSON-LD for server-side rendering (visible to search engines)
 let jsonLd = null;
@@ -41,7 +74,7 @@ if (product) {
     image: [product.imageUrl, ...(product.images || [])].filter(Boolean),
     offers: {
       '@type': 'Offer',
-      url: `${SITE_URL}/shop/${id}`,
+      url: `${SITE_URL}/shop/${id}/`,
       priceCurrency: 'PKR',
       price: product.price,
       availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -71,7 +104,7 @@ const breadcrumbJsonLd = product ? {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
     { '@type': 'ListItem', position: 2, name: 'Climbing Gear & Equipment', item: `${SITE_URL}/shop/` },
-    { '@type': 'ListItem', position: 3, name: product.name, item: `${SITE_URL}/shop/${id}` },
+    { '@type': 'ListItem', position: 3, name: product.name, item: `${SITE_URL}/shop/${id}/` },
   ],
 } : null;
 ---
@@ -81,6 +114,9 @@ const breadcrumbJsonLd = product ? {
   description={pageDescription}
   image={product?.imageUrl || product?.images?.[0] || undefined}
   canonicalUrl={product?.seo?.canonicalUrl?.trim() || undefined}
+  noindex={notFound}
+  robots={notFound ? 'noindex, follow' : undefined}
+  noCanonical={notFound}
 >
   <Fragment slot="head">
     {
@@ -95,22 +131,30 @@ const breadcrumbJsonLd = product ? {
     }
   </Fragment>
   <ShopAnnouncementBar />
-  {/* Product content rendered by React island using initial data — no loading spinner */}
+  {/* Server-rendered not-found state for an unknown product id (the response is
+      a 404 and no island is mounted, so no JavaScript is needed to see this). */}
   {
-    !product && (
+    notFound && (
       <section class="section"><div class="wrap" style="text-align:center;padding:60px 20px;">
         <h2>Product not found</h2>
-        <a href="/shop" class="btn btn-outline" style="margin-top:16px;">← Back to shop</a>
+        <p style="color:var(--stone-dark);max-width:46ch;margin:8px auto 24px;">
+          This product doesn't exist or is no longer available. Browse the shop to find the gear you need.
+        </p>
+        <a href="/shop/" class="btn btn-outline">← Back to shop</a>
       </div></section>
     )
   }
 
-  {/* React island for interactivity: uses initialProduct data to render immediately without loading state */}
-  <ProductDetail
-    client:only="react"
-    id={id}
-    initialProduct={JSON.stringify(product)}
-    initialAllProducts={JSON.stringify(allProducts)}
-    initialReviewData={JSON.stringify(reviewData)}
-  />
+  {/* React island: `client:load` server-renders the product (name, price, description,
+      specs, reviews) into the initial HTML so crawlers see real content, then hydrates
+      for interactivity. `client:only` would ship an empty body. */}
+  {product && (
+    <ProductDetail
+      client:load
+      id={id}
+      initialProduct={JSON.stringify(product)}
+      initialAllProducts={JSON.stringify(allProducts)}
+      initialReviewData={JSON.stringify(reviewData)}
+    />
+  )}
 </MainLayout>

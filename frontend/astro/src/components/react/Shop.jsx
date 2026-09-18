@@ -30,9 +30,12 @@ function searchScore(p, query) {
   return score
 }
 
-export default function Shop() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function Shop({ initial = [] }) {
+  // `initial` is the catalogue rendered server-side by the page, so the grid (and
+  // its /shop/<id>/ links) exists in the initial HTML without JavaScript. The
+  // mount effect below still refetches to refresh stock/prices.
+  const [products, setProducts] = useState(() => (Array.isArray(initial) ? initial : []))
+  const [loading, setLoading] = useState(() => !(Array.isArray(initial) && initial.length > 0))
 
   // Search term + category live in the URL (?q=…&cat=…) so they're shareable.
   const [searchQuery, setSearchQuery] = useState(() => {
@@ -171,7 +174,7 @@ export default function Shop() {
   }, [products, filtered])
 
   function navigate(id) {
-    window.location.href = `/shop/${id}`
+    window.location.href = `/shop/${id}/`
   }
 
   return (
@@ -294,7 +297,13 @@ export default function Shop() {
                     )}
                   </div>
                   <div className="shop-card-body">
-                    <h3 className="shop-card-title">{product.name}</h3>
+                    <h3 className="shop-card-title">
+                      <a
+                        className="shop-card-name-link"
+                        href={`/shop/${product.id}/`}
+                        onClick={(e) => e.stopPropagation()}
+                      >{product.name}</a>
+                    </h3>
                     {product.features?.length > 0 && (
                       <ul className="shop-card-features">
                         {product.features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
@@ -324,8 +333,8 @@ export default function Shop() {
                     )}
                     <div className="btn btn-primary shop-card-btn" style={{ textAlign: 'center', opacity: product.inStock ? 1 : 0.4 }}
                       role="button" tabIndex={0}
-                      onClick={(e) => { if (product.inStock) { e.stopPropagation(); window.location.href = `/shop/${product.id}/checkout` } }}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && product.inStock) { e.stopPropagation(); window.location.href = `/shop/${product.id}/checkout` } }}>
+                      onClick={(e) => { if (product.inStock) { e.stopPropagation(); window.location.href = `/shop/${product.id}/checkout/` } }}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && product.inStock) { e.stopPropagation(); window.location.href = `/shop/${product.id}/checkout/` } }}>
                       {product.inStock ? 'Buy Now' : 'Sold Out'}
                     </div>
                   </div>
@@ -350,7 +359,13 @@ export default function Shop() {
                     {product.imageUrl || product.images?.[0] ? <img src={optimizeImage(product.imageUrl || product.images[0], 400)} alt={product.name} loading="lazy" /> : <div className="shop-card-image-placeholder"><span>📦</span></div>}
                   </div>
                   <div className="shop-card-body">
-                    <h3 className="shop-card-title">{product.name}</h3>
+                    <h3 className="shop-card-title">
+                      <a
+                        className="shop-card-name-link"
+                        href={`/shop/${product.id}/`}
+                        onClick={(e) => e.stopPropagation()}
+                      >{product.name}</a>
+                    </h3>
                     <div className="shop-card-price"><span className="shop-card-price-current">PKR {product.price.toLocaleString()}</span></div>
                     <div className="btn btn-primary shop-card-btn" style={{ textAlign: 'center', pointerEvents: 'none', opacity: product.inStock ? 1 : 0.4 }}>
                       {product.inStock ? 'View Details' : 'Sold Out'}

@@ -12,8 +12,24 @@ const { id } = Astro.params;
 const team = await getTeam().catch(() => []);
 const instructor = team.find((m) => (m.id || m._id) === id) || null;
 
+// An unknown id is a 404, not an indexable page. The status is set here, the
+// layout drops the canonical and marks the page `noindex, follow`, and the
+// not-found copy is rendered by this page — the island alone would only show a
+// JavaScript loading state to a crawler.
+const notFound = !instructor;
+if (notFound) {
+  Astro.response.status = 404;
+  // Astro rewrites 404 responses to the /404 page by default; this directive
+  // (Astro's REROUTE_DIRECTIVE_HEADER) keeps this page's own "Team member not
+  // found" body instead. If it were ever ignored, the site-wide /404 page
+  // renders instead — still a real 404, still noindex, still no canonical.
+  Astro.response.headers.set('X-Astro-Reroute', 'no');
+}
+
 const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-const pageTitle = instructor?.name ? `${instructor.name} — Climb Crux Pakistan` : 'Our Team — Climb Crux Pakistan';
+const pageTitle = instructor?.name
+  ? `${instructor.name} — Climb Crux Pakistan`
+  : 'Team member not found — Climb Crux Pakistan';
 const pageDescription = instructor
   ? `${instructor.name}, ${instructor.role || 'climbing instructor'} at Climb Crux Pakistan on Margalla Hills, Islamabad. ${stripHtml(instructor.bio).slice(0, 120)}`.trim()
   : 'Meet the certified climbing instructors at Climb Crux Pakistan. Experienced guides holding your rope on Margalla Hills, Islamabad.';
@@ -23,10 +39,32 @@ const pageDescription = instructor
   title={pageTitle}
   description={pageDescription}
   image={instructor?.photoUrl || undefined}
+  noindex={notFound}
+  robots={notFound ? 'noindex, follow' : undefined}
+  noCanonical={notFound}
 >
-  <InstructorProfile
-    client:only="react"
-    id={id}
-    initialInstructor={JSON.stringify(instructor)}
-  />
+  {
+    notFound && (
+      <section class="section" style="text-align:center;padding:60px 20px;">
+        <h2>Team member not found</h2>
+        <p style="color:var(--stone-dark);max-width:46ch;margin:8px auto 24px;">
+          This profile doesn't exist or has been removed. Meet the rest of the Climb Crux instructors instead.
+        </p>
+        <a href="/our-team/" class="btn btn-outline">← Back to team</a>
+      </section>
+    )
+  }
+
+  {/* `client:load` server-renders the profile into the initial HTML (name, role,
+      bio, certifications) so crawlers see real content, then hydrates for the
+      background refresh. `client:only` would ship an empty body. */}
+  {
+    instructor && (
+      <InstructorProfile
+        client:load
+        id={id}
+        initialInstructor={JSON.stringify(instructor)}
+      />
+    )
+  }
 </MainLayout>

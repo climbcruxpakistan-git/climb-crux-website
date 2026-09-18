@@ -123,7 +123,7 @@ export default function OrderPayment({ orderNumber }) {
           <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
           <h3>Order not found</h3>
           <p style={{ color: 'var(--stone)', maxWidth: '40ch', margin: '8px auto 24px' }}>{error}</p>
-          <a href="/shop" className="btn btn-primary">Back to shop</a>
+          <a href="/shop/" className="btn btn-primary">Back to shop</a>
         </div>
       </section>
     )
@@ -238,7 +238,7 @@ export default function OrderPayment({ orderNumber }) {
                   )}
                 </div>
                 <div className="form-actions">
-                  <a href="/shop" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to shop</a>
+                  <a href="/shop/" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to shop</a>
                   <button type="submit" className="btn btn-primary" disabled={submitting} style={{ flex: 1, justifyContent: 'center' }}>
                     {submitting ? <><span className="btn-spinner" /> Uploading…</> : 'Upload & Submit for Verification'}
                   </button>
@@ -258,8 +258,8 @@ export default function OrderPayment({ orderNumber }) {
                     : 'Thank you for shopping with Climb Crux!'}
               </p>
               <div className="form-actions">
-                <a href="/shop" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to shop</a>
-                <a href="/check-status" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Check Order Status</a>
+                <a href="/shop/" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to shop</a>
+                <a href="/check-status/" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Check Order Status</a>
               </div>
             </div>
           )}

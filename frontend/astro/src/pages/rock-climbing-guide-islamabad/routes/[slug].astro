@@ -22,7 +22,7 @@ const { route } = Astro.props;
 const grade = formatGrade(route);
 const tone = gradeColor(route.grade);
 
-const path = `${ROUTE_LIBRARY_BASE}/${slugify(route.name)}/`;
+const path = `${ROUTE_LIBRARY_BASE}${slugify(route.name)}/`;
 const canonical = `${SITE_URL}${path}`;
 const typeLabel =
   route.type === 'multi-pitch' ? 'Multi-pitch' : route.type === 'trad' ? 'Trad' : 'Sport';
@@ -46,7 +46,7 @@ const breadcrumbJsonLd = {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
     { '@type': 'ListItem', position: 2, name: 'Rock Climbing Guide Islamabad', item: `${SITE_URL}/rock-climbing-guide-islamabad/` },
-    { '@type': 'ListItem', position: 3, name: 'Margalla Hills Route Library', item: `${SITE_URL}${ROUTE_LIBRARY_BASE}/` },
+    { '@type': 'ListItem', position: 3, name: 'Margalla Hills Route Library', item: `${SITE_URL}${ROUTE_LIBRARY_BASE}` },
     { '@type': 'ListItem', position: 4, name: route.name, item: canonical },
   ],
 };
@@ -91,7 +91,7 @@ const webpageJsonLd = {
   <section class="section">
     <div class="wrap route-detail">
       <p class="route-detail-back">
-        <a href={`${ROUTE_LIBRARY_BASE}/#${routeSlug(route.name)}`}>← All climbing routes</a>
+        <a href={`${ROUTE_LIBRARY_BASE}#${routeSlug(route.name)}`}>← All climbing routes</a>
       </p>
 
       <h2>About {route.name}</h2>
@@ -144,7 +144,7 @@ const webpageJsonLd = {
 
       <div class="route-detail-links">
         <p>
-          Ready to climb it? <a href="/private-premium">Book a guided rock climbing session</a> with Climb Crux.
+          Ready to climb it? <a href="/private-premium/">Book a guided rock climbing session</a> with Climb Crux.
         </p>
       </div>
     </div>

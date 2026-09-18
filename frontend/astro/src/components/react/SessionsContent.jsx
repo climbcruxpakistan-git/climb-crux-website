@@ -80,7 +80,7 @@ export default function SessionsContent({ initial }) {
               <div className="empty-sessions-icon">📅</div>
               <h3>No public sessions right now</h3>
               <p>We don't have any public sessions scheduled at the moment. But you can still climb! Check out our private &amp; premium sessions designed around your schedule and goals.</p>
-              <a href="/private-premium" className="btn btn-primary" style={{ marginTop: 8 }}>Explore private sessions</a>
+              <a href="/private-premium/" className="btn btn-primary" style={{ marginTop: 8 }}>Explore private sessions</a>
             </div>
           ) : (
             <ul className="schedule-list">
@@ -112,7 +112,7 @@ export default function SessionsContent({ initial }) {
               <ul>
                 {pricingFeatures.map((f, i) => <li key={i}>{f}</li>)}
               </ul>
-              <a href="/book-now?type=public" className="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</a>
+              <a href="/book-now/?type=public" className="btn btn-primary" aria-label="Reserve a spot on a public session">Reserve a spot</a>
             </div>
             <div className="price-card featured membership-card">
               <span className="membership-badge">{membership.badge || '🔥 Save 20%'}</span>
@@ -126,7 +126,7 @@ export default function SessionsContent({ initial }) {
               <ul>
                 {membershipFeatures.map((f, i) => <li key={i}>{f}</li>)}
               </ul>
-              <a href="/book-now?type=membership" className="btn btn-primary" aria-label="Get the Monthly Membership">{membership.ctaLabel || 'Get Monthly Membership'}</a>
+              <a href="/book-now/?type=membership" className="btn btn-primary" aria-label="Get the Monthly Membership">{membership.ctaLabel || 'Get Monthly Membership'}</a>
             </div>
           </div>
         </div>

@@ -105,7 +105,10 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           setReviewData(reviews)
           if (p) trackRecentlyViewed(p)
           setRecentlyViewed(getRecentlyViewed(id))
-          document.title = p.seo?.title?.trim() || `${p.name} — Climb Crux Pakistan`
+          // Only adopt an admin-authored SEO title; otherwise keep the title the
+          // page server-rendered (it disambiguates products that share a name).
+          const seoTitle = p.seo?.title?.trim()
+          if (seoTitle) document.title = seoTitle
         })
         .catch(() => {})
       return
@@ -119,9 +122,10 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
         setReviewData(reviews)
         trackRecentlyViewed(p)
         setRecentlyViewed(getRecentlyViewed(id))
-        document.title = p.seo?.title?.trim() || `${p.name} — Climb Crux Pakistan`
+        const seoTitle = p.seo?.title?.trim()
+        if (seoTitle) document.title = seoTitle
       })
-      .catch(() => window.location.href = '/shop')
+      .catch(() => window.location.href = '/shop/')
       .finally(() => setLoading(false))
   }, [id])
 
@@ -332,7 +336,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
             </div>
           )}
           <div className="pd-total-row"><span className="pd-total-label">Total</span><span className="pd-total-amount">PKR {totalPrice.toLocaleString()}</span></div>
-          <button className="btn btn-primary pd-buy-btn" disabled={!product.inStock} onClick={() => { window.location.href = `/shop/${id}/checkout?qty=${quantity}` }}>
+          <button className="btn btn-primary pd-buy-btn" disabled={!product.inStock} onClick={() => { window.location.href = `/shop/${id}/checkout/?qty=${quantity}` }}>
             {product.inStock ? `Buy Now — PKR ${totalPrice.toLocaleString()}` : 'Sold Out'}
           </button>
         </div>
@@ -411,7 +415,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           <h2 className="pd-section-title">You might also like</h2>
           <div className="pd-suggestions-grid">
             {relatedProducts.map((sp) => (
-              <a href={`/shop/${sp.id}`} key={sp.id} className="pd-suggestion-card">
+              <a href={`/shop/${sp.id}/`} key={sp.id} className="pd-suggestion-card">
                 <div className="pd-suggestion-img">
                   {sp.imageUrl ? <img src={optimizeImage(sp.imageUrl, 300)} alt={sp.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
                 </div>
@@ -431,7 +435,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           <h2 className="pd-section-title">Recently viewed</h2>
           <div className="pd-suggestions-grid">
             {recentlyViewed.map((rv) => (
-              <a href={`/shop/${rv.id}`} key={rv.id} className="pd-suggestion-card">
+              <a href={`/shop/${rv.id}/`} key={rv.id} className="pd-suggestion-card">
                 <div className="pd-suggestion-img">
                   {rv.imageUrl ? <img src={optimizeImage(rv.imageUrl, 300)} alt={rv.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
                 </div>

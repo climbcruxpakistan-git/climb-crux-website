@@ -29,7 +29,7 @@ export default function EasyPaisaConfirmation({ bookingNumber }) {
         <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
         <h3>Booking not found</h3>
         <p style={{ color: 'var(--stone)', margin: '8px auto 24px' }}>{error || 'Could not find this booking.'}</p>
-        <a href="/book-now" className="btn btn-primary">Back to booking</a>
+        <a href="/book-now/" className="btn btn-primary">Back to booking</a>
       </div></section>
     )
   }

@@ -22,7 +22,7 @@ export default function TeamContent({ initial }) {
           {instructors.map((i) => {
             const profileId = i.id || i._id
             return (
-              <a href={`/our-team/${profileId}`} className="instructor-card" key={profileId}>
+              <a href={`/our-team/${profileId}/`} className="instructor-card" key={profileId}>
                 <div className="instructor-photo-wrap">
                   {i.photoUrl ? (
                     <img src={i.photoUrl} alt={i.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

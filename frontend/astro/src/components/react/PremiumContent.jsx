@@ -55,7 +55,7 @@ export default function PremiumContent({ initial }) {
                 <ul>
                   {t.features && t.features.map((f) => <li key={f}>{f}</li>)}
                 </ul>
-                <a href={`/book-now?type=${t.type || 'private'}`} className={`btn ${t.featured ? 'btn-primary' : 'btn-outline'}`}>
+                <a href={`/book-now/?type=${t.type || 'private'}`} className={`btn ${t.featured ? 'btn-primary' : 'btn-outline'}`}>
                   Book this plan
                 </a>
               </div>
@@ -70,7 +70,7 @@ export default function PremiumContent({ initial }) {
                   : DEFAULT_CUSTOM_FEATURES
                 ).map((f, i) => <li key={i}>{f}</li>)}
               </ul>
-              <a href="/book-now?type=custom-group" className="btn btn-outline">Build your session</a>
+              <a href="/book-now/?type=custom-group" className="btn btn-outline">Build your session</a>
             </div>
           </div>
         </div>

@@ -42,7 +42,7 @@ export default function InstructorProfile({ id, initialInstructor }) {
     return (
       <section className="section" style={{ textAlign: 'center' }}>
         <h2>Instructor not found</h2>
-        <a href="/our-team" className="btn btn-outline" style={{ marginTop: 16 }}>← Back to team</a>
+        <a href="/our-team/" className="btn btn-outline" style={{ marginTop: 16 }}>← Back to team</a>
       </section>
     )
   }
@@ -68,7 +68,7 @@ export default function InstructorProfile({ id, initialInstructor }) {
             )}
           </div>
           <div>
-            <a href="/our-team" className="btn btn-outline-light" style={{ marginBottom: 24, display: 'inline-flex' }}>← Back to team</a>
+            <a href="/our-team/" className="btn btn-outline-light" style={{ marginBottom: 24, display: 'inline-flex' }}>← Back to team</a>
             <h1 style={{ color: 'var(--chalk)', fontSize: 'clamp(2rem, 4vw, 3rem)', marginTop: 12, marginBottom: 4 }}>{instructor.name}</h1>
             <p style={{ color: 'var(--orange-light)', fontSize: '1.1rem', fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 20 }}>{instructor.role}</p>
             <p style={{ color: '#c9c4b8', fontSize: '1.02rem', maxWidth: '56ch', lineHeight: 1.7 }}>{instructor.bio}</p>

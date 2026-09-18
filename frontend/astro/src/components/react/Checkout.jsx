@@ -52,7 +52,7 @@ export default function Checkout({ id, initialProduct }) {
     setLoading(true)
     getProduct(id)
       .then(setProduct)
-      .catch(() => { window.location.href = '/shop' })
+      .catch(() => { window.location.href = '/shop/' })
       .finally(() => setLoading(false))
   }, [id])
 
@@ -177,7 +177,7 @@ export default function Checkout({ id, initialProduct }) {
         uploadFailed = true
         console.error('Payment screenshot upload failed:', uploadErr)
       }
-      window.location.href = `/shop/orders/${encodeURIComponent(result.order_number)}/payment${uploadFailed ? '?upload=retry' : ''}`
+      window.location.href = `/shop/orders/${encodeURIComponent(result.order_number)}/payment/${uploadFailed ? '?upload=retry' : ''}`
     } catch {
       setError('Failed to place order. Please try again.')
     } finally {
@@ -375,14 +375,14 @@ export default function Checkout({ id, initialProduct }) {
                   <span className="terms-checkbox-mark" aria-hidden="true" />
                   <span className="terms-checkbox-label">
                     I have read and agree to the{' '}
-                    <a href="/return-refund-policy">Return &amp; Refund Policy</a> and{' '}
-                    <a href="/terms-and-conditions">Terms &amp; Conditions</a>.
+                    <a href="/return-refund-policy/">Return &amp; Refund Policy</a> and{' '}
+                    <a href="/terms-and-conditions/">Terms &amp; Conditions</a>.
                   </span>
                 </label>
               </div>
 
               <div className="form-actions">
-                <a href={`/shop/${id}`} className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to product</a>
+                <a href={`/shop/${id}/`} className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Back to product</a>
                 <button type="submit" className="btn btn-primary" disabled={ordering || !product.inStock} style={{ flex: 1, justifyContent: 'center' }}>
                   {ordering ? <><span className="btn-spinner" /> Placing Order…</> : `Place Order — PKR ${totalPrice.toLocaleString()}`}
                 </button>

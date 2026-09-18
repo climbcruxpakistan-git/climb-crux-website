@@ -33,9 +33,9 @@ export default function PaymentPage({ bookingNumber }) {
       .then((b) => {
         setBooking(b)
         if (b.payment_method === 'bank_transfer' || b.payment_method === 'bank') {
-          window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/bank-transfer-confirmation`
+          window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/bank-transfer-confirmation/`
         } else if (b.payment_method === 'easypaisa') {
-          window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/easypaisa-confirmation`
+          window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/easypaisa-confirmation/`
         }
       })
       .catch(() => setError('Booking not found. Please check your booking number and try again.'))
@@ -69,7 +69,7 @@ export default function PaymentPage({ bookingNumber }) {
       fd.append('payment_screenshot', screenshot)
       await createPayment(booking.id, fd)
       const route = method === 'bank_transfer' ? 'bank-transfer-confirmation' : 'easypaisa-confirmation'
-      window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/${route}`
+      window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/${route}/`
     } catch (err) { setError(err.message || 'Failed to process payment. Please try again.') } finally { setSending(false) }
   }
 
@@ -103,7 +103,7 @@ export default function PaymentPage({ bookingNumber }) {
         <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
         <h3>Booking not found</h3>
         <p style={{ color: 'var(--stone)', maxWidth: '40ch', margin: '8px auto 24px' }}>{error}</p>
-        <a href="/book-now" className="btn btn-primary">Back to booking</a>
+        <a href="/book-now/" className="btn btn-primary">Back to booking</a>
       </div></section>
     )
   }
@@ -158,7 +158,7 @@ export default function PaymentPage({ bookingNumber }) {
                 </div>
               </div>
               <div className="form-actions">
-                <a href="/book-now" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Change details</a>
+                <a href="/book-now/" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Change details</a>
                 <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={!paymentMethod}
                   onClick={() => { if (paymentMethod === 'bank_transfer') setFlow('bank-form'); if (paymentMethod === 'easypaisa') setFlow('easypaisa-form') }}>Continue</button>
               </div>
