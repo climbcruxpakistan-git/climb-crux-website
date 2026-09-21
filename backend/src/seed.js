@@ -134,7 +134,7 @@ const seedGallery = [
   { tag: 'Premium Ascent · Overhang', cat: 'High Grade Rock Climbing' },
   { tag: 'Public Session · Basecamp', cat: 'Public Sessions' },
   { tag: 'Private Coaching · Small Group', cat: 'Private Sessions' },
-  { tag: 'Foreign Climbers · Margalla Session', cat: 'Foreigner Climbers' },
+  { tag: 'Foreign Climbers · Margalla Session', cat: 'Foreign Climber' },
 ]
 
 const seedAbout = {

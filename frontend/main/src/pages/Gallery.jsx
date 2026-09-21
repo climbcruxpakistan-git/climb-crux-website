@@ -6,7 +6,7 @@ import './Gallery.css'
 
 // Category folders that always appear, even before any photos are uploaded.
 // Order here is the order they render in the folder grid.
-const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'Foreigner Climbers', 'High Grade Rock Climbing']
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'Foreign Climber', 'High Grade Rock Climbing']
 
 export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState([])
