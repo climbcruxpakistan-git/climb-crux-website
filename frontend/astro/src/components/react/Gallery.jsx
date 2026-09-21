@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getGallery, getUploads } from '../../lib/api'
 
-// Category folders that always appear, even before any photos are uploaded
-const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing', 'Foreigner Climbers']
+// Category folders that always appear, even before any photos are uploaded.
+// Order here is the order they render in the folder grid.
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'Foreigner Climbers', 'High Grade Rock Climbing']
 
 export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState([])
@@ -117,7 +118,7 @@ export default function Gallery() {
                 <h2 style={{ margin: 0, flex: 1 }}>{activeFolder}</h2>
                 <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.82rem', color: 'var(--stone)' }}>{currentAlbums.length} album{currentAlbums.length !== 1 ? 's' : ''}</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+              <div className="gallery-folder-grid">
                 {currentAlbums.map((item) => (
                   <button key={item.id} className="gallery-folder-card" onClick={() => setActiveAlbum(item)}
                     style={{ background: 'var(--chalk)', border: '1px solid var(--chalk-dim)', padding: 0, cursor: 'pointer', textAlign: 'left', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
@@ -137,7 +138,7 @@ export default function Gallery() {
           ) : (
             <>
               <h2 style={{ marginBottom: 32 }}>Albums</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+              <div className="gallery-folder-grid">
                 {categories.map((cat) => {
                   const albums = getAlbumsInCategory(cat)
                   const totalPhotos = albums.reduce((sum, a) => sum + getAlbumPhotos(a).length, 0)

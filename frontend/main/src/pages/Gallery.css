@@ -1,8 +1,14 @@
-/* Gallery Folder Grid */
+/* Gallery Folder Grid — 3 folders per row on desktop */
 .gallery-folder-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+}
+
+@media (max-width: 980px) {
+  .gallery-folder-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .gallery-folder-card {

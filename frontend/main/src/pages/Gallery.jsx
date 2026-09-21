@@ -4,8 +4,9 @@ import PlaceholderPhoto from '../components/PlaceholderPhoto.jsx'
 import { getGallery, getUploads } from '../api.js'
 import './Gallery.css'
 
-// Category folders that always appear, even before any photos are uploaded
-const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing', 'Foreigner Climbers']
+// Category folders that always appear, even before any photos are uploaded.
+// Order here is the order they render in the folder grid.
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'Foreigner Climbers', 'High Grade Rock Climbing']
 
 export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState([])
