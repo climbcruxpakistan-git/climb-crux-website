@@ -2,7 +2,7 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import PageHeader from '../../../components/astro/PageHeader.astro';
 import { flattenRoutes, formatGrade, routeSlug } from '../../../data/margallaRoutes';
-import { ROUTE_LIBRARY_BASE } from '../../../lib/routeFilters';
+import { ROUTE_LIBRARY_BASE, routeDetailHref, routeLibraryHref } from '../../../lib/routeFilters';
 import { slugify } from '../../../lib/slug.js';
 import { gradeColor } from '../../../lib/gradeColors.js';
 import { optimizeImage } from '../../../lib/api';
@@ -27,6 +27,28 @@ const canonical = `${SITE_URL}${path}`;
 const typeLabel =
   route.type === 'multi-pitch' ? 'Multi-pitch' : route.type === 'trad' ? 'Trad' : 'Sport';
 
+// All routes in dataset order — the same order getStaticPaths iterates — so the
+// previous/next navigation and the related links are deterministic, never
+// random, and stay stable between builds.
+const allRoutes = flattenRoutes();
+const navIndex = allRoutes.findIndex((candidate) => candidate.name === route.name);
+const prevRoute = navIndex > 0 ? allRoutes[navIndex - 1] : null;
+const nextRoute = navIndex >= 0 && navIndex < allRoutes.length - 1 ? allRoutes[navIndex + 1] : null;
+
+// Related routes: same venue first (dataset order, never the current route),
+// topped up from the same climbing area when the venue has fewer than four.
+const RELATED_CAP = 4;
+const venueSiblings = allRoutes.filter(
+  (candidate) => candidate.venueId === route.venueId && candidate.name !== route.name,
+);
+const areaSiblings = allRoutes.filter(
+  (candidate) =>
+    candidate.areaId === route.areaId && candidate.venueId !== route.venueId && candidate.name !== route.name,
+);
+const relatedRoutes = [...venueSiblings, ...areaSiblings].slice(0, RELATED_CAP);
+const relatedHeading =
+  venueSiblings.length > 0 ? `Related Routes at ${route.venue}` : `Related Routes in ${route.area}`;
+
 // The venue's first crag photo doubles as this page's social-share image.
 const heroImage = route.images?.[0] ? optimizeImage(route.images[0].url, 1200) : undefined;
 
@@ -39,16 +61,60 @@ if (metaDescription.length > 157) {
   metaDescription = `${metaDescription.slice(0, 154).replace(/[\s,;:.\-–—]+$/, '')}…`;
 }
 
+// Route-specific FAQ — every entry is answered purely from the documented route
+// data, so a question is only included when its answer is actually known. The
+// same array renders the visible FAQ and the FAQPage JSON-LD, keeping the two
+// exact matches by construction.
+const faqs = [
+  { q: `What grade is ${route.name}?`, a: `${route.name} is graded ${grade}.` },
+  ...(route.length
+    ? [{ q: `How long is ${route.name}?`, a: `${route.name} is ${route.length} m long.` }]
+    : []),
+  {
+    q: `Where is ${route.name} located?`,
+    a: `${route.name} climbs at ${route.venue} in the ${route.area} climbing area of the Margalla Hills, Islamabad.`,
+  },
+  {
+    q: `Which climbing area is ${route.name} in?`,
+    a: `${route.name} is in the ${route.area} climbing area.`,
+  },
+];
+
+const faqSchema =
+  faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }
+    : null;
+
+// Visible breadcrumbs and the BreadcrumbList JSON-LD share one array so they
+// can never drift. Area and venue items link into the route library with those
+// filters applied — no separate hub pages are created.
+const crumbs = [
+  { name: 'Home', href: `${SITE_URL}/` },
+  { name: 'Rock Climbing Guide Islamabad', href: `${SITE_URL}/rock-climbing-guide-islamabad/` },
+  { name: 'Margalla Hills Route Library', href: `${SITE_URL}${ROUTE_LIBRARY_BASE}` },
+  { name: route.area, href: `${SITE_URL}${routeLibraryHref({ area: route.areaId })}` },
+  { name: route.venue, href: `${SITE_URL}${routeLibraryHref({ area: route.areaId, venue: route.venueId })}` },
+  { name: route.name },
+];
+
 const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   '@id': `${canonical}#breadcrumb`,
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Guide Islamabad', item: `${SITE_URL}/rock-climbing-guide-islamabad/` },
-    { '@type': 'ListItem', position: 3, name: 'Margalla Hills Route Library', item: `${SITE_URL}${ROUTE_LIBRARY_BASE}` },
-    { '@type': 'ListItem', position: 4, name: route.name, item: canonical },
-  ],
+  itemListElement: crumbs.map((crumb, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: crumb.name,
+    ...(crumb.href ? { item: crumb.href } : {}),
+  })),
 };
 
 const webpageJsonLd = {
@@ -77,6 +143,7 @@ const webpageJsonLd = {
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(webpageJsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+    {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
   </Fragment>
 
   <PageHeader title={route.name} eyebrow={location ? `${location} · Margalla Hills` : 'Margalla Hills'}>
@@ -87,6 +154,26 @@ const webpageJsonLd = {
       {route.variation && <span class="route-hero-fact">Variation</span>}
     </div>
   </PageHeader>
+
+  {/* Visible crumb trail: Home › Guide › Routes › Area › Venue › this route. */}
+  <nav class="route-crumbs" aria-label="Breadcrumb">
+    <div class="wrap">
+      <ol class="route-crumbs-list">
+        {crumbs.map((crumb, index) => (
+          <li class="route-crumb">
+            {crumb.href ? (
+              <a href={crumb.href}>{crumb.name}</a>
+            ) : (
+              <span aria-current="page">{crumb.name}</span>
+            )}
+            {index < crumbs.length - 1 && (
+              <span class="route-crumb-sep" aria-hidden="true">›</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </nav>
 
   <section class="section">
     <div class="wrap route-detail">
@@ -146,6 +233,64 @@ const webpageJsonLd = {
         <p>
           Ready to climb it? <a href="/private-premium/">Book a guided rock climbing session</a> with Climb Crux.
         </p>
+      </div>
+
+      {relatedRoutes.length > 0 && (
+        <div class="route-related">
+          <h2>{relatedHeading}</h2>
+          <ul class="route-related-list" role="list">
+            {relatedRoutes.map((sibling) => {
+              const siblingTone = gradeColor(sibling.grade);
+              return (
+                <li class="route-related-item">
+                  <a class="route-related-link" href={routeDetailHref(slugify(sibling.name))}>
+                    <span class="route-related-name">{sibling.name}</span>
+                    <span
+                      class="route-related-grade"
+                      style={`--tone:${siblingTone.tone};--tone-ink:${siblingTone.ink};`}
+                    >
+                      {formatGrade(sibling)}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Deterministic previous/next navigation over the dataset order; the
+          first route has no previous and the last has no next. */}
+      <nav class="route-nav" aria-label="Route navigation">
+        {prevRoute ? (
+          <a class="route-nav-link route-nav-prev" href={routeDetailHref(slugify(prevRoute.name))}>
+            <span class="route-nav-label">← Previous Route</span>
+            <span class="route-nav-name">{prevRoute.name}</span>
+          </a>
+        ) : (
+          <span class="route-nav-ghost" aria-hidden="true"></span>
+        )}
+        <a class="route-nav-all" href={ROUTE_LIBRARY_BASE}>All Routes</a>
+        {nextRoute ? (
+          <a class="route-nav-link route-nav-next" href={routeDetailHref(slugify(nextRoute.name))}>
+            <span class="route-nav-label">Next Route →</span>
+            <span class="route-nav-name">{nextRoute.name}</span>
+          </a>
+        ) : (
+          <span class="route-nav-ghost" aria-hidden="true"></span>
+        )}
+      </nav>
+
+      <div class="route-faq">
+        <h2>Frequently Asked Questions</h2>
+        <div class="route-faq-list">
+          {faqs.map((f) => (
+            <details class="route-faq-item">
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </div>
       </div>
     </div>
   </section>
@@ -347,6 +492,237 @@ const webpageJsonLd = {
 
   .route-detail-links a:hover {
     color: var(--charcoal);
+  }
+
+  /* Breadcrumb trail: Home › Guide › Routes › Area › Venue › this route. */
+  .route-crumbs {
+    background: var(--chalk-dim);
+    border-bottom: 1px solid #ddd3bd;
+  }
+  .route-crumbs-list {
+    list-style: none;
+    margin: 0;
+    padding: 12px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+  }
+  .route-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+  }
+  .route-crumb a {
+    color: var(--orange-dark);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .route-crumb a:hover {
+    text-decoration: underline;
+  }
+  .route-crumb span[aria-current='page'] {
+    color: var(--stone-dark);
+    font-weight: 600;
+  }
+  .route-crumb-sep {
+    color: var(--stone);
+  }
+  @media (max-width: 560px) {
+    .route-crumb {
+      font-size: 0.76rem;
+    }
+  }
+
+  /* Related Routes: same-venue first, then same-area. */
+  .route-related {
+    margin-top: 2.4em;
+    padding-top: 1.6em;
+    border-top: 1px solid var(--chalk-dim);
+  }
+  .route-related h2 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 1.5rem;
+    color: var(--charcoal);
+    margin-bottom: 0.6em;
+  }
+  .route-related-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .route-related-item {
+    margin: 0;
+  }
+  .route-related-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--chalk-dim);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+  }
+  .route-related-link:hover {
+    border-color: var(--orange);
+  }
+  .route-related-name {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+  .route-related-grade {
+    flex: none;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--tone-ink, #fff);
+    background: var(--tone, var(--orange-dark));
+    border-radius: 6px;
+    padding: 0.3em 0.6em;
+    line-height: 1;
+  }
+  @media (max-width: 560px) {
+    .route-related-list {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Previous / All Routes / Next navigation. */
+  .route-nav {
+    margin-top: 2.4em;
+    padding-top: 1.6em;
+    border-top: 1px solid var(--chalk-dim);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .route-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--orange-dark);
+  }
+  .route-nav-link:hover .route-nav-name {
+    text-decoration: underline;
+  }
+  .route-nav-prev {
+    align-items: flex-start;
+  }
+  .route-nav-next {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .route-nav-ghost {
+    display: none;
+  }
+  .route-nav-label {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--stone);
+  }
+  .route-nav-name {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+  .route-nav-all {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--orange-dark);
+    text-decoration: none;
+    border: 1.5px solid var(--chalk-dim);
+    border-radius: 8px;
+    padding: 8px 14px;
+    white-space: nowrap;
+  }
+  .route-nav-all:hover {
+    border-color: var(--orange);
+  }
+  @media (max-width: 560px) {
+    .route-nav {
+      gap: 8px;
+    }
+    .route-nav-label {
+      font-size: 0.7rem;
+    }
+    .route-nav-name {
+      font-size: 0.92rem;
+    }
+  }
+
+  /* Route-specific FAQ (mirrors the visible questions in the FAQPage JSON-LD). */
+  .route-faq {
+    margin-top: 2.4em;
+    padding-top: 1.6em;
+    border-top: 1px solid var(--chalk-dim);
+  }
+  .route-faq h2 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 1.5rem;
+    color: var(--charcoal);
+    margin-bottom: 0.6em;
+  }
+  .route-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .route-faq-item {
+    background: #fff;
+    border: 1px solid var(--chalk-dim);
+    border-radius: 10px;
+    padding: 0 16px;
+  }
+  .route-faq-item summary {
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--charcoal);
+    padding: 14px 0;
+    list-style: none;
+  }
+  .route-faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .route-faq-item summary::before {
+    content: '+';
+    display: inline-block;
+    width: 1.1em;
+    color: var(--orange-dark);
+    font-weight: 700;
+  }
+  .route-faq-item[open] summary::before {
+    content: '–';
+  }
+  .route-faq-item p {
+    margin: 0;
+    padding: 0 0 14px 1.1em;
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.7;
+    color: var(--stone-dark);
   }
 
   @media (max-width: 560px) {
