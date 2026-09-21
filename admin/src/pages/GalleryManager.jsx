@@ -9,7 +9,7 @@ function authHeaders() {
   const token = localStorage.getItem('admin_token')
   return token ? { 'Authorization': `Bearer ${token}` } : {}
 }
-const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing']
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing', 'Foreigner Climbers']
 
 export default function GalleryManager() {
   const { addToast } = useToast()

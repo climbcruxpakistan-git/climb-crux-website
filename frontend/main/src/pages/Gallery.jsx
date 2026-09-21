@@ -4,6 +4,9 @@ import PlaceholderPhoto from '../components/PlaceholderPhoto.jsx'
 import { getGallery, getUploads } from '../api.js'
 import './Gallery.css'
 
+// Category folders that always appear, even before any photos are uploaded
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing', 'Foreigner Climbers']
+
 export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState([])
   const [uploadPhotos, setUploadPhotos] = useState([])
@@ -49,9 +52,9 @@ export default function Gallery() {
     return [item]
   }
 
-  // Build folders from unique categories
+  // Build folders from default categories plus any unique categories in the data
   const categories = useMemo(() =>
-    [...new Set(galleryItems.map((p) => p.cat))],
+    [...new Set([...DEFAULT_CATEGORIES, ...galleryItems.map((p) => p.cat).filter(Boolean)])],
     [galleryItems]
   )
 
@@ -117,8 +120,6 @@ export default function Gallery() {
     setActiveFolder(null)
     setActiveAlbum(null)
   }
-
-  const totalItems = galleryItems.length
 
   return (
     <>
@@ -202,7 +203,7 @@ export default function Gallery() {
                 </div>
               )}
             </>
-          ) : totalItems === 0 ? (
+          ) : categories.length === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>No photos yet. Check back soon!</p>
           ) : (
             /* ── Level 0: Category folders ── */

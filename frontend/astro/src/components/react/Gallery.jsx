@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getGallery, getUploads } from '../../lib/api'
 
+// Category folders that always appear, even before any photos are uploaded
+const DEFAULT_CATEGORIES = ['Public Sessions', 'Private Sessions', 'High Grade Rock Climbing', 'Foreigner Climbers']
+
 export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState([])
   const [uploadPhotos, setUploadPhotos] = useState([])
@@ -42,7 +45,7 @@ export default function Gallery() {
   }
 
   const categories = useMemo(() =>
-    [...new Set(galleryItems.map((p) => p.cat))], [galleryItems])
+    [...new Set([...DEFAULT_CATEGORIES, ...galleryItems.map((p) => p.cat).filter(Boolean)])], [galleryItems])
 
   function getAlbumsInCategory(cat) {
     return galleryItems.filter((p) => p.cat === cat)
@@ -129,7 +132,7 @@ export default function Gallery() {
                 ))}
               </div>
             </>
-          ) : galleryItems.length === 0 ? (
+          ) : categories.length === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>No photos yet. Check back soon!</p>
           ) : (
             <>
