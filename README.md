@@ -19,7 +19,7 @@ Climb Crux is a full-stack web platform comprising **public-facing websites** (R
 | Directory | Description | Tech Stack |
 |-----------|-------------|------------|
 | [`frontend/main/`](./frontend/main/README.md) | Public-facing site: home, sessions, gallery, booking & payment flow, shop | React 18, React Router, Vite |
-| [`frontend/astro/`](./frontend/astro/README.md) | Astro SSG version of the public site: home, sessions, gallery, booking & payment flow, shop | Astro 4, React 18, Vercel adapter |
+| [`frontend/astro/`](./frontend/astro/README.md) | Astro SSG version of the public site: home, sessions, gallery, booking & payment flow, shop | Astro 5, React 18, Vercel adapter |
 | [`backend/`](./backend/README.md) | REST API: CRUD for all content, bookings, payments, shop products & orders, auth, image uploads | Express, Mongoose, JWT, Cloudinary, Nodemailer |
 | [`admin/`](./admin/README.md) | Admin dashboard: manage sessions, plans, team, gallery, photos, shop, bookings, payments | React 18, React Router, Vite |
 

@@ -1,16 +1,17 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   integrations: [react()],
   adapter: vercel({
     webAnalytics: { enabled: true },
   }),
-  // Hybrid: most pages are statically generated (fast, SEO-friendly), but the
-  // booking flow pages (marked `export const prerender = false`) render on-demand
-  // so any booking number works after deploy.
-  output: 'hybrid',
+  // Most pages are statically generated (fast, SEO-friendly), but the booking
+  // flow pages (marked `export const prerender = false`) render on-demand so any
+  // booking number works after deploy. Astro 5 removed `output: 'hybrid'` — the
+  // default `output: 'static'` now behaves identically, honouring each route's
+  // own `prerender` value, so there is nothing to set here.
   // www is the canonical domain (canonical tags, sitemap and schema all use it).
   site: 'https://www.climbcruxpakistan.com',
   // One canonical URL shape per page: trailing slash. Every page is built as
