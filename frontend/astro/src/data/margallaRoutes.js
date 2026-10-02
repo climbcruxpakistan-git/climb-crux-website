@@ -31,7 +31,7 @@ export const AREAS = [
       {
         id: 'jungle-rock',
         name: 'Jungle Rock',
-        mapsUrl: 'https://www.google.com/maps?q=33.743178,73.050936',
+        mapsUrl: 'https://maps.app.goo.gl/M9cagJmJuZjetjkT9',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713500/climb-crux/venues/jungle-rock-crag-photo.jpg',
@@ -106,7 +106,7 @@ export const AREAS = [
       {
         id: 'jasmin-corner',
         name: 'Jasmin Corner',
-        mapsUrl: 'https://www.google.com/maps?q=33.747337,73.056132',
+        mapsUrl: 'https://www.google.com/maps/place/Jasmine+Corner/@33.7473042,73.056483,17z/data=!3m1!4b1!4m6!3m5!1s0x38dfbf006f0da463:0xd998c1903f1cfb51!8m2!3d33.7473042!4d73.056483!16s%2Fg%2F11z9sg79bw',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713503/climb-crux/venues/jasmin-corner-routes-photo.jpg',
@@ -131,7 +131,7 @@ export const AREAS = [
       {
         id: 'music-lounge',
         name: 'Music Lounge',
-        mapsUrl: 'https://www.google.com/maps?q=33.749442,73.060525',
+        mapsUrl: 'https://www.google.com/maps/dir/33.685504,73.0300416/33.749442,73.060525',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713504/climb-crux/venues/music-lounge-photo-1.jpg',
@@ -181,7 +181,7 @@ export const AREAS = [
       {
         id: 'said-pur-view',
         name: 'Said Pur View',
-        mapsUrl: 'https://www.google.com/maps?q=33.747261,73.064302',
+        mapsUrl: 'https://www.google.com/maps/dir/33.685504,73.0300416/33.747261,73.064302',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713506/climb-crux/venues/said-pur-view-crag-photo.jpg',
@@ -245,7 +245,7 @@ export const AREAS = [
       {
         id: 'god-rock',
         name: 'God Rock',
-        mapsUrl: 'https://www.google.com/maps?q=33.751315,73.066186',
+        mapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=33.751315,73.066186',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713506/climb-crux/venues/god-rock-crag-photo.jpg',
@@ -273,7 +273,7 @@ export const AREAS = [
       {
         id: 'belvedere',
         name: 'Belvedere',
-        mapsUrl: 'https://www.google.com/maps?q=33.750945,73.066168',
+        mapsUrl: 'https://maps.google.com/?cid=1858418587170011794',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713508/climb-crux/venues/belvedere-crag-photo.jpg',
@@ -341,7 +341,7 @@ export const AREAS = [
       {
         id: 'beetles-nest',
         name: "Beetle's Nest",
-        mapsUrl: 'https://www.google.com/maps?q=33.750945,73.067021',
+        mapsUrl: 'https://maps.google.com/?cid=6302826339130088670',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713509/climb-crux/venues/beetles-nest-crag-photo.jpg',
@@ -407,7 +407,7 @@ export const AREAS = [
       {
         id: 'legacy-wall',
         name: 'Legacy Wall',
-        mapsUrl: 'https://www.google.com/maps?q=33.744336,73.076446',
+        mapsUrl: 'https://www.google.com/maps/place/Trail+3A,+Islamabad,+Pakistan/@33.7443363,73.0756039,19z/data=!3m1!4b1!4m6!3m5!1s0x38dfbf6649f1d075:0xbd478774eef1c9b0!8m2!3d33.7442955!4d73.0768584',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713511/climb-crux/venues/legacy-wall-crag-photo.jpg',
@@ -515,7 +515,7 @@ export const AREAS = [
       {
         id: 'well-hidden-rock',
         name: 'Well Hidden Rock',
-        mapsUrl: 'https://www.google.com/maps?q=33.749719,73.081366',
+        mapsUrl: 'https://www.google.com/maps/dir/33.685504,73.0300416/33.749719,73.081366',
         images: [
           {
             url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789713512/climb-crux/venues/well-hidden-rock-crag-photo.jpg',
@@ -568,7 +568,7 @@ export const AREAS = [
       {
         id: 'shaddarrah',
         name: 'Shaddarrah',
-        mapsUrl: 'https://www.google.com/maps?q=33.774457,73.1741',
+        mapsUrl: 'https://www.google.com/maps?q=Q5FF%2BQQF,+Shah+Dara+Rd,+Islamabad',
         gradeRange: '~5c',
         character:
           'A few kilometres north-east of Islamabad, reached by turning left off Murree Road after passing Lake View Park (site of excellent Ibex climbing wall) and continuing into a gorge in the hills. Small wall adjacent to road on the left.',
