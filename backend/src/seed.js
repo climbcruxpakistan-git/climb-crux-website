@@ -57,14 +57,14 @@ const seedSessions = [
 
 const seedPlans = [
   {
-    type: 'private-starter', grade: 'Up to 5c', label: 'Small Group', title: 'Starter Private',
+    type: 'private-starter', grade: 'Up to 7c+', label: 'Small Group', title: 'Starter Private',
     price: '8,000', unit: '/ person', tag: '', featured: false,
-    features: ['Private group of up to 4 climbers', 'Choose your own date & time', 'Instructor focused on your group only', 'Full gear provided'],
+    features: ['Private group of up to 5 climbers', 'Choose your own date & time', '1 on 1 Coaching', 'Full gear provided', '3 hour guided customized session'],
   },
   {
-    type: 'private-advanced', grade: 'Up to 6b+', label: '1-on-1 or Small Group', title: 'Advanced Private',
+    type: 'private-advanced', grade: 'Up to 7c+', label: '', title: 'Advanced Private',
     price: '15,000', unit: '/ person', tag: 'Most booked', featured: true,
-    features: ['1-on-1 or private group of up to 3', 'Technique & movement coaching', 'Progression plan across sessions', 'Priority scheduling'],
+    features: ['1 on 1 or private group', 'Customized Coaching', 'Priority scheduling', 'Full gear provided'],
   },
   {
     type: 'elite-premium', grade: '7c+', label: 'Highest Grade Access', title: 'Elite Premium',
