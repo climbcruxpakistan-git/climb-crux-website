@@ -59,12 +59,12 @@ const seedPlans = [
   {
     type: 'private-starter', grade: 'Up to 7c+', label: 'Small Group', title: 'Starter Private',
     price: '8,000', unit: '/ person', tag: '', featured: false,
-    features: ['Private group of up to 5 climbers', '1 on 1 Coaching', 'Choose your own date & time', 'Full gear provided', '3 hour guided customized session'],
+    features: ['Personalized Climbing Training', 'Choose your own date & time', 'All Climbing Equipment Provided', '3 hour guided customized session'],
   },
   {
-    type: 'private-advanced', grade: 'Up to 7c+', label: '', title: 'Advanced Private',
+    type: 'private-advanced', grade: 'Up to 7c+', label: 'Small Group', title: 'Advanced Private',
     price: '15,000', unit: '/ person', tag: 'Most booked', featured: true,
-    features: ['1 on 1 or private group', 'Customized Coaching', 'Priority scheduling', 'Full gear provided'],
+    features: ['Personalized Climbing Training', '1 on 1 Coaching', 'Priority scheduling', 'All Climbing Equipment Provided', 'Full Day of Rock Climbing'],
   },
   {
     type: 'elite-premium', grade: '7c+', label: 'Highest Grade Access', title: 'Elite Premium',
@@ -164,11 +164,12 @@ const seedSessionContent = {
   pricingTitle: 'Public Session',
   pricingPrice: '2,500',
   pricingUnit: '/ person',
-  pricingDescription: 'Join a guided group session on Margalla Hills — every other Sunday. Full gear and certified instructors included.',
+  pricingDescription: 'Join a guided group climbing session on Margalla Hills — every other Sunday. Full gear and certified instructors included.',
   pricingFeatures: [
-    { text: '2–3 hour guided session' },
-    { text: 'Certified instructor & safety briefing' },
-    { text: 'Harness, helmet, rope, belay gear & climbing shoes' },
+    { text: '3 hour guided session' },
+    { text: 'Certified Instructors' },
+    { text: 'Safety Briefing' },
+    { text: 'Full Climbing gear provided' },
     { text: 'Group of up to 20 climbers' },
   ],
   ppHeaderDesc: 'Private sessions are built around you. Your Choice, just solo, with your group or working toward the highest grades we run.',

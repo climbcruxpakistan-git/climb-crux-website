@@ -27,7 +27,7 @@ const DEFAULT_FAQS = [
 ]
 
 const DEFAULT_FEATURES = ['2–3 hour guided session', 'Certified instructor & safety briefing', 'Harness, helmet, rope, belay gear & climbing shoes', 'Group of up to 20 climbers']
-const DEFAULT_MEMBERSHIP_FEATURES = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome']
+const DEFAULT_MEMBERSHIP_FEATURES = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Professional Instructors', 'All Climbing Equipment Provided', 'Save PKR 2,000']
 
 export default function SessionsContent({ initial }) {
   const [data, setData] = useState(initial || { sessions: [], content: {} })

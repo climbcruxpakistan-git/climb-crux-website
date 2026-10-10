@@ -75,7 +75,7 @@ export default function Sessions() {
 
   const c = pageContent
   const m = c.membership || {}
-  const defaultMembershipFeatures = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome']
+  const defaultMembershipFeatures = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Professional Instructors', 'All Climbing Equipment Provided', 'Save PKR 2,000']
   const rawMembershipFeatures = m.features?.length ? m.features.filter((f) => typeof f === 'string' && f.trim()) : []
   const membershipFeatures = rawMembershipFeatures.length ? rawMembershipFeatures : defaultMembershipFeatures
   const membershipDesc = m.description || 'Train consistently with our monthly climbing membership. Enjoy four climbing sessions every month at a discounted price while improving your strength, technique, and confidence.'

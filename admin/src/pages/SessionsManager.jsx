@@ -691,7 +691,7 @@ function MembershipForm({ data, onSave, onCancel }) {
     duration: data.duration || '1 Month',
     sessionsIncluded: data.sessionsIncluded || '4',
     description: data.description || '',
-    features: data.features && data.features.length ? data.features : ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Save PKR 2,000', 'Professional Instructors', 'Safety Equipment Included', 'All Skill Levels Welcome'],
+    features: data.features && data.features.length ? data.features : ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Professional Instructors', 'All Climbing Equipment Provided', 'Save PKR 2,000'],
     ctaLabel: data.ctaLabel || 'Get Monthly Membership',
   })
 
