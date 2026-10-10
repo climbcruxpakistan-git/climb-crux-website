@@ -59,7 +59,7 @@ const seedPlans = [
   {
     type: 'private-starter', grade: 'Up to 7c+', label: 'Small Group', title: 'Starter Private',
     price: '8,000', unit: '/ person', tag: '', featured: false,
-    features: ['Private group of up to 5 climbers', 'Choose your own date & time', '1 on 1 Coaching', 'Full gear provided', '3 hour guided customized session'],
+    features: ['Private group of up to 5 climbers', '1 on 1 Coaching', 'Choose your own date & time', 'Full gear provided', '3 hour guided customized session'],
   },
   {
     type: 'private-advanced', grade: 'Up to 7c+', label: '', title: 'Advanced Private',
