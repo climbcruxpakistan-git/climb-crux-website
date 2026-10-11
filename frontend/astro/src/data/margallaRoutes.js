@@ -562,20 +562,51 @@ export const AREAS = [
   },
   {
     id: 'shaddarrah',
-    name: 'Shaddarrah',
+    name: 'Shahdara',
     lede: 'A small roadside crag north-east of Islamabad with only a very few routes.',
     venues: [
       {
         id: 'shaddarrah',
-        name: 'Shaddarrah',
-        mapsUrl: 'https://www.google.com/maps?q=Q5FF%2BQQF,+Shah+Dara+Rd,+Islamabad',
-        gradeRange: '~5c',
+        name: 'Shahdara Climbing Wall',
+        mapsUrl: 'https://www.google.com/maps/dir/33.6887808,73.0333184/Shah+Dara+Rd,+Islamabad,+Pakistan/@33.7182717,73.0158592,12z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m5!1m1!1s0x38dfc16904cfc22d:0x7d78bb24b0650b5f!2m2!1d73.1663236!2d33.7567461?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D',
+        images: [
+          {
+            url: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1791700756/climb-crux/venues/shahdara-labeled.jpg',
+            caption: 'Shahdara Climbing Wall topo (labeled)',
+          },
+        ],
+        gradeRange: '5b – 6a',
         character:
           'A few kilometres north-east of Islamabad, reached by turning left off Murree Road after passing Lake View Park (site of excellent Ibex climbing wall) and continuing into a gorge in the hills. Small wall adjacent to road on the left.',
         notes: [
           'Unfortunately the few routes (5c or so) may soon no longer exist due to road construction.',
         ],
-        routes: [],
+        routes: [
+          {
+            name: 'Shah Dara I',
+            grade: '5c+',
+            length: null,
+            description: 'A route at Shahdara Climbing Wall in the Shahdara area.',
+          },
+          {
+            name: 'Shah Dara II',
+            grade: '5b',
+            length: null,
+            description: 'A route at Shahdara Climbing Wall in the Shahdara area.',
+          },
+          {
+            name: 'Shah Dara III',
+            grade: '5c',
+            length: null,
+            description: 'A route at Shahdara Climbing Wall in the Shahdara area.',
+          },
+          {
+            name: 'Shah Dara IV',
+            grade: '6a',
+            length: null,
+            description: 'A route at Shahdara Climbing Wall in the Shahdara area.',
+          },
+        ],
       },
     ],
   },
