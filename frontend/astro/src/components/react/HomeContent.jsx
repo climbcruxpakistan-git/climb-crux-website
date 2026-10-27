@@ -71,12 +71,14 @@ export default function HomeContent({ initial }) {
           alt=""
           aria-hidden="true"
         />
-        <svg className="hero-topo" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <g stroke="rgba(255,255,255,0.08)" strokeWidth="1" fill="none">
-            <path d="M0,400 L150,350 L300,370 L450,330 L600,360 L750,320 L900,340 L1050,310 L1200,330" />
-            <path d="M0,450 L200,410 L400,430 L600,390 L800,410 L1000,380 L1200,400" />
-            <path d="M0,500 L250,460 L500,480 L750,440 L1000,460 L1200,440" />
-          </g>
+        <svg className="hero-topo" viewBox="0 0 1440 720" preserveAspectRatio="none" fill="none" stroke="#F47321" strokeOpacity=".22" strokeWidth="1.3" aria-hidden="true">
+          <path d="M-50 640C200 560 330 680 560 600S900 460 1100 520 1400 420 1500 460"/>
+          <path d="M-50 600C200 520 330 640 560 560S900 420 1100 480 1400 380 1500 420"/>
+          <path d="M-50 560C200 480 330 600 560 520S900 380 1100 440 1400 340 1500 380"/>
+          <path d="M-50 520C200 440 330 560 560 480S900 340 1100 400 1400 300 1500 340"/>
+          <path d="M-50 480C200 400 330 520 560 440S900 300 1100 360 1400 260 1500 300"/>
+          <path d="M-50 440C200 360 330 480 560 400S900 260 1100 320 1400 220 1500 260"/>
+          <path d="M-50 400C200 320 330 440 560 360S900 220 1100 280 1400 180 1500 220"/>
         </svg>
         <div className="wrap hero-inner">
           <div className="hero-copy">
@@ -111,11 +113,11 @@ export default function HomeContent({ initial }) {
           </div>
         </div>
         <svg className="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,40 C240,90 480,0 720,40 C960,80 1200,10 1440,50 L1440,90 L0,90 Z" fill="var(--chalk)" />
+          <path d="M0 60C240 10 480 20 720 50S1200 80 1440 30V90H0Z" fill="var(--chalk)" />
         </svg>
       </section>
 
-      <section className="stats-band">
+      <section className="stats-band home-stats">
         <div className="wrap stats-grid">
           <div className="stat"><span className="stat-value">12+</span><span className="stat-label">Years of guiding experience</span></div>
           <div className="stat"><span className="stat-value">1000+</span><span className="stat-label">First-time climbers introduced</span></div>
