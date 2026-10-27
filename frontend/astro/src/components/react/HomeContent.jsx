@@ -1,6 +1,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import { getHomeContent, getUploads } from '../../lib/api'
 import CliffEdge from './CliffEdge.jsx'
+import HeroSlider from './HeroSlider.jsx'
 
 const DEFAULT_PATHS = [
   { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
@@ -62,6 +63,16 @@ export default function HomeContent({ initial }) {
     ? uploads.filter((p) => (p.tags || []).some((t) => t.toLowerCase() === teaserSessionSlug.toLowerCase()))
     : []
 
+  const heroSlides = [
+    { src: heroPhotoUrl, alt: 'Climb Crux group at Saidpur Village', caption: 'Saidpur Village, Islamabad', badge: true },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561395/climb-crux/l4ld8qkbbs3g3kos659q.jpg', alt: 'Climbing Safety Introduction', caption: 'Saidpur Village, Islamabad' },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987298/climb-crux/pqxnl4wsbheafspitx9p.jpg', alt: 'German Climber', caption: 'Shahdara, Islamabad' },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784735406/climb-crux/igfybn92vpkaw8aa4wg0.jpg', alt: 'USA Climber', caption: 'Saidpur Village, Islamabad' },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561415/climb-crux/fzciun575c7nxrpvjrhd.jpg', alt: 'Kids Climbing', caption: 'Saidpur Village, Islamabad' },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987194/climb-crux/ktlcdvcmx3qve3bihtsm.jpg', alt: 'Lead Climbing Training', caption: 'Legacy Trail 3, Islamabad' },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1793109982/climb-crux/yoiocsv19pmropkpegc1.jpg', alt: 'College Kids Rappelling', caption: 'Jasmine Corner, Islamabad' },
+  ];
+
   return (
     <>
       <section className="hero">
@@ -96,20 +107,7 @@ export default function HomeContent({ initial }) {
             </div>
           </div>
           <div className="hero-visual">
-            <figure className="hero-figure">
-              {heroPhotoUrl ? (
-                <img
-                  src={heroPhotoUrl}
-                  alt="Rock climbing in Islamabad — Climb Crux climbers on Saidpur Village"
-                  style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
-                />
-              ) : (
-                <div className="placeholder-photo" style={{ '--ar': '16 / 9' }}>
-                  <span className="tag">Route Topo · Live Session</span>
-                </div>
-              )}
-              <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
-            </figure>
+            <HeroSlider slides={heroSlides} />
           </div>
         </div>
         <svg className="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
