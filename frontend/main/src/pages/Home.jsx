@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
+import heroImg from '../assets/group-photo.jpg'
 import { getHomeContent } from '../api.js'
 
 export default function Home() {
@@ -14,39 +15,40 @@ export default function Home() {
       .finally(() => setLoading(false))
   }, [])
 
-  const heroPhotoUrl = content?.heroPhotoUrl || 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg'
+  const heroPhotoUrl = content?.heroPhotoUrl || heroImg
 
   return (
     <>
-      <section className="hero hero-blur">
-        <div className="hero-bg-blur" style={{ backgroundImage: `url(${heroPhotoUrl})` }} aria-hidden="true"></div>
-        <div className="hero-overlay-blur" aria-hidden="true"></div>
-        <div className="wrap hero-inner">
-          <div className="hero-copy">
-            <h1>
-              Discover Rock Climbing
-              <br />
-              in Islamabad
-            </h1>
-            <p className="hero-lede">
-              Climb Crux is Islamabad&apos;s premier rock climbing club, offering professionally guided rock climbing sessions and a supportive community for beginners and experienced climbers.
-            </p>
-            <div className="hero-actions">
-              <span className="hero-cta-glow">
-                <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
-              </span>
-              <Link to="/shop" className="btn btn-outline">Shop Climbing Equipment</Link>
+      <section className="hero">
+        <img className="hero-bg" src={heroImg} alt="" aria-hidden="true" />
+        <div className="hero-content">
+          <div className="wrap hero-inner">
+            <div className="hero-copy">
+              <h1>
+                Discover Rock Climbing
+                <br />
+                in Islamabad
+              </h1>
+              <p className="hero-lede">
+                Climb Crux is Islamabad&apos;s premier rock climbing club, offering professionally guided rock climbing sessions and a supportive community for beginners and experienced climbers.
+              </p>
+              <div className="hero-actions">
+                <span className="hero-cta-glow">
+                  <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
+                </span>
+                <Link to="/shop" className="btn btn-outline">Shop Climbing Equipment</Link>
+              </div>
             </div>
-          </div>
-          <div className="hero-visual">
-            <figure className="hero-figure">
-              <img
-                src={heroPhotoUrl}
-                alt="Rock climbing in Islamabad — Climb Crux climbers on Saidpur Village"
-                style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
-              />
-              <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
-            </figure>
+            <div className="hero-visual">
+              <figure className="hero-figure">
+                <img
+                  src={heroPhotoUrl}
+                  alt="Rock climbing in Islamabad — Climb Crux climbers on Saidpur Village"
+                  style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
+                />
+                <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
+              </figure>
+            </div>
           </div>
         </div>
         <div className="hero-curve" aria-hidden="true"></div>
