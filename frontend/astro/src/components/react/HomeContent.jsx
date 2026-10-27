@@ -65,6 +65,12 @@ export default function HomeContent({ initial }) {
   return (
     <>
       <section className="hero">
+        <img
+          className="hero-bg"
+          src="https://res.cloudinary.com/ivvx77mg/image/upload/w_1600,q_auto,f_auto/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg"
+          alt=""
+          aria-hidden="true"
+        />
         <div className="wrap hero-inner">
           <div className="hero-copy">
             <h1>
