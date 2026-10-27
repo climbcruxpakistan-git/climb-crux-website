@@ -45,13 +45,13 @@
 
 .hero-copy h1 {
   color: var(--chalk);
-  font-size: clamp(1.86rem, 3.69vw, 3.11rem);
+  font-size: clamp(1.674rem, 3.321vw, 2.799rem);
   white-space: nowrap;
 }
 
 .hero-lede {
   color: #c9c4b8;
-  font-size: 1.05rem;
+  font-size: 0.945rem;
   max-width: 46ch;
   margin-bottom: 1.8em;
 }
@@ -63,7 +63,7 @@
 }
 
 .hero-actions .btn {
-  font-size: 0.89rem;
+  font-size: 0.801rem;
 }
 
 .hero-cta-glow {
@@ -156,11 +156,11 @@
     justify-content: center;
   }
   .hero-copy h1 {
-    font-size: clamp(2.16rem, 8.4vw, 3rem) !important;
+    font-size: clamp(1.944rem, 7.56vw, 2.7rem) !important;
     white-space: normal;
   }
   .hero-lede {
-    font-size: 1.14rem;
+    font-size: 1.026rem;
   }
   .hero-figure {
     transform: scale(1.01);
