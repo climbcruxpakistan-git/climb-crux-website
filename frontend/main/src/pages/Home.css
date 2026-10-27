@@ -45,13 +45,13 @@
 
 .hero-copy h1 {
   color: var(--chalk);
-  font-size: clamp(2.3rem, 4.56vw, 3.84rem);
+  font-size: clamp(2.07rem, 4.1vw, 3.46rem);
   white-space: nowrap;
 }
 
 .hero-lede {
   color: #c9c4b8;
-  font-size: 1.3rem;
+  font-size: 1.17rem;
   max-width: 46ch;
   margin-bottom: 1.8em;
 }
@@ -63,7 +63,7 @@
 }
 
 .hero-actions .btn {
-  font-size: 1.1rem;
+  font-size: 0.99rem;
 }
 
 .hero-cta-glow {
