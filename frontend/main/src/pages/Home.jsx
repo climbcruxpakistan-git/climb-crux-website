@@ -1,120 +1,93 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
-import { getHomeContent, getUploads } from '../api.js'
+import { getHomeContent } from '../api.js'
 
 export default function Home() {
   const [content, setContent] = useState(null)
-  const [uploadPhotos, setUploadPhotos] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      getHomeContent(),
-      getUploads().catch(() => []),
-    ])
-      .then(([homeContent, uploads]) => {
-        setContent(homeContent)
-        setUploadPhotos(uploads)
-      })
+    getHomeContent()
+      .then(setContent)
       .catch(() => setContent(null))
       .finally(() => setLoading(false))
   }, [])
 
-  // Use content from API, fallback to hardcoded defaults
-  const heroTitle = content?.heroTitle || 'CLIMB CRUX - ISLAMABAD'
-  const heroLede = content?.heroLede || "Climb Crux is Islamabad's premier rock climbing club, offering professionally guided rock climbing sessions, expert coaching, monthly memberships and a supportive community for beginners and experienced climbers."
   const heroPhotoUrl = content?.heroPhotoUrl || 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg'
 
   return (
     <>
-      <section className="hero">
-        <div className="hero-bg" style={{ backgroundImage: `url(${heroPhotoUrl})` }} aria-hidden="true"></div>
-        <div className="hero-gradient" aria-hidden="true"></div>
-        <svg className="hero-topo" aria-hidden="true" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
-          <g fill="none" stroke="#F47321" strokeWidth="1">
-            <path d="M0 300 Q200 250 400 300 T800 300 T1200 300" opacity="0.15"/>
-            <path d="M0 320 Q150 280 350 320 T750 320 T1200 320" opacity="0.12"/>
-            <path d="M0 280 Q250 230 500 280 T1000 280 T1200 280" opacity="0.1"/>
-            <path d="M100 200 Q300 170 500 200 T900 200" opacity="0.08"/>
-          </g>
-        </svg>
+      <section className="hero hero-blur">
+        <div className="hero-bg-blur" style={{ backgroundImage: `url(${heroPhotoUrl})` }} aria-hidden="true"></div>
+        <div className="hero-overlay-blur" aria-hidden="true"></div>
         <div className="wrap hero-inner">
           <div className="hero-copy">
-            <div className="hero-label">ROCK CLIMBING Â· ISLAMABAD</div>
-            <h1 className="hero-headline">
-              ROCK CLIMBING<br />
-              <span className="hero-headline-orange">IN ISLAMABAD</span>
+            <h1>
+              Discover Rock Climbing
+              <br />
+              in Islamabad
             </h1>
-            <p className="hero-lede">{heroLede}</p>
+            <p className="hero-lede">
+              Climb Crux is Islamabad&apos;s premier rock climbing club, offering professionally guided rock climbing sessions and a supportive community for beginners and experienced climbers.
+            </p>
             <div className="hero-actions">
               <span className="hero-cta-glow">
-                <Link to="/sessions" className="btn btn-primary hero-btn-primary">Join a public session â†’</Link>
+                <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
               </span>
-              <Link to="/shop" className="btn btn-outline hero-btn-outline">Shop climbing equipment</Link>
+              <Link to="/shop" className="btn btn-outline">Shop Climbing Equipment</Link>
             </div>
           </div>
           <div className="hero-visual">
-            <div className="hero-photo-frame">
-              <div className="hero-photo-outline" aria-hidden="true"></div>
-              <figure className="hero-figure">
-                <img src={heroPhotoUrl} alt="Climb Crux group climbing on Margalla Hills, Saidpur Village, Islamabad" />
-                <figcaption className="hero-chip">Saidpur Village, Islamabad</figcaption>
-                <div className="hero-badge">Beginners welcome</div>
-              </figure>
-            </div>
+            <figure className="hero-figure">
+              <img
+                src={heroPhotoUrl}
+                alt="Rock climbing in Islamabad — Climb Crux climbers on Saidpur Village"
+                style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
+              />
+              <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
+            </figure>
           </div>
         </div>
-        <svg className="hero-wave" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z" fill="#F7F3EC"></path>
-        </svg>
+        <div className="hero-curve" aria-hidden="true"></div>
       </section>
 
-      <section className="stats-section">
-        <div className="wrap">
-          <div className="stats-card">
-            <div className="stat-item">
-              <div className="stat-value">Bi-weekly</div>
-              <div className="stat-label">Public sessions</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-value">Margalla Hills</div>
-              <div className="stat-label">Local crags</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-value">Pro-led</div>
-              <div className="stat-label">Professional instructors</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-value">Beginner â†’ Elite</div>
-              <div className="stat-label">All levels welcome</div>
-            </div>
-          </div>
+      <section className="stats-band">
+        <div className="wrap stats-grid">
+          <div className="stat"><span className="stat-value">12+</span><span className="stat-label">Years of guiding experience</span></div>
+          <div className="stat"><span className="stat-value">500+</span><span className="stat-label">First-time climbers introduced</span></div>
+          <div className="stat"><span className="stat-value">200+</span><span className="stat-label">Group sessions led on Margalla Hills</span></div>
+          <div className="stat"><span className="stat-value">4 – 7c+</span><span className="stat-label">Grade range — first top-rope to elite</span></div>
         </div>
       </section>
 
-      <section className="section adventure-section">
+      <section className="section paths">
         <div className="wrap">
-          <div className="adventure-header">
-            <div className="adventure-label">TWO WAYS TO CLIMB WITH US</div>
-            <h2 className="adventure-title">Pick your adventure</h2>
-          </div>
-          <div className="adventure-grid">
-            <Link to="/sessions" className="adventure-card adventure-card-light">
-              <div className="adventure-number">01</div>
-              <h3 className="adventure-card-title">Public Sessions</h3>
-              <p className="adventure-card-text">Drop into a guided group session on Margalla Hills every other week. No experience or gear needed â€” just a willingness to get chalky hands.</p>
-              <div className="adventure-card-cta">See schedule & pricing â†’</div>
-            </Link>
-            <Link to="/private-premium" className="adventure-card adventure-card-dark">
-              <div className="adventure-number">02</div>
-              <h3 className="adventure-card-title">Private & Premium</h3>
-              <p className="adventure-card-text">Book a private slot for your group or go one-on-one with an instructor. Premium plans open the door to the hardest routes we run.</p>
-              <div className="adventure-card-cta">Explore plans â†’</div>
-            </Link>
+          <span className="eyebrow">Two ways to climb with us</span>
+          <h2>Pick your route</h2>
+          <div className="paths-grid">
+            <div className="path-card">
+              <div className="grade-badge">
+                <span className="grade">4 – 6a</span>
+                <span className="label">Beginner Friendly</span>
+              </div>
+              <h3>Public Sessions</h3>
+              <p>Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.</p>
+              <Link to="/sessions" className="path-link">
+                See schedule & pricing <span aria-hidden="true">?</span>
+              </Link>
+            </div>
+            <div className="path-card">
+              <div className="grade-badge">
+                <span className="grade">Up to 7c+</span>
+                <span className="label">Custom & Premium</span>
+              </div>
+              <h3>Private & Premium</h3>
+              <p>Book a private slot for your group or go one-on-one with an instructor. Premium plans open the door to the hardest routes we run.</p>
+              <Link to="/private-premium" className="path-link">
+                Explore plans <span aria-hidden="true">?</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
