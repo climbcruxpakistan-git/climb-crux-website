@@ -6,13 +6,14 @@
   background: #1f1f21;
 }
 
-.hero-bg {
+.hero .hero-bg {
   position: absolute;
   inset: -30px;
+  max-width: none;
   width: calc(100% + 60px);
   height: calc(100% + 60px);
   object-fit: cover;
-  filter: blur(14px) brightness(0.5) saturate(1.15);
+  filter: blur(6px) brightness(0.85) saturate(1.5) contrast(1.1);
   z-index: 0;
 }
 
@@ -20,7 +21,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, rgba(31,31,33,.7) 0%, rgba(31,31,33,.4) 50%, rgba(244,115,33,.12) 100%);
+  background: linear-gradient(100deg, rgba(31, 31, 33, 0.65) 0%, rgba(31, 31, 33, 0.25) 55%, rgba(244, 115, 33, 0.25) 100%);
   z-index: 1;
 }
 
