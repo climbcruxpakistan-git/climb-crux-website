@@ -94,7 +94,9 @@ export default function Home() {
               </div>
             )}
             <div className="hero-actions">
-              <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
+              <span className="hero-cta-glow">
+                <Link to="/sessions" className="btn btn-primary">Join a Public Session</Link>
+              </span>
               <Link to="/shop" className="btn btn-outline">Shop Climbing Equipment</Link>
             </div>
           </div>

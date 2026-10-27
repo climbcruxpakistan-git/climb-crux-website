@@ -74,7 +74,9 @@ export default function HomeContent({ initial }) {
             </h1>
             <p className="hero-lede">{heroLede}</p>
             <div className="hero-actions">
-              <a href="/sessions/" className="btn btn-primary">Join a Public Session</a>
+              <span className="hero-cta-glow">
+                <a href="/sessions/" className="btn btn-primary">Join a Public Session</a>
+              </span>
               <a href="/shop/" className="btn btn-outline">Shop Climbing Equipment</a>
             </div>
           </div>

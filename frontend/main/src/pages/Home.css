@@ -7,6 +7,13 @@
   overflow: hidden;
 }
 
+/* Break the hero out of the centered 1180px container (like the navbar does)
+   so the copy anchors to the left side of the page and the photo to the right,
+   instead of the whole hero floating in the middle on wide screens. */
+.hero .wrap {
+  max-width: 100%;
+}
+
 .hero-inner {
   display: grid;
   grid-template-columns: 1.01fr 0.94fr;
@@ -35,6 +42,24 @@
   flex-wrap: wrap;
 }
 
+/* The hero CTA glows orange instead of being plain flat orange. The glow lives
+   on a wrapper element: a drop-shadow filter applied to the button itself gets
+   clipped by its notched clip-path, so the shadow must wrap it from outside. */
+.hero-cta-glow {
+  display: inline-flex;
+  filter: drop-shadow(0 0 12px rgba(243, 111, 33, 0.75));
+  animation: hero-glow 2.6s ease-in-out infinite;
+}
+
+@keyframes hero-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 9px rgba(243, 111, 33, 0.75));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(243, 111, 33, 0.95));
+  }
+}
+
 .hero .btn-outline {
   border-color: var(--chalk);
   color: var(--chalk);
@@ -56,7 +81,9 @@
 
 .hero-figure {
   margin: 0;
-  transform: scale(1.2) translateX(18px);
+  /* Keep only a slight right-edge bleed so the group photo stays mostly in frame
+     (the hero now runs nearly full width, so 1.2x cropped too much of it). */
+  transform: scale(1.05) translateX(12px);
   transform-origin: center;
 }
 
@@ -78,17 +105,17 @@
    the viewport edge — ease both off so nothing clips. */
 @media (max-width: 900px) {
   .hero-figure {
-    transform: scale(1.05) translateX(0);
+    transform: scale(1.02) translateX(0);
   }
 }
 @media (max-width: 640px) {
   .hero-figure {
-    transform: scale(1.03);
+    transform: scale(1.02);
   }
 }
 @media (max-width: 500px) {
   .hero-figure {
-    transform: scale(1.02);
+    transform: scale(1.01);
   }
 }
 
