@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import heroImg from '../assets/group-photo.jpg'
+import CliffEdge from '../components/CliffEdge.jsx'
 import { getHomeContent } from '../api.js'
 
 export default function Home() {
@@ -20,8 +21,8 @@ export default function Home() {
   return (
     <>
       <section className="hero">
-        <img className="hero-bg" src={heroImg} alt="" aria-hidden="true" />
-        <div className="hero-content">
+        <img`n          className="hero-bg"`n          src="https://res.cloudinary.com/ivvx77mg/image/upload/w_1600,q_auto,f_auto/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg"`n          alt=""`n          aria-hidden="true"`n        />
+        
           <div className="wrap hero-inner">
             <div className="hero-copy">
               <h1>
@@ -50,8 +51,7 @@ export default function Home() {
               </figure>
             </div>
           </div>
-        </div>
-        <div className="hero-curve" aria-hidden="true"></div>
+        </div>`n        <CliffEdge className="cliff-edge" fill="var(--chalk)" height={56} />
       </section>
 
       <section className="stats-band">
@@ -96,3 +96,4 @@ export default function Home() {
     </>
   )
 }
+
