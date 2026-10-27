@@ -481,10 +481,10 @@
 .hs-slide { position: relative; aspect-ratio: 16/10; border-radius: 14px; overflow: hidden;
   box-shadow: 0 30px 60px rgba(0,0,0,.55); background: #1f1f21; }
 .hs-slide img { width: 100%; height: 100%; object-fit: cover; }
-.hs-shade { position: absolute; inset: auto 0 0 0; height: 110px;
+.hs-shade { position: absolute; inset: auto 0 0 0; height: 110px; z-index: 1;
   background: linear-gradient(transparent, rgba(0,0,0,.7)); }
 
-.hs-cap { position: absolute; left: 18px; bottom: 16px; margin: 0;
+.hs-cap { position: absolute; left: 18px; bottom: 16px; z-index: 2; margin: 0;
   display: flex; align-items: center; gap: 8px; padding: 9px 14px;
   background: rgba(247,243,236,.95); color: #2e2e30; border-radius: 10px;
   font: 500 12px var(--font-display); letter-spacing: .1em; text-transform: uppercase; }
