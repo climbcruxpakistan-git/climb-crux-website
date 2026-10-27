@@ -25,13 +25,15 @@
 
 .hero-copy h1 {
   color: var(--chalk);
-  font-size: clamp(2.3rem, 3.8vw, 3.2rem);
+  /* 20% larger than the previous clamp(2.3rem, 3.8vw, 3.2rem). Keeps the 2.3rem
+     floor so the un-breakable uppercase lines still fit narrow widths. */
+  font-size: clamp(2.3rem, 4.56vw, 3.84rem);
   white-space: nowrap;
 }
 
 .hero-lede {
   color: #c9c4b8;
-  font-size: 1.08rem;
+  font-size: 1.3rem;
   max-width: 46ch;
   margin-bottom: 1.8em;
 }
@@ -40,6 +42,11 @@
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+/* 20% larger call-to-action buttons in the hero (base .btn is 0.92rem) */
+.hero-actions .btn {
+  font-size: 1.1rem;
 }
 
 /* The hero CTA glows orange instead of being plain flat orange. The glow lives
@@ -121,34 +128,37 @@
 
 /* ============================== STATS BAND ============================== */
 
-/* Straddles the hero's bottom edge: the top half of the white cards sits over
-   the charcoal hero, the bottom half over the chalk background below. Card
-   min-height is fixed so the -50% pull is an exact half-straddle. */
+/* One white strip carries all four stats instead of separate card blocks.
+   The strip is pulled up by half its height so it straddles the hero's bottom
+   edge: the top half sits over the charcoal hero, the bottom half over chalk. */
 .stats-band {
   position: relative;
   z-index: 1;
-  margin-top: -85px;
+  background: #fff;
+  border-top: 1px solid var(--chalk-dim);
+  border-bottom: 1px solid var(--chalk-dim);
+  margin-top: -75px;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  min-height: 150px;
+  align-content: center;
 }
 
 .stat {
-  background: #fff;
-  border: 1px solid var(--chalk-dim);
-  border-radius: var(--radius);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
-  min-height: 170px;
-  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
   text-align: center;
+  padding: 16px;
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--chalk-dim);
 }
 
 .stat-value {
@@ -168,16 +178,21 @@
 }
 
 @media (max-width: 900px) {
-  .stats-band { margin-top: -70px; }
-  .stat { min-height: 140px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-band { margin-top: -80px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat { padding: 14px 16px; }
+  .stat + .stat { border-left: none; }
+  .stat-value { font-size: 1.5rem; }
+  .stat:nth-child(n + 3) { border-top: 1px solid var(--chalk-dim); }
 }
 
 @media (max-width: 500px) {
-  .stats-band { margin-top: -59px; }
-  .stat { min-height: 118px; padding: 18px 14px; }
-  .stat-value { font-size: 1.4rem; }
-  .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+  .stats-band { margin-top: -40px; }
+  .stats-grid { grid-template-columns: 1fr; min-height: 0; }
+  .stat { padding: 12px 10px; gap: 6px; }
+  .stat-value { font-size: 1.3rem; }
+  .stat-label { font-size: 0.7rem; }
+  .stat:nth-child(n + 2) { border-top: 1px solid var(--chalk-dim); }
 }
 
 /* ============================== PATHS ============================== */
@@ -339,7 +354,9 @@
 
 @media (max-width: 900px) {
   .hero-inner {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr) stops the single-column track from being widened past the
+       viewport by unbreakable content (no-wrap caption, oversized words). */
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
   }
 
@@ -388,11 +405,19 @@
     width: 100%;
     justify-content: center;
   }
+  /* Pin the single-column hero track to the container so the larger type
+     can't stretch the grid past the viewport and clip the text. */
+  .hero-copy,
+  .hero-visual {
+    min-width: 0;
+  }
   .hero-copy h1 {
-    font-size: clamp(1.8rem, 7vw, 2.5rem) !important;
+    font-size: clamp(2.16rem, 8.4vw, 3rem) !important;
+    white-space: normal; /* let the bigger mobile title wrap instead of clipping off-screen */
   }
   .hero-lede {
-    font-size: 0.95rem;
+    font-size: 1.14rem;
+    max-width: 100%;
   }
   
   .paths-grid {
