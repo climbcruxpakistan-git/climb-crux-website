@@ -25,15 +25,14 @@
 
 .hero-copy h1 {
   color: var(--chalk);
-  /* 20% larger than the previous clamp(2.3rem, 3.8vw, 3.2rem). Keeps the 2.3rem
-     floor so the un-breakable uppercase lines still fit narrow widths. */
-  font-size: clamp(2.3rem, 4.56vw, 3.84rem);
+  /* Reduced by ~10% from previous clamp(2.3rem, 4.56vw, 3.84rem) */
+  font-size: clamp(2.07rem, 4.104vw, 3.456rem);
   white-space: nowrap;
 }
 
 .hero-lede {
   color: #c9c4b8;
-  font-size: 1.3rem;
+  font-size: 1.17rem;
   max-width: 46ch;
   margin-bottom: 1.8em;
 }
@@ -44,9 +43,9 @@
   flex-wrap: wrap;
 }
 
-/* 20% larger call-to-action buttons in the hero (base .btn is 0.92rem) */
+/* Reduced by ~10% from previous 1.1rem */
 .hero-actions .btn {
-  font-size: 1.1rem;
+  font-size: 0.99rem;
 }
 
 /* The hero CTA glows orange instead of being plain flat orange. The glow lives
@@ -412,11 +411,11 @@
     min-width: 0;
   }
   .hero-copy h1 {
-    font-size: clamp(2.16rem, 8.4vw, 3rem) !important;
+    font-size: clamp(1.944rem, 7.56vw, 2.7rem) !important;
     white-space: normal; /* let the bigger mobile title wrap instead of clipping off-screen */
   }
   .hero-lede {
-    font-size: 1.14rem;
+    font-size: 1.026rem;
     max-width: 100%;
   }
   
