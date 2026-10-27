@@ -62,10 +62,10 @@ export default function Home() {
 
       <section className="stats-band">
         <div className="wrap stats-grid">
-          <div className="stat"><span className="stat-value">12+</span><span className="stat-label">Years of guiding experience</span></div>
-          <div className="stat"><span className="stat-value">500+</span><span className="stat-label">First-time climbers introduced</span></div>
-          <div className="stat"><span className="stat-value">200+</span><span className="stat-label">Group sessions led on Margalla Hills</span></div>
-          <div className="stat"><span className="stat-value">4 � 7c+</span><span className="stat-label">Grade range � first top-rope to elite</span></div>
+          <div className="stat"><span className="stat-value">12+</span><span className="stat-label">YEARS OF GUIDING EXPERIENCE</span></div>
+          <div className="stat"><span className="stat-value">1000+</span><span className="stat-label">FIRST-TIME CLIMBERS INTRODUCED</span></div>
+          <div className="stat"><span className="stat-value">200+</span><span className="stat-label">GROUP SESSIONS LED ON MARGALLA HILLS</span></div>
+          <div className="stat"><span className="stat-value">6</span><span className="stat-label">CLIMBING WORKSHOPS OFFERED</span></div>
         </div>
       </section>
 
