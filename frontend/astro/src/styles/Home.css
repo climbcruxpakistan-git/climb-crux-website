@@ -1,20 +1,20 @@
 /* ============================== HERO ============================== */
 
 .hero {
-  background: #1f1f21;
-  color: var(--chalk);
   position: relative;
   overflow: hidden;
+  background: #1f1f21;
+  padding-bottom: 90px;
 }
 
 .hero .hero-bg {
   position: absolute;
   inset: -30px;
-  max-width: none;
   width: calc(100% + 60px);
   height: calc(100% + 60px);
+  max-width: none;
   object-fit: cover;
-  filter: blur(6px) brightness(0.85) saturate(1.5) contrast(1.1);
+  filter: blur(14px) brightness(0.38) saturate(1.1);
   z-index: 0;
 }
 
@@ -22,13 +22,33 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, rgba(31, 31, 33, 0.65) 0%, rgba(31, 31, 33, 0.25) 55%, rgba(244, 115, 33, 0.25) 100%);
+  background: linear-gradient(100deg, rgba(31, 31, 33, 0.96) 0%, rgba(31, 31, 33, 0.8) 45%, rgba(244, 115, 33, 0.18) 100%);
   z-index: 1;
 }
 
-.hero > * {
+.hero .hero-topo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.hero .hero-inner {
   position: relative;
   z-index: 2;
+}
+
+.hero .hero-wave {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 90px;
+  z-index: 3;
+  display: block;
 }
 
 /* Break the hero out of the centered 1180px container (like the navbar does)

@@ -71,6 +71,13 @@ export default function HomeContent({ initial }) {
           alt=""
           aria-hidden="true"
         />
+        <svg className="hero-topo" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <g stroke="rgba(255,255,255,0.08)" strokeWidth="1" fill="none">
+            <path d="M0,400 L150,350 L300,370 L450,330 L600,360 L750,320 L900,340 L1050,310 L1200,330" />
+            <path d="M0,450 L200,410 L400,430 L600,390 L800,410 L1000,380 L1200,400" />
+            <path d="M0,500 L250,460 L500,480 L750,440 L1000,460 L1200,440" />
+          </g>
+        </svg>
         <div className="wrap hero-inner">
           <div className="hero-copy">
             <h1>
@@ -103,7 +110,9 @@ export default function HomeContent({ initial }) {
             </figure>
           </div>
         </div>
-        <CliffEdge fill="var(--chalk)" height={56} />
+        <svg className="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,40 C240,90 480,0 720,40 C960,80 1200,10 1440,50 L1440,90 L0,90 Z" fill="var(--chalk)" />
+        </svg>
       </section>
 
       <section className="stats-band">
