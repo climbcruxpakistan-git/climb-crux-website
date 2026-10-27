@@ -21,7 +21,12 @@ export default function Home() {
   return (
     <>
       <section className="hero">
-        <img`n          className="hero-bg"`n          src="https://res.cloudinary.com/ivvx77mg/image/upload/w_1600,q_auto,f_auto/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg"`n          alt=""`n          aria-hidden="true"`n        />
+        <img
+          className="hero-bg"
+          src="https://res.cloudinary.com/ivvx77mg/image/upload/w_1600,q_auto,f_auto/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg"
+          alt=""
+          aria-hidden="true"
+        />
         
           <div className="wrap hero-inner">
             <div className="hero-copy">
@@ -44,14 +49,15 @@ export default function Home() {
               <figure className="hero-figure">
                 <img
                   src={heroPhotoUrl}
-                  alt="Rock climbing in Islamabad — Climb Crux climbers on Saidpur Village"
+                  alt="Rock climbing in Islamabad ï¿½ Climb Crux climbers on Saidpur Village"
                   style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', boxShadow: '0 24px 60px rgba(0,0,0,0.35)' }}
                 />
                 <figcaption className="hero-caption">Group Photo From Our Rock Climbing Session on Saidpur Village, Islamabad</figcaption>
               </figure>
             </div>
           </div>
-        </div>`n        <CliffEdge className="cliff-edge" fill="var(--chalk)" height={56} />
+        </div>
+        <CliffEdge className="cliff-edge" fill="var(--chalk)" height={56} />
       </section>
 
       <section className="stats-band">
@@ -59,7 +65,7 @@ export default function Home() {
           <div className="stat"><span className="stat-value">12+</span><span className="stat-label">Years of guiding experience</span></div>
           <div className="stat"><span className="stat-value">500+</span><span className="stat-label">First-time climbers introduced</span></div>
           <div className="stat"><span className="stat-value">200+</span><span className="stat-label">Group sessions led on Margalla Hills</span></div>
-          <div className="stat"><span className="stat-value">4 – 7c+</span><span className="stat-label">Grade range — first top-rope to elite</span></div>
+          <div className="stat"><span className="stat-value">4 ï¿½ 7c+</span><span className="stat-label">Grade range ï¿½ first top-rope to elite</span></div>
         </div>
       </section>
 
@@ -70,11 +76,11 @@ export default function Home() {
           <div className="paths-grid">
             <div className="path-card">
               <div className="grade-badge">
-                <span className="grade">4 – 6a</span>
+                <span className="grade">4 ï¿½ 6a</span>
                 <span className="label">Beginner Friendly</span>
               </div>
               <h3>Public Sessions</h3>
-              <p>Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.</p>
+              <p>Drop into a guided group session on Margalla Hills every other week. No experience or gear needed ï¿½ just a willingness to get chalky hands.</p>
               <Link to="/sessions" className="path-link">
                 See schedule & pricing <span aria-hidden="true">?</span>
               </Link>
