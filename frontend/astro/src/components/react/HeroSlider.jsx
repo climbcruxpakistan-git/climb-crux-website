@@ -37,7 +37,17 @@ export default function HeroSlider({ slides }) {
           setX0(null);
         }}
       >
-        <img key={s.src} src={s.src} alt={s.alt} />
+        <img
+          key={s.src}
+          src={s.src}
+          alt={s.alt}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: [1, 2, 4, 6].includes(i) ? 'contain' : 'cover',
+            objectPosition: i === 3 || i === 5 ? 'top' : 'center',
+          }}
+        />
         <div className="hs-shade" />
         {s.caption && (
           <p className="hs-cap"><Pin />{s.caption}</p>
