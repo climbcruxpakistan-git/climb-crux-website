@@ -100,6 +100,15 @@ export default function HomeContent({ initial }) {
         <CliffEdge fill="var(--chalk)" height={56} />
       </section>
 
+      <section className="stats-band">
+        <div className="wrap stats-grid">
+          <div className="stat"><span className="stat-value">12+</span><span className="stat-label">Years of guiding experience</span></div>
+          <div className="stat"><span className="stat-value">500+</span><span className="stat-label">First-time climbers introduced</span></div>
+          <div className="stat"><span className="stat-value">200+</span><span className="stat-label">Group sessions led on Margalla Hills</span></div>
+          <div className="stat"><span className="stat-value">4 – 7c+</span><span className="stat-label">Grade range — first top-rope to elite</span></div>
+        </div>
+      </section>
+
       <section className="section paths">
         <div className="wrap">
           <span className="eyebrow">{pathsEyebrow}</span>
