@@ -508,12 +508,12 @@
 .hs-dots button.on { width: 34px; border-radius: 6px; background: #F47321; }
 
 .hs-badge { position: absolute; right: -18px; top: -34px; z-index: 3;
-  width: 112px; height: 112px; border-radius: 50%; background: #F47321; color: #fff;
+  width: 112px; height: 112px; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   font: 700 13px/1.2 var(--font-display); letter-spacing: .1em; text-align: center;
   text-transform: uppercase; transform: rotate(8deg);
-  box-shadow: 0 14px 30px rgba(244,115,33,.5); }
-.hs-badge big { font-size: 34px; letter-spacing: 0; }
+  transition: background .25s; }
+.hs-badge big { font-size: 34px; letter-spacing: 0; line-height: 1; }
 
 .hero-visual .hs { transform: none; }
 

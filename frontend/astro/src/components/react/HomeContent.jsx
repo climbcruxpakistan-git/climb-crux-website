@@ -64,13 +64,13 @@ export default function HomeContent({ initial }) {
     : []
 
   const heroSlides = [
-    { src: heroPhotoUrl, alt: 'Climb Crux group at Saidpur Village', caption: 'Saidpur Village, Islamabad', badge: true },
-    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561395/climb-crux/l4ld8qkbbs3g3kos659q.jpg', alt: 'Climbing Safety Introduction', caption: 'Saidpur Village, Islamabad' },
-    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987298/climb-crux/pqxnl4wsbheafspitx9p.jpg', alt: 'German Climber', caption: 'Shahdara, Islamabad' },
-    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784735406/climb-crux/igfybn92vpkaw8aa4wg0.jpg', alt: 'USA Climber', caption: 'Saidpur Village, Islamabad' },
-    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561415/climb-crux/fzciun575c7nxrpvjrhd.jpg', alt: 'Kids Climbing', caption: 'Saidpur Village, Islamabad' },
-    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987194/climb-crux/ktlcdvcmx3qve3bihtsm.jpg', alt: 'Lead Climbing Training', caption: 'Legacy Trail 3, Islamabad' },
-    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1793109982/climb-crux/yoiocsv19pmropkpegc1.jpg', alt: 'College Kids Rappelling', caption: 'Jasmine Corner, Islamabad' },
+    { src: heroPhotoUrl, alt: 'Climb Crux group at Saidpur Village', caption: 'Saidpur Village, Islamabad' },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561395/climb-crux/l4ld8qkbbs3g3kos659q.jpg', alt: 'Climbing Safety Introduction', caption: 'Saidpur Village, Islamabad', badge: { text: 'Safety Workshop', color: '#2F6FDE' } },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987298/climb-crux/pqxnl4wsbheafspitx9p.jpg', alt: 'German Climber', caption: 'Shahdara, Islamabad', badge: { text: 'Foreigner Climber', color: '#7B3FE4' } },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784735406/climb-crux/igfybn92vpkaw8aa4wg0.jpg', alt: 'USA Climber', caption: 'Saidpur Village, Islamabad', badge: { text: 'Foreigner Climber', color: '#7B3FE4' } },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561415/climb-crux/fzciun575c7nxrpvjrhd.jpg', alt: 'Kids Climbing', caption: 'Saidpur Village, Islamabad', badge: { text: 'Training Kids', color: '#1E9E6A' } },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987194/climb-crux/ktlcdvcmx3qve3bihtsm.jpg', alt: 'Lead Climbing Training', caption: 'Legacy Trail 3, Islamabad', badge: { text: 'Lead Workshop', color: '#F2B705', textColor: '#1F1F21' } },
+    { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1793109982/climb-crux/yoiocsv19pmropkpegc1.jpg', alt: 'College Kids Rappelling', caption: 'Jasmine Corner, Islamabad', badge: { text: 'Rappelling Workshop', color: '#D63A6E' } },
   ];
 
   return (

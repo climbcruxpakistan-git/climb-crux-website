@@ -24,7 +24,19 @@ export default function HeroSlider({ slides }) {
     <div className="hs">
       <div className="hs-frame" />
       {s.badge && (
-        <div className="hs-badge"><big>★</big>Beginners<br />welcome</div>
+        <div
+          className="hs-badge"
+          style={{
+            background: s.badge.color,
+            color: s.badge.textColor || '#fff',
+            boxShadow: `0 14px 30px ${s.badge.color}80`,
+          }}
+        >
+          <big>★</big>
+          {s.badge.text.split(' ')[0]}
+          <br />
+          {s.badge.text.split(' ').slice(1).join(' ')}
+        </div>
       )}
 
       <div
