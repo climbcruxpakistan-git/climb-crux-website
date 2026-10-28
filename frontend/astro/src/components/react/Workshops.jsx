@@ -15,7 +15,7 @@ export default function Workshops({ href = '/sessions/' }) {
   return (
     <section className="ws">
       <div className="wrap">
-        <h2>Workshops: Learn the real world climbing skills</h2>
+        <h2>Workshops - Learn the real world climbing skills</h2>
         <p className="ws-sub">
           Hands-on workshops that take you from first safety checks to leading and rappelling.
         </p>
