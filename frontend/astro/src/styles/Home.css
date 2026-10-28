@@ -306,13 +306,19 @@
     /* minmax(0, 1fr) stops the single-column track from being widened past the
        viewport by unbreakable content (no-wrap caption, oversized words). */
     grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
+    gap: 24px;
+    display: flex;
+    flex-direction: column-reverse;
   }
 
   .hero-visual {
     max-width: 100%;
     width: 100%;
     justify-self: stretch;
+  }
+
+  .hero-copy {
+    width: 100%;
   }
 
   .hero-copy h1 {
@@ -347,9 +353,11 @@
     padding-bottom: 70px;
   }
   .hero-inner {
-    gap: 22px;
-    padding-top: clamp(28px, 6vw, 44px);
-    padding-bottom: clamp(44px, 10vw, 70px);
+    gap: 20px;
+    padding-top: clamp(24px, 7vw, 40px);
+    padding-bottom: clamp(40px, 12vw, 68px);
+    display: flex;
+    flex-direction: column-reverse;
   }
   .hero-actions {
     flex-direction: column;
