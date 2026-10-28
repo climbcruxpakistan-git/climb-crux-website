@@ -4,6 +4,7 @@ import CliffEdge from './CliffEdge.jsx'
 import HeroSlider from './HeroSlider.jsx'
 import PickAdventure from './PickAdventure.jsx';
 import Workshops from './Workshops.jsx';
+import LifeOnTheRock from './LifeOnTheRock.jsx';
 
 const DEFAULT_PATHS = [
   { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
@@ -132,28 +133,7 @@ export default function HomeContent({ initial }) {
       />
       <Workshops />
 
-      <section className="section">
-        <div className="wrap">
-          <span className="eyebrow">{teasersEyebrow}</span>
-          <h2>{teasersTitle}</h2>
-          <div className="teaser-grid">
-            {sessionPhotos.length > 0
-              ? sessionPhotos.slice(0, 6).map((p, i) => (
-                  <img key={p.id || i} src={p.url} alt={p.title || teaserSessionSlug} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
-                ))
-              : teasers.slice(0, 6).map((t, i) => (
-                  t.photoUrl ? (
-                    <img key={i} src={t.photoUrl} alt={t.tag} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 'var(--radius)' }} />
-                  ) : (
-                    <div key={i} className="placeholder-photo" style={{ '--ar': '4 / 3' }}>
-                      <span className="tag">{t.tag}</span>
-                    </div>
-                  )
-                ))}
-          </div>
-          <a href="/gallery/" className="btn btn-outline" style={{ marginTop: 24 }}>View full gallery</a>
-        </div>
-      </section>
+      <LifeOnTheRock />
     </>
   )
 }
