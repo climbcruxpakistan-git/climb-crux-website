@@ -42,15 +42,12 @@ export default function HeroSlider({ slides }) {
     setAnimating(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      setI((cur) => {
-        if (nextIndex !== null) return nextIndex;
-        return (cur + d + n) % n;
-      });
+      setI(ni);
       setNextIndex(null);
       setAnimating(false);
       setAnimDir(0);
       timeoutRef.current = null;
-    }, 520);
+    }, 680);
   };
 
   const onAnimEnd = (e) => {
