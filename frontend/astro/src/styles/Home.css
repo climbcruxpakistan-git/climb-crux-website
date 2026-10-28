@@ -476,34 +476,37 @@
 .ws h2 { color: #fff; }
 .ws-sub { margin: 14px 0 0; max-width: 620px; font-size: 18px; line-height: 1.6; color: #cfcac0; }
 
-.ws-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-top: 48px; }
+.ws-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 48px; }
 .ws-card {
-  position: relative; padding: 28px; border-radius: 14px;
+  position: relative; padding: 18px 16px; border-radius: 12px;
   background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
   transition: transform .2s, background .2s;
+  aspect-ratio: 4 / 3;
+  display: flex; flex-direction: column; overflow: hidden;
 }
 .ws-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.08); }
-.ws-num { position: absolute; right: 24px; top: 16px; font: 700 54px/1 var(--font-display); color: rgba(255,255,255,.08); }
+.ws-num { position: absolute; right: 12px; top: 8px; font: 700 36px/1 var(--font-display); color: rgba(255,255,255,.08); }
 .ws-circle {
-  width: 104px; height: 104px; border-radius: 50%;
+  width: 72px; height: 72px; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; font: 700 12.5px/1.15 var(--font-display);
-  letter-spacing: .09em; text-transform: uppercase; transform: rotate(8deg);
+  text-align: center; font: 700 9px/1.1 var(--font-display);
+  letter-spacing: .09em; text-transform: uppercase; transform: rotate(8deg); flex: none;
 }
-.ws-circle big { font-size: 30px; line-height: 1; letter-spacing: 0; }
-.ws-card h3 { margin: 24px 0 0; font: 700 22px/1.2 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }
-.ws-card p { margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: #bdb8ad; }
+.ws-circle big { font-size: 20px; line-height: 1; letter-spacing: 0; }
+.ws-card h3 { margin: 12px 0 0; font: 700 16px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }
+.ws-card p { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: #bdb8ad; overflow: hidden; }
 .ws-cta { margin-top: 44px; text-align: center; }
 .ws-cta .pa-btn { align-self: auto; }
 
-@media (max-width: 1400px) { .ws-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 1000px) { .ws-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1600px) { .ws-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 1200px) { .ws-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .ws-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 800px) {
   .pa-grid { grid-template-columns: 1fr; }
   .pa-body { padding: 24px 22px 26px; }
   .pa-body h3 { font-size: 24px; }
 }
-@media (max-width: 560px) { .ws-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .ws-grid { grid-template-columns: 1fr; } .ws-card { aspect-ratio: auto; } }
 
 /* ===== LIFE ON THE ROCK ===== */
 .lr { padding: clamp(56px, 8vw, 96px) 0 0; }
