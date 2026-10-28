@@ -531,9 +531,11 @@
   .hs.is-anim.is-next .hs-card:not(.hs-card-next) { transform: translate3d(0,-32px,10px) scale(0.97) rotate(-5deg); }
   .hs.is-anim.is-prev .hs-card:not(.hs-card-next) { transform: translate3d(0,24px,-6px) scale(0.975) rotate(4deg); }
   .hs-badge { right: 8px; top: -26px; width: 92px; height: 92px; font-size: 11px; }
-  .hs-cap2 { margin-top: 32px; padding: 0 2px; flex-wrap: wrap; gap: 12px; }
-  .hs-cap2 h3 { font-size: 18px; }
-  .hs-cap2 p { font-size: 14px; }
+  .hs-cap2 { margin-top: 28px; padding: 0 2px; flex-wrap: nowrap; align-items: center; gap: 10px; min-height: 52px; }
+  .hs-cap2 > div:first-child { min-width: 0; flex: 1 1 auto; }
+  .hs-cap2 h3 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hs-cap2 p { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hs-dots { margin-left: auto; flex: 0 0 auto; }
 }
 
 /* ===== PICK YOUR ADVENTURE ===== */
