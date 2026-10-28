@@ -19,66 +19,76 @@ export default function HeroSlider({ slides }) {
   const n = slides.length;
   const go = (d) => setI((i + d + n) % n);
   const s = slides[i];
+  // the next photos, shown stacked behind the current one
+  const behind = [1, 2, 3].filter((k) => k < n).map((k) => slides[(i + k) % n]);
 
   return (
     <div className="hs">
-      <div className="hs-frame" />
-      {s.badge && (
+      <div className="hs-stack">
+        {behind.map((b, k) => (
+          <div key={b.src} className={`hs-bk hs-bk${k + 1}`}>
+            <img src={b.src} alt="" aria-hidden="true" />
+          </div>
+        ))}
+
         <div
-          className="hs-badge"
-          style={{
-            background: s.badge.color,
-            color: s.badge.textColor || '#fff',
-            boxShadow: `0 14px 30px ${s.badge.color}80`,
+          className="hs-card"
+          onTouchStart={(e) => setX0(e.touches[0].clientX)}
+          onTouchEnd={(e) => {
+            if (x0 === null) return;
+            const dx = e.changedTouches[0].clientX - x0;
+            if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+            setX0(null);
           }}
         >
-          <big>★</big>
-          {s.badge.text.split(' ')[0]}
-          <br />
-          {s.badge.text.split(' ').slice(1).join(' ')}
-        </div>
-      )}
+          <div className="hs-img">
+            <img
+              key={s.src}
+              src={s.src}
+              alt={s.alt}
+              style={{ objectFit: s.fit || 'cover', objectPosition: s.pos || 'center' }}
+            />
+          </div>
 
-      <div
-        className="hs-slide"
-        onTouchStart={(e) => setX0(e.touches[0].clientX)}
-        onTouchEnd={(e) => {
-          if (x0 === null) return;
-          const dx = e.changedTouches[0].clientX - x0;
-          if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-          setX0(null);
-        }}
-      >
-        <img
-          key={s.src}
-          src={s.src}
-          alt={s.alt}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: [1, 2, 4, 6].includes(i) ? 'contain' : 'cover',
-            objectPosition: i === 3 || i === 5 ? 'top' : 'center',
-          }}
-        />
-        <div className="hs-shade" />
-        {s.caption && (
-          <p className="hs-cap"><Pin />{s.caption}</p>
-        )}
-        {n > 1 && <span className="hs-count">{i + 1} / {n}</span>}
+          {s.badge && (
+            <div
+              className="hs-badge"
+              style={{
+                background: s.badge.color,
+                color: s.badge.textColor || '#fff',
+                boxShadow: `0 14px 30px ${s.badge.color}80`,
+              }}
+            >
+              <big>★</big>
+              {s.badge.text.split(' ')[0]}
+              <br />
+              {s.badge.text.split(' ').slice(1).join(' ')}
+            </div>
+          )}
+
+          {n > 1 && (
+            <>
+              <button className="hs-arrow l" aria-label="Previous photo" onClick={() => go(-1)}><Arrow dir="l" /></button>
+              <button className="hs-arrow r" aria-label="Next photo" onClick={() => go(1)}><Arrow dir="r" /></button>
+            </>
+          )}
+        </div>
       </div>
 
-      {n > 1 && (
-        <>
-          <button className="hs-arrow l" aria-label="Previous photo" onClick={() => go(-1)}><Arrow dir="l" /></button>
-          <button className="hs-arrow r" aria-label="Next photo" onClick={() => go(1)}><Arrow dir="r" /></button>
+      <div className="hs-cap2">
+        <div>
+          <h3>{s.title}</h3>
+          {s.location && <p><Pin />{s.location}</p>}
+        </div>
+        {n > 1 && (
           <div className="hs-dots">
             {slides.map((_, k) => (
               <button key={k} aria-label={`Go to photo ${k + 1}`}
                       className={k === i ? 'on' : ''} onClick={() => setI(k)} />
             ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
