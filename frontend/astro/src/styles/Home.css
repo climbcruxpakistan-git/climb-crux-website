@@ -496,7 +496,7 @@
 }
 .ws-circle big { font-size: 21.1px; line-height: 1; letter-spacing: 0; }
 .ws-card h3 { margin: 11px 0 0; font: 700 16.5px/1.12 var(--font-display); text-transform: uppercase; letter-spacing: .03em; align-self: center; color: #fff; }
-.ws-card p { margin: 6px 0 0; font-size: 13.86px; line-height: 1.35; color: #bdb8ad; flex: 1; overflow: hidden; align-self: center; }
+.ws-card p { margin: 6px 0 0; font-size: 13.86px; line-height: 1.35; color: #bdb8ad; flex: 1; align-self: center; }
 .ws-cta { margin-top: 24px; text-align: center; }
 .ws-cta .pa-btn { align-self: auto; }
 
