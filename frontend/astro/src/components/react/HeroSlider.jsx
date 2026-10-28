@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const Pin = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="#F47321" aria-hidden="true">
@@ -21,18 +21,45 @@ export default function HeroSlider({ slides }) {
   const [x0, setX0] = useState(null);
   const n = slides.length;
   const s = slides[i];
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const go = (d) => {
     if (d === 0 || n <= 1 || animating) return;
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const ni = (i + d + n) % n;
+    if (reduce) {
+      setI(ni);
+      return;
+    }
     setAnimDir(d);
     setNextIndex(ni);
     setAnimating(true);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setI((cur) => {
+        if (nextIndex !== null) return nextIndex;
+        return (cur + d + n) % n;
+      });
+      setNextIndex(null);
+      setAnimating(false);
+      setAnimDir(0);
+      timeoutRef.current = null;
+    }, 520);
   };
 
   const onAnimEnd = (e) => {
-    if (e.target !== e.currentTarget) return;
-    if (nextIndex === null) return;
+    if (e.propertyName && e.propertyName !== 'transform') return;
+    if (!animating || nextIndex === null) return;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     setI(nextIndex);
     setNextIndex(null);
     setAnimating(false);
@@ -44,11 +71,11 @@ export default function HeroSlider({ slides }) {
   const frontNext = nextIndex !== null ? slides[nextIndex] : null;
 
   return (
-    <div className={`hs ${animating ? (animDir > 0 ? 'is-anim is-next' : 'is-anim is-prev') : ''}`}>
+    <div className={`hs ${animating ? (animDir > 0 ? 'is-anim is-next' : 'is-anim is-prev') : ''}`} aria-busy={animating}>
       <div className="hs-stack">
         {behind.map((b, k) => (
-          <div key={`bk-${b.src}-${k}`} className={`hs-bk hs-bk${k + 1}`}>
-            <img src={b.src} alt="" aria-hidden="true" />
+          <div key={`bk-${b.src}-${i}-${k}`} className={`hs-bk hs-bk${k + 1}`}>
+            <img src={b.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
           </div>
         ))}
 
@@ -61,12 +88,14 @@ export default function HeroSlider({ slides }) {
             if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
             setX0(null);
           }}
-          onAnimationEnd={onAnimEnd}
+          onTransitionEnd={onAnimEnd}
         >
           <div className="hs-img">
             <img
               src={s.src}
               alt={s.alt}
+              loading="eager"
+              decoding="async"
               style={{ objectFit: s.fit || 'cover', objectPosition: s.pos || 'center' }}
             />
           </div>
@@ -77,6 +106,8 @@ export default function HeroSlider({ slides }) {
                 <img
                   src={frontNext.src}
                   alt=""
+                  loading="eager"
+                  decoding="async"
                   style={{ objectFit: frontNext.fit || 'cover', objectPosition: frontNext.pos || 'center' }}
                 />
               </div>
