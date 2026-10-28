@@ -476,35 +476,34 @@
 .ws h2 { color: #fff; }
 .ws-sub { margin: 14px 0 0; max-width: 620px; font-size: 18px; line-height: 1.6; color: #cfcac0; }
 
-.ws-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 48px; }
+.ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 48px; }
 .ws-card {
-  position: relative; padding: 18px 16px; border-radius: 12px;
+  position: relative; padding: 16px 14px; border-radius: 12px;
   background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
   transition: transform .2s, background .2s;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 4;
   display: flex; flex-direction: column; overflow: hidden;
 }
 .ws-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.08); }
-.ws-num { position: absolute; right: 12px; top: 8px; font: 700 36px/1 var(--font-display); color: rgba(255,255,255,.08); }
 .ws-circle {
-  width: 72px; height: 72px; border-radius: 50%;
+  width: 66px; height: 66px; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; font: 700 9px/1.1 var(--font-display);
+  text-align: center; font: 700 8.5px/1.1 var(--font-display);
   letter-spacing: .09em; text-transform: uppercase; transform: rotate(8deg); flex: none;
 }
-.ws-circle big { font-size: 20px; line-height: 1; letter-spacing: 0; }
-.ws-card h3 { margin: 12px 0 0; font: 700 16px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }
-.ws-card p { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: #bdb8ad; overflow: hidden; }
+.ws-circle big { font-size: 18px; line-height: 1; letter-spacing: 0; }
+.ws-card h3 { margin: 10px 0 0; font: 700 14px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }
+.ws-card p { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: #bdb8ad; flex: 1; overflow: hidden; }
 .ws-cta { margin-top: 44px; text-align: center; }
 .ws-cta .pa-btn { align-self: auto; }
 
-@media (max-width: 1600px) { .ws-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 1200px) { .ws-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px) { .ws-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1400px) { .ws-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 1100px) { .ws-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 800px) {
   .pa-grid { grid-template-columns: 1fr; }
   .pa-body { padding: 24px 22px 26px; }
   .pa-body h3 { font-size: 24px; }
+  .ws-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 560px) { .ws-grid { grid-template-columns: 1fr; } .ws-card { aspect-ratio: auto; } }
 

@@ -1,8 +1,6 @@
 const workshops = [
   { title: 'Belaying Workshop', circle: ['Belaying', 'Workshop'], color: '#0E9AA7',
     text: 'Learn to manage the rope and catch a fall for your climbing partner.' },
-  { title: 'Top-Rope Climbing Workshop', circle: ['Top-Rope', 'Workshop'], color: '#F47321',
-    text: 'Climb with the rope anchored above you, the best way to start on real rock.' },
   { title: 'Lead Climbing Workshop', circle: ['Lead', 'Workshop'], color: '#F2B705', textColor: '#1F1F21',
     text: 'Clip your own protection and climb with the rope below you.' },
   { title: 'Rappelling Workshop', circle: ['Rappelling', 'Workshop'], color: '#D63A6E',
@@ -23,9 +21,8 @@ export default function Workshops({ href = '/sessions/' }) {
         </p>
 
         <div className="ws-grid">
-          {workshops.map((w, i) => (
+          {workshops.map((w) => (
             <article className="ws-card" key={w.title}>
-              <span className="ws-num">{String(i + 1).padStart(2, '0')}</span>
               <div
                 className="ws-circle"
                 style={{
