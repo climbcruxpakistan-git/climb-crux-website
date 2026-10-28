@@ -15,10 +15,18 @@ const Arrow = ({ dir }) => (
 
 export default function HeroSlider({ slides }) {
   const [i, setI] = useState(0);
+  const [prevI, setPrevI] = useState(null);
+  const [dir, setDir] = useState(0);
   const [x0, setX0] = useState(null);
   const n = slides.length;
-  const go = (d) => setI((i + d + n) % n);
+  const go = (d) => {
+    if (d === 0) return;
+    setPrevI(i);
+    setDir(d);
+    setI((i + d + n) % n);
+  };
   const s = slides[i];
+  const prev = prevI !== null ? slides[prevI] : null;
   // the next photos, shown stacked behind the current one
   const behind = [1, 2, 3].filter((k) => k < n).map((k) => slides[(i + k) % n]);
 
@@ -41,9 +49,21 @@ export default function HeroSlider({ slides }) {
             setX0(null);
           }}
         >
-          <div className="hs-img">
+          <div className="hs-img hs-anim">
+            {prev && (
+              <img
+                key={`prev-${prev.src}-${prevI}`}
+                className={`hs-slide hs-slide-prev ${dir > 0 ? 'hs-slide-next' : 'hs-slide-prevdir'}`}
+                src={prev.src}
+                alt=""
+                aria-hidden="true"
+                style={{ objectFit: prev.fit || 'cover', objectPosition: prev.pos || 'center' }}
+                onAnimationEnd={() => setPrevI(null)}
+              />
+            )}
             <img
-              key={s.src}
+              key={`curr-${s.src}`}
+              className={`hs-slide hs-slide-curr ${dir > 0 ? 'hs-slide-in-next' : dir < 0 ? 'hs-slide-in-prev' : ''}`}
               src={s.src}
               alt={s.alt}
               style={{ objectFit: s.fit || 'cover', objectPosition: s.pos || 'center' }}
