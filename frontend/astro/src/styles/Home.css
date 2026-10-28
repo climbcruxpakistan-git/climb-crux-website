@@ -477,9 +477,9 @@
 .ws h2 { color: #fff; font-size: clamp(1.4rem, 2.6vw, 2.2rem); white-space: nowrap; }
 .ws-sub { margin: 8px 0 0; max-width: 100%; font-size: 14px; line-height: 1.4; color: #cfcac0; white-space: nowrap; }
 
-.ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 32px; }
+.ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 32px; }
 .ws-card {
-  position: relative; padding: 14px 14px; border-radius: 12px;
+  position: relative; padding: 16px 16px; border-radius: 14px;
   background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
   transition: transform .2s, background .2s;
   aspect-ratio: 4 / 3;
@@ -488,15 +488,15 @@
 }
 .ws-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.08); }
 .ws-circle {
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 77px; height: 77px; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; font: 700 8.25px/1.1 var(--font-display);
+  text-align: center; font: 700 9.9px/1.1 var(--font-display);
   letter-spacing: .09em; text-transform: uppercase; transform: rotate(8deg); flex: none;
   align-self: center;
 }
-.ws-circle big { font-size: 17.6px; line-height: 1; letter-spacing: 0; }
-.ws-card h3 { margin: 9px 0 0; font: 700 13.75px/1.12 var(--font-display); text-transform: uppercase; letter-spacing: .03em; align-self: center; color: #fff; }
-.ws-card p { margin: 5px 0 0; font-size: 11.55px; line-height: 1.35; color: #bdb8ad; flex: 1; overflow: hidden; align-self: center; }
+.ws-circle big { font-size: 21.1px; line-height: 1; letter-spacing: 0; }
+.ws-card h3 { margin: 11px 0 0; font: 700 16.5px/1.12 var(--font-display); text-transform: uppercase; letter-spacing: .03em; align-self: center; color: #fff; }
+.ws-card p { margin: 6px 0 0; font-size: 13.86px; line-height: 1.35; color: #bdb8ad; flex: 1; overflow: hidden; align-self: center; }
 .ws-cta { margin-top: 24px; text-align: center; }
 .ws-cta .pa-btn { align-self: auto; }
 
