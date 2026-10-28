@@ -17,8 +17,7 @@ export default function Workshops({ href = '/sessions/' }) {
   return (
     <section className="ws">
       <div className="wrap">
-        <div className="ws-tag">Workshops</div>
-        <h2>Learn the skills, climb with confidence</h2>
+        <h2>Workshops: Learn the real world climbing skills</h2>
         <p className="ws-sub">
           Hands-on workshops that take you from first safety checks to leading and rappelling.
         </p>
@@ -47,7 +46,7 @@ export default function Workshops({ href = '/sessions/' }) {
         </div>
 
         <div className="ws-cta">
-          <a className="pa-btn" href={href}>Book a workshop →</a>
+          <a className="pa-btn" href="https://www.climbcruxpakistan.com/private-premium/">Book a workshop →</a>
         </div>
       </div>
     </section>

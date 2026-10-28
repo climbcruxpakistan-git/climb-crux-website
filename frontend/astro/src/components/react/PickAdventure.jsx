@@ -11,7 +11,6 @@ export default function PickAdventure({
   return (
     <section className="pa">
       <div className="wrap">
-        <div className="pa-tag">Two ways to climb with us</div>
         <h2>Pick your adventure</h2>
 
         <div className="pa-grid">

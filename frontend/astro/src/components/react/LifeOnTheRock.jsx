@@ -19,7 +19,6 @@ export default function LifeOnTheRock() {
   return (
     <section className="lr">
       <div className="wrap">
-        <div className="lr-tag">A look at recent sessions</div>
         <h2>Life on the rock</h2>
 
         <div className="lr-grid">
