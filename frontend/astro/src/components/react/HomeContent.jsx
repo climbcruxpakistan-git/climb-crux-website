@@ -104,7 +104,7 @@ export default function HomeContent({ initial }) {
             <p className="hero-lede">{heroLede}</p>
             <div className="hero-actions">
               <span className="hero-cta-glow">
-                <a href="/sessions/" className="btn btn-primary">Join a Public Session</a>
+                <a href="https://www.climbcruxpakistan.com/private-premium/" className="btn btn-primary">Book Your Adventure</a>
               </span>
               <a href="/shop/" className="btn btn-outline">Shop Climbing Equipment</a>
             </div>
