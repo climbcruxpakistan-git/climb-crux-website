@@ -97,9 +97,23 @@ export default function HomeContent({ initial }) {
         <div className="wrap hero-inner">
           <div className="hero-copy">
             <h1>
-              {splitTitleForLines(heroTitle).map((line, i) => (
-                <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
-              ))}
+              {splitTitleForLines(heroTitle).map((line, i) => {
+                if (i === 0 && /rock climbing/i.test(line)) {
+                  const parts = line.split(/(Rock Climbing)/i)
+                  return (
+                    <Fragment key={i}>
+                      {parts.map((p, j) => {
+                        if (/^rock climbing$/i.test(p)) {
+                          return <span key={j} style={{ color: '#f47321' }}>{p}</span>
+                        }
+                        return <Fragment key={j}>{p}</Fragment>
+                      })}
+                      <br />
+                    </Fragment>
+                  )
+                }
+                return <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+              })}
             </h1>
             <p className="hero-lede">{heroLede}</p>
             <div className="hero-actions">
