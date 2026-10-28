@@ -15,26 +15,39 @@ const Arrow = ({ dir }) => (
 
 export default function HeroSlider({ slides }) {
   const [i, setI] = useState(0);
-  const [prevI, setPrevI] = useState(null);
-  const [dir, setDir] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [animDir, setAnimDir] = useState(0);
+  const [nextIndex, setNextIndex] = useState(null);
   const [x0, setX0] = useState(null);
   const n = slides.length;
-  const go = (d) => {
-    if (d === 0) return;
-    setPrevI(i);
-    setDir(d);
-    setI((i + d + n) % n);
-  };
   const s = slides[i];
-  const prev = prevI !== null ? slides[prevI] : null;
-  // the next photos, shown stacked behind the current one
+
+  const go = (d) => {
+    if (d === 0 || n <= 1 || animating) return;
+    const ni = (i + d + n) % n;
+    setAnimDir(d);
+    setNextIndex(ni);
+    setAnimating(true);
+  };
+
+  const onAnimEnd = (e) => {
+    if (e.target !== e.currentTarget) return;
+    if (nextIndex === null) return;
+    setI(nextIndex);
+    setNextIndex(null);
+    setAnimating(false);
+    setAnimDir(0);
+  };
+
+  // the next photos, shown stacked behind the current one (visual stack)
   const behind = [1, 2, 3].filter((k) => k < n).map((k) => slides[(i + k) % n]);
+  const frontNext = nextIndex !== null ? slides[nextIndex] : null;
 
   return (
-    <div className="hs">
+    <div className={`hs ${animating ? (animDir > 0 ? 'is-anim is-next' : 'is-anim is-prev') : ''}`}>
       <div className="hs-stack">
         {behind.map((b, k) => (
-          <div key={b.src} className={`hs-bk hs-bk${k + 1}`}>
+          <div key={`bk-${b.src}-${k}`} className={`hs-bk hs-bk${k + 1}`}>
             <img src={b.src} alt="" aria-hidden="true" />
           </div>
         ))}
@@ -48,27 +61,27 @@ export default function HeroSlider({ slides }) {
             if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
             setX0(null);
           }}
+          onAnimationEnd={onAnimEnd}
         >
-          <div className="hs-img hs-anim">
-            {prev && (
-              <img
-                key={`prev-${prev.src}-${prevI}`}
-                className={`hs-slide hs-slide-prev ${dir > 0 ? 'hs-slide-next' : 'hs-slide-prevdir'}`}
-                src={prev.src}
-                alt=""
-                aria-hidden="true"
-                style={{ objectFit: prev.fit || 'cover', objectPosition: prev.pos || 'center' }}
-                onAnimationEnd={() => setPrevI(null)}
-              />
-            )}
+          <div className="hs-img">
             <img
-              key={`curr-${s.src}`}
-              className={`hs-slide hs-slide-curr ${dir > 0 ? 'hs-slide-in-next' : dir < 0 ? 'hs-slide-in-prev' : ''}`}
               src={s.src}
               alt={s.alt}
               style={{ objectFit: s.fit || 'cover', objectPosition: s.pos || 'center' }}
             />
           </div>
+
+          {animating && frontNext && (
+            <div className="hs-card hs-card-next" aria-hidden="true">
+              <div className="hs-img">
+                <img
+                  src={frontNext.src}
+                  alt=""
+                  style={{ objectFit: frontNext.fit || 'cover', objectPosition: frontNext.pos || 'center' }}
+                />
+              </div>
+            </div>
+          )}
 
           {s.badge && (
             <div
