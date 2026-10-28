@@ -2,6 +2,8 @@ import { useState, useEffect, Fragment } from 'react'
 import { getHomeContent, getUploads } from '../../lib/api'
 import CliffEdge from './CliffEdge.jsx'
 import HeroSlider from './HeroSlider.jsx'
+import PickAdventure from './PickAdventure.jsx';
+import Workshops from './Workshops.jsx';
 
 const DEFAULT_PATHS = [
   { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
@@ -64,7 +66,7 @@ export default function HomeContent({ initial }) {
     : []
 
   const heroSlides = [
-    { src: heroPhotoUrl, alt: 'Climb Crux group at Saidpur Village', title: 'Group Climbing Session', location: 'Saidpur Village, Islamabad' },
+    { src: heroPhotoUrl, alt: 'Climb Crux group at Saidpur Village', title: 'Group Climbing Session', location: 'Saidpur Village, Islamabad', badge: { text: 'Beginners welcome', color: '#F47321' } },
     { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784561395/climb-crux/l4ld8qkbbs3g3kos659q.jpg', alt: 'Climbing Safety Introduction', title: 'Climbing Safety Introduction', location: 'Saidpur Village, Islamabad', fit: 'contain', badge: { text: 'Safety Workshop', color: '#2F6FDE' } },
     { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1789987298/climb-crux/pqxnl4wsbheafspitx9p.jpg', alt: 'German Climber', title: 'German Climber', location: 'Shahdara, Islamabad', fit: 'contain', badge: { text: 'Foreigner Climber', color: '#7B3FE4' } },
     { src: 'https://res.cloudinary.com/ivvx77mg/image/upload/v1784735406/climb-crux/igfybn92vpkaw8aa4wg0.jpg', alt: 'USA Climber', title: 'USA Climber', location: 'Saidpur Village, Islamabad', pos: 'top', badge: { text: 'Foreigner Climber', color: '#7B3FE4' } },
@@ -124,25 +126,11 @@ export default function HomeContent({ initial }) {
         </div>
       </section>
 
-      <section className="section paths">
-        <div className="wrap">
-          <span className="eyebrow">{pathsEyebrow}</span>
-          <h2>{pathsTitle}</h2>
-          <div className="paths-grid">
-            {paths.map((p) => (
-              <div className="path-card" key={p.title}>
-                <span className="grade-badge"><span className="grade">{p.grade}</span><span className="label">{p.label}</span></span>
-                <h3>{p.title}</h3>
-                <p>{p.copy}</p>
-                {p.photoUrl && (
-                  <img src={p.photoUrl} alt={p.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 'var(--radius)', marginTop: 8 }} />
-                )}
-                <a href={p.to} className="path-link">{p.cta} <span aria-hidden="true">→</span></a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <PickAdventure
+        publicImage={heroPhotoUrl}
+        privateImage="https://res.cloudinary.com/ivvx77mg/image/upload/v1784735793/climb-crux/o5g2kwkbnfqwr4azraze.jpg"
+      />
+      <Workshops />
 
       <section className="section">
         <div className="wrap">
