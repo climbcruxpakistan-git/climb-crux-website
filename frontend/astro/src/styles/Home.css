@@ -472,29 +472,29 @@
 .pa-btn.ghost:hover { background: #fff; color: #2E2E30; box-shadow: none; }
 
 /* ===== WORKSHOPS ===== */
-.ws { margin-top: clamp(64px, 8vw, 100px); background: #1F1F21; color: #fff; padding: clamp(56px, 7vw, 84px) 0; }
-.ws h2 { color: #fff; }
-.ws-sub { margin: 14px 0 0; max-width: 620px; font-size: 18px; line-height: 1.6; color: #cfcac0; }
+.ws { margin-top: clamp(64px, 8vw, 100px); background: #1F1F21; color: #fff; padding: clamp(40px, 6vw, 64px) 0; }
+.ws h2 { color: #fff; font-size: clamp(1.4rem, 2.6vw, 2.2rem); white-space: nowrap; }
+.ws-sub { margin: 8px 0 0; max-width: 100%; font-size: 14px; line-height: 1.4; color: #cfcac0; white-space: nowrap; }
 
-.ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 48px; }
+.ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 32px; }
 .ws-card {
-  position: relative; padding: 16px 14px; border-radius: 12px;
+  position: relative; padding: 12px 12px; border-radius: 10px;
   background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
   transition: transform .2s, background .2s;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 3;
   display: flex; flex-direction: column; overflow: hidden;
 }
 .ws-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.08); }
 .ws-circle {
-  width: 66px; height: 66px; border-radius: 50%;
+  width: 58px; height: 58px; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; font: 700 8.5px/1.1 var(--font-display);
+  text-align: center; font: 700 7.5px/1.1 var(--font-display);
   letter-spacing: .09em; text-transform: uppercase; transform: rotate(8deg); flex: none;
 }
-.ws-circle big { font-size: 18px; line-height: 1; letter-spacing: 0; }
-.ws-card h3 { margin: 10px 0 0; font: 700 14px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }
-.ws-card p { margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: #bdb8ad; flex: 1; overflow: hidden; }
-.ws-cta { margin-top: 44px; text-align: center; }
+.ws-circle big { font-size: 16px; line-height: 1; letter-spacing: 0; }
+.ws-card h3 { margin: 8px 0 0; font: 700 12.5px/1.12 var(--font-display); text-transform: uppercase; letter-spacing: .03em; }
+.ws-card p { margin: 4px 0 0; font-size: 10.5px; line-height: 1.35; color: #bdb8ad; flex: 1; overflow: hidden; }
+.ws-cta { margin-top: 24px; text-align: center; }
 .ws-cta .pa-btn { align-self: auto; }
 
 @media (max-width: 1400px) { .ws-grid { grid-template-columns: repeat(4, 1fr); } }
