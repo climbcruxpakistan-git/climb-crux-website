@@ -29,7 +29,6 @@ export default function TeamContent({ initial }) {
 
     <section className="section">
       <div className="wrap">
-        <h2>Who's holding your rope</h2>
         <div className="instructor-grid">
           {instructors.map((i) => {
             const profileId = i.id || i._id

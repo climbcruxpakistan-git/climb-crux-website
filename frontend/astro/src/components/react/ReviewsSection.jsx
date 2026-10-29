@@ -126,8 +126,7 @@ export default function ReviewsSection({ type = 'public' }) {
   return (
     <section className="section rv-section" id="reviews" aria-label="Reviews and ratings">
       <div className="wrap">
-        <span className="eyebrow">Reviews &amp; Ratings</span>
-        <h2>How was your climbing experience?</h2>
+        <h2>How was your climbing experience with Climb Crux?</h2>
 
         {loading ? (
           <div className="btn-spinner" style={{ margin: '24px auto' }} aria-label="Loading reviews" />
@@ -141,12 +140,7 @@ export default function ReviewsSection({ type = 'public' }) {
               </p>
             </div>
           </div>
-        ) : (
-          <div className="rv-empty">
-            <h3>No reviews yet</h3>
-            <p>Be the first to share your climbing experience.</p>
-          </div>
-        )}
+        ) : null}
 
         <div className="rv-form-card">
           <h3>Leave a review</h3>
