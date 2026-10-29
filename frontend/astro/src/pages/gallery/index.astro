@@ -1,0 +1,21 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { GalleryHome } from '../../gallery/Gallery.jsx';
+import { buildCollections, toCollectionCard } from '../../gallery/data';
+import { getGallery, getUploads } from '../../lib/api';
+import '../../gallery/gallery.css';
+
+// Rendered on-demand so photos and collections added in the admin show up
+// without a redeploy.
+export const prerender = false;
+
+const [items, uploads] = await Promise.all([getGallery().catch(() => []), getUploads().catch(() => [])]);
+const collections = buildCollections(items, uploads).map(toCollectionCard);
+---
+
+<MainLayout
+  title="Gallery — Climb Crux Pakistan"
+  description="A running record of climbing sessions on Margalla Hills, Islamabad — public climbs, private coaching and group training captured on the limestone walls."
+>
+  <GalleryHome collections={collections} client:load />
+</MainLayout>

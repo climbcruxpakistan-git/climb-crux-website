@@ -34,6 +34,10 @@ export default function LifeOnTheRock() {
             </figure>
           ))}
         </div>
+
+        <div className="lr-cta">
+          <a className="btn btn-primary" href="/gallery/">View full gallery</a>
+        </div>
       </div>
     </section>
   );

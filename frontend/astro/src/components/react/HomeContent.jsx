@@ -5,6 +5,7 @@ import HeroSlider from './HeroSlider.jsx'
 import PickAdventure from './PickAdventure.jsx';
 import Workshops from './Workshops.jsx';
 import LifeOnTheRock from './LifeOnTheRock.jsx';
+import RockClimbingPakistan from './RockClimbingPakistan.jsx';
 
 const DEFAULT_PATHS = [
   { grade: '4 – 6a', label: 'Beginner Friendly', title: 'Public Sessions', copy: 'Drop into a guided group session on Margalla Hills every other week. No experience or gear needed — just a willingness to get chalky hands.', to: '/sessions', cta: 'See schedule & pricing' },
@@ -31,6 +32,17 @@ function splitTitleForLines(title) {
     }
   }
   return [words.slice(0, best).join(' '), words.slice(best).join(' ')]
+}
+
+// The hero lede is authored to read as three lines: the opening pitch, the
+// guided-sessions line, and the community line. Split on those two phrases so
+// the copy always breaks in the same place (CMS copy included); anything that
+// doesn't match falls back to a normally wrapped paragraph.
+function splitLedeForLines(lede) {
+  const text = String(lede || '').trim()
+  const match = text.match(/^(.*?,\s+)(.*?\band)\s+(a\s+supportive\b.*)$/i)
+  if (!match) return [text]
+  return [match[1].trim(), match[2].trim(), match[3].trim()]
 }
 
 export default function HomeContent({ initial }) {
@@ -98,24 +110,27 @@ export default function HomeContent({ initial }) {
           <div className="hero-copy">
             <h1>
               {splitTitleForLines(heroTitle).map((line, i) => {
+                let content = line
                 if (i === 0 && /rock climbing/i.test(line)) {
                   const parts = line.split(/(Rock Climbing)/i)
-                  return (
-                    <Fragment key={i}>
-                      {parts.map((p, j) => {
-                        if (/^rock climbing$/i.test(p)) {
-                          return <span key={j} style={{ color: '#f47321' }}>{p}</span>
-                        }
-                        return <Fragment key={j}>{p}</Fragment>
-                      })}
-                      <br />
-                    </Fragment>
-                  )
+                  content = parts.map((p, j) => {
+                    if (/^rock climbing$/i.test(p)) {
+                      return <span key={j} style={{ color: '#f47321' }}>{p}</span>
+                    }
+                    return <Fragment key={j}>{p}</Fragment>
+                  })
                 }
-                return <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+                return <Fragment key={i}>{i > 0 && <br />}{content}</Fragment>
               })}
             </h1>
-            <p className="hero-lede">{heroLede}</p>
+            <p className="hero-lede">
+              {splitLedeForLines(heroLede).map((line, i) => (
+                <Fragment key={i}>
+                  {i > 0 && <br className="hero-lede-break" />}
+                  {line}
+                </Fragment>
+              ))}
+            </p>
             <div className="hero-actions">
               <span className="hero-cta-glow">
                 <a href="https://www.climbcruxpakistan.com/private-premium/" className="btn btn-primary">Book Your Adventure</a>
@@ -148,6 +163,8 @@ export default function HomeContent({ initial }) {
       <Workshops />
 
       <LifeOnTheRock />
+
+      <RockClimbingPakistan />
     </>
   )
 }

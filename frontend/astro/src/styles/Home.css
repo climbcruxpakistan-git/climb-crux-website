@@ -70,15 +70,28 @@
 .hero-copy h1 {
   color: var(--chalk);
   /* Reduced by ~20% total from original large sizes */
-  font-size: clamp(1.863rem, 3.694vw, 3.11rem);
+  font-size: clamp(2.05rem, 4.063vw, 3.421rem);
   white-space: nowrap;
+  /* A touch of leading so the two title lines don't collide */
+  line-height: 1.18;
 }
 
 .hero-lede {
   color: #c9c4b8;
   font-size: 1.053rem;
-  max-width: 46ch;
+  /* Wide enough for the longest authored line ("a supportive community for
+     beginners and experienced climbers.") to stay on one line. */
+  max-width: 56ch;
   margin-bottom: 1.8em;
+}
+
+/* Below this width the hero copy column is narrower than that longest line, so
+   the authored breaks are dropped and the sentence wraps naturally instead of
+   leaving an awkward mid-phrase break. */
+@media (max-width: 1199px) {
+  .hero-lede-break {
+    display: none;
+  }
 }
 
 .hero-actions {
@@ -172,7 +185,9 @@
 .home-stats {
   position: relative;
   z-index: 4;
-  margin-top: -64px;
+  /* The card sits mostly on the hero: pulled up by 80% of its own 140px height,
+     so 20% of it hangs below the hero's bottom edge. */
+  margin-top: -112px;
   padding: 0 0 24px;
   background: transparent;
   border: 0;
@@ -219,7 +234,7 @@
 }
 
 @media (max-width: 800px) {
-  .home-stats { margin-top: -48px; }
+  .home-stats { margin-top: -142px; }
   .home-stats .stats-grid { grid-template-columns: 1fr 1fr; row-gap: 24px; column-gap: 0; padding: 22px 10px; }
   .home-stats .stats-grid .stat { padding: 0 16px; border-top: 0; }
   .home-stats .stats-grid .stat:nth-child(2) { border-right: 0; }
@@ -228,7 +243,7 @@
 }
 
 @media (max-width: 500px) {
-  .home-stats { margin-top: -36px; padding-bottom: 16px; }
+  .home-stats { margin-top: -148px; padding-bottom: 16px; }
   .home-stats .stats-grid { grid-template-columns: 1fr 1fr; row-gap: 18px; padding: 18px 12px; border-radius: 12px; }
   .home-stats .stats-grid .stat { padding: 0 12px; }
   .home-stats .stats-grid .stat:nth-child(3) { border-right: 1px solid #e8e2d7; }
@@ -340,14 +355,6 @@
 
 }
 
-/* ============================== LOCAL SEO (Islamabad) ============================== */
-
-.local-seo-section { background: var(--chalk-dim); }
-.local-seo-section h2 { max-width: 22ch; margin-bottom: 0.9em; }
-.local-seo-copy { max-width: 72ch; }
-.local-seo-copy p { line-height: 1.7; margin-bottom: 1em; color: var(--stone-dark); }
-.local-seo-section .faq { margin-top: 36px; }
-
 @media (max-width: 500px) {
   .hero {
     padding-bottom: 70px;
@@ -378,9 +385,9 @@
     min-width: 0;
   }
   .hero-copy h1 {
-    font-size: clamp(1.7rem, 7.2vw, 2.2rem) !important;
+    font-size: clamp(1.87rem, 7.92vw, 2.42rem) !important;
     white-space: normal; /* let the bigger mobile title wrap instead of clipping off-screen */
-    line-height: 1.08;
+    line-height: 1.2;
   }
   .hero-lede {
     font-size: 0.95rem;
@@ -406,10 +413,13 @@
 .hs { perspective: 1200px; }
 .hs-stack { transform-style: preserve-3d; }
 .hs-card, .hs-bk { background: #F47321; padding: 5px; border-radius: 10px; }
-.hs-card { position: relative; z-index: 5; box-shadow: 0 30px 60px rgba(0,0,0,.5); transition: transform 650ms cubic-bezier(.22,.61,.36,1); transform-origin: 50% 90%; will-change: transform; }
+/* The front card stays in flow and gives the stack its height. The incoming
+   card is an identical, absolutely positioned twin layered on top, so the
+   slide swap never changes size or position when it commits. */
+.hs-card { position: relative; z-index: 5; box-shadow: 0 30px 60px rgba(0,0,0,.5); transform-origin: 50% 90%; will-change: transform; }
 .hs-img { aspect-ratio: 16 / 10; border-radius: 6px; overflow: hidden; background: #1f1f21; position: relative; }
 .hs-img img { width: 100%; height: 100%; display: block; }
-.hs-card-next { position: absolute; inset: 0; z-index: 4; pointer-events: none; transition: transform 650ms cubic-bezier(.22,.61,.36,1); transform-origin: 50% 90%; will-change: transform; }
+.hs-in { position: absolute; inset: 0; z-index: 6; pointer-events: none; transform-origin: 50% 90%; will-change: transform; }
 
 /* stacked photos behind */
 .hs-bk { position: absolute; inset: 0; filter: brightness(.62) saturate(.92);
@@ -419,50 +429,42 @@
 .hs-bk2 { z-index: 3; transform: rotate(-5deg) translate3d(-24px, -2px, 0); }
 .hs-bk3 { z-index: 2; transform: rotate(9.5deg) translate3d(40px, -16px, 0); }
 
-/* Next: top card lifts upward, moves back; next card emerges from stack into front */
-.hs.is-anim.is-next .hs-card:not(.hs-card-next) {
-  transform: translate3d(0,-52px,20px) scale(0.96) rotate(-7deg);
+/* Next: the outgoing card lifts up and back... */
+.hs-front.is-next {
   z-index: 3;
+  animation: hs-out-next 650ms cubic-bezier(.22,.61,.36,1) both;
 }
-.hs.is-anim.is-next .hs-card-next {
-  transform: translate3d(0,0,0) scale(1) rotate(0deg);
-  z-index: 6;
-}
-.hs.is-anim.is-next .hs-bk1 {
-  transform: rotate(0deg) translate3d(0,0,0);
-  filter: brightness(1);
-  z-index: 5;
-}
-.hs.is-anim.is-next .hs-bk2 {
-  transform: rotate(4.5deg) translate3d(26px,-6px,0);
-  z-index: 4;
-}
-.hs.is-anim.is-next .hs-bk3 {
-  transform: rotate(-5deg) translate3d(-24px,-2px,0);
-  z-index: 3;
+@keyframes hs-out-next {
+  to { transform: translate3d(0,-52px,20px) scale(0.96) rotate(-7deg); }
 }
 
-/* Prev: card goes down/back, previous emerges from underneath */
-.hs.is-anim.is-prev .hs-card:not(.hs-card-next) {
-  transform: translate3d(0,38px,-10px) scale(0.97) rotate(6deg);
+/* ...and the next photo rises out of the stack into the front slot. */
+.hs-in.from-next { animation-name: hs-in-next; }
+@keyframes hs-in-next {
+  from { transform: rotate(4.5deg) translate3d(26px,-6px,0); filter: brightness(.55) saturate(.9); }
+  to   { transform: rotate(0deg) translate3d(0,0,0) scale(1); filter: none; }
+}
+
+/* Prev: the outgoing card drops down and back... */
+.hs-front.is-prev {
   z-index: 3;
+  animation: hs-out-prev 650ms cubic-bezier(.22,.61,.36,1) both;
 }
-.hs.is-anim.is-prev .hs-card-next {
-  transform: translate3d(0,0,0) scale(1) rotate(0deg);
-  z-index: 6;
+@keyframes hs-out-prev {
+  to { transform: translate3d(0,38px,-10px) scale(0.97) rotate(6deg); }
 }
-.hs.is-anim.is-prev .hs-bk1 {
-  transform: rotate(9.5deg) translate3d(40px,-16px,0);
-  filter: brightness(.62);
-  z-index: 2;
+
+/* ...and the previous photo comes up from behind into the front slot. */
+.hs-in.from-prev { animation-name: hs-in-prev; }
+@keyframes hs-in-prev {
+  from { transform: rotate(4deg) translate3d(0,26px,-40px) scale(0.95); filter: brightness(.55) saturate(.9); }
+  to   { transform: rotate(0deg) translate3d(0,0,0) scale(1); filter: none; }
 }
-.hs.is-anim.is-prev .hs-bk2 {
-  transform: rotate(4.5deg) translate3d(26px,-6px,0);
-  z-index: 4;
-}
-.hs.is-anim.is-prev .hs-bk3 {
-  transform: rotate(-5deg) translate3d(-24px,-2px,0);
-  z-index: 3;
+
+.hs-in {
+  animation-duration: 650ms;
+  animation-timing-function: cubic-bezier(.22,.61,.36,1);
+  animation-fill-mode: both;
 }
 
 .hs.is-anim .hs-arrow,
@@ -470,14 +472,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hs .hs-card,
-  .hs .hs-card-next,
   .hs .hs-bk {
-    transition: none !important;
     animation: none !important;
-    transform: none !important;
+    transition: none !important;
   }
-  .hs.is-anim .hs-card:not(.hs-card-next) { transform: none; }
-  .hs.is-anim .hs-card-next { transform: none; }
 }
 
 /* photos stacked behind */
@@ -490,7 +488,7 @@
 
 /* arrows */
 .hs-arrow { position: absolute; top: 50%; margin-top: -28px; width: 56px; height: 56px;
-  border: 0; border-radius: 50%; background: #F7F3EC; cursor: pointer; z-index: 6;
+  border: 0; border-radius: 50%; background: #F7F3EC; cursor: pointer; z-index: 8;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 10px 26px rgba(0,0,0,.45); transition: transform .15s; }
 .hs-arrow:hover { transform: scale(1.08); }
@@ -528,8 +526,20 @@
   .hs-bk1 { transform: rotate(3.5deg) translate3d(12px, -4px, 0); }
   .hs-bk2 { transform: rotate(-4deg) translate3d(-12px, -2px, 0); }
   .hs-bk3 { transform: rotate(7deg) translate3d(20px, -10px, 0); }
-  .hs.is-anim.is-next .hs-card:not(.hs-card-next) { transform: translate3d(0,-32px,10px) scale(0.97) rotate(-5deg); }
-  .hs.is-anim.is-prev .hs-card:not(.hs-card-next) { transform: translate3d(0,24px,-6px) scale(0.975) rotate(4deg); }
+  @keyframes hs-out-next {
+    to { transform: translate3d(0,-32px,10px) scale(0.97) rotate(-5deg); }
+  }
+  @keyframes hs-out-prev {
+    to { transform: translate3d(0,24px,-6px) scale(0.975) rotate(4deg); }
+  }
+  @keyframes hs-in-next {
+    from { transform: rotate(3.5deg) translate3d(12px,-4px,0); filter: brightness(.55) saturate(.9); }
+    to   { transform: none; filter: none; }
+  }
+  @keyframes hs-in-prev {
+    from { transform: rotate(4deg) translate3d(0,20px,-24px) scale(0.96); filter: brightness(.55) saturate(.9); }
+    to   { transform: none; filter: none; }
+  }
   .hs-badge { right: 8px; top: -26px; width: 92px; height: 92px; font-size: 11px; }
   .hs-cap2 { margin-top: 28px; padding: 0 2px; flex-wrap: nowrap; align-items: center; gap: 10px; min-height: 52px; }
   .hs-cap2 > div:first-child { min-width: 0; flex: 1 1 auto; }
@@ -675,6 +685,8 @@
 }
 .lr-item:first-child .lr-cap { font-size: 22px; left: 24px; bottom: 22px; }
 
+.lr-cta { margin: 28px 0 clamp(32px, 5vw, 48px); text-align: center; }
+
 @media (max-width: 900px) {
   .lr-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 200px; gap: 12px; margin-top: 24px; }
   .lr-item:nth-child(n + 6) { grid-column: span 1; }
@@ -685,4 +697,50 @@
   .lr-grid { grid-template-columns: 1fr; grid-auto-rows: 220px; }
   .lr-item:first-child { grid-column: auto; grid-row: span 1; }
   .lr { padding-top: clamp(40px, 8vw, 64px); }
+}
+
+/* ===== ROCK CLIMBING IN PAKISTAN (SEO text) ===== */
+.rp { background: var(--chalk-dim, #ECE5D5); padding: clamp(56px, 8vw, 96px) 0 clamp(60px, 8vw, 100px); }
+
+.rp-bar { width: 64px; height: 5px; border-radius: 3px; background: #F47321; margin-bottom: 22px; }
+
+.rp h2 {
+  margin: 0; font: 700 clamp(2.1rem, 5vw, 4rem)/1 var(--font-display);
+  text-transform: uppercase; color: #2E2E30;
+}
+.rp h2 span { color: #F47321; }
+
+.rp-cols {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+  margin-top: 40px; padding-top: 36px; border-top: 1px solid rgba(46,46,48,.16);
+}
+.rp-lead { margin: 0; font-size: 19.5px; line-height: 1.75; color: #3b3935; }
+.rp-body { margin: 0; font-size: 17.5px; line-height: 1.8; color: #5a5650; }
+.rp strong { font-weight: 500; color: #1F1F21; }
+.rp-hl {
+  font-weight: 500; color: #1F1F21;
+  background: linear-gradient(transparent 62%, rgba(244,115,33,.32) 62%);
+}
+
+.rp-btns { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 40px; }
+.rp-btn {
+  display: inline-block; background: #F47321; color: #fff; text-decoration: none;
+  font: 700 15px var(--font-display); letter-spacing: .09em; text-transform: uppercase;
+  padding: 19px 30px; border-radius: 6px; box-shadow: 0 12px 28px rgba(244,115,33,.3);
+  transition: transform .15s, box-shadow .15s;
+}
+.rp-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(244,115,33,.4); }
+.rp-btn.ghost {
+  background: transparent; color: #2E2E30; border: 2px solid #2E2E30;
+  padding: 17px 28px; box-shadow: none;
+}
+.rp-btn.ghost:hover { background: #2E2E30; color: #fff; box-shadow: none; }
+
+@media (max-width: 800px) {
+  .rp-cols { grid-template-columns: 1fr; gap: 20px; }
+  .rp-lead { font-size: 18px; }
+  .rp-body { font-size: 16.5px; }
+}
+@media (max-width: 500px) {
+  .rp-btn { width: 100%; text-align: center; }
 }

@@ -56,7 +56,6 @@ export default function Home() {
               </figure>
             </div>
           </div>
-        </div>
         <CliffEdge className="cliff-edge" fill="var(--chalk)" height={56} />
       </section>
 

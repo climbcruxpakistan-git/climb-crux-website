@@ -1,0 +1,35 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { AlbumView } from '../../../gallery/Gallery.jsx';
+import { buildCollections, plural } from '../../../gallery/data';
+import { getGallery, getUploads } from '../../../lib/api';
+import '../../../gallery/gallery.css';
+
+// Any album slug resolves, including ones added after this deploy.
+export const prerender = false;
+
+const { collection, album } = Astro.params;
+const [items, uploads] = await Promise.all([getGallery().catch(() => []), getUploads().catch(() => [])]);
+const collections = buildCollections(items, uploads);
+
+const c = collections.find((x) => x.slug === collection);
+if (!c) return Astro.redirect('/gallery/');
+
+const i = c.albums.findIndex((a) => a.slug === album);
+if (i < 0) return Astro.redirect(`/gallery/${c.slug}/`);
+
+const a = c.albums[i];
+const link = (x) => ({ slug: x.slug, title: x.title });
+const title = `${a.title} — ${c.title} — Gallery — Climb Crux Pakistan`;
+const description = `${plural(a.photos.length, 'photo')} from ${a.title} (${c.title}) with Climb Crux on Margalla Hills, Islamabad.`;
+---
+
+<MainLayout title={title} description={description} image={a.photos[0]?.src}>
+  <AlbumView
+    collection={{ slug: c.slug, title: c.title }}
+    album={{ slug: a.slug, title: a.title, photos: a.photos }}
+    prev={c.albums[i - 1] ? link(c.albums[i - 1]) : null}
+    next={c.albums[i + 1] ? link(c.albums[i + 1]) : null}
+    client:load
+  />
+</MainLayout>

@@ -1,0 +1,26 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { CollectionView } from '../../gallery/Gallery.jsx';
+import { buildCollections, plural, toCollectionView } from '../../gallery/data';
+import { getGallery, getUploads } from '../../lib/api';
+import '../../gallery/gallery.css';
+
+// Any collection slug resolves, including ones added after this deploy.
+export const prerender = false;
+
+const { collection } = Astro.params;
+const [items, uploads] = await Promise.all([getGallery().catch(() => []), getUploads().catch(() => [])]);
+const collections = buildCollections(items, uploads);
+const c = collections.find((x) => x.slug === collection);
+
+if (!c) return Astro.redirect('/gallery/');
+
+const view = toCollectionView(c);
+const nav = collections.map(({ slug, title }) => ({ slug, title }));
+const title = `${c.title} — Gallery — Climb Crux Pakistan`;
+const description = `${plural(view.albumCount, 'album')} and ${plural(view.photoCount, 'photo')} from ${c.title} with Climb Crux on Margalla Hills, Islamabad.`;
+---
+
+<MainLayout title={title} description={description}>
+  <CollectionView collection={view} nav={nav} client:load />
+</MainLayout>

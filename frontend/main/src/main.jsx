@@ -28,7 +28,7 @@ import PrivatePremium from './pages/PrivatePremium.jsx'
 import About from './pages/About.jsx'
 import OurTeam from './pages/OurTeam.jsx'
 import InstructorProfile from './pages/InstructorProfile.jsx'
-import Gallery from './pages/Gallery.jsx'
+import { GalleryHome, CollectionPage, AlbumPage } from './gallery/Gallery.jsx'
 import BookNow from './pages/BookNow.jsx'
 import MembershipApply from './pages/MembershipApply.jsx'
 import CheckStatus from './pages/CheckStatus.jsx'
@@ -64,7 +64,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/shop/:id/checkout" element={<Checkout />} />
           <Route path="/shop/orders/:orderNumber/payment" element={<OrderPayment />} />
           <Route path="/shop/:id" element={<ProductDetail />} />
-          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/gallery" element={<GalleryHome />} />
+          <Route path="/gallery/:collection" element={<CollectionPage />} />
+          <Route path="/gallery/:collection/:album" element={<AlbumPage />} />
           <Route path="/book-now" element={<BookNow />} />
           <Route path="/membership/apply" element={<MembershipApply />} />
           <Route path="/check-status" element={<CheckStatus />} />

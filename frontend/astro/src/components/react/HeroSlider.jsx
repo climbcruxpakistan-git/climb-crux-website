@@ -13,80 +13,112 @@ const Arrow = ({ dir }) => (
   </svg>
 );
 
+const SWIPE_THRESHOLD = 40;
+const ANIM_MS = 650;
+
 export default function HeroSlider({ slides }) {
   const [i, setI] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const [animDir, setAnimDir] = useState(0);
-  const [nextIndex, setNextIndex] = useState(null);
+  // { to, dir } while a slide transition is running, null otherwise
+  const [pending, setPending] = useState(null);
   const [x0, setX0] = useState(null);
+  const pendingRef = useRef(null);
+  const timerRef = useRef(null);
   const n = slides.length;
   const s = slides[i];
-  const timeoutRef = useRef(null);
+  const animating = pending !== null;
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
 
-  const go = (d) => {
-    if (d === 0 || n <= 1 || animating) return;
-    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const ni = (i + d + n) % n;
-    if (reduce) {
-      setI(ni);
-      return;
+  const clearTransition = () => {
+    pendingRef.current = null;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    setAnimDir(d);
-    setNextIndex(ni);
-    setAnimating(true);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setI(ni);
-      setNextIndex(null);
-      setAnimating(false);
-      setAnimDir(0);
-      timeoutRef.current = null;
-    }, 680);
+    setPending(null);
   };
 
-  const onAnimEnd = (e) => {
-    if (e.propertyName && e.propertyName !== 'transform') return;
-    if (!animating || nextIndex === null) return;
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
+  // Commit the slide once the incoming card has finished coming to the front.
+  const finish = () => {
+    const p = pendingRef.current;
+    if (!p) return;
+    pendingRef.current = null;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    setI(nextIndex);
-    setNextIndex(null);
-    setAnimating(false);
-    setAnimDir(0);
+    setPending(null);
+    setI(p.to);
+  };
+
+  const go = (d) => {
+    if (!d || n <= 1 || pendingRef.current) return;
+    const to = (i + d + n) % n;
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      setI(to);
+      return;
+    }
+    pendingRef.current = { to, dir: d };
+    setPending({ to, dir: d });
+    // Safety net: if animationend never fires (background tab, etc.)
+    timerRef.current = setTimeout(finish, ANIM_MS + 250);
+  };
+
+  const jump = (k) => {
+    if (k === i) return;
+    clearTransition();
+    setI(k);
   };
 
   // the next photos, shown stacked behind the current one (visual stack)
   const behind = [1, 2, 3].filter((k) => k < n).map((k) => slides[(i + k) % n]);
-  const frontNext = nextIndex !== null ? slides[nextIndex] : null;
+  const incoming = pending ? slides[pending.to] : null;
+  const dir = pending ? (pending.dir > 0 ? 'next' : 'prev') : null;
 
   return (
-    <div className={`hs ${animating ? (animDir > 0 ? 'is-anim is-next' : 'is-anim is-prev') : ''}`} aria-busy={animating}>
-      <div className="hs-stack">
+    <div className={`hs${animating ? ' is-anim' : ''}`} aria-busy={animating}>
+      <div
+        className="hs-stack"
+        onTouchStart={(e) => setX0(e.touches[0].clientX)}
+        onTouchEnd={(e) => {
+          if (x0 === null) return;
+          const dx = e.changedTouches[0].clientX - x0;
+          if (Math.abs(dx) > SWIPE_THRESHOLD) go(dx < 0 ? 1 : -1);
+          setX0(null);
+        }}
+      >
         {behind.map((b, k) => (
           <div key={`bk-${b.src}-${i}-${k}`} className={`hs-bk hs-bk${k + 1}`}>
             <img src={b.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
           </div>
         ))}
 
-        <div
-          className="hs-card"
-          onTouchStart={(e) => setX0(e.touches[0].clientX)}
-          onTouchEnd={(e) => {
-            if (x0 === null) return;
-            const dx = e.changedTouches[0].clientX - x0;
-            if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-            setX0(null);
-          }}
-          onTransitionEnd={onAnimEnd}
-        >
+        {incoming && (
+          <div
+            className={`hs-card hs-in from-${dir}`}
+            aria-hidden="true"
+            onAnimationEnd={(e) => {
+              if (e.target === e.currentTarget && e.animationName.startsWith('hs-in')) finish();
+            }}
+          >
+            <div className="hs-img">
+              <img
+                src={incoming.src}
+                alt=""
+                loading="eager"
+                decoding="async"
+                style={{ objectFit: incoming.fit || 'cover', objectPosition: incoming.pos || 'center' }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className={`hs-card hs-front${dir ? ` is-${dir}` : ''}`}>
           <div className="hs-img">
             <img
               src={s.src}
@@ -96,44 +128,30 @@ export default function HeroSlider({ slides }) {
               style={{ objectFit: s.fit || 'cover', objectPosition: s.pos || 'center' }}
             />
           </div>
-
-          {animating && frontNext && (
-            <div className="hs-card hs-card-next" aria-hidden="true">
-              <div className="hs-img">
-                <img
-                  src={frontNext.src}
-                  alt=""
-                  loading="eager"
-                  decoding="async"
-                  style={{ objectFit: frontNext.fit || 'cover', objectPosition: frontNext.pos || 'center' }}
-                />
-              </div>
-            </div>
-          )}
-
-          {s.badge && (
-            <div
-              className="hs-badge"
-              style={{
-                background: s.badge.color,
-                color: s.badge.textColor || '#fff',
-                boxShadow: `0 14px 30px ${s.badge.color}80`,
-              }}
-            >
-              <big>★</big>
-              {s.badge.text.split(' ')[0]}
-              <br />
-              {s.badge.text.split(' ').slice(1).join(' ')}
-            </div>
-          )}
-
-          {n > 1 && (
-            <>
-              <button className="hs-arrow l" aria-label="Previous photo" onClick={() => go(-1)}><Arrow dir="l" /></button>
-              <button className="hs-arrow r" aria-label="Next photo" onClick={() => go(1)}><Arrow dir="r" /></button>
-            </>
-          )}
         </div>
+
+        {s.badge && (
+          <div
+            className="hs-badge"
+            style={{
+              background: s.badge.color,
+              color: s.badge.textColor || '#fff',
+              boxShadow: `0 14px 30px ${s.badge.color}80`,
+            }}
+          >
+            <big>★</big>
+            {s.badge.text.split(' ')[0]}
+            <br />
+            {s.badge.text.split(' ').slice(1).join(' ')}
+          </div>
+        )}
+
+        {n > 1 && (
+          <>
+            <button className="hs-arrow l" aria-label="Previous photo" onClick={() => go(-1)}><Arrow dir="l" /></button>
+            <button className="hs-arrow r" aria-label="Next photo" onClick={() => go(1)}><Arrow dir="r" /></button>
+          </>
+        )}
       </div>
 
       <div className="hs-cap2">
@@ -145,7 +163,7 @@ export default function HeroSlider({ slides }) {
           <div className="hs-dots">
             {slides.map((_, k) => (
               <button key={k} aria-label={`Go to photo ${k + 1}`}
-                      className={k === i ? 'on' : ''} onClick={() => setI(k)} />
+                      className={k === i ? 'on' : ''} onClick={() => jump(k)} />
             ))}
           </div>
         )}

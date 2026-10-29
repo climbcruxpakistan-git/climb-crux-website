@@ -7,6 +7,7 @@
 import { readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildCollections } from '../src/gallery/data.js'
 
 const SITE_URL = 'https://www.climbcruxpakistan.com'
 const DIST_DIR = fileURLToPath(new URL('../.vercel/output/static', import.meta.url))
@@ -110,6 +111,32 @@ async function fetchDynamicUrls() {
       })
     }
   } catch { /* API unreachable — skip dynamic team URLs */ }
+
+  // The gallery renders on-demand (collections and albums are managed in the
+  // admin), so its URLs never show up in the static scan above.
+  try {
+    const [galleryRes, uploadsRes] = await Promise.all([
+      fetch(`${API_BASE}/gallery`),
+      fetch(`${API_BASE}/uploads`),
+    ])
+    if (galleryRes.ok) {
+      const uploads = uploadsRes.ok ? await uploadsRes.json() : []
+      const collections = buildCollections(await galleryRes.json(), uploads)
+      urls.push({ loc: `${SITE_URL}/gallery/`, lastmod: today, priority: '0.5', changefreq: 'monthly' })
+      for (const c of collections) {
+        urls.push({ loc: `${SITE_URL}/gallery/${c.slug}/`, lastmod: today, priority: '0.5', changefreq: 'monthly' })
+        for (const a of c.albums) {
+          urls.push({
+            loc: `${SITE_URL}/gallery/${c.slug}/${a.slug}/`,
+            lastmod: today,
+            priority: '0.4',
+            changefreq: 'monthly',
+            images: a.photos.map((p) => p.src).filter(Boolean).slice(0, 10),
+          })
+        }
+      }
+    }
+  } catch { /* API unreachable — skip dynamic gallery URLs */ }
   return urls
 }
 
