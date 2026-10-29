@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 const Pin = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="#F47321" aria-hidden="true">
@@ -14,121 +14,65 @@ const Arrow = ({ dir }) => (
 );
 
 const SWIPE_THRESHOLD = 40;
-const ANIM_MS = 650;
+
+// Resize Cloudinary originals (skip if a transformation is already present)
+const opt = (url) =>
+  url && url.includes('res.cloudinary.com') && /\/upload\/v\d/.test(url)
+    ? url.replace('/upload/', '/upload/w_1100,q_auto,f_auto/')
+    : url;
 
 export default function HeroSlider({ slides }) {
   const [i, setI] = useState(0);
-  // { to, dir } while a slide transition is running, null otherwise
-  const [pending, setPending] = useState(null);
-  const [x0, setX0] = useState(null);
-  const pendingRef = useRef(null);
-  const timerRef = useRef(null);
+  const x0 = useRef(null);
   const n = slides.length;
   const s = slides[i];
-  const animating = pending !== null;
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const go = (d) => setI((p) => (p + d + n) % n);
 
-  const clearTransition = () => {
-    pendingRef.current = null;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setPending(null);
+  // Which "slot" a card occupies relative to the current slide
+  const slotOf = (idx) => {
+    const pos = (idx - i + n) % n;
+    if (pos === 0) return '0';
+    if (pos >= 1 && pos <= 3 && pos < n - 1) return String(pos);
+    if (pos === n - 1) return 'out';
+    return 'hidden';
   };
-
-  // Commit the slide once the incoming card has finished coming to the front.
-  const finish = () => {
-    const p = pendingRef.current;
-    if (!p) return;
-    pendingRef.current = null;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setPending(null);
-    setI(p.to);
-  };
-
-  const go = (d) => {
-    if (!d || n <= 1 || pendingRef.current) return;
-    const to = (i + d + n) % n;
-    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) {
-      setI(to);
-      return;
-    }
-    pendingRef.current = { to, dir: d };
-    setPending({ to, dir: d });
-    // Safety net: if animationend never fires (background tab, etc.)
-    timerRef.current = setTimeout(finish, ANIM_MS + 250);
-  };
-
-  const jump = (k) => {
-    if (k === i) return;
-    clearTransition();
-    setI(k);
-  };
-
-  // the next photos, shown stacked behind the current one (visual stack)
-  const behind = [1, 2, 3].filter((k) => k < n).map((k) => slides[(i + k) % n]);
-  const incoming = pending ? slides[pending.to] : null;
-  const dir = pending ? (pending.dir > 0 ? 'next' : 'prev') : null;
 
   return (
-    <div className={`hs${animating ? ' is-anim' : ''}`} aria-busy={animating}>
+    <div className="hs">
       <div
         className="hs-stack"
-        onTouchStart={(e) => setX0(e.touches[0].clientX)}
+        onTouchStart={(e) => { x0.current = e.touches[0].clientX; }}
         onTouchEnd={(e) => {
-          if (x0 === null) return;
-          const dx = e.changedTouches[0].clientX - x0;
+          if (x0.current === null) return;
+          const dx = e.changedTouches[0].clientX - x0.current;
           if (Math.abs(dx) > SWIPE_THRESHOLD) go(dx < 0 ? 1 : -1);
-          setX0(null);
+          x0.current = null;
         }}
       >
-        {behind.map((b, k) => (
-          <div key={`bk-${b.src}-${i}-${k}`} className={`hs-bk hs-bk${k + 1}`}>
-            <img src={b.src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
-          </div>
-        ))}
-
-        {incoming && (
-          <div
-            className={`hs-card hs-in from-${dir}`}
-            aria-hidden="true"
-            onAnimationEnd={(e) => {
-              if (e.target === e.currentTarget && e.animationName.startsWith('hs-in')) finish();
-            }}
-          >
-            <div className="hs-img">
-              <img
-                src={incoming.src}
-                alt=""
-                loading="eager"
-                decoding="async"
-                style={{ objectFit: incoming.fit || 'cover', objectPosition: incoming.pos || 'center' }}
-              />
-            </div>
-          </div>
-        )}
-
-        <div className={`hs-card hs-front${dir ? ` is-${dir}` : ''}`}>
-          <div className="hs-img">
-            <img
-              src={s.src}
-              alt={s.alt}
-              loading="eager"
-              decoding="async"
-              style={{ objectFit: s.fit || 'cover', objectPosition: s.pos || 'center' }}
-            />
-          </div>
+        {/* invisible in-flow twin: gives the stack its height */}
+        <div className="hs-card hs-spacer" aria-hidden="true">
+          <div className="hs-img" />
         </div>
+
+        {slides.map((sl, idx) => {
+          const slot = slotOf(idx);
+          return (
+            <div key={idx} className="hs-card hs-slide" data-pos={slot} aria-hidden={slot !== '0'}>
+              <div className="hs-img">
+                <img
+                  src={opt(sl.src)}
+                  alt={slot === '0' ? sl.alt : ''}
+                  loading="eager"
+                  decoding="async"
+                  draggable="false"
+                  style={{ objectFit: sl.fit || 'cover', objectPosition: sl.pos || 'center' }}
+                />
+              </div>
+              <span className="hs-shade" />
+            </div>
+          );
+        })}
 
         {s.badge && (
           <div
@@ -155,7 +99,7 @@ export default function HeroSlider({ slides }) {
       </div>
 
       <div className="hs-cap2">
-        <div>
+        <div key={i} className="hs-cap-text">
           <h3>{s.title}</h3>
           {s.location && <p><Pin />{s.location}</p>}
         </div>
@@ -163,7 +107,7 @@ export default function HeroSlider({ slides }) {
           <div className="hs-dots">
             {slides.map((_, k) => (
               <button key={k} aria-label={`Go to photo ${k + 1}`}
-                      className={k === i ? 'on' : ''} onClick={() => jump(k)} />
+                      className={k === i ? 'on' : ''} onClick={() => setI(k)} />
             ))}
           </div>
         )}
