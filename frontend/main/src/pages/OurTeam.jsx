@@ -19,7 +19,6 @@ export default function OurTeam() {
     <>
       <section className="section">
         <div className="wrap">
-          <h2>Who's holding your rope</h2>
           {loading ? (
             <p style={{ textAlign: 'center', color: 'var(--stone)' }}>Loading team…</p>
           ) : (
