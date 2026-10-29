@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { GalleryHome } from '../../gallery/Gallery.jsx';
-import { buildCollections, toCollectionCard } from '../../gallery/data';
+import { buildCollections, toCollectionView } from '../../gallery/data';
 import { getGallery, getUploads } from '../../lib/api';
 import '../../gallery/gallery.css';
 
@@ -10,7 +10,7 @@ import '../../gallery/gallery.css';
 export const prerender = false;
 
 const [items, uploads] = await Promise.all([getGallery().catch(() => []), getUploads().catch(() => [])]);
-const collections = buildCollections(items, uploads).map(toCollectionCard);
+const collections = buildCollections(items, uploads).map(toCollectionView);
 ---
 
 <MainLayout

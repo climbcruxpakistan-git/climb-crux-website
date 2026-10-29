@@ -15,6 +15,18 @@ export default function TeamContent({ initial }) {
   }, [])
 
   return (
+    <>
+    <section className="page-header compact">
+      <div className="page-header-pattern"></div>
+      <div className="page-header-accent"></div>
+      <div className="wrap page-header-inner">
+        <h1>Our team.</h1>
+        <div className="page-header-desc">
+          <p>Certified climbing instructors and guides holding your rope on Margalla Hills, Islamabad.</p>
+        </div>
+      </div>
+    </section>
+
     <section className="section">
       <div className="wrap">
         <h2>Who's holding your rope</h2>
@@ -43,5 +55,6 @@ export default function TeamContent({ initial }) {
         </div>
       </div>
     </section>
+    </>
   )
 }

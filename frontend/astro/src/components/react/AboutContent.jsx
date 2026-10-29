@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import { getAbout } from '../../lib/api'
 
 const DEFAULT_DESCRIPTION = `Climb Crux is a rock climbing club based in Islamabad, dedicated to making rock climbing safe, accessible and enjoyable for people of all ages and experience levels. We offer professionally guided climbing sessions, structured coaching, monthly memberships and a welcoming community where every climber can learn, train and grow.
@@ -13,7 +13,7 @@ const STATS = [
   { value: '12+', label: 'Years of guiding experience' },
   { value: '500+', label: 'First-time climbers introduced' },
   { value: '200+', label: 'Group sessions led on Margalla Hills' },
-  { value: '4 – 7c+', label: 'Grade range — first top-rope to elite' },
+  { value: '5', label: 'Workshops offered' },
 ]
 
 export default function AboutContent({ initial }) {
@@ -38,18 +38,27 @@ export default function AboutContent({ initial }) {
     .filter(Boolean)
   const headerLead = paragraphs[0] || ''
   const storyParagraphs = paragraphs.slice(1)
+  // The hero lead reads as two lines: the opening sentence, then the rest.
+  const leadMatch = headerLead.match(/^([\s\S]+?[.!?])\s+([\s\S]+)$/)
+  const leadLines = leadMatch ? [leadMatch[1], leadMatch[2]] : [headerLead]
 
   return (
     <>
-      <section className="page-header">
+      <section className="page-header compact about-hero">
         <div className="page-header-pattern"></div>
         <div className="page-header-accent"></div>
         <div className="wrap page-header-inner">
-          <span className="eyebrow">About Climb Crux</span>
           <h1>Built by climbers, for climbers.</h1>
           {headerLead && (
             <div className="page-header-desc">
-              <p>{headerLead}</p>
+              <p className="about-lead">
+                {leadLines.map((line, i) => (
+                  <Fragment key={i}>
+                    {i > 0 && <br className="about-lead-break" />}
+                    {line}
+                  </Fragment>
+                ))}
+              </p>
             </div>
           )}
         </div>

@@ -1,10 +1,14 @@
 /* Gallery — collections, albums and the photo viewer. */
-.gx {
+/* The photo viewer is portalled to <body>, so it needs these tokens too. */
+.gx,
+.gx-lb {
   --o: #F47321;
   --od: #B8470A;
   --dk: #2E2E30;
   --bk: #1F1F21;
   --cr: #F7F3EC;
+}
+.gx {
   background: var(--cr);
   color: var(--dk);
   font-family: "Work Sans", sans-serif;
@@ -21,16 +25,31 @@
 
 .gx-wrap { max-width: 1184px; margin: 0 auto; padding: 48px 24px; }
 
-.gx-hero { background: var(--dk); color: var(--cr); padding: 72px 24px 56px; }
-.gx-inner { max-width: 1136px; margin: 0 auto; }
-.gx-hero h1 { font-size: clamp(48px, 9vw, 96px); line-height: 1; margin: 12px 0 16px; }
-.gx-hero p { max-width: 560px; font-size: 18px; line-height: 1.55; color: #D9D4CA; margin: 0 0 32px; }
+.gx-hero { background: var(--dk); color: var(--cr); padding: 36px 24px 28px; }
+/* Same hero height as the compact page header on About / Sessions / Team. */
+@media (min-width: 1000px) {
+  .gx-hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 204px;
+  }
+}
+/* width:100% stops the auto margins from shrinking the column inside the
+   (column-flex) hero, which would centre the hero text. */
+.gx-inner { width: 100%; max-width: 1136px; margin: 0 auto; }
+.gx-hero h1 { color: #fff; font-size: clamp(24px, 4.5vw, 48px); line-height: 1; margin: 6px 0 8px; }
+.gx-hero p { max-width: 100%; font-size: 14px; line-height: 1.5; color: #D9D4CA; margin: 0; }
+
+/* Collections index: a filter rail on the left, the card grid on the right. */
+.gx-home { padding-top: 36px; }
 
 .gx-eyebrow {
   font-family: Oswald, sans-serif;
   text-transform: uppercase;
   letter-spacing: .16em;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--o);
 }
 .gx-eyebrow.dark { color: #5a5750; font-size: 13px; margin-bottom: 12px; }
@@ -77,8 +96,8 @@
   padding: 24px;
   background: linear-gradient(transparent, rgba(31, 31, 33, .9));
 }
-.gx-cap h3 { font-size: 26px; }
-.gx-cap p { margin: 4px 0 0; font-size: 13px; color: #E6E0D4; }
+.gx-cap h3 { color: #fff; font-size: 26px; }
+.gx-cap p { margin: 4px 0 0; font-size: 13px; color: #fff; }
 
 .gx-feature > .gx-card:first-child { grid-column: span 2; grid-row: span 2; min-height: 624px; }
 .gx-feature > .gx-card:first-child h3 { font-size: 40px; }
@@ -105,6 +124,61 @@
   padding-left: 12px;
   font-weight: 600;
 }
+
+/* Collections rail on the gallery index: card-like links with album counts. */
+.gx-split aside .gx-rail-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid #E4DCCD;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--dk);
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.gx-split aside .gx-rail-link:hover,
+.gx-split aside .gx-rail-link:focus-visible {
+  border-color: var(--o);
+  transform: translateX(3px);
+  box-shadow: 0 8px 18px rgba(31, 31, 33, .08);
+}
+.gx-split aside .gx-rail-link:last-child { margin-bottom: 0; }
+.gx-rail-name {
+  font-family: Oswald, sans-serif;
+  font-size: 15px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.gx-rail-count {
+  flex: none;
+  min-width: 28px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #EFE8DA;
+  color: #5a5750;
+  font-family: Oswald, sans-serif;
+  font-size: 12px;
+  text-align: center;
+}
+.gx-split aside .gx-rail-link.on {
+  border-color: var(--o);
+  box-shadow: inset 3px 0 0 var(--o);
+}
+
+/* Right-hand pane: collection cards, or the albums of the selected collection */
+.gx-pane { min-width: 0; }
+.gx-folder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.gx-folder-head .gx-crumb { margin: 0; }
 
 .gx-photos {
   display: grid;
@@ -160,7 +234,7 @@
   flex-direction: column;
 }
 .gx-lb-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; }
-.gx-lb-top span { margin-left: 12px; color: #B9B3A7; font-size: 14px; }
+.gx-lb-top span { margin-left: 12px; color: #fff; font-size: 14px; }
 .gx-lb-top > div:last-child { display: flex; gap: 8px; }
 .gx-lb-stage {
   flex: 1;
@@ -183,7 +257,7 @@
   gap: 12px;
 }
 .gx-lb figure img { max-width: 100%; min-height: 0; max-height: calc(100% - 40px); object-fit: contain; }
-.gx-lb figcaption { font-size: 14px; color: #D9D4CA; }
+.gx-lb figcaption { font-size: 14px; color: #fff; }
 .gx-arrow {
   flex: none;
   width: 52px;
@@ -208,6 +282,8 @@
   .gx-split aside { display: flex; gap: 8px; overflow-x: auto; }
   .gx-split aside .gx-eyebrow { display: none; }
   .gx-split aside a { white-space: nowrap; }
+  .gx-split aside .gx-rail-link { margin-bottom: 0; padding: 10px 12px; }
+  .gx-rail-name { font-size: 13px; }
   .gx-photos { grid-auto-rows: 200px; }
   .gx-photos .gx-tile:first-child { grid-row: auto; grid-column: span 2; }
   .gx-arrow { display: none; }

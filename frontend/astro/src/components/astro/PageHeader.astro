@@ -2,12 +2,13 @@
 interface Props {
   title: string;
   eyebrow?: string;
+  compact?: boolean;
 }
 
-const { title, eyebrow } = Astro.props;
+const { title, eyebrow, compact = false } = Astro.props;
 ---
 
-<section class="page-header">
+<section class:list={['page-header', { compact }]}>
   <div class="page-header-pattern"></div>
   <div class="page-header-accent"></div>
   <div class="wrap page-header-inner">
@@ -58,15 +59,12 @@ const { title, eyebrow } = Astro.props;
   @media (max-width: 480px) {
     .page-header-inner { padding-top: 40px; padding-bottom: 36px; }
   }
+  /* Size comes from shared.css so the `.compact` variant can override it. */
   .page-header h1 {
     color: var(--chalk);
-    font-size: clamp(1.8rem, 6.5vw, 2.6rem);
     position: relative;
     padding-bottom: 0.35em;
     margin-bottom: 0.5em;
-  }
-  @media (min-width: 601px) {
-    .page-header h1 { font-size: clamp(2.6rem, 5vw, 3.8rem); }
   }
   .page-header h1::after {
     content: '';
@@ -81,12 +79,11 @@ const { title, eyebrow } = Astro.props;
   @media (max-width: 600px) {
     .page-header h1::after { width: 50px; height: 3px; }
   }
+  /* Size and width come from shared.css so the `.compact` variant wins. */
   .page-header-desc p {
     color: #c9c4b8;
-    font-size: 1.08rem;
     line-height: 1.7;
     margin-bottom: 0;
-    max-width: 68ch;
   }
   .page-header-desc p + p { margin-top: 0.6em; }
   .eyebrow {

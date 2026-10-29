@@ -61,7 +61,7 @@ export default function SessionsContent({ initial }) {
 
   return (
     <>
-      <section className="page-header">
+      <section className="page-header compact">
         <div className="page-header-pattern"></div>
         <div className="page-header-accent"></div>
         <div className="wrap page-header-inner">

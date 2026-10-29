@@ -69,6 +69,20 @@ export const toCollectionCard = (c) => ({
   photoCount: countPhotos(c),
 });
 
+// The gallery index shows these two collection previews on each other's cards.
+const SWAPPED_COVERS = {
+  'foreigner-climbers': 'high-grade-rock-climbing',
+  'high-grade-rock-climbing': 'foreigner-climbers',
+};
+
+export const applyCoverSwaps = (cards) => {
+  const bySlug = new Map(cards.map((c) => [c.slug, c]));
+  return cards.map((c) => {
+    const other = SWAPPED_COVERS[c.slug] ? bySlug.get(SWAPPED_COVERS[c.slug]) : null;
+    return other?.cover ? { ...c, cover: other.cover } : c;
+  });
+};
+
 export const toAlbumCard = (a) => ({
   slug: a.slug,
   title: a.title,
@@ -79,6 +93,7 @@ export const toAlbumCard = (a) => ({
 export const toCollectionView = (c) => ({
   slug: c.slug,
   title: c.title,
+  cover: coverOf(c),
   albumCount: c.albums.length,
   photoCount: countPhotos(c),
   albums: c.albums.map(toAlbumCard),

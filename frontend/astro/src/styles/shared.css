@@ -93,6 +93,34 @@
   margin-top: 0.6em;
 }
 
+/* Compact hero — About, Public Sessions, Private & Premium and Our Team all
+   share this height so their page headers line up with each other. */
+.page-header.compact .page-header-inner {
+  padding-top: 46px;
+  padding-bottom: 40px;
+}
+
+.page-header.compact h1 {
+  font-size: clamp(1.7rem, 2.8vw, 2.45rem);
+}
+
+.page-header.compact .page-header-desc p {
+  max-width: 100%;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Same overall height whether the intro runs to one line or two. */
+@media (min-width: 1000px) {
+  .page-header.compact .page-header-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 204px;
+  }
+}
+
 @media (max-width: 600px) {
   .page-header-inner {
     padding-top: 48px;

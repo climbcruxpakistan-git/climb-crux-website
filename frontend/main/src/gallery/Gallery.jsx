@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useParams, useSearchParams, Navigate } from "react-router-dom";
-import { loadCollections, plural, toCollectionCard, toCollectionView } from "./data";
+import { applyCoverSwaps, loadCollections, plural, toCollectionView } from "./data";
 import "./gallery.css";
 
 const collectionHref = (slug) => `/gallery/${slug}`;
@@ -41,35 +42,62 @@ function useCollections() {
 /* ---------- /gallery ---------- */
 export function GalleryHome() {
   const collections = useCollections();
-  const [filter, setFilter] = useState("all");
+  // Picking a collection in the rail opens its sub-categories (albums) in the
+  // grid beside it instead of leaving the page.
+  const [active, setActive] = useState(null);
 
   if (collections === null) return <Loading />;
-  const list = collections.map(toCollectionCard);
-  const shown = filter === "all" ? list : list.filter((c) => c.slug === filter);
+  const list = applyCoverSwaps(collections.map(toCollectionView));
+  const selected = active ? list.find((c) => c.slug === active) || null : null;
 
   return (
     <div className="gx">
       <header className="gx-hero">
         <div className="gx-inner">
-          <span className="gx-eyebrow">Gallery · Margalla Hills</span>
           <h1>From the wall.</h1>
           <p>A running record of sessions on Margalla Hills. Public climbs, Private coaching and Group Training.</p>
-          <div className="gx-chips" role="group" aria-label="Filter collections">
-            <button type="button" className={`gx-chip ${filter === "all" ? "on" : ""}`} onClick={() => setFilter("all")}>All</button>
-            {list.map((c) => (
-              <button type="button" key={c.slug} className={`gx-chip ${filter === c.slug ? "on" : ""}`} onClick={() => setFilter(c.slug)}>
-                {c.title}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
-      <section className={`gx-wrap gx-grid ${filter === "all" ? "gx-feature" : ""}`}>
-        {shown.length === 0 && <p className="gx-sub">No photos yet. Check back soon!</p>}
-        {shown.map((c) => (
-          <Card key={c.slug} href={collectionHref(c.slug)} img={c.cover} title={c.title}
-            meta={`${plural(c.albumCount, "album")} · ${plural(c.photoCount, "photo")}`} />
-        ))}
+      <section className="gx-wrap gx-home">
+        <div className="gx-split">
+          <aside className="gx-rail" aria-label="Collections">
+            <div className="gx-eyebrow dark">Collections</div>
+            {list.map((c) => (
+              <Link key={c.slug} to={collectionHref(c.slug)} className={`gx-rail-link${active === c.slug ? " on" : ""}`}
+                aria-current={active === c.slug ? "true" : undefined}
+                title={`${plural(c.albumCount, "album")} · ${plural(c.photoCount, "photo")}`}
+                onClick={(e) => { e.preventDefault(); setActive(active === c.slug ? null : c.slug); }}>
+                <span className="gx-rail-name">{c.title}</span>
+                <span className="gx-rail-count">{c.albumCount}</span>
+              </Link>
+            ))}
+          </aside>
+          <div className="gx-pane">
+            {selected ? (
+              <>
+                <div className="gx-folder-head">
+                  <p className="gx-crumb">Gallery / <b>{selected.title}</b></p>
+                  <button type="button" className="gx-ghost" onClick={() => setActive(null)}>← All collections</button>
+                </div>
+                <div className="gx-grid gx-feature-2">
+                  {selected.albums.length === 0 && <p className="gx-sub">No albums in this collection yet.</p>}
+                  {selected.albums.map((a) => (
+                    <Card key={a.slug} href={albumHref(selected.slug, a.slug)} img={a.cover}
+                      title={a.title} meta={plural(a.photoCount, "photo")} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="gx-grid gx-feature">
+                {list.length === 0 && <p className="gx-sub">No photos yet. Check back soon!</p>}
+                {list.map((c) => (
+                  <Card key={c.slug} href={collectionHref(c.slug)} img={c.cover} title={c.title}
+                    meta={`${plural(c.albumCount, "album")} · ${plural(c.photoCount, "photo")}`} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </section>
     </div>
   );
@@ -165,10 +193,14 @@ export function AlbumPage() {
             : <span />}
         </div>
       </div>
-      {open != null && a.photos[open] && (
-        <Lightbox title={a.title} photos={a.photos} index={open}
-          onChange={setOpen} onClose={() => setOpen(null)} onShare={share} />
-      )}
+      {/* Portalled to <body> so the fixed overlay is sized to the viewport
+          rather than to any transformed page wrapper. */}
+      {open != null && a.photos[open] &&
+        createPortal(
+          <Lightbox title={a.title} photos={a.photos} index={open}
+            onChange={setOpen} onClose={() => setOpen(null)} onShare={share} />,
+          document.body,
+        )}
     </div>
   );
 }

@@ -11,14 +11,20 @@
    accent bar + under-title rule). With no photo, the copy owns the full
    width, so give the type more room and let it breathe. */
 .guide-hero-inner {
-  padding-top: clamp(64px, 9vw, 120px);
-  padding-bottom: clamp(56px, 8vw, 108px);
+  padding-top: clamp(34px, 4.6vw, 62px);
+  padding-bottom: clamp(30px, 4.2vw, 56px);
 }
 
 .guide-hero h1 {
-  font-size: clamp(2.4rem, 5.4vw, 4rem);
-  max-width: 16ch;
-  margin-bottom: 0.55em;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  max-width: 100%;
+  margin-bottom: 0.45em;
+}
+
+/* One-line intro so the hero stays short. */
+.guide-hero .page-header-desc p {
+  max-width: 100%;
+  font-size: 0.95rem;
 }
 
 /* Route-summary chips — a quiet "grade tape" that takes the place the
@@ -56,6 +62,11 @@
   flex-wrap: wrap;
   gap: 14px;
   margin-top: 36px;
+}
+
+/* Tighter stack inside the compact hero. */
+.guide-hero .guide-hero-actions {
+  margin-top: 20px;
 }
 
 @media (max-width: 480px) {

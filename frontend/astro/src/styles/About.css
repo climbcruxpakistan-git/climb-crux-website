@@ -1,5 +1,26 @@
 /* ============================== ABOUT PAGE ============================== */
 
+/* ── Hero lead ──
+   The lead runs a little wider than the headline column so both of its
+   sentences fit on their own line. (Hero height comes from .compact.) */
+.page-header.compact.about-hero .page-header-desc p {
+  max-width: 100%;
+}
+@media (min-width: 1000px) {
+  .page-header.compact.about-hero .page-header-desc {
+    width: min(calc(100% + 120px), calc(100vw - 160px));
+  }
+  .page-header.compact.about-hero .page-header-desc p {
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+}
+/* Two hard lines on wide screens; below that the lead wraps naturally. */
+.about-lead-break { display: none; }
+@media (min-width: 1300px) {
+  .about-hero .about-lead-break { display: inline; }
+}
+
 /* ── Our story ── */
 .about-story { background: var(--chalk); }
 /* Attach the story section directly to the stats band below (no big gap) */
