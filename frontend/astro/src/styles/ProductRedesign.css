@@ -1,0 +1,144 @@
+/* Redesigned product page. Import AFTER ProductDetail.css (reviews, FAQs and zoom still use it). */
+.px { --px-line: #e6dfd2; --px-card: #fff; padding-top: 20px; }
+.px h1, .px h2, .px h3 { font-family: var(--font-display); text-transform: uppercase; }
+
+.px-crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: .85rem; color: var(--stone); margin-bottom: 18px; }
+.px-crumbs a { color: inherit; text-decoration: none; }
+.px-crumbs a:hover { color: var(--orange); }
+.px-crumbs strong { color: var(--charcoal); font-weight: 600; }
+
+.px-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+/* Gallery */
+.px-gallery { min-width: 0; }
+.px-stage { position: relative; aspect-ratio: 1; background: #fbf9f5; border: 1px solid var(--px-line); border-radius: 18px; display: grid; place-items: center; cursor: zoom-in; overflow: hidden; }
+.px-stage > img { width: 86%; height: 86%; object-fit: contain; }
+.px-noimg { color: var(--stone); }
+.px-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--px-line); background: #fff; font-size: 1.3rem; cursor: pointer; }
+.px-prev { left: 14px; } .px-next { right: 14px; }
+.px-count, .px-zoom { position: absolute; bottom: 14px; font-size: .75rem; font-weight: 600; border-radius: 99px; padding: 5px 12px; }
+.px-count { left: 14px; background: var(--charcoal); color: #fff; }
+.px-zoom { right: 14px; background: #fff; border: 1px solid var(--px-line); }
+.px-thumbs { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; }
+.px-thumbs button { flex: 0 0 76px; height: 76px; padding: 4px; background: #fbf9f5; border: 2px solid var(--px-line); border-radius: 12px; cursor: pointer; }
+.px-thumbs button.is-active { border-color: var(--orange); }
+.px-thumbs img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Buy box */
+.px-buy { display: flex; flex-direction: column; gap: 14px; align-self: stretch; }
+.px-brand { font-family: var(--font-display); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-dark, var(--orange)); }
+/* Name + certification badge share one row (title and badge are sized to fit the
+   column side by side; wrap is only a safety net for very long values). */
+.px-headline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.px-title { flex: 0 1 auto; min-width: 0; font-size: clamp(1.85rem, 3.2vw, 2.5rem); line-height: 1.05; margin: 0; }
+.px-rating { font-size: .85rem; color: var(--stone-dark); text-decoration: none; }
+.px-price-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.px-price { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; color: var(--orange-dark, var(--orange)); }
+.px-was { color: #999; }
+.px-off { background: #dc2626; color: #fff; font-size: .75rem; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
+.px-cert { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; font-size: .7rem; font-weight: 600; line-height: 1.2; border: 1px solid var(--px-line); background: #fff; border-radius: 8px; padding: 3px 9px; white-space: nowrap; }
+.px-cert i, .px-stock i { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block; }
+.px-cert i { width: 6px; height: 6px; flex: 0 0 auto; }
+.px-stock { display: flex; align-items: center; gap: 8px; margin: 0; font-size: .88rem; color: var(--stone); }
+.px-stock i { margin-right: 0; }
+.px-stock-low { color: var(--orange-dark, var(--orange)); font-weight: 600; } .px-stock-low i { background: var(--orange); }
+.px-stock-out_of_stock { color: #dc2626; font-weight: 600; } .px-stock-out_of_stock i { background: #dc2626; }
+
+.px-variants { display: flex; flex-wrap: wrap; gap: 8px; }
+.px-chip { border: 1.5px solid var(--px-line); border-radius: 8px; padding: 6px 12px; font-size: .85rem; background: #fff; }
+.px-chip.is-out { opacity: .5; }
+
+/* Quantity, actions and policy links travel together and are pushed to the
+   bottom of the column. */
+.px-buyfoot { display: flex; flex-direction: column; gap: 14px; margin-top: auto; }
+
+/* With thumbnails the gallery column is 88px (12px gap + 76px strip) taller than
+   the photo, so the buy block is lifted by the same amount to end level with the
+   photograph rather than with the thumbnails. */
+@media (min-width: 861px) {
+  .px-top.has-thumbs .px-buyfoot { margin-bottom: 88px; }
+}
+.px-qty-row { display: flex; align-items: center; gap: 18px; padding-bottom: 10px; }
+.px-qty { display: inline-flex; align-items: center; background: #fff; border: 1px solid var(--px-line); border-radius: 12px; overflow: hidden; }
+.px-qty button { width: 46px; height: 48px; border: 0; background: transparent; font-size: 1.2rem; cursor: pointer; }
+.px-qty button:disabled { opacity: .3; cursor: not-allowed; }
+.px-qty span { min-width: 40px; text-align: center; font-weight: 700; }
+.px-total { font-size: .9rem; color: var(--stone); } .px-total b { color: var(--charcoal); }
+
+.px-actions { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; }
+.px-actions .btn { justify-content: center; padding: 1em; font-size: 1rem; text-align: center; text-decoration: none; }
+.px-buy-btn:disabled { opacity: .4; cursor: not-allowed; }
+.px-policies { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: .85rem; }
+.px-policies a { color: #15803d; font-weight: 600; text-decoration: none; }
+.px-policies a:hover { text-decoration: underline; }
+.px-policies span { color: var(--stone); }
+
+/* Specifications — full-width row under the buy box */
+.px-specs { margin-top: 40px; background: #fff; border: 1px solid var(--px-line); border-radius: 16px; padding: 24px; }
+.px-specs h2 { font-size: 1.5rem; margin: 0 0 12px; }
+.px-specs table { width: 100%; border-collapse: collapse; }
+.px-specs tr:nth-child(even) { background: #faf7f1; }
+.px-specs th, .px-specs td { text-align: left; padding: 12px 14px; font-size: .92rem; vertical-align: top; }
+.px-specs th { font-weight: 400; color: var(--stone-dark); width: 26%; } .px-specs td { font-weight: 600; }
+.px-specs ul { margin: 14px 0 0; padding-left: 20px; line-height: 1.6; color: var(--stone-dark); font-size: .9rem; }
+
+/* Complete your setup */
+.px-setup { margin-top: 56px; }
+.px-setup h2 { font-size: 1.8rem; margin: 0 0 18px; }
+.px-setup h2 small { font: 400 .9rem var(--font-body, inherit); text-transform: none; color: var(--stone); margin-left: 10px; }
+.px-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.px-card { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--px-line); border-radius: 14px; overflow: hidden; color: inherit; text-decoration: none; }
+.px-card:hover { border-color: var(--orange); }
+.px-card-img { position: relative; aspect-ratio: 4/3; background: #fbf9f5; display: grid; place-items: center; }
+.px-card-img img { width: 70%; height: 80%; object-fit: contain; }
+.px-card-off { position: absolute; top: 10px; left: 10px; background: var(--charcoal); color: var(--orange); font-size: .75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+.px-card-body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.px-card-body h3 { font-size: 1.05rem; margin: 0; }
+.px-card-body p { margin: 4px 0 0; display: flex; gap: 8px; align-items: baseline; } .px-card-body s { color: #999; font-size: .8rem; }
+
+/* ── Filters column ──
+   Same sidebar the shop listing uses (Shop.css supplies the .sp- rules); on the
+   product page every facet is a link into /shop/ with the matching query. */
+.px-layout { display: grid; grid-template-columns: 228px minmax(0, 1fr); column-gap: 32px; align-items: start; }
+.px-main { min-width: 0; }
+.px-filters-card { position: sticky; top: 100px; max-height: calc(100vh - 120px); overflow-y: auto; padding: 18px 16px; border: 1px solid var(--px-line); background: #fff; scrollbar-width: thin; }
+.px-filters-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.px-filters-card .sp-sidebar-title { font-family: var(--font-display); text-transform: uppercase; }
+.px-filters-card .sp-clear { text-decoration: none; }
+.px-filters-card .sp-cat { text-decoration: none; }
+.px-facet { text-decoration: none; }
+.px-facet::before { content: ''; flex: 0 0 15px; height: 15px; border: 1.5px solid var(--px-line); border-radius: 3px; background: #fff; }
+.px-facet:hover::before { border-color: var(--orange); }
+.px-facet:hover > span:first-of-type { color: var(--charcoal); }
+.px-filters-toggle { display: none; margin-left: auto; padding: 4px 0; border: 0; background: none; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange-dark, var(--orange)); cursor: pointer; }
+
+.px-sticky { display: none; }
+
+@media (max-width: 1120px) {
+  .px-layout { grid-template-columns: 1fr; row-gap: 24px; }
+  .px-filters-card { position: static; max-height: none; }
+  .px-filters-toggle { display: inline-flex; }
+  .px-filters-body { display: none; }
+  .px-filters-card.is-open .px-filters-body { display: block; }
+}
+
+@media (max-width: 860px) {
+  .px-top { grid-template-columns: 1fr; gap: 28px; }
+  .px-specs { margin-top: 28px; }
+  .px-buy { align-self: start; }
+  .px-grid { grid-template-columns: repeat(2, 1fr); }
+  .px-section, .px { padding-bottom: 88px; }
+  .px-sticky { display: flex; position: fixed; inset: auto 0 0; z-index: 50; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid var(--px-line); box-shadow: 0 -4px 16px rgba(0,0,0,.08); }
+  .px-sticky small { display: block; font-size: .72rem; color: var(--stone); } .px-sticky b { font-family: var(--font-display); font-size: 1.2rem; }
+}
+@media (max-width: 520px) {
+  .px-actions { grid-template-columns: 1fr; }
+  .px-grid { grid-template-columns: 1fr; }
+  .px-price { font-size: 1.8rem; }
+}
+.px a:focus-visible, .px button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }

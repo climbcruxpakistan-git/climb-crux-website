@@ -49,7 +49,9 @@ function getStock(product) {
   }
 }
 
-function getCert(product) {
+// Exported so the product-page filter panel counts certifications exactly the
+// same way the shop sidebar does.
+export function getCert(product) {
   const specs = product.specifications || []
   const match = specs.find((spec) => /certif|standard/i.test(`${spec.key} ${spec.value}`))
   if (match?.value) return match.value

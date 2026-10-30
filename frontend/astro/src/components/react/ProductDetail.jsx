@@ -1,90 +1,225 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { getProduct, getProducts, getProductReviews, submitProductReview, optimizeImage } from '../../lib/api'
+import { getCert } from './Shop.jsx'
 
-/** Site-wide date format: Day-Month-Year (DD-MM-YYYY), e.g. 05-08-2026. */
+const WHATSAPP = '923350044403'
+const SITE_URL = 'https://www.climbcruxpakistan.com'
+
 function formatDate(value) {
   if (!value) return ''
   const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (m) return `${m[3]}-${m[2]}-${m[1]}`
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return String(value)
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  return `${dd}-${mm}-${d.getFullYear()}`
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : String(value)
 }
 
 function StarRating({ rating, size = 20, interactive = false, onChange }) {
-  const stars = []
-  for (let i = 1; i <= 5; i++) {
-    const fill = rating >= i ? 'full' : rating >= i - 0.5 ? 'half' : 'empty'
-    stars.push(
-      <span key={i} className={`pd-star pd-star-${fill} ${interactive ? 'pd-star-interactive' : ''}`}
-        style={{ width: size, height: size, fontSize: size }}
-        onClick={() => interactive && onChange?.(i)}
-        role={interactive ? 'button' : undefined}
-        aria-label={interactive ? `${i} star` : undefined}>
-        {fill === 'full' ? '★' : fill === 'half' ? '★' : '☆'}
-      </span>
-    )
-  }
-  return <span className="pd-star-rating" style={{ gap: 2 }}>{stars}</span>
+  return (
+    <span className="pd-star-rating" style={{ gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((i) => {
+        const fill = rating >= i ? 'full' : rating >= i - 0.5 ? 'half' : 'empty'
+        return (
+          <span key={i} className={`pd-star pd-star-${fill} ${interactive ? 'pd-star-interactive' : ''}`}
+            style={{ fontSize: size }} onClick={() => interactive && onChange?.(i)}
+            role={interactive ? 'button' : undefined} aria-label={interactive ? `${i} star` : undefined}>
+            {fill === 'empty' ? '☆' : '★'}
+          </span>
+        )
+      })}
+    </span>
+  )
 }
 
-function trackRecentlyViewed(product) {
+function trackRecentlyViewed(p) {
   try {
-    const key = 'shop_recently_viewed'
-    let list = JSON.parse(localStorage.getItem(key) || '[]')
-    list = list.filter((p) => p.id !== product.id)
-    list.unshift({ id: product.id, name: product.name, imageUrl: product.imageUrl, price: product.price })
-    if (list.length > 10) list = list.slice(0, 10)
-    localStorage.setItem(key, JSON.stringify(list))
+    let list = JSON.parse(localStorage.getItem('shop_recently_viewed') || '[]').filter((x) => x.id !== p.id)
+    list.unshift({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price })
+    localStorage.setItem('shop_recently_viewed', JSON.stringify(list.slice(0, 10)))
   } catch { /* ignore */ }
 }
-
 function getRecentlyViewed(excludeId) {
-  try {
-    const key = 'shop_recently_viewed'
-    const list = JSON.parse(localStorage.getItem(key) || '[]')
-    return list.filter((p) => p.id !== excludeId).slice(0, 4)
-  } catch { return [] }
+  try { return JSON.parse(localStorage.getItem('shop_recently_viewed') || '[]').filter((p) => p.id !== excludeId).slice(0, 4) }
+  catch { return [] }
 }
+function jsonParse(s) { try { return s ? JSON.parse(s) : null } catch { return null } }
 
-const FEATURE_ICONS = {
-  lightweight: '🪶', durable: '🛡️', premium: '✨', fast: '⚡',
-  water: '💧', reinforced: '🔩', adjustable: '⚙️', compact: '📏',
-  safe: '🔒', comfortable: '🛋️', ergonomic: '✋', breathable: '💨',
-}
-
-function getFeatureIcon(feature, index) {
-  const lower = feature.toLowerCase()
-  for (const [key, icon] of Object.entries(FEATURE_ICONS)) {
-    if (lower.includes(key)) return icon
-  }
-  const fallbacks = ['✅', '⭐', '🔹', '🔸', '⚡', '🎯', '💪', '🏆']
-  return fallbacks[index % fallbacks.length]
+/**
+ * Admin descriptions are free text: dashed "Label: value" lines, loose bullets,
+ * and plain paragraphs. Split them so the page can show a spec table.
+ */
+function parseDescription(text = '') {
+  const rows = [], bullets = [], intro = []
+  text.split('\n').map((l) => l.trim()).filter(Boolean).forEach((line) => {
+    const dashed = line.startsWith('-')
+    const clean = line.replace(/^-\s*/, '')
+    const m = clean.match(/^([^:]{2,40}):\s*(.+)$/)
+    if (m && (dashed || clean.length < 70)) rows.push({ key: m[1].trim(), value: m[2].trim().replace(/\.$/, '') })
+    else if (dashed) bullets.push(clean)
+    else intro.push(clean)
+  })
+  return { rows, bullets, intro }
 }
 
 /**
- * Parse JSON-stringified initial data from Astro page props.
- * Falls back to null/empty if parsing fails.
+ * The shop sidebar, shown beside every product so shoppers can narrow the
+ * catalogue without going back to the listing. Nothing here filters the page
+ * it sits on — each facet is a link into /shop/ with the matching query params
+ * (the same ones Shop.jsx reads), so the panel works without its own state.
  */
-function jsonParse(str) {
-  try { return str ? JSON.parse(str) : null } catch { return null }
+function ShopFilters({ products }) {
+  const [open, setOpen] = useState(false)
+  const [priceLo, setPriceLo] = useState(null)
+  const [priceHi, setPriceHi] = useState(null)
+
+  const catalogue = useMemo(
+    () => (products || []).filter((p) => p.status !== 'draft' && p.status !== 'archived'),
+    [products]
+  )
+
+  const facets = useMemo(() => {
+    const categories = [], brands = [], certs = []
+    const categoryCount = {}, brandCount = {}, certCount = {}
+    let low = null, high = null
+    for (const p of catalogue) {
+      if (p.category) {
+        if (!categoryCount[p.category]) categories.push(p.category)
+        categoryCount[p.category] = (categoryCount[p.category] || 0) + 1
+      }
+      if (p.brand) {
+        if (!brandCount[p.brand]) brands.push(p.brand)
+        brandCount[p.brand] = (brandCount[p.brand] || 0) + 1
+      }
+      const cert = getCert(p)
+      if (cert) {
+        if (!certCount[cert]) certs.push(cert)
+        certCount[cert] = (certCount[cert] || 0) + 1
+      }
+      const price = Number(p.price) || 0
+      low = low === null ? price : Math.min(low, price)
+      high = high === null ? price : Math.max(high, price)
+    }
+    brands.sort((a, b) => a.localeCompare(b))
+    certs.sort((a, b) => a.localeCompare(b))
+    const min = low === null ? 0 : Math.floor(low / 500) * 500
+    let max = high === null ? 500 : Math.ceil(high / 500) * 500
+    if (max <= min) max = min + 500
+    return { categories, brands, certs, categoryCount, brandCount, certCount, min, max }
+  }, [catalogue])
+
+  const lo = priceLo === null ? facets.min : Math.min(Math.max(priceLo, facets.min), facets.max)
+  const hi = priceHi === null ? facets.max : Math.max(Math.min(priceHi, facets.max), facets.min)
+  const span = facets.max - facets.min || 1
+  const shopHref = (params = {}) => {
+    const qs = new URLSearchParams(params).toString()
+    return qs ? `/shop/?${qs}` : '/shop/'
+  }
+  const applyPrice = () => {
+    const params = {}
+    if (lo > facets.min) params.min = String(lo)
+    if (hi < facets.max) params.max = String(hi)
+    window.location.href = shopHref(params)
+  }
+
+  return (
+    <aside className={`px-filters-card ${open ? 'is-open' : ''}`} aria-label="Product filters">
+      <div className="px-filters-head">
+        <h2 className="sp-sidebar-title">Filters</h2>
+        <a className="sp-clear" href="/shop/">Clear all</a>
+        <button type="button" className="px-filters-toggle" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+          {open ? 'Hide' : 'Show'}
+        </button>
+      </div>
+
+      <div className="px-filters-body">
+        <div className="sp-filter-group">
+          <h3 className="sp-filter-title">Category</h3>
+          <ul className="sp-cat-list">
+            <li>
+              <a className="sp-cat" href="/shop/"><span>All</span><span className="sp-cat-count">{catalogue.length}</span></a>
+            </li>
+            {facets.categories.map((c) => (
+              <li key={c}>
+                <a className="sp-cat" href={shopHref({ cat: c })}>
+                  <span>{c}</span><span className="sp-cat-count">{facets.categoryCount[c]}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {facets.brands.length > 0 && (
+          <div className="sp-filter-group">
+            <h3 className="sp-filter-title">Brand</h3>
+            <div className="sp-check-list">
+              {facets.brands.map((b) => (
+                <a key={b} className="sp-check px-facet" href={shopHref({ brand: b })}>
+                  <span>{b}</span><span className="sp-check-count">{facets.brandCount[b]}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {facets.max > facets.min && (
+          <div className="sp-filter-group">
+            <h3 className="sp-filter-title">Price</h3>
+            <div
+              className="sp-range"
+              style={{ '--lo': `${((lo - facets.min) / span) * 100}%`, '--hi': `${((hi - facets.min) / span) * 100}%` }}
+            >
+              <span className="sp-range-track" aria-hidden="true" />
+              <span className="sp-range-fill" aria-hidden="true" />
+              <input
+                type="range" min={facets.min} max={facets.max} step={100} value={lo}
+                onChange={(e) => setPriceLo(Math.min(Number(e.target.value), hi))}
+                onPointerUp={applyPrice} onTouchEnd={applyPrice} onKeyUp={applyPrice}
+                aria-label="Minimum price"
+              />
+              <input
+                type="range" min={facets.min} max={facets.max} step={100} value={hi}
+                onChange={(e) => setPriceHi(Math.max(Number(e.target.value), lo))}
+                onPointerUp={applyPrice} onTouchEnd={applyPrice} onKeyUp={applyPrice}
+                aria-label="Maximum price"
+              />
+            </div>
+            <div className="sp-range-values">
+              <span>PKR {lo.toLocaleString('en-PK')}</span>
+              <span>PKR {hi.toLocaleString('en-PK')}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="sp-filter-group">
+          <h3 className="sp-filter-title">Availability</h3>
+          <div className="sp-check-list">
+            <a className="sp-check px-facet" href={shopHref({ stock: 'in' })}><span>In stock only</span></a>
+            <a className="sp-check px-facet" href={shopHref({ saved: '1' })}><span>Saved items</span></a>
+          </div>
+        </div>
+
+        {facets.certs.length > 0 && (
+          <div className="sp-filter-group">
+            <h3 className="sp-filter-title">Certification</h3>
+            <div className="sp-check-list">
+              {facets.certs.map((c) => (
+                <a key={c} className="sp-check px-facet" href={shopHref({ cert: c })}>
+                  <span>{c}</span><span className="sp-check-count">{facets.certCount[c]}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  )
 }
 
 export default function ProductDetail({ id, initialProduct, initialAllProducts, initialReviewData }) {
-  // Use server-rendered initial data if available (SSG), otherwise start fresh
-  const parsedInitialProduct = jsonParse(initialProduct)
-  const parsedInitialAllProducts = jsonParse(initialAllProducts)
-  const parsedInitialReviewData = jsonParse(initialReviewData)
-
-  const [product, setProduct] = useState(parsedInitialProduct)
-  const [allProducts, setAllProducts] = useState(parsedInitialAllProducts || [])
-  const [loading, setLoading] = useState(!parsedInitialProduct)
+  const first = jsonParse(initialProduct)
+  const [product, setProduct] = useState(first)
+  const [allProducts, setAllProducts] = useState(jsonParse(initialAllProducts) || [])
+  const [loading, setLoading] = useState(!first)
   const [activeImg, setActiveImg] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 })
-  const [reviewData, setReviewData] = useState(parsedInitialReviewData || { reviews: [], total: 0, avgRating: 0, distribution: [0,0,0,0,0] })
+  const [reviewData, setReviewData] = useState(jsonParse(initialReviewData) || { reviews: [], total: 0, avgRating: 0, distribution: [0, 0, 0, 0, 0] })
   const [reviewForm, setReviewForm] = useState({ customer_name: '', rating: 5, title: '', comment: '' })
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
@@ -94,257 +229,195 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
-  // Hydrate: fetch fresh data on mount for stock/pricing/availability updates
-  // If initial data was provided, background-refresh without showing a spinner
   useEffect(() => {
-    if (parsedInitialProduct) {
-      // Background refresh - update stock, reviews, etc. without loading state
-      Promise.all([getProduct(id), getProductReviews(id)])
-        .then(([p, reviews]) => {
-          setProduct(p)
-          setReviewData(reviews)
-          if (p) trackRecentlyViewed(p)
-          setRecentlyViewed(getRecentlyViewed(id))
-          // Only adopt an admin-authored SEO title; otherwise keep the title the
-          // page server-rendered (it disambiguates products that share a name).
-          const seoTitle = p.seo?.title?.trim()
-          if (seoTitle) document.title = seoTitle
-        })
-        .catch(() => {})
+    const done = (p, reviews, all) => {
+      setProduct(p); setReviewData(reviews)
+      if (all) setAllProducts(all)
+      trackRecentlyViewed(p); setRecentlyViewed(getRecentlyViewed(id))
+      const t = p.seo?.title?.trim(); if (t) document.title = t
+    }
+    if (first) {
+      Promise.all([getProduct(id), getProductReviews(id)]).then(([p, r]) => done(p, r)).catch(() => {})
       return
     }
-    // No initial data - full fetch with loading state
     setLoading(true)
-    Promise.all([getProduct(id), getProducts(), getProductReviews(id)])
-      .then(([p, all, reviews]) => {
-        setProduct(p)
-        setAllProducts(all)
-        setReviewData(reviews)
-        trackRecentlyViewed(p)
-        setRecentlyViewed(getRecentlyViewed(id))
-        const seoTitle = p.seo?.title?.trim()
-        if (seoTitle) document.title = seoTitle
-      })
-      .catch(() => window.location.href = '/shop/')
+    Promise.all([getProduct(id), getProductReviews(id), getProducts()])
+      .then(([p, r, all]) => done(p, r, all))
+      .catch(() => { window.location.href = '/shop/' })
       .finally(() => setLoading(false))
   }, [id])
 
-  const totalPrice = product ? product.price * quantity : 0
   const allImages = product ? [product.imageUrl, ...(product.images || [])].filter(Boolean) : []
-
-  const relatedProducts = product
-    ? allProducts.filter((p) => p.id !== id && p.inStock)
-        .sort((a, b) => {
-          const sameCat = (a.category === product.category ? 0 : 1) - (b.category === product.category ? 0 : 1)
-          if (sameCat !== 0) return sameCat
-          return Math.abs(a.price - product.price) - Math.abs(b.price - product.price)
-        }).slice(0, 4)
-    : []
-
-  function handleShare() {
-    const url = window.location.href
-    const text = `Check out ${product.name} at Climb Crux!`
-    if (navigator.share) {
-      navigator.share({ title: product.name, text, url }).catch(() => {})
-    } else {
-      navigator.clipboard.writeText(url).then(() => { alert('Link copied to clipboard!') })
-    }
-  }
-
-  function handleTouchStart(e) { touchStartX.current = e.touches[0].clientX }
-  function handleTouchMove(e) { touchEndX.current = e.touches[0].clientX }
-  function handleTouchEnd() {
-    const diff = touchStartX.current - touchEndX.current
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextImage()
-      else prevImage()
-    }
-  }
-  function prevImage() { setActiveImg((prev) => (prev === 0 ? allImages.length - 1 : prev - 1)) }
-  function nextImage() { setActiveImg((prev) => (prev === allImages.length - 1 ? 0 : prev + 1)) }
-  const handleZoomMove = useCallback((e) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setZoomPos({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 })
-  }, [])
+  const prevImage = () => setActiveImg((i) => (i === 0 ? allImages.length - 1 : i - 1))
+  const nextImage = () => setActiveImg((i) => (i === allImages.length - 1 ? 0 : i + 1))
+  const onTouchEnd = useCallback(() => {
+    const d = touchStartX.current - touchEndX.current
+    if (Math.abs(d) > 50) (d > 0 ? nextImage : prevImage)()
+  }, [allImages.length])
 
   async function handleSubmitReview(e) {
     e.preventDefault()
-    if (!reviewForm.customer_name.trim() || !reviewForm.rating) { setReviewError('Name and rating are required'); return }
+    if (!reviewForm.customer_name.trim()) { setReviewError('Name and rating are required'); return }
     setReviewError(''); setReviewSubmitting(true)
-    try { await submitProductReview(id, reviewForm); setReviewSubmitted(true); const fresh = await getProductReviews(id); setReviewData(fresh) }
+    try { await submitProductReview(id, reviewForm); setReviewSubmitted(true); setReviewData(await getProductReviews(id)) }
     catch { setReviewError('Failed to submit review') } finally { setReviewSubmitting(false) }
   }
 
-  if (loading) {
-    return (
-      <section className="section"><div className="wrap" style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <div className="btn-spinner" style={{ margin: '0 auto 16px', width: 24, height: 24, borderWidth: 3 }} />
-        <p style={{ color: 'var(--stone)' }}>Loading product…</p>
-      </div></section>
-    )
-  }
+  if (loading) return <section className="section"><div className="wrap" style={{ textAlign: 'center', padding: '60px 20px' }}><p>Loading product…</p></div></section>
   if (!product) return null
 
-  const stockStatus = product.stockStatus || (product.inStock ? 'in_stock' : 'out_of_stock')
-  const stockLabels = { in_stock: 'In Stock', low_stock: 'Low Stock', out_of_stock: 'Out of Stock', backorder: 'Backorder' }
-  const stockIcons = { in_stock: '✅', low_stock: '⚠️', out_of_stock: '❌', backorder: '📦' }
+  // ── Derived display data ──
+  const parsed = parseDescription(product.description)
+  const specs = product.specifications?.length ? product.specifications : parsed.rows
+  const find = (re) => specs.find((s) => re.test(s.key))
+  const certRow = find(/certif/i)
+  const condition = (product.features || []).find((f) => /^condition:/i.test(f))?.replace(/^condition:\s*/i, '')
+
+  const qty = product.stockQuantity ?? 10
+  const maxQty = Math.max(1, Math.min(10, qty))
+  const totalPrice = product.price * quantity
+  const status = product.stockStatus || (product.inStock ? 'in_stock' : 'out_of_stock')
+  const low = product.inStock && qty > 0 && qty <= (product.lowStockThreshold ?? 5)
+  const hasDiscount = product.compareAtPrice > product.price
+  const goBuy = () => { window.location.href = `/shop/${id}/checkout/?qty=${quantity}` }
+  // Built from `id` (not window.location) so the island also renders on the server.
+  const wa = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Hi Climb Crux, I have a question about ${product.name} (${SITE_URL}/shop/${id}/)`)}`
+
+  // Complete your setup: different categories first, one per category
+  const seen = new Set([product.category])
+  const setup = allProducts.filter((p) => p.id !== id && p.inStock && p.category !== product.category)
+    .filter((p) => (seen.has(p.category) ? false : seen.add(p.category))).slice(0, 4)
+  const related = setup.length ? setup : allProducts.filter((p) => p.id !== id && p.inStock).slice(0, 4)
 
   return (
-    <section className="section pd-section">
-      <div className="wrap pd-layout">
-        <div className="pd-gallery">
-          {allImages.length > 0 ? (
-            <div className="pd-main-image-wrap" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-              onMouseMove={handleZoomMove} onClick={() => setZoomOpen(true)} style={{ cursor: 'zoom-in' }}>
-              {allImages.length > 1 && (
-                <>
-                  <button className="pd-arrow pd-arrow-left" onClick={(e) => { e.stopPropagation(); prevImage() }} aria-label="Previous image">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-                  </button>
-                  <button className="pd-arrow pd-arrow-right" onClick={(e) => { e.stopPropagation(); nextImage() }} aria-label="Next image">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-                  </button>
-                </>
-              )}
-              <img className="pd-main-image" src={optimizeImage(allImages[activeImg])} alt={`${product.name} — image ${activeImg + 1}`} loading={activeImg === 0 ? 'eager' : 'lazy'} />
-              <div className="pd-img-counter">{activeImg + 1} / {allImages.length}</div>
-              <div className="pd-zoom-hint">Click to zoom</div>
-            </div>
-          ) : (
-            <div className="pd-main-image-wrap pd-main-image-placeholder"><span className="pd-placeholder-icon">📦</span></div>
-          )}
-          {allImages.length > 1 && (
-            <div className="pd-thumbnails">
-              {allImages.map((img, i) => (
-                <button key={i} className={`pd-thumb ${i === activeImg ? 'is-active' : ''}`} onClick={() => setActiveImg(i)}>
-                  <img src={optimizeImage(img, 150)} alt={`${product.name} — thumbnail ${i + 1}`} loading="lazy" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+    <section className="section pd-section px">
+      <div className="wrap px-layout">
+        <ShopFilters products={allProducts} />
 
-        <div className="pd-info">
-          {product.brand && <span className="pd-brand">{product.brand}</span>}
-          <h1 className="pd-title">{product.name}</h1>
-          {reviewData.total > 0 && (
-            <div className="pd-rating-row">
-              <StarRating rating={reviewData.avgRating} size={18} />
-              <span className="pd-rating-avg">{reviewData.avgRating}</span>
-              <span className="pd-rating-count">({reviewData.total} reviews)</span>
+        <div className="px-main">
+        <nav className="px-crumbs" aria-label="Breadcrumb">
+          <a href="/shop/">Shop</a><span>›</span>
+          <a href={`/shop/?cat=${encodeURIComponent(product.category)}`}>{product.category}</a><span>›</span>
+          <strong>{product.name}</strong>
+        </nav>
+
+        <div className={`px-top ${allImages.length > 1 ? 'has-thumbs' : ''}`}>
+          {/* ── Gallery ── */}
+          <div className="px-gallery">
+            <div className="px-stage" onClick={() => setZoomOpen(true)}
+              onTouchStart={(e) => (touchStartX.current = touchEndX.current = e.touches[0].clientX)}
+              onTouchMove={(e) => (touchEndX.current = e.touches[0].clientX)} onTouchEnd={onTouchEnd}>
+              {allImages.length ? <img src={optimizeImage(allImages[activeImg])} alt={`${product.name} — image ${activeImg + 1}`} /> : <span className="px-noimg">No photo yet</span>}
+              {allImages.length > 1 && <>
+                <button className="px-arrow px-prev" aria-label="Previous image" onClick={(e) => { e.stopPropagation(); prevImage() }}>‹</button>
+                <button className="px-arrow px-next" aria-label="Next image" onClick={(e) => { e.stopPropagation(); nextImage() }}>›</button>
+                <span className="px-count">{activeImg + 1} / {allImages.length}</span>
+              </>}
+              {allImages.length > 0 && <span className="px-zoom">Tap to zoom</span>}
             </div>
-          )}
-          <div className="pd-price-row">
-            <span className="pd-price-current">PKR {product.price.toLocaleString()}</span>
-            {product.compareAtPrice && product.compareAtPrice > product.price && (
-              <><span className="pd-price-original">PKR {product.compareAtPrice.toLocaleString()}</span>
-              <span className="pd-discount-badge">-{Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%</span></>
+            {allImages.length > 1 && (
+              <div className="px-thumbs">
+                {allImages.map((img, i) => (
+                  <button key={i} className={i === activeImg ? 'is-active' : ''} onClick={() => setActiveImg(i)} aria-label={`Show image ${i + 1}`}>
+                    <img src={optimizeImage(img, 150)} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-          <div className={`pd-stock pd-stock-${stockStatus}`}>
-            <span>{stockIcons[stockStatus]} {stockLabels[stockStatus]}</span>
-            {product.stockQuantity !== undefined && stockStatus !== 'out_of_stock' && <span className="pd-stock-qty">{product.stockQuantity} available</span>}
-          </div>
-          <button className="pd-share-btn" onClick={handleShare}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg> Share
-          </button>
-          {product.features?.length > 0 && (
-            <div className="pd-highlights">
-              {product.features.slice(0, 6).map((f, i) => (
-                <div key={i} className="pd-highlight-item">
-                  <span className="pd-highlight-icon">{product.featureIcons?.[i] || getFeatureIcon(f, i)}</span>
-                  <span className="pd-highlight-text">{f}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          {product.description && (
-            <div className="pd-description"><h3>Description</h3>
-              <div className="pd-description-rich" dangerouslySetInnerHTML={{ __html: product.description.replace(/\n/g, '<br/>') }} />
-            </div>
-          )}
-          {product.specifications?.length > 0 && (
-            <div className="pd-specs"><h3>Specifications</h3>
-              <table className="pd-specs-table"><tbody>
-                {product.specifications.map((s, i) => <tr key={i}><td className="pd-spec-key">{s.key}</td><td className="pd-spec-value">{s.value}</td></tr>)}
-              </tbody></table>
-            </div>
-          )}
-          {product.variants?.length > 0 && (
-            <div className="pd-variants-section"><h3>Available Options</h3>
-              {Object.entries(product.variants.reduce((groups, v) => {
-                if (!groups[v.name]) groups[v.name] = []; groups[v.name].push(v); return groups
-              }, {})).map(([groupName, options]) => (
-                <div key={groupName} className="pd-variant-group">
-                  <span className="pd-variant-label">{groupName}</span>
-                  <div className="pd-variant-options">
-                    {options.map((v, i) => (
-                      <span key={i} className="pd-variant-chip">
-                        {v.value}{v.price && <span className="pd-variant-price">+PKR {v.price.toLocaleString()}</span>}
-                        {v.stockQuantity <= 0 && <span className="pd-variant-oos">(unavailable)</span>}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {(product.shipping?.deliveryTime || product.warranty?.period || product.returns?.window) && (
-            <div className="pd-policy-cards">
-              {product.shipping?.deliveryTime && (
-                <div className="pd-policy-card">
-                  <div className="pd-policy-icon">🚚</div>
-                  <div className="pd-policy-text">
-                    <span className="pd-policy-label">Shipping</span>
-                    <span className="pd-policy-value">{product.shipping.deliveryTime}</span>
-                    {product.shipping.freeShipping && <span className="pd-policy-badge">Free</span>}
-                  </div>
-                </div>
-              )}
-              {product.warranty?.period && (
-                <div className="pd-policy-card">
-                  <div className="pd-policy-icon">🛡️</div>
-                  <div className="pd-policy-text">
-                    <span className="pd-policy-label">Warranty</span>
-                    <span className="pd-policy-value">{product.warranty.period}</span>
-                    {product.warranty.details && <span className="pd-policy-detail">{product.warranty.details}</span>}
-                  </div>
-                </div>
-              )}
-              {product.returns?.window && (
-                <div className="pd-policy-card">
-                  <div className="pd-policy-icon">↩️</div>
-                  <div className="pd-policy-text">
-                    <span className="pd-policy-label">Returns</span>
-                    <span className="pd-policy-value">{product.returns.window}</span>
-                    {product.returns.policy && <span className="pd-policy-detail">{product.returns.policy}</span>}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          {product.inStock && (
-            <div className="pd-qty-row">
-              <span className="pd-qty-label">Quantity</span>
-              <div className="pd-qty-selector">
-                <button className="pd-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}>−</button>
-                <span className="pd-qty-value">{quantity}</span>
-                <button className="pd-qty-btn" onClick={() => setQuantity(Math.min(10, quantity + 1))} disabled={quantity >= 10}>+</button>
-              </div>
-            </div>
-          )}
-          <div className="pd-total-row"><span className="pd-total-label">Total</span><span className="pd-total-amount">PKR {totalPrice.toLocaleString()}</span></div>
-          <button className="btn btn-primary pd-buy-btn" disabled={!product.inStock} onClick={() => { window.location.href = `/shop/${id}/checkout/?qty=${quantity}` }}>
-            {product.inStock ? `Buy Now — PKR ${totalPrice.toLocaleString()}` : 'Sold Out'}
-          </button>
-        </div>
-      </div>
 
-      {/* Reviews */}
-      <div className="wrap" style={{ marginTop: 64 }}>
+          {/* ── Buy box ── */}
+          <div className="px-buy">
+            {product.brand && <span className="px-brand">{product.brand}</span>}
+            {/* Name and badge share one non-wrapping row, so the badge always
+                sits on the same line as the product name. */}
+            <div className="px-headline">
+              <h1 className="px-title">{product.name}</h1>
+              {certRow && <span className="px-cert"><i />{certRow.value.replace(/\s*certified$/i, '')} certified</span>}
+            </div>
+            {reviewData.total > 0 && (
+              <a className="px-rating" href="#reviews"><StarRating rating={reviewData.avgRating} size={16} /> {reviewData.avgRating} ({reviewData.total})</a>
+            )}
+            <div className="px-price-row">
+              <span className="px-price">PKR {product.price.toLocaleString()}</span>
+              {hasDiscount && <>
+                <s className="px-was">PKR {product.compareAtPrice.toLocaleString()}</s>
+                <span className="px-off">-{Math.round((1 - product.price / product.compareAtPrice) * 100)}%</span>
+              </>}
+            </div>
+            <p className={`px-stock px-stock-${low ? 'low' : status}`}>
+              <i />{status === 'out_of_stock' ? 'Sold out' : low ? `Only ${qty} left` : 'In stock'}
+              {condition && <span> · {condition}</span>}
+            </p>
+            {product.variants?.length > 0 && (
+              <div className="px-variants">
+                {product.variants.map((v, i) => (
+                  <span key={i} className={`px-chip ${v.stockQuantity <= 0 ? 'is-out' : ''}`}>{v.name}: {v.value}{v.stockQuantity <= 0 && ' (unavailable)'}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Quantity and everything below it stay together as one block that
+                is pushed to the bottom of the column. */}
+            <div className="px-buyfoot">
+              {product.inStock && (
+                <div className="px-qty-row">
+                  <div className="px-qty">
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1} aria-label="Decrease quantity">−</button>
+                    <span>{quantity}</span>
+                    <button onClick={() => setQuantity(Math.min(maxQty, quantity + 1))} disabled={quantity >= maxQty} aria-label="Increase quantity">+</button>
+                  </div>
+                  <span className="px-total">Total: <b>PKR {totalPrice.toLocaleString()}</b></span>
+                </div>
+              )}
+
+              <div className="px-actions">
+                <button className="btn btn-primary px-buy-btn" disabled={!product.inStock} onClick={goBuy}>
+                  {product.inStock ? 'Buy now' : 'Sold out'}
+                </button>
+                <a className="btn btn-outline px-wa-btn" href={wa} target="_blank" rel="noopener noreferrer">Ask on WhatsApp</a>
+              </div>
+
+              <p className="px-policies">
+                <a href="/return-refund-policy/">Return &amp; Refund Policy</a><span>–</span><a href="/shipping-policy/">Shipping Policy</a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Specifications ── */}
+        {(specs.length > 0 || parsed.bullets.length > 0) && (
+          <div className="px-specs">
+            <h2>Specifications</h2>
+            {specs.length > 0 && <table><tbody>{specs.map((s, i) => <tr key={i}><th scope="row">{s.key}</th><td>{s.value}</td></tr>)}</tbody></table>}
+            {parsed.bullets.length > 0 && <ul>{parsed.bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>}
+          </div>
+        )}
+
+        {/* ── Complete your setup ── */}
+        {related.length > 0 && (
+          <div className="px-setup">
+            <h2>Complete your setup <small>Gear that goes with this product</small></h2>
+            <div className="px-grid">
+              {related.map((p) => (
+                <a key={p.id} href={`/shop/${p.id}/`} className="px-card">
+                  <div className="px-card-img">
+                    {p.compareAtPrice > p.price && <span className="px-card-off">-{Math.round((1 - p.price / p.compareAtPrice) * 100)}%</span>}
+                    {p.imageUrl && <img src={optimizeImage(p.imageUrl, 300)} alt={p.name} loading="lazy" />}
+                  </div>
+                  <div className="px-card-body">
+                    {p.brand && <span className="px-brand">{p.brand}</span>}
+                    <h3>{p.name}</h3>
+                    <p><b>PKR {p.price.toLocaleString()}</b>{p.compareAtPrice > p.price && <s>PKR {p.compareAtPrice.toLocaleString()}</s>}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+      {/* ── Reviews (unchanged markup/classes) ── */}
+      <div id="reviews" style={{ marginTop: 64 }}>
         <h2 className="pd-section-title">Customer Reviews</h2>
         {reviewData.total > 0 ? (
           <div className="pd-reviews-layout">
@@ -353,11 +426,11 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
               <StarRating rating={reviewData.avgRating} size={22} />
               <div className="pd-reviews-total">{reviewData.total} review{reviewData.total > 1 ? 's' : ''}</div>
               <div className="pd-reviews-distribution">
-                {[5,4,3,2,1].map((star) => (
-                  <div key={star} className="pd-reviews-bar-row">
-                    <span className="pd-reviews-bar-label">{star}★</span>
-                    <div className="pd-reviews-bar-track"><div className="pd-reviews-bar-fill" style={{ width: `${(reviewData.distribution[star - 1] / reviewData.total) * 100}%` }} /></div>
-                    <span className="pd-reviews-bar-count">{reviewData.distribution[star - 1]}</span>
+                {[5, 4, 3, 2, 1].map((s) => (
+                  <div key={s} className="pd-reviews-bar-row">
+                    <span className="pd-reviews-bar-label">{s}★</span>
+                    <div className="pd-reviews-bar-track"><div className="pd-reviews-bar-fill" style={{ width: `${(reviewData.distribution[s - 1] / reviewData.total) * 100}%` }} /></div>
+                    <span className="pd-reviews-bar-count">{reviewData.distribution[s - 1]}</span>
                   </div>
                 ))}
               </div>
@@ -372,9 +445,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
                   </div>
                   {r.title && <div className="pd-review-title">{r.title}</div>}
                   {r.comment && <p className="pd-review-comment">{r.comment}</p>}
-                  {r.photos?.length > 0 && (
-                    <div className="pd-review-photos">{r.photos.map((photo, i) => <img key={i} src={photo} alt="Review photo" className="pd-review-photo" />)}</div>
-                  )}
+                  {r.photos?.length > 0 && <div className="pd-review-photos">{r.photos.map((ph, i) => <img key={i} src={ph} alt="Review photo" className="pd-review-photo" />)}</div>}
                   <div className="pd-review-date">{formatDate(r.createdAt)}</div>
                 </div>
               ))}
@@ -386,11 +457,11 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           {reviewSubmitted ? <p className="pd-review-thanks">Thank you! Your review has been submitted.</p> : (
             <form className="pd-review-form" onSubmit={handleSubmitReview}>
               <div className="pd-review-form-row">
-                <div className="pd-review-field"><label>Name *</label><input value={reviewForm.customer_name} onChange={(e) => setReviewForm({...reviewForm, customer_name: e.target.value})} placeholder="Your name" required /></div>
-                <div className="pd-review-field"><label>Rating *</label><StarRating rating={reviewForm.rating} size={28} interactive={true} onChange={(r) => setReviewForm({...reviewForm, rating: r})} /></div>
+                <div className="pd-review-field"><label>Name *</label><input value={reviewForm.customer_name} onChange={(e) => setReviewForm({ ...reviewForm, customer_name: e.target.value })} placeholder="Your name" required /></div>
+                <div className="pd-review-field"><label>Rating *</label><StarRating rating={reviewForm.rating} size={28} interactive onChange={(r) => setReviewForm({ ...reviewForm, rating: r })} /></div>
               </div>
-              <div className="pd-review-field"><label>Title (optional)</label><input value={reviewForm.title} onChange={(e) => setReviewForm({...reviewForm, title: e.target.value})} placeholder="Summary of your review" /></div>
-              <div className="pd-review-field"><label>Review</label><textarea rows={3} value={reviewForm.comment} onChange={(e) => setReviewForm({...reviewForm, comment: e.target.value})} placeholder="Share your experience with this product" /></div>
+              <div className="pd-review-field"><label>Title (optional)</label><input value={reviewForm.title} onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })} placeholder="Summary of your review" /></div>
+              <div className="pd-review-field"><label>Review</label><textarea rows={3} value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} placeholder="Share your experience with this product" /></div>
               {reviewError && <div className="form-error-banner">{reviewError}</div>}
               <button type="submit" className="btn btn-primary" disabled={reviewSubmitting}>{reviewSubmitting ? 'Submitting…' : 'Submit Review'}</button>
             </form>
@@ -398,74 +469,53 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
         </div>
       </div>
 
-      {/* FAQs */}
       {product.faqs?.length > 0 && (
-        <div className="wrap" style={{ marginTop: 48 }}>
+        <div style={{ marginTop: 48 }}>
           <h2 className="pd-section-title">FAQs</h2>
           <div className="pd-faqs-list">
-            {product.faqs.map((faq, i) => (
-              <details key={i} className="pd-faq-item"><summary className="pd-faq-question">{faq.question}</summary><div className="pd-faq-answer">{faq.answer}</div></details>
-            ))}
+            {product.faqs.map((f, i) => <details key={i} className="pd-faq-item"><summary className="pd-faq-question">{f.question}</summary><div className="pd-faq-answer">{f.answer}</div></details>)}
           </div>
         </div>
       )}
 
-      {/* Related */}
-      {relatedProducts.length > 0 && (
-        <div className="wrap" style={{ marginTop: 48 }}>
-          <h2 className="pd-section-title">You might also like</h2>
-          <div className="pd-suggestions-grid">
-            {relatedProducts.map((sp) => (
-              <a href={`/shop/${sp.id}/`} key={sp.id} className="pd-suggestion-card">
-                <div className="pd-suggestion-img">
-                  {sp.imageUrl ? <img src={optimizeImage(sp.imageUrl, 300)} alt={sp.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
-                </div>
-                <div className="pd-suggestion-body">
-                  <h4 className="pd-suggestion-name">{sp.name}</h4>
-                  <span className="pd-suggestion-price">PKR {sp.price.toLocaleString()}</span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recently Viewed */}
       {recentlyViewed.length > 0 && (
-        <div className="wrap" style={{ marginTop: 48 }}>
+        <div style={{ marginTop: 48 }}>
           <h2 className="pd-section-title">Recently viewed</h2>
           <div className="pd-suggestions-grid">
             {recentlyViewed.map((rv) => (
               <a href={`/shop/${rv.id}/`} key={rv.id} className="pd-suggestion-card">
-                <div className="pd-suggestion-img">
-                  {rv.imageUrl ? <img src={optimizeImage(rv.imageUrl, 300)} alt={rv.name} loading="lazy" /> : <div className="pd-suggestion-placeholder">📦</div>}
-                </div>
-                <div className="pd-suggestion-body">
-                  <h4 className="pd-suggestion-name">{rv.name}</h4>
-                  <span className="pd-suggestion-price">PKR {rv.price.toLocaleString()}</span>
-                </div>
+                <div className="pd-suggestion-img">{rv.imageUrl && <img src={optimizeImage(rv.imageUrl, 300)} alt={rv.name} loading="lazy" />}</div>
+                <div className="pd-suggestion-body"><h4 className="pd-suggestion-name">{rv.name}</h4><span className="pd-suggestion-price">PKR {rv.price.toLocaleString()}</span></div>
               </a>
             ))}
           </div>
         </div>
       )}
 
-      {/* Zoom */}
-      {zoomOpen && allImages[activeImg] && (
-        <div className="pd-zoom-overlay" onClick={() => setZoomOpen(false)}>
-          <button className="pd-zoom-close" onClick={() => setZoomOpen(false)}>✕</button>
-          <img className="pd-zoom-image" src={optimizeImage(allImages[activeImg])} alt={`${product.name} enlarged`}
-            onClick={(e) => e.stopPropagation()} style={{ transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` }} />
-          <div className="pd-zoom-nav">
-            {allImages.length > 1 && (
-              <><button className="pd-zoom-nav-btn" onClick={(e) => { e.stopPropagation(); prevImage() }}>‹</button>
-              <span className="pd-zoom-counter">{activeImg + 1} / {allImages.length}</span>
-              <button className="pd-zoom-nav-btn" onClick={(e) => { e.stopPropagation(); nextImage() }}>›</button></>
-            )}
-          </div>
+        </div>{/* /px-main */}
+      </div>{/* /px-layout */}
+
+      {/* Mobile sticky bar */}
+      {product.inStock && (
+        <div className="px-sticky">
+          <div><small>Total</small><b>PKR {totalPrice.toLocaleString()}</b></div>
+          <button className="btn btn-primary" onClick={goBuy}>Buy now</button>
         </div>
       )}
 
+      {zoomOpen && allImages[activeImg] && (
+        <div className="pd-zoom-overlay" onClick={() => setZoomOpen(false)}>
+          <button className="pd-zoom-close" onClick={() => setZoomOpen(false)} aria-label="Close">✕</button>
+          <img className="pd-zoom-image" src={optimizeImage(allImages[activeImg])} alt={`${product.name} enlarged`} onClick={(e) => e.stopPropagation()} />
+          {allImages.length > 1 && (
+            <div className="pd-zoom-nav">
+              <button className="pd-zoom-nav-btn" onClick={(e) => { e.stopPropagation(); prevImage() }}>‹</button>
+              <span className="pd-zoom-counter">{activeImg + 1} / {allImages.length}</span>
+              <button className="pd-zoom-nav-btn" onClick={(e) => { e.stopPropagation(); nextImage() }}>›</button>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }

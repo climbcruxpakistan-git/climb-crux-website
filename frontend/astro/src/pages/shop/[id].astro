@@ -4,6 +4,9 @@ import ShopAnnouncementBar from '../../components/astro/ShopAnnouncementBar.astr
 import ProductDetail from '../../components/react/ProductDetail.jsx';
 import { getProduct, getProducts, getProductReviews } from '../../lib/api';
 import '../../styles/ProductDetail.css';
+import '../../styles/ProductRedesign.css';
+// The sidebar filter panel reuses the shop's .sp- rules.
+import '../../styles/Shop.css';
 
 // Rendered on-demand so any product — including ones added in the admin after
 // this deploy — gets a working page (server-rendered for SEO, no redeploy needed).
