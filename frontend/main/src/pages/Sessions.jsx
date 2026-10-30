@@ -86,7 +86,7 @@ export default function Sessions() {
         <PageHeaderSkeleton />
       ) : (
         <div className="page-fade-in">
-          <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'}>
+          <PageHeader title={c.sessionsHeaderTitle || 'Climb with the group.'} compact>
             <p>
               {c.sessionsHeaderDesc || 'Every other Sunday, we set beginner-friendly routes on the limestone of Margalla Hills and open the wall to the public. No gear, no experience, no problem.'}
             </p>

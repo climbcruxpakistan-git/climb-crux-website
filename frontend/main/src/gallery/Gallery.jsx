@@ -61,16 +61,22 @@ export function GalleryHome() {
       <section className="gx-wrap gx-home">
         <div className="gx-split">
           <aside className="gx-rail" aria-label="Collections">
-            <div className="gx-eyebrow dark">Collections</div>
-            {list.map((c) => (
-              <Link key={c.slug} to={collectionHref(c.slug)} className={`gx-rail-link${active === c.slug ? " on" : ""}`}
-                aria-current={active === c.slug ? "true" : undefined}
-                title={`${plural(c.albumCount, "album")} · ${plural(c.photoCount, "photo")}`}
-                onClick={(e) => { e.preventDefault(); setActive(active === c.slug ? null : c.slug); }}>
-                <span className="gx-rail-name">{c.title}</span>
-                <span className="gx-rail-count">{c.albumCount}</span>
-              </Link>
-            ))}
+            <div className="gx-rail-head">
+              <h2 className="gx-rail-title">Collections</h2>
+              <button type="button" className="gx-rail-close" onClick={() => setActive(null)} aria-label="Clear collection">×</button>
+            </div>
+            <ul className="gx-rail-list">
+              {list.map((c) => (
+                <li key={c.slug}>
+                  <Link to={collectionHref(c.slug)} className={`gx-rail-link${active === c.slug ? " on" : ""}`}
+                    aria-current={active === c.slug ? "true" : undefined}
+                    title={`${plural(c.albumCount, "album")} · ${plural(c.photoCount, "photo")}`}
+                    onClick={(e) => { e.preventDefault(); setActive(active === c.slug ? null : c.slug); }}>
+                    <span className="gx-rail-name">{c.title}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </aside>
           <div className="gx-pane">
             {selected ? (

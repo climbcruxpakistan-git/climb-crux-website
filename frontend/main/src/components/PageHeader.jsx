@@ -1,8 +1,8 @@
 import CliffEdge from './CliffEdge.jsx'
 
-export default function PageHeader({ eyebrow, title, children }) {
+export default function PageHeader({ eyebrow, title, children, compact = false }) {
   return (
-    <div className="page-header">
+    <div className={`page-header${compact ? ' compact' : ''}`}>
       <div className="page-header-pattern" aria-hidden="true" />
       <div className="page-header-accent" aria-hidden="true" />
       <div className="wrap page-header-inner">

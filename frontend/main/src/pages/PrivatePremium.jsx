@@ -35,7 +35,7 @@ export default function PrivatePremium() {
         <PageHeaderSkeleton />
       ) : (
         <div className="page-fade-in">
-          <PageHeader title={c.ppHeaderTitle || 'Your route, your pace.'}>
+          <PageHeader title={c.ppHeaderTitle || 'Your route, your pace.'} compact>
             <p>
               {c.ppHeaderDesc || 'Private sessions are built around you. Your Choice, just solo, with your group or working toward the highest grades we run.'}
             </p>

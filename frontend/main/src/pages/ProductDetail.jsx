@@ -32,17 +32,6 @@ function StarRating({ rating, size = 20, interactive = false, onChange }) {
   )
 }
 
-function trackRecentlyViewed(p) {
-  try {
-    let list = JSON.parse(localStorage.getItem('shop_recently_viewed') || '[]').filter((x) => x.id !== p.id)
-    list.unshift({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price })
-    localStorage.setItem('shop_recently_viewed', JSON.stringify(list.slice(0, 10)))
-  } catch { /* ignore */ }
-}
-function getRecentlyViewed(excludeId) {
-  try { return JSON.parse(localStorage.getItem('shop_recently_viewed') || '[]').filter((p) => p.id !== excludeId).slice(0, 4) }
-  catch { return [] }
-}
 
 /**
  * Admin descriptions are free text: dashed "Label: value" lines, loose bullets,
@@ -229,7 +218,6 @@ export default function ProductDetail() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSubmitted, setReviewSubmitted] = useState(false)
   const [reviewError, setReviewError] = useState('')
-  const [recentlyViewed, setRecentlyViewed] = useState([])
   const [quantity, setQuantity] = useState(1)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
@@ -241,8 +229,6 @@ export default function ProductDetail() {
         setProduct(p)
         setReviewData(r)
         setAllProducts(all)
-        trackRecentlyViewed(p)
-        setRecentlyViewed(getRecentlyViewed(id))
         const seoTitle = p.seo?.title?.trim()
         document.title = seoTitle || `${p.name} — Climb Crux Pakistan`
       })
@@ -477,20 +463,6 @@ export default function ProductDetail() {
           <h2 className="pd-section-title">FAQs</h2>
           <div className="pd-faqs-list">
             {product.faqs.map((f, i) => <details key={i} className="pd-faq-item"><summary className="pd-faq-question">{f.question}</summary><div className="pd-faq-answer">{f.answer}</div></details>)}
-          </div>
-        </div>
-      )}
-
-      {recentlyViewed.length > 0 && (
-        <div style={{ marginTop: 48 }}>
-          <h2 className="pd-section-title">Recently viewed</h2>
-          <div className="pd-suggestions-grid">
-            {recentlyViewed.map((rv) => (
-              <Link to={`/shop/${rv.id}`} key={rv.id} className="pd-suggestion-card">
-                <div className="pd-suggestion-img">{rv.imageUrl && <img src={optimizeImage(rv.imageUrl, 300)} alt={rv.name} loading="lazy" />}</div>
-                <div className="pd-suggestion-body"><h4 className="pd-suggestion-name">{rv.name}</h4><span className="pd-suggestion-price">PKR {rv.price.toLocaleString()}</span></div>
-              </Link>
-            ))}
           </div>
         </div>
       )}

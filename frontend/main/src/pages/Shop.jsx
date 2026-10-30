@@ -497,8 +497,8 @@ export default function Shop() {
 
   return (
     <>
-      <PageHeader title="Gear up.">
-        <p>Curated climbing equipment for the Margalla Hills — harnesses, helmets, ropes and the hardware that keeps every move safe.</p>
+      <PageHeader title="Gear up." compact>
+        <p>Rock climbing equipment— harnesses, helmets, ropes and the hardware that keeps every move safe.</p>
       </PageHeader>
 
       <section className="sp-shop">
