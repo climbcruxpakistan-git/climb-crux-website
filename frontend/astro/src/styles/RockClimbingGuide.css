@@ -915,9 +915,8 @@
   gap: 14px;
 }
 
-/* Guide-page list: show two cards at a time and scroll for the rest. */
+/* Guide-page route list — all matches render, no scroll cap. */
 .explorer-scroll {
-  max-height: 19.5rem;
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-gutter: stable;
@@ -940,6 +939,24 @@
 
 .explorer-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--stone);
+}
+
+/* Uppercase results heading above the compact route list. */
+#route-results {
+  margin: 22px 0 8px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--stone-dark);
+}
+
+/* Hint below the compact route list. */
+.explorer-select-hint {
+  font-size: 0.86rem;
+  color: var(--stone);
+  margin: 14px 0 8px;
 }
 
 .explorer-card {

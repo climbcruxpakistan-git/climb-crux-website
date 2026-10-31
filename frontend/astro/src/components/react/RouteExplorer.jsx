@@ -301,65 +301,54 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
         role="search"
         aria-label={isCompact ? 'Search and filter routes' : 'Filter routes'}
       >
-        {!isCompact && (
-          <div className="explorer-fields">
-            <RouteSearch
-              idPrefix={idPrefix}
-              value={filters.search}
-              onChange={(search) => update({ search })}
-              onClear={() => update({ search: '' })}
-            />
-
-            <div className="explorer-field">
-              <label className="explorer-label" htmlFor={`${idPrefix}-area`}>
-                Climbing area
-              </label>
-              <select
-                id={`${idPrefix}-area`}
-                className="explorer-select"
-                value={filters.area}
-                onChange={(event) => setFilters((current) => ({ ...current, area: event.target.value, venue: ALL }))}
-              >
-                <option value={ALL}>All climbing areas</option>
-                {areas.map((area) => (
-                  <option key={area.id} value={area.id}>
-                    {area.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="explorer-field">
-              <label className="explorer-label" htmlFor={`${idPrefix}-venue`}>
-                Venue
-              </label>
-              <select
-                id={`${idPrefix}-venue`}
-                className="explorer-select"
-                value={filters.venue}
-                onChange={(event) => update({ venue: event.target.value })}
-              >
-                <option value={ALL}>
-                  {filters.area === ALL ? 'All venues' : 'All venues in this area'}
-                </option>
-                {venues.map((venue) => (
-                  <option key={venue.id} value={venue.id}>
-                    {venue.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-
-        {isCompact && (
+        <div className="explorer-fields">
           <RouteSearch
             idPrefix={idPrefix}
             value={filters.search}
             onChange={(search) => update({ search })}
             onClear={() => update({ search: '' })}
           />
-        )}
+
+          <div className="explorer-field">
+            <label className="explorer-label" htmlFor={`${idPrefix}-area`}>
+              Climbing area
+            </label>
+            <select
+              id={`${idPrefix}-area`}
+              className="explorer-select"
+              value={filters.area}
+              onChange={(event) => setFilters((current) => ({ ...current, area: event.target.value, venue: ALL }))}
+            >
+              <option value={ALL}>All climbing areas</option>
+              {areas.map((area) => (
+                <option key={area.id} value={area.id}>
+                  {area.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="explorer-field">
+            <label className="explorer-label" htmlFor={`${idPrefix}-venue`}>
+              Venue
+            </label>
+            <select
+              id={`${idPrefix}-venue`}
+              className="explorer-select"
+              value={filters.venue}
+              onChange={(event) => update({ venue: event.target.value })}
+            >
+              <option value={ALL}>
+                {filters.area === ALL ? 'All venues' : 'All venues in this area'}
+              </option>
+              {venues.map((venue) => (
+                <option key={venue.id} value={venue.id}>
+                  {venue.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         <GradeRange
           idPrefix={idPrefix}
@@ -369,9 +358,7 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
         />
       </div>
 
-      {!isCompact && (
-        <h2 id="route-results">{matched.length} routes found</h2>
-      )}
+      <h2 id="route-results">{matched.length} ROUTES FOUND</h2>
 
       {count}
 
@@ -387,11 +374,8 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
       {matched.length > 0 && (
         isCompact
           ? (
-              <ul
-                className="explorer-list explorer-scroll"
-                role="list"
-              >
-                {matched.slice(0, 12).map((route) => (
+              <ul className="explorer-list" role="list">
+                {matched.map((route) => (
                   <RouteRow
                     key={`${route.venueId}-${route.name}`}
                     route={route}
@@ -431,6 +415,11 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
 
       {isCompact && (
         <div className="explorer-actions">
+          {matched.length > 0 && (
+            <p className="explorer-select-hint">
+              Select a route to preview its grade, venue and details.
+            </p>
+          )}
           <p className="explorer-note">
             Multi-pitch lines are graded by their hardest pitch, so Teamwork is listed under 6c+ even
             though its first pitch is 4a.
@@ -439,11 +428,6 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
             <button type="button" className="explorer-reset" onClick={reset}>
               Reset filters
             </button>
-          )}
-          {matched.length > 12 && (
-            <a className="btn btn-primary" href={`${ROUTE_LIBRARY_BASE}?${filtersToParams(filters).toString()}`}>
-              Show all {matched.length} routes
-            </a>
           )}
           <a className="btn btn-primary" href={routeLibraryHref()}>
             View All Routes →
