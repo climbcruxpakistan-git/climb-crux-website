@@ -12,6 +12,10 @@ import {
   routeLibraryHref,
   venueOptions,
 } from '../../lib/routeFilters'
+import { ROUTE_LIBRARY_BASE } from '../../lib/routeFilters'
+import RouteRow from './RouteRow.jsx'
+import RoutePreview from './RoutePreview.jsx'
+import './route-explorer-redesign.css'
 
 /**
  * The route explorer, used in two modes so both stay on one implementation:
@@ -221,17 +225,19 @@ function RouteSearch({ idPrefix, value, onChange, onClear }) {
 
 export default function RouteExplorer({ routes, areas, mode = 'full' }) {
   const isCompact = mode === 'compact'
-  // Only the route library owns its URL state; the guide page stays clean.
-  const syncUrl = !isCompact
+
+  // Full mode: URL sync on (library page). Compact mode: URL sync on (guide page
+  // hero chart drives it via ?minGrade=X&maxGrade=X, and the "Show all" link carries
+  // filters over to the library).
+  const syncUrl = true
 
   const [filters, setFilters] = useState(defaultFilters)
   // Hydration guard: the URL is read after mount so the server-rendered markup
   // and the first client render stay identical.
-  const [urlReady, setUrlReady] = useState(!syncUrl)
+  const [urlReady, setUrlReady] = useState(false)
   const idPrefix = isCompact ? 'guide' : 'library'
 
   useEffect(() => {
-    if (!syncUrl) return undefined
     const applyFromUrl = () =>
       setFilters(filtersFromParams(new URLSearchParams(window.location.search), areas))
     applyFromUrl()
@@ -256,6 +262,15 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
   const matched = useMemo(() => sortRoutesByGrade(filterRoutes(routes, filters)), [routes, filters])
 
   const active = hasActiveFilters(filters)
+
+  // In full mode, track the selected route by name so the preview aside stays
+  // in sync with the currently filtered list. If the filter removes the selected
+  // route, the selection clears — unless the route was chosen from the preview's
+  // related lists, in which case it is still findable in the full route set.
+  const [selectedName, setSelectedName] = useState(null)
+  const selected = selectedName
+    ? (matched.find((r) => r.name === selectedName) || routes.find((r) => r.name === selectedName))
+    : null
 
   const update = (patch) => setFilters((current) => ({ ...current, ...patch }))
   const reset = () => setFilters(defaultFilters())
@@ -354,6 +369,10 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
         />
       </div>
 
+      {!isCompact && (
+        <h2 id="route-results">{matched.length} routes found</h2>
+      )}
+
       {count}
 
       {matched.length === 0 && !isCompact && (
@@ -366,14 +385,48 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
       )}
 
       {matched.length > 0 && (
-        <ul
-          className={isCompact ? 'explorer-list explorer-scroll' : 'explorer-list'}
-          role="list"
-        >
-          {matched.map((route) => (
-            <RouteCard key={`${route.venueId}-${route.name}`} route={route} />
-          ))}
-        </ul>
+        isCompact
+          ? (
+              <ul
+                className="explorer-list explorer-scroll"
+                role="list"
+              >
+                {matched.slice(0, 12).map((route) => (
+                  <RouteRow
+                    key={`${route.venueId}-${route.name}`}
+                    route={route}
+                    selected={false}
+                    onSelect={() => window.location.assign(routeDetailHref(slugify(route.name)))}
+                    href={routeDetailHref(slugify(route.name))}
+                  />
+                ))}
+              </ul>
+            )
+          : (
+              <div className="rx-lay">
+                <ul className="rx-list" role="list">
+                  {matched.map((route) => (
+                    <RouteRow
+                      key={`${route.venueId}-${route.name}`}
+                      route={route}
+                      selected={selected?.name === route.name}
+                      onSelect={(r) => setSelectedName(r.name)}
+                      href={routeDetailHref(slugify(route.name))}
+                    />
+                  ))}
+                </ul>
+                <aside className={`rx-aside${selected ? ' is-open' : ''}`}>
+                  <RoutePreview
+                    route={selected}
+                    allRoutes={routes}
+                    grades={AVAILABLE_GRADES}
+                    href={routeDetailHref(slugify(selected?.name || ''))}
+                    onClose={() => setSelectedName(null)}
+                    onSelect={(name) => setSelectedName(name)}
+                  />
+                </aside>
+              </div>
+            )
       )}
 
       {isCompact && (
@@ -386,6 +439,11 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
             <button type="button" className="explorer-reset" onClick={reset}>
               Reset filters
             </button>
+          )}
+          {matched.length > 12 && (
+            <a className="btn btn-primary" href={`${ROUTE_LIBRARY_BASE}?${filtersToParams(filters).toString()}`}>
+              Show all {matched.length} routes
+            </a>
           )}
           <a className="btn btn-primary" href={routeLibraryHref()}>
             View All Routes →

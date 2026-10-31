@@ -1,8 +1,9 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import RouteExplorer from '../../components/react/RouteExplorer.jsx';
+import GradeChart from '../../components/react/GradeChart.jsx';
 import { AREAS, AVAILABLE_GRADES, flattenRoutes, sortRoutesByGrade, TOTAL_ROUTES } from '../../data/margallaRoutes';
-import { ROUTE_LIBRARY_BASE } from '../../lib/routeFilters';
+import { ROUTE_LIBRARY_BASE, ROUTE_PARAMS } from '../../lib/routeFilters';
 import { slugify } from '../../lib/slug.js';
 import '../../styles/RockClimbingGuide.css';
 
@@ -11,6 +12,8 @@ const GUIDE_URL = `${SITE_URL}/rock-climbing-guide-islamabad/`;
 // The library is nested under the guide, so its URLs carry the guide keywords.
 const LIBRARY_URL = `${SITE_URL}${ROUTE_LIBRARY_BASE}`;
 const allRoutes = flattenRoutes();
+
+const chartData = AVAILABLE_GRADES.map((g) => ({ grade: g, count: allRoutes.filter((r) => r.grade === g).length }));
 
 const explorerAreas = AREAS.map((area) => ({
   id: area.id,
@@ -69,12 +72,7 @@ const breadcrumbJsonLd = {
   ],
 };
 
-const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
-const statChips = [
-  { k: String(AREAS.length), v: 'Climbing areas' },
-  { k: String(totalVenues), v: 'Venues' },
-  { k: String(TOTAL_ROUTES), v: 'Named routes' },
-];
+
 ---
 
 <MainLayout
@@ -89,27 +87,27 @@ const statChips = [
   <section class="page-header route-library-header">
     <div class="page-header-pattern"></div>
     <div class="page-header-accent"></div>
-    <div class="wrap page-header-inner guide-hero-inner">
-      <h1>Rock Climbing Routes in Islamabad</h1>
-      <div class="page-header-desc">
-        <p>
-          Browse and filter the complete Margalla Hills route library. Every documented route from
-          the guide, searchable by name and filterable by climbing area, grade range or venue. The
-          filters are kept in the URL, so any filtered view can be shared or bookmarked.
-        </p>
+    <div class="wrap page-header-inner hero-split">
+      <div class="hero-copy">
+        <h1>Rock Climbing</h1>
+        <h1>Routes in Islamabad</h1>
+        <div class="page-header-desc">
+          <p>
+            Every documented route from the guide, searchable by name and filterable by climbing
+            area, grade range or venue. The filters are kept in the URL, so any filtered view can be
+            shared or bookmarked.
+          </p>
+        </div>
       </div>
-      <div class="guide-stats" role="list">
-        {statChips.map((chip) => (
-          <div class="guide-stat" role="listitem">
-            <b>{chip.k}</b>
-            <span>{chip.v}</span>
-          </div>
-        ))}
+      <div class="route-hero-chart-wrap">
+        <GradeChart client:load data={chartData} libraryBase={ROUTE_LIBRARY_BASE}
+          minParam={ROUTE_PARAMS.minGrade} maxParam={ROUTE_PARAMS.maxGrade} mode="filter" />
+        <p class="route-hero-chart-title">Rock Climbing Routes Islamabad</p>
       </div>
     </div>
   </section>
 
-  <section id="route-explorer" class="section">
+  <section id="route-explorer" class="section route-explorer-section">
     <div class="wrap">
       {/* Full mode: search + climbing area + grade range + venue, with the
           filter state mirrored into the URL so views can be shared. */}
@@ -123,26 +121,93 @@ const statChips = [
 </MainLayout>
 
 <style>
+  /* Header design mirrors the /rock-climbing-guide-islamabad/ hero, while this
+     page keeps its own title and description text. */
+  .route-library-header .hero-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 480px);
+    gap: clamp(28px, 4vw, 56px);
+    align-items: center;
+  }
+
+  .route-library-header .page-header-inner {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  /* Desktop only: the copy starts 20% of the viewport left of the centered
+     column, same anchor as the guide hero. */
+  @media (min-width: 981px) {
+    .route-library-header .hero-copy {
+      margin-left: calc(
+        7.68vw - max((100vw - 1180px) / 2, 0px) - var(--edge, 20px)
+      );
+    }
+  }
+
   .route-library-header h1 {
-    font-size: clamp(2.4rem, 5.4vw, 4rem);
-    max-width: 20ch;
-    margin-bottom: 0.55em;
+    font-size: clamp(2.38rem, 3.96vw, 3.3rem);
+    max-width: 100%;
+    margin: 0;
+    line-height: 1.05;
+    padding-bottom: 0;
+    margin-bottom: 0;
   }
 
-  .route-library-header .guide-stats {
-    margin-top: 8px;
+  .route-library-header h1::after {
+    display: none;
   }
 
-  /* Stat chips: plain black boxes with orange text. */
-  .route-library-header .guide-stat {
-    background: var(--charcoal-deep);
-    border-color: var(--charcoal-deep);
-    border-left-color: var(--charcoal-deep);
-  }
-
-  .route-library-header .guide-stat b,
-  .route-library-header .guide-stat span {
+  .route-library-header h1:first-of-type {
     color: var(--orange);
+  }
+
+  .route-library-header h1:nth-of-type(2) {
+    color: var(--chalk);
+  }
+
+  .route-library-header h1 + h1 {
+    margin-top: 0.15em;
+  }
+
+  .route-library-header .page-header-desc {
+    margin-top: 0.6em;
+  }
+
+  .route-library-header .page-header-desc p {
+    max-width: none;
+    font-size: 1.05rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .route-hero-chart-wrap {
+    width: 100%;
+    max-width: 480px;
+    /* Nudge the chart right by 10% of its own width. */
+    transform: translateX(10%);
+  }
+
+  .route-hero-chart-title {
+    /* Pull the line up so it sits directly under the x-axis grade labels. */
+    margin: -32px 0 6px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: var(--chalk);
+    text-align: center;
+  }
+
+  @media (max-width: 980px) {
+    .route-library-header .hero-split {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .route-library-header .route-hero-chart-wrap {
+      max-width: 520px;
+    }
   }
 
   /* Contextual links to the guide and sessions, below the library. */
@@ -163,5 +228,25 @@ const statChips = [
 
   .route-library-note a:hover {
     color: var(--charcoal);
+  }
+</style>
+
+<style is:global>
+  /* The explorer (filter) card is rendered inside the React island, so this
+     override is global. On desktop the card spans from where the hero copy
+     starts (7.68vw from the left) to where the hero chart ends on the right
+     (right edge of the centered column + the chart's 10% shift). */
+  .route-explorer-section .wrap {
+    max-width: none;
+  }
+
+  @media (min-width: 1181px) {
+    .route-explorer-section .wrap {
+      margin-left: 7.68vw;
+      /* Right edge of the centered column is at 50vw + 590px; subtract that,
+         keep the edge padding, and account for the chart's extra 48px. */
+      margin-right: calc(50vw - 638px + var(--edge, 20px));
+      padding: 0;
+    }
   }
 </style>

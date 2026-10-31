@@ -1,14 +1,20 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteExplorer from '../components/react/RouteExplorer.jsx';
+import GradeChart from '../components/react/GradeChart.jsx';
+import PremiumSessionCards from '../components/astro/PremiumSessionCards.astro';
 import { optimizeImage } from '../lib/api';
-import { routeLibraryHref } from '../lib/routeFilters';
 import {
   AREAS,
   MARGALLA_SOURCE,
+  AVAILABLE_GRADES,
   flattenRoutes,
   TOTAL_ROUTES,
 } from '../data/margallaRoutes';
+import {
+  ROUTE_LIBRARY_BASE,
+  ROUTE_PARAMS,
+} from '../lib/routeFilters';
 import '../styles/RockClimbingGuide.css';
 
 /**
@@ -35,6 +41,8 @@ const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
 /* ── Route data ───────────────────────────────────────────────────── */
 const allRoutes = flattenRoutes();
 
+const chartData = AVAILABLE_GRADES.map((g) => ({ grade: g, count: allRoutes.filter((r) => r.grade === g).length }));
+
 // Shape the areas into what the explorer expects (id, name, venues) — the same
 // data the route library passes to its full-mode explorer.
 const explorerAreas = AREAS.map((area) => ({
@@ -44,11 +52,6 @@ const explorerAreas = AREAS.map((area) => ({
 }));
 
 const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
-const statChips = [
-  { k: String(AREAS.length), v: 'Climbing areas' },
-  { k: String(totalVenues), v: 'Venues' },
-  { k: String(TOTAL_ROUTES), v: 'Named routes' },
-];
 
 /* ── Visiting Pakistan? ───────────────────────────────────────────── */
 const internationalClimbers = [
@@ -137,55 +140,50 @@ const faqSchema = {
   <section class="page-header guide-hero">
     <div class="page-header-pattern"></div>
     <div class="page-header-accent"></div>
-    <div class="wrap page-header-inner guide-hero-inner">
-      <h1>ROCK CLIMBING GUIDE ISLAMABAD</h1>
+    <div class="wrap page-header-inner hero-split">
+      <div class="hero-copy">
+        <h1>ROCK CLIMBING</h1>
+      <h1>GUIDE ISLAMABAD</h1>
       <div class="page-header-desc">
-        <p>
-          A detailed outdoor climbing guide to the Margalla Hills around Islamabad. The climbing
-          areas, venues, routes and grades, all in one place.
-        </p>
+        <p>A detailed outdoor climbing guide to the Margalla Hills around Islamabad.</p>
+        <p>The climbing areas, venues, routes and grades, all in one place.</p>
       </div>
-      <div class="guide-hero-actions">
-        <a class="btn btn-primary" href="/book-now/?type=public">Book a Climbing Session</a>
-        <a class="btn btn-outline-light" href={routeLibraryHref()}>Browse All Routes</a>
+      </div>
+      <div class="guide-hero-chart-wrap">
+        <GradeChart client:load data={chartData} libraryBase={ROUTE_LIBRARY_BASE}
+          minParam={ROUTE_PARAMS.minGrade} maxParam={ROUTE_PARAMS.maxGrade} mode="filter" />
+        <p class="guide-hero-chart-title">Rock Climbing Routes Islamabad</p>
       </div>
     </div>
-  </section>
+    <div class="wrap" style="position:relative; z-index:2;">
+      <div class="stats-grid" role="list">
+      <div class="stat" role="listitem">
+        <span class="stat-value">{String(AREAS.length)}</span>
+        <span class="stat-label">Climbing areas</span>
+      </div>
+      <div class="stat" role="listitem">
+        <span class="stat-value">{String(AREAS.reduce((n, a) => n + a.venues.length, 0))}</span>
+        <span class="stat-label">Venues</span>
+      </div>
+      <div class="stat" role="listitem">
+        <span class="stat-value">{String(TOTAL_ROUTES)}</span>
+        <span class="stat-label">Named routes</span>
+      </div>
+      <div class="stat" role="listitem">
+        <span class="stat-value">{AVAILABLE_GRADES[0]}–{AVAILABLE_GRADES[AVAILABLE_GRADES.length - 1]}</span>
+        <span class="stat-label">Grade range</span>
+      </div>
+    </div>
+  </div>
+</section>
 
   {/* ── 2. Route guide + climb-by-grade explorer ──────────────────── */}
   <section id="guide-intro" class="section">
     <div class="wrap">
-      <div class="guide-overview">
-        <div class="guide-overview-copy">
-          <h2>A Route Guide to Islamabad's Crags</h2>
-          <p class="guide-lede">
-            The Margalla Hills are Islamabad's backyard climbing ground. The routes in this guide span
-            four climbing areas:
-          </p>
-          <ol class="guide-list is-numbered">
-            <li>Daman-e-Koh</li>
-            <li>Said Pur Village</li>
-            <li>Trail 3</li>
-            <li>Shahdara</li>
-          </ol>
-        </div>
-        <aside class="guide-overview-panel">
-          <span class="guide-overview-tag">The guide at a glance</span>
-          <div class="guide-stats" role="list">
-            {statChips.map((chip) => (
-              <div class="guide-stat" role="listitem">
-                <b>{chip.k}</b>
-                <span>{chip.v}</span>
-              </div>
-            ))}
-          </div>
-        </aside>
-      </div>
-
       <div class="guide-explorer-head">
-        <h2>Explore Routes by Grade</h2>
+        <h2>Find a route by grade</h2>
         <p class="guide-lede">
-          Find routes that match your climbing level using the grade range below.
+          Use the grade range below to find Margalla Hills routes that match your climbing level.
         </p>
       </div>
       <RouteExplorer client:load mode="compact" routes={allRoutes} areas={explorerAreas} />
@@ -234,25 +232,7 @@ const faqSchema = {
   </section>
 
   {/* ── 6. Climb with Climb Crux ──────────────────────────────────── */}
-  <section class="section guide-tint">
-    <div class="wrap">
-      <h2>Rock Climbing With Climb Crux</h2>
-      <div class="guide-grid">
-        {climbOptions.map((option, i) => (
-          <article class="guide-card">
-            <span class="guide-card-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{option.h}</h3>
-            <p>{option.p}</p>
-            <a class="btn btn-primary" href={option.href}>{option.cta}</a>
-          </article>
-        ))}
-      </div>
-      <p class="guide-section-note">
-        Every climbing session is led by certified instructors. You can
-        {' '}<a href="/our-team/">meet the instructors</a> behind your climb.
-      </p>
-    </div>
-  </section>
+  <PremiumSessionCards />
 
   {/* ── 7. FAQ ──────────────────────────────────────────────────── */}
   <section class="section guide-faq">
@@ -276,3 +256,210 @@ const faqSchema = {
     </div>
   </section>
 </MainLayout>
+
+<style>
+  /* Header + grade chart side by side. Both elements sit in normal flow so
+     nothing overlaps and the charcoal band hugs the content. */
+  .guide-hero .hero-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 480px);
+    gap: clamp(28px, 4vw, 56px);
+    align-items: center;
+  }
+
+  .guide-hero .page-header-inner {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  /* Desktop only: the copy keeps shifting left by 20% of its previous anchor.
+     9.6vw minus 20% = 7.68vw of the viewport width. */
+  @media (min-width: 981px) {
+    .guide-hero .hero-copy {
+      margin-left: calc(
+        7.68vw - max((100vw - 1180px) / 2, 0px) - var(--edge, 20px)
+      );
+    }
+  }
+
+  /* Each sentence on its own line, once the copy has room for it (wide
+     desktop). Below that, the copy reflows normally instead of clipping. */
+  @media (min-width: 1200px) {
+    .guide-hero .hero-copy .page-header-desc p {
+      max-width: none;
+      white-space: nowrap;
+    }
+  }
+
+  .guide-hero .hero-copy h1 {
+    font-size: clamp(2.38rem, 3.96vw, 3.3rem);
+    max-width: 100%;
+    margin: 0;
+    line-height: 1.05;
+    /* Drop the shared header's default spacing so the two lines sit tight. */
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  /* No underline below either heading; first line reads in brand orange. */
+  .guide-hero .hero-copy h1::after {
+    display: none;
+  }
+
+  .guide-hero .hero-copy h1:first-of-type {
+    color: var(--orange);
+  }
+
+  .guide-hero .hero-copy h1 + h1 {
+    margin-top: 0.15em;
+  }
+
+  .guide-hero .hero-copy .page-header-desc {
+    margin-top: 0.6em;
+  }
+
+  .guide-hero .hero-copy .page-header-desc p {
+    max-width: 42ch;
+    font-size: 1.05rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .guide-hero .hero-copy .page-header-desc p + p {
+    margin-top: 0.35em;
+  }
+
+  .guide-hero-chart-wrap {
+    width: 100%;
+    max-width: 480px;
+    /* Nudge the chart right by 10% of its own width. */
+    transform: translateX(10%);
+  }
+
+  .guide-hero-chart-title {
+    /* Pull the line up so it sits directly under the x-axis grade labels. */
+    margin: -32px 0 6px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: var(--chalk);
+    text-align: center;
+  }
+
+  /* Keep the "Find a route by grade" intro on a single line on desktop. */
+  @media (min-width: 660px) {
+    .guide-explorer-head .guide-lede {
+      max-width: none;
+      white-space: nowrap;
+    }
+  }
+
+  /* Stats card mirrors the home-page stats card (white card, 4 columns,
+     orange Oswald numbers, uppercase labels). */
+  .guide-hero .stats-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    width: min(var(--max-width), calc(100% - 2 * var(--edge)));
+    margin: 16px auto 0;
+    padding: 30px 10px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(31, 31, 33, 0.18);
+    box-sizing: border-box;
+  }
+
+  .guide-hero .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 0 30px;
+    text-align: left;
+    border-right: 1px solid #e8e2d7;
+  }
+
+  .guide-hero .stat:last-child {
+    border-right: 0;
+  }
+
+  .guide-hero .stat-value {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #f47321;
+  }
+
+  .guide-hero .stat-label {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b6b6f;
+    max-width: none;
+  }
+
+  @media (max-width: 980px) {
+    .hero-split,
+    .guide-hero .hero-split {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .guide-hero .guide-hero-chart-wrap {
+      max-width: 520px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .guide-hero .stats-grid {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 24px;
+      padding: 22px 10px;
+    }
+
+    .guide-hero .stat:nth-child(2) {
+      border-right: 0;
+    }
+
+    .guide-hero .stat:nth-child(3) {
+      border-right: 1px solid #e8e2d7;
+    }
+
+    .guide-hero .stat-value {
+      font-size: 1.9rem;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .guide-hero .stats-grid {
+      row-gap: 18px;
+      padding: 18px 12px;
+      border-radius: 12px;
+    }
+
+    .guide-hero .stat {
+      padding: 0 12px;
+    }
+
+    .guide-hero .stat:nth-child(2),
+    .guide-hero .stat:nth-child(4) {
+      border-right: 0;
+    }
+
+    .guide-hero .stat-value {
+      font-size: 1.7rem;
+    }
+
+    .guide-hero .stat-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+    }
+  }
+</style>

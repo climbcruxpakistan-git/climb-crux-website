@@ -1,0 +1,53 @@
+---
+// src/components/astro/PremiumSessionCards.astro  (new file)
+// Wording is taken from the current guide page; edit freely.
+const cards = [
+  { tag: 'Scheduled sessions', title: 'Public Sessions', href: '/sessions/', cta: 'View Public Sessions',
+    text: 'Join a scheduled outdoor climbing session on the Margalla Hills.',
+    items: ['Certified instruction', 'Safety cover', 'Outdoor climbing on the Margalla Hills'] },
+  { tag: 'Tailored to you', title: 'Private Sessions', href: '/private-premium/', cta: 'Explore Private Sessions', featured: true,
+    text: 'A private climbing experience built around your group, your goals and your ability.',
+    items: ['Shaped around your group', 'Shaped around your goals', 'Matched to your ability'] },
+  { tag: 'Local guidance', title: 'Experienced Climbers', href: '/book-now/?type=private-starter', cta: 'Book a Private Session',
+    text: 'Already climbing outdoors? Explore Margalla climbing with local guidance.',
+    items: ['Choose the routes you want to try', 'Guided by Climb Crux instructors', 'Session arranged around your plan'] },
+];
+---
+
+<section class="pcards wrap" aria-labelledby="pcards-title">
+  <h2 id="pcards-title">Rock Climbing With Climb Crux</h2>
+  <p class="pcards-sub">Every climbing session is led by certified instructors.</p>
+  <div class="pcards-grid">
+    {cards.map((c) => (
+      <article class:list={['pcard', { 'pcard--featured': c.featured }]}>
+        <span class="pcard-tag">{c.tag}</span>
+        <h3>{c.title}</h3>
+        <p>{c.text}</p>
+        <ul>{c.items.map((i) => <li>{i}</li>)}</ul>
+        <a class="pcard-cta" href={c.href}>{c.cta}</a>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .pcards { padding-block: clamp(48px, 8vw, 96px); }
+  .pcards h2 { font-family: var(--font-display); text-transform: uppercase; margin: 0 0 8px; }
+  .pcards-sub { color: var(--stone-dark); margin: 0 0 36px; }
+  .pcards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 24px; }
+  .pcard { position: relative; display: flex; flex-direction: column; padding: 34px 30px 30px; color: #fff; overflow: hidden;
+    background: linear-gradient(160deg, #2b2b2e, var(--charcoal-deep)); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; box-shadow: 0 24px 50px rgba(0,0,0,.22); }
+  .pcard::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--orange), var(--orange-light)); }
+  .pcard--featured { background: linear-gradient(160deg, var(--orange), var(--orange-dark)); }
+  .pcard--featured::before { background: rgba(255,255,255,.35); }
+  .pcard-tag { align-self: flex-start; font-size: .75rem; font-weight: 600; background: rgba(255,255,255,.14); padding: 5px 12px; border-radius: 20px; margin-bottom: 18px; }
+  .pcard h3 { font: 700 2rem/1.1 var(--font-display); margin: 0 0 10px; }
+  .pcard p { margin: 0 0 20px; color: var(--chalk-dim); line-height: 1.55; }
+  .pcard--featured p { color: #fff3e8; }
+  .pcard ul { list-style: none; margin: 0 0 28px; padding: 0; }
+  .pcard li { padding: 11px 0; border-top: 1px solid rgba(255,255,255,.16); font-size: .95rem; }
+  .pcard li::before { content: '✓'; color: var(--orange); font-weight: 700; margin-right: 12px; }
+  .pcard--featured li::before { color: #fff; }
+  .pcard-cta { margin-top: auto; align-self: flex-start; color: #fff; font: 700 1.05rem var(--font-display); letter-spacing: .03em; text-decoration: none; border-bottom: 2px solid #fff; padding-bottom: 2px; }
+  .pcard-cta:hover { border-color: var(--orange-light); }
+</style>
