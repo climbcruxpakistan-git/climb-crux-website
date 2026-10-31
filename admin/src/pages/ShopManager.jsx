@@ -27,12 +27,10 @@ const STATUS_OPTIONS = [
 
 const EDITOR_TABS = [
   { id: 'general', label: 'General' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'inventory', label: 'Inventory' },
+  { id: 'pricing', label: 'Pricing & Stock' },
   { id: 'images', label: 'Images' },
-  { id: 'variants', label: 'Variants' },
-  { id: 'specs', label: 'Specifications' },
-  { id: 'features', label: 'Features' },
+  { id: 'specs', label: 'Specs & Features' },
+  { id: 'faqs', label: 'FAQs' },
   { id: 'shipping', label: 'Shipping' },
   { id: 'seo', label: 'SEO' },
   { id: 'publish', label: 'Publish' },
@@ -58,16 +56,14 @@ export default function ShopManager() {
 
   // ── Form state ──
   const [form, setForm] = useState({
-    name: '', slug: '', sku: '', brand: '', category: 'Uncategorized',
+    name: '', slug: '', sku: '', brand: '', category: 'Uncategorized', condition: '',
     price: '', compareAtPrice: '',
     description: '',
     imageUrl: '', featuredImageAlt: '', images: emptyImages(),
     stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
-    variants: [],
-    specifications: [],
-    features: [''],
+    specifications: [], certifications: [],
+    features: [], faqs: [],
     deliveryTime: '', freeShipping: false,
-    warrantyPeriod: '', warrantyDetails: '',
     returnWindow: '', returnPolicy: '',
     seoTitle: '', metaDescription: '', canonicalUrl: '',
     featured: false, sortOrder: 0, status: 'published',
@@ -142,16 +138,15 @@ export default function ShopManager() {
   // ── Form helpers ──
   function emptyForm() {
     setForm({
-      name: '', slug: '', sku: '', brand: '', category: 'Uncategorized',
+      name: '', slug: '', sku: '', brand: '', category: 'Uncategorized', condition: '',
       price: '', compareAtPrice: '',
       description: '',
       imageUrl: '', featuredImageAlt: '', images: emptyImages(),
       stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
       variants: [],
-      specifications: [],
-      features: [''],
+      specifications: [], certifications: [],
+      features: [], faqs: [],
       deliveryTime: '', freeShipping: false,
-      warrantyPeriod: '', warrantyDetails: '',
       returnWindow: '', returnPolicy: '',
       seoTitle: '', metaDescription: '', canonicalUrl: '',
       featured: false, sortOrder: 0, status: 'published',
@@ -167,12 +162,15 @@ export default function ShopManager() {
   function openEdit(p) {
     const rawImages = (p.images || []).filter(Boolean)
     const imgs = rawImages.length > 0 ? [...rawImages, ''] : ['']
+    const featureList = (p.features || []).filter(Boolean)
+    const conditionFeature = featureList.find((f) => /^condition:/i.test(f))
     setForm({
       name: p.name || '',
       slug: p.slug || '',
       sku: p.sku || '',
       brand: p.brand || '',
       category: p.category || 'Uncategorized',
+      condition: conditionFeature ? conditionFeature.replace(/^condition:\s*/i, '') : '',
       price: p.price?.toString() || '',
       compareAtPrice: (p.compareAtPrice ?? p.originalPrice)?.toString() || '',
       description: p.description || '',
@@ -182,13 +180,12 @@ export default function ShopManager() {
       stockQuantity: p.stockQuantity ?? 0,
       lowStockThreshold: p.lowStockThreshold ?? 5,
       stockStatus: p.stockStatus || 'in_stock',
-      variants: (p.variants || []).length > 0 ? p.variants : [],
       specifications: (p.specifications || []).length > 0 ? p.specifications : [],
-      features: (p.features || []).length > 0 ? p.features : [''],
+      certifications: (p.certifications || []).filter(Boolean),
+      features: featureList.filter((f) => !/^condition:/i.test(f)),
+      faqs: (p.faqs || []).map((f) => ({ question: f.question || '', answer: f.answer || '' })),
       deliveryTime: p.shipping?.deliveryTime || '',
       freeShipping: p.shipping?.freeShipping || false,
-      warrantyPeriod: p.warranty?.period || '',
-      warrantyDetails: p.warranty?.details || '',
       returnWindow: p.returns?.window || '',
       returnPolicy: p.returns?.policy || '',
       seoTitle: p.seo?.title || '',
@@ -208,6 +205,9 @@ export default function ShopManager() {
       return
     }
 
+    const features = form.features.filter((f) => f.trim() && !/^condition:/i.test(f))
+    if (form.condition.trim()) features.unshift(`Condition: ${form.condition.trim()}`)
+
     const data = {
       name: form.name,
       slug: form.slug,
@@ -225,11 +225,14 @@ export default function ShopManager() {
       lowStockThreshold: parseInt(form.lowStockThreshold, 10) || 5,
       stockStatus: form.stockStatus,
       inStock: form.stockStatus === 'in_stock' || form.stockStatus === 'low_stock' || form.stockStatus === 'backorder',
-      variants: form.variants.filter((v) => v.name.trim() && v.value.trim()),
+      variants: [],
       specifications: form.specifications.filter((s) => s.key.trim()),
-      features: form.features.filter((f) => f.trim()),
+      certifications: form.certifications.map((c) => c.trim()).filter(Boolean),
+      features,
+      faqs: form.faqs
+        .filter((f) => f.question.trim() || f.answer.trim())
+        .map((f) => ({ question: f.question.trim(), answer: f.answer.trim() })),
       shipping: { deliveryTime: form.deliveryTime, freeShipping: form.freeShipping },
-      warranty: { period: form.warrantyPeriod, details: form.warrantyDetails },
       returns: { window: form.returnWindow, policy: form.returnPolicy },
       seo: { title: form.seoTitle, metaDescription: form.metaDescription, canonicalUrl: form.canonicalUrl },
       featured: form.featured,
@@ -269,6 +272,11 @@ export default function ShopManager() {
   function addFeature() { setForm({ ...form, features: [...form.features, ''] }) }
   function updateFeature(idx, val) { setForm({ ...form, features: form.features.map((f, i) => i === idx ? val : f) }) }
   function removeFeature(idx) { setForm({ ...form, features: form.features.filter((_, i) => i !== idx) }) }
+
+  // ── Certification helpers ──
+  function addCertification() { setForm({ ...form, certifications: [...form.certifications, ''] }) }
+  function updateCertification(idx, val) { setForm({ ...form, certifications: form.certifications.map((c, i) => i === idx ? val : c) }) }
+  function removeCertification(idx) { setForm({ ...form, certifications: form.certifications.filter((_, i) => i !== idx) }) }
 
   // ── Image Upload ──
   async function uploadMainImage(file) {
@@ -335,17 +343,21 @@ export default function ShopManager() {
     const colors = { published: 'badge-green', draft: 'badge-yellow', archived: 'badge-gray' }
     return <span className={`badge ${colors[s] || 'badge-gray'}`}>{s || 'published'}</span>
   }
+  const saleDiscount = (p) => {
+    const ca = p.compareAtPrice ?? p.originalPrice
+    if (!ca || !p.price || ca <= p.price) return 0
+    return Math.round(((ca - p.price) / ca) * 100)
+  }
+  const firstCert = (p) => (p.certifications || []).find(Boolean) || null
 
   // ── Tabbed editor ──
   function renderEditorTab() {
     switch (editorTab) {
       case 'general': return renderGeneral()
       case 'pricing': return renderPricing()
-      case 'inventory': return renderInventory()
       case 'images': return renderImages()
-      case 'variants': return renderVariants()
       case 'specs': return renderSpecs()
-      case 'features': return renderFeatures()
+      case 'faqs': return renderFaqs()
       case 'shipping': return renderShipping()
       case 'seo': return renderSEO()
       case 'publish': return renderPublish()
@@ -366,17 +378,25 @@ export default function ShopManager() {
           <div className="admin-field">
             <label>Slug</label>
             <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="e.g. petzl-grigri-plus" />
+            <span className="field-hint">Web address — the product page lives at /shop/&lt;slug&gt;.</span>
           </div>
         </div>
         <div className="admin-form-row">
           <div className="admin-field">
             <label>Brand</label>
             <input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="e.g. Petzl" />
+            <span className="field-hint">Shown above the product name on shop cards.</span>
           </div>
           <div className="admin-field">
             <label>Category</label>
             <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Harnesses & Belay" />
+            <span className="field-hint">Used for the shop's category filter buttons.</span>
           </div>
+        </div>
+        <div className="admin-field">
+          <label>Condition</label>
+          <input value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} placeholder="e.g. New, Used, Like New" />
+          <span className="field-hint">Shown next to stock availability on the product page.</span>
         </div>
         <div className="admin-field">
           <label>Description</label>
@@ -389,6 +409,7 @@ export default function ShopManager() {
   function renderPricing() {
     return (
       <div className="admin-form" style={{ maxWidth: 'none' }}>
+        <h4 style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pricing</h4>
         <div className="admin-form-row">
           <div className="admin-field">
             <label>Price (PKR) *</label>
@@ -397,6 +418,7 @@ export default function ShopManager() {
           <div className="admin-field">
             <label>Compare-at Price (sale)</label>
             <input type="number" value={form.compareAtPrice} onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value })} placeholder="Leave empty if not on sale" min="0" />
+            <span className="field-hint">If higher than the price, a −% sale badge appears on the shop card.</span>
           </div>
         </div>
         {form.compareAtPrice && parseFloat(form.compareAtPrice) > parseFloat(form.price) && (
@@ -404,17 +426,14 @@ export default function ShopManager() {
             Discount: -{Math.round(((parseFloat(form.compareAtPrice) - parseFloat(form.price)) / parseFloat(form.compareAtPrice)) * 100)}%
           </div>
         )}
-      </div>
-    )
-  }
 
-  function renderInventory() {
-    return (
-      <div className="admin-form" style={{ maxWidth: 'none' }}>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '20px 0 16px' }} />
+        <h4 style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Stock</h4>
         <div className="admin-form-row">
           <div className="admin-field">
             <label>SKU</label>
             <input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="e.g. PTZ-GR-001" />
+            <span className="field-hint">Internal product code — never shown to customers.</span>
           </div>
           <div className="admin-field">
             <label>Stock Quantity</label>
@@ -425,12 +444,14 @@ export default function ShopManager() {
           <div className="admin-field">
             <label>Low Stock Threshold</label>
             <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} placeholder="5" min="1" />
+            <span className="field-hint">At this quantity the product is flagged as “Low stock”.</span>
           </div>
           <div className="admin-field">
             <label>Stock Status</label>
             <select value={form.stockStatus} onChange={(e) => setForm({ ...form, stockStatus: e.target.value })}>
               {STOCK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+            <span className="field-hint">Shown as a badge on the shop card and product page.</span>
           </div>
         </div>
         {form.stockQuantity > 0 && form.stockQuantity <= form.lowStockThreshold && (
@@ -519,46 +540,12 @@ export default function ShopManager() {
     )
   }
 
-  function renderVariants() {
-    return (
-      <div className="admin-form" style={{ maxWidth: 'none' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Add size, color, length, weight options.</p>
-          <button className="btn-admin btn-admin-sm btn-admin-primary" onClick={() => addListItem('variants', { name: '', value: '', price: '', sku: '', stockQuantity: 0 })}>+ Add Variant</button>
-        </div>
-        {form.variants.length === 0 ? (
-          <p style={{ fontSize: '0.85rem', color: 'var(--stone)', padding: 20, textAlign: 'center' }}>No variants yet.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {form.variants.map((v, i) => (
-              <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', padding: 8, background: '#f8f6f2', borderRadius: 6 }}>
-                <select style={{ width: 90, padding: '0.45em', borderRadius: 6, border: '1px solid #d8d0bc', fontSize: '0.82rem' }}
-                  value={v.name} onChange={(e) => updateListItem('variants', i, 'name', e.target.value)}>
-                  <option value="">Type</option>
-                  <option value="Size">Size</option>
-                  <option value="Color">Color</option>
-                  <option value="Length">Length</option>
-                  <option value="Weight">Weight</option>
-                  <option value="Style">Style</option>
-                </select>
-                <input style={{ width: 100 }} value={v.value} onChange={(e) => updateListItem('variants', i, 'value', e.target.value)} placeholder="Value" />
-                <input style={{ width: 80 }} type="number" value={v.price} onChange={(e) => updateListItem('variants', i, 'price', e.target.value)} placeholder="Price" />
-                <input style={{ width: 80 }} value={v.sku} onChange={(e) => updateListItem('variants', i, 'sku', e.target.value)} placeholder="SKU" />
-                <input style={{ width: 60 }} type="number" value={v.stockQuantity} onChange={(e) => updateListItem('variants', i, 'stockQuantity', e.target.value)} placeholder="Qty" />
-                <button className="btn-admin-icon danger" onClick={() => removeListItem('variants', i)} title="Remove variant">✕</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   function renderSpecs() {
     return (
       <div className="admin-form" style={{ maxWidth: 'none' }}>
+        <h4 style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Specifications</h4>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Key-value pairs for technical specifications.</p>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Technical details shown as a table on the product page.</p>
           <button className="btn-admin btn-admin-sm btn-admin-primary" onClick={() => addListItem('specifications', { key: '', value: '' })}>+ Add Spec</button>
         </div>
         {form.specifications.length === 0 ? (
@@ -574,14 +561,13 @@ export default function ShopManager() {
             ))}
           </div>
         )}
-      </div>
-    )
-  }
 
-  function renderFeatures() {
-    return (
-      <div className="admin-form" style={{ maxWidth: 'none' }}>
-        <p style={{ fontSize: '0.78rem', color: 'var(--stone)', marginBottom: 12 }}>Key selling points shown as highlights on the product page.</p>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '20px 0 16px' }} />
+        <h4 style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Features</h4>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Short selling points shown as highlights on the product page.</p>
+          <button className="btn-admin btn-admin-sm btn-admin-primary" onClick={addFeature}>+ Add Feature</button>
+        </div>
         {form.features.length === 0 ? (
           <p style={{ fontSize: '0.85rem', color: 'var(--stone)', padding: 20, textAlign: 'center' }}>No features yet.</p>
         ) : (
@@ -594,7 +580,51 @@ export default function ShopManager() {
             ))}
           </div>
         )}
-        <button className="btn-admin btn-admin-ghost btn-admin-sm" onClick={addFeature} style={{ alignSelf: 'flex-start', marginTop: 8 }}>+ Add Feature</button>
+
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '20px 0 16px' }} />
+        <h4 style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Certifications</h4>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Shown as a badge on shop cards and the product page.</p>
+          <button className="btn-admin btn-admin-sm btn-admin-primary" onClick={addCertification}>+ Add Certification</button>
+        </div>
+        {form.certifications.length === 0 ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--stone)', padding: 20, textAlign: 'center' }}>No certifications yet.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {form.certifications.map((c, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input style={{ flex: 1 }} value={c} onChange={(e) => updateCertification(i, e.target.value)} placeholder="e.g. CE EN 12277" />
+                <button className="btn-admin-icon danger" onClick={() => removeCertification(i)}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  function renderFaqs() {
+    return (
+      <div className="admin-form" style={{ maxWidth: 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Questions and answers shown in the product page FAQ section.</p>
+          <button className="btn-admin btn-admin-sm btn-admin-primary" onClick={() => addListItem('faqs', { question: '', answer: '' })}>+ Add FAQ</button>
+        </div>
+        {form.faqs.length === 0 ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--stone)', padding: 20, textAlign: 'center' }}>No FAQs yet.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {form.faqs.map((f, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 10, background: '#f8f6f2', borderRadius: 6 }}>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input style={{ flex: 1 }} value={f.question} onChange={(e) => updateListItem('faqs', i, 'question', e.target.value)} placeholder="Question" />
+                  <button className="btn-admin-icon danger" onClick={() => removeListItem('faqs', i)} title="Remove FAQ">✕</button>
+                </div>
+                <textarea rows={2} value={f.answer} onChange={(e) => updateListItem('faqs', i, 'answer', e.target.value)} placeholder="Answer" />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     )
   }
@@ -816,12 +846,25 @@ export default function ShopManager() {
                             )}
                           </td>
                           <td>
+                            <div style={{ fontSize: '0.64rem', color: 'var(--stone-dark)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 1 }}>{p.brand || p.category || 'Climb Crux'}</div>
                             <strong style={{ fontSize: '0.9rem' }}>{p.name}</strong>
                             {p.sku && <div style={{ fontSize: '0.68rem', color: 'var(--stone)', fontFamily: 'monospace' }}>{p.sku}</div>}
                           </td>
-                          <td><span className="badge badge-gray">{p.category}</span></td>
+                          <td>
+                            <span className="badge badge-gray">{p.category}</span>
+                            {firstCert(p) && (
+                              <div style={{ marginTop: 4 }}>
+                                <span style={{ display: 'inline-block', fontSize: '0.58rem', fontWeight: 600, padding: '2px 7px', border: '1px solid var(--border)', borderRadius: 999, color: 'var(--stone-dark)', letterSpacing: '0.03em' }}>🛡 {firstCert(p)}</span>
+                              </div>
+                            )}
+                          </td>
                           <td style={{ whiteSpace: 'nowrap' }}>
-                            PKR {p.price?.toLocaleString()}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span>PKR {p.price?.toLocaleString()}</span>
+                              {saleDiscount(p) > 0 && (
+                                <span style={{ background: 'var(--orange)', color: '#fff', fontSize: '0.58rem', fontWeight: 700, padding: '2px 6px', borderRadius: 4, letterSpacing: '0.03em' }}>-{saleDiscount(p)}%</span>
+                              )}
+                            </div>
                             {p.compareAtPrice && <div style={{ fontSize: '0.62rem', color: '#aaa', textDecoration: 'line-through' }}>PKR {p.compareAtPrice.toLocaleString()}</div>}
                           </td>
                           <td>{stockBadge(p)}</td>
