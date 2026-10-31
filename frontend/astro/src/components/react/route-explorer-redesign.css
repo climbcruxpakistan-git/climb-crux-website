@@ -1,0 +1,61 @@
+/* src/components/react/route-explorer-redesign.css (new file) — import it once in RouteExplorer.jsx */
+.rx-grade { --c:var(--orange,#f36f21); display:inline-flex; align-items:center; justify-content:center; min-width:58px; padding:12px 0; border-radius:6px;
+  background:var(--c); color:var(--ink,#201f1c); font:700 1.35rem/1 var(--font-display,'Oswald',sans-serif); }
+.rx-grade[data-band='beginner'] { --c:#8fb58a; } .rx-grade[data-band='intermediate'] { --c:#e8b04a; }
+.rx-grade[data-band='advanced'] { --c:var(--orange,#f36f21); } .rx-grade[data-band='expert'] { --c:#c2371f; color:#fff; }
+.rx-grade--xl { min-width:104px; padding:18px 0; font-size:2.6rem; } .rx-grade--sm { min-width:44px; padding:4px 0; font-size:.9rem; border-radius:4px; }
+
+/* layout: one route per row, big preview on the right */
+.rx-lay { display:grid; grid-template-columns:minmax(0,480px) minmax(0,1fr); gap:32px; align-items:start; }
+.rx-list { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+.rx-row { position:relative; background:#fff; border:1px solid var(--chalk-dim,#ece5d5); border-radius:8px; transition:border-color .15s; }
+.rx-row:hover { border-color:rgba(243,111,33,.5); }
+.rx-row.is-sel { border:2px solid var(--orange,#f36f21); background:#fff8f1; }
+.rx-row-main { all:unset; box-sizing:border-box; display:flex; gap:16px; align-items:flex-start; width:100%; padding:18px 56px 18px 20px; cursor:pointer; }
+.rx-row-main:focus-visible { outline:2px solid var(--orange,#f36f21); outline-offset:2px; border-radius:8px; }
+.rx-row-body { display:grid; gap:4px; } .rx-row-body strong { font:500 1.35rem/1.2 var(--font-display,'Oswald',sans-serif); color:var(--ink,#201f1c); }
+.rx-row-venue { font-size:.9rem; color:var(--stone-dark,#5a5650); }
+.rx-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.rx-chips em { font:600 .72rem var(--font-body,'Work Sans',sans-serif); font-style:normal; background:var(--chalk,#f6f2e9); color:var(--stone-dark,#5a5650); padding:3px 10px; border-radius:20px; }
+.rx-row-link { position:absolute; top:12px; right:14px; width:32px; height:32px; display:grid; place-items:center; color:var(--orange,#f36f21); text-decoration:none; font-size:1.1rem; border-radius:50%; }
+.rx-row-link:hover { background:var(--chalk,#f6f2e9); }
+
+/* preview panel */
+.rx-aside { position:sticky; top:20px; max-height:calc(100vh - 40px); overflow:auto; background:var(--charcoal-deep,#201f21); color:#fff;
+  border-top:4px solid var(--orange,#f36f21); border-radius:14px; box-shadow:0 24px 50px rgba(0,0,0,.25); }
+.rx-pv, .rx-pv-empty { padding:34px 38px; } .rx-pv-empty { text-align:center; color:var(--stone,#8c8578); padding:90px 30px; }
+.rx-pv-close { display:none; }
+.rx-pv-photo { margin:-34px -38px 28px; } .rx-pv-photo img { display:block; width:100%; height:220px; object-fit:cover; }
+.rx-pv-photo figcaption { font-size:.72rem; color:var(--stone,#8c8578); padding:8px 38px 0; }
+.rx-pv-head { display:flex; gap:20px; align-items:center; margin-bottom:22px; }
+.rx-pv-head h3 { margin:0; font:700 2.6rem/1.05 var(--font-display,'Oswald',sans-serif); color:#fff; } .rx-pv-head p { margin:6px 0 0; color:var(--stone,#8c8578); }
+.rx-facts { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin:0 0 20px; background:rgba(255,255,255,.12); border-radius:8px; overflow:hidden; }
+.rx-facts div { background:#2a2a2d; padding:12px 14px; } .rx-facts dt { font-size:.72rem; color:var(--stone,#8c8578); } .rx-facts dd { margin:2px 0 0; font-weight:600; }
+.rx-desc { color:var(--chalk-dim,#ece5d5); line-height:1.6; }
+.rx-sh { margin:26px 0 10px; font:600 .8rem var(--font-body,'Work Sans',sans-serif); color:var(--stone,#8c8578); }
+.rx-ladder { display:flex; gap:4px; align-items:flex-end; } .rx-ladder i { flex:1; height:10px; border-radius:2px; opacity:.3; background:var(--orange,#f36f21); }
+.rx-ladder i[data-band='beginner'] { background:#8fb58a; } .rx-ladder i[data-band='intermediate'] { background:#e8b04a; } .rx-ladder i[data-band='expert'] { background:#c2371f; }
+.rx-ladder i.me { opacity:1; height:24px; outline:2px solid #fff; }
+.rx-ladder-l { display:flex; justify-content:space-between; margin-top:6px; font-size:.7rem; color:var(--stone,#8c8578); }
+.rx-pitches { list-style:none; margin:0; padding:0; } .rx-pitches li { display:flex; gap:14px; padding:14px 0; border-top:1px solid rgba(255,255,255,.12); }
+.rx-pitches b { font:700 1.1rem var(--font-display,'Oswald',sans-serif); color:var(--orange,#f36f21); min-width:30px; }
+.rx-pitches div { flex:1; } .rx-pitches p { margin:0; font-size:.9rem; line-height:1.5; color:var(--chalk-dim,#ece5d5); } .rx-pitches small { color:var(--stone,#8c8578); }
+.rx-pbar { height:6px; border-radius:3px; margin-bottom:9px; background:var(--orange,#f36f21); }
+.rx-pbar[data-band='beginner'] { background:#8fb58a; } .rx-pbar[data-band='intermediate'] { background:#e8b04a; } .rx-pbar[data-band='expert'] { background:#c2371f; }
+.rx-two { display:grid; grid-template-columns:1fr 1fr; gap:30px; } /* Related-route names are clickable: reset button chrome and add affordance. */
+.rx-rel-btn { all:unset; box-sizing:border-box; width:100%; cursor:pointer; color:inherit; }
+/* Layout must come after .rx-rel-btn so flex/spacing win over its all:unset reset */
+.rx-rel { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid rgba(255,255,255,.12); font-size:.9rem; }
+.rx-rel-btn:hover span:first-child, .rx-rel-btn:focus-visible span:first-child { color:#fff; text-decoration:underline; }
+.rx-rel-btn:focus-visible { outline:2px solid var(--orange,#f36f21); outline-offset:2px; border-radius:4px; }
+.rx-cta { display:block; text-align:center; margin-top:30px; } .rx-note { font-size:.72rem; color:var(--stone,#8c8578); margin:14px 0 0; }
+
+/* tablet / phone: preview becomes a bottom sheet */
+@media (max-width:980px) {
+  .rx-lay { grid-template-columns:1fr; }
+  .rx-aside { display:none; position:fixed; inset:auto 0 0 0; top:auto; max-height:82vh; border-radius:16px 16px 0 0; z-index:50; }
+  .rx-aside.is-open { display:block; }
+  .rx-pv, .rx-pv-empty { padding:26px 22px; } .rx-pv-photo { margin:-26px -22px 22px; } .rx-pv-photo figcaption { padding-inline:22px; }
+  .rx-pv-close { display:grid; place-items:center; position:absolute; top:10px; right:12px; z-index:2; width:36px; height:36px; border:0; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:1.4rem; cursor:pointer; }
+  .rx-facts { grid-template-columns:1fr 1fr; } .rx-two { grid-template-columns:1fr; } .rx-pv-head h3 { font-size:2rem; } .rx-grade--xl { min-width:80px; font-size:2rem; }
+}
