@@ -37,8 +37,9 @@ export default defineConfig({
   // `trailingSlash` above then adds the slash on the final URL.
   redirects: {
     '/rock-climbing-guide-pakistan': '/rock-climbing-guide-islamabad/',
-    '/routes': '/rock-climbing-guide-islamabad/routes/',
+    '/routes': '/rock-climbing-guide-islamabad/',
     '/routes/[slug]': '/rock-climbing-guide-islamabad/routes/[slug]',
+    '/rock-climbing-guide-islamabad/routes': '/rock-climbing-guide-islamabad/',
   },
   vite: {
     server: {

@@ -2,13 +2,13 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteExplorer from '../components/react/RouteExplorer.jsx';
 import GradeChart from '../components/react/GradeChart.jsx';
-import PremiumSessionCards from '../components/astro/PremiumSessionCards.astro';
 import { optimizeImage } from '../lib/api';
 import {
   AREAS,
   MARGALLA_SOURCE,
   AVAILABLE_GRADES,
   flattenRoutes,
+  sortRoutesByGrade,
   TOTAL_ROUTES,
 } from '../data/margallaRoutes';
 import {
@@ -16,6 +16,7 @@ import {
   ROUTE_PARAMS,
 } from '../lib/routeFilters';
 import '../styles/RockClimbingGuide.css';
+import { slugify } from '../lib/slug';
 
 /**
  * Rock Climbing Guide Islamabad — a static SEO / resource page for climbing in
@@ -39,7 +40,28 @@ const HERO_IMAGE_SOURCE = 'https://res.cloudinary.com/ivvx77mg/image/upload/v178
 const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
 
 /* ── Route data ───────────────────────────────────────────────────── */
+const SITE_URL = 'https://www.climbcruxpakistan.com';
+const GUIDE_URL = `${SITE_URL}/rock-climbing-guide-islamabad/`;
+
 const allRoutes = flattenRoutes();
+
+// ItemList: tells Google this page is the directory of every documented route,
+// each deep-linked to its own route page.
+const routesByGrade = sortRoutesByGrade(allRoutes);
+
+const itemListJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  '@id': `${GUIDE_URL}#route-list`,
+  name: 'Rock climbing routes in Islamabad and the Margalla Hills',
+  numberOfItems: routesByGrade.length,
+  itemListElement: routesByGrade.map((route, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: route.name,
+    url: `${SITE_URL}${ROUTE_LIBRARY_BASE}${slugify(route.name)}/`,
+  })),
+};
 
 const chartData = AVAILABLE_GRADES.map((g) => ({ grade: g, count: allRoutes.filter((r) => r.grade === g).length }));
 
@@ -52,37 +74,6 @@ const explorerAreas = AREAS.map((area) => ({
 }));
 
 const totalVenues = AREAS.reduce((n, area) => n + area.venues.length, 0);
-
-/* ── Visiting Pakistan? ───────────────────────────────────────────── */
-const internationalClimbers = [
-  'Bring your personal climbing shoes if possible.',
-  'Let us know your climbing experience and preferred grades.',
-  'Tell us whether you are looking for a beginner experience, sport climbing or harder climbing.',
-  'We can recommend a suitable climbing area and session format.',
-  'Equipment availability should be confirmed before the session.',
-];
-
-/* ── Climb with Climb Crux ────────────────────────────────────────── */
-const climbOptions = [
-  {
-    h: 'Public Sessions',
-    p: 'Join a scheduled outdoor climbing session on the Margalla Hills, with certified instruction and safety cover.',
-    cta: 'View Public Sessions',
-    href: '/sessions/',
-  },
-  {
-    h: 'Private Sessions',
-    p: 'Book a private climbing experience tailored to your group, your goals and your ability.',
-    cta: 'Explore Private Sessions',
-    href: '/private-premium/',
-  },
-  {
-    h: 'Experienced Climbers',
-    p: 'Already climbing outdoors and want to explore Margalla climbing with local guidance? Arrange a session around the routes you want to try.',
-    cta: 'Book a Private Session',
-    href: '/book-now/?type=private-starter',
-  },
-];
 
 /* ── FAQ ──────────────────────────────────────────────────────────── */
 const faqs = [
@@ -133,6 +124,7 @@ const faqSchema = {
   image={heroImage}
 >
   <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
 
@@ -204,35 +196,6 @@ const faqSchema = {
       </div>
     </div>
   </section>
-
-  {/* ── 5. Visiting Pakistan? ────────────────────────────────────── */}
-  <section class="section">
-    <div class="wrap">
-      <div class="guide-intl-grid">
-        <div class="guide-intl-copy">
-          <h2>Visiting Pakistan?</h2>
-          <p class="guide-lede">
-            Islamabad is a practical base for exploring the outdoor climbing of the Margalla Hills. If
-            you're visiting Pakistan and want to climb outdoors, Climb Crux can help you plan a guided
-            session based on your experience, preferred difficulty and available time.
-          </p>
-          <div class="guide-hero-actions">
-            <a class="btn btn-primary" href="/book-now/?type=public">Book a Climbing Session</a>
-            <a class="btn btn-outline" href="/our-team/">Meet Our Instructors</a>
-          </div>
-        </div>
-        <aside class="guide-intl-panel">
-          <h3>Before you arrive</h3>
-          <ul class="guide-list is-check">
-            {internationalClimbers.map((item) => <li>{item}</li>)}
-          </ul>
-        </aside>
-      </div>
-    </div>
-  </section>
-
-  {/* ── 6. Climb with Climb Crux ──────────────────────────────────── */}
-  <PremiumSessionCards />
 
   {/* ── 7. FAQ ──────────────────────────────────────────────────── */}
   <section class="section guide-faq">

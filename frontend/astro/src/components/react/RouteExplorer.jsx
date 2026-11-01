@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AVAILABLE_GRADES, formatGrade, routeSlug, sortRoutesByGrade } from '../../data/margallaRoutes'
+import { AVAILABLE_GRADES, sortRoutesByGrade } from '../../data/margallaRoutes'
 import { slugify } from '../../lib/slug'
-import { gradeColor } from '../../lib/gradeColors'
 import {
   defaultFilters,
   filterRoutes,
@@ -9,32 +8,29 @@ import {
   filtersToParams,
   hasActiveFilters,
   routeDetailHref,
-  routeLibraryHref,
   venueOptions,
 } from '../../lib/routeFilters'
-import { ROUTE_LIBRARY_BASE } from '../../lib/routeFilters'
 import RouteRow from './RouteRow.jsx'
 import RoutePreview from './RoutePreview.jsx'
 import './route-explorer-redesign.css'
 
 /**
- * The route explorer, used in two modes so both stay on one implementation:
+ * The route explorer. Both modes now share ONE layout (filter panel, one route per
+ * row, sticky preview panel) so the guide page and the route library look and
+ * behave the same.
  *
- *  · `compact` — the guide page's "Explore Routes by Grade" block: a route
- *    search plus a grade range bar, with all matching routes in a scrollable
- *    list using the same full route cards as the library, and a link to the
- *    library.
- *  · `full` — the route library at /rock-climbing-guide-islamabad/routes:
- *    search + climbing area + grade range + venue, with the filter state kept in
- *    the URL so filtered views can be bookmarked or shared.
+ *  · `compact` — guide page: same UI, but only the first COMPACT_LIMIT matches are
+ *    listed, with a button that opens the library with the current filters.
+ *  · `full` — the route library: every match is listed.
  *
- * Filtering, grade ordering and the URL conventions all come from
- * `lib/routeFilters` and `lib/grades`.
+ * Filtering, grade ordering and URL conventions come from `lib/routeFilters` and
+ * `lib/grades`. Individual route pages do not use this component.
  */
 
 const ALL = 'all'
-
 const LAST_GRADE_INDEX = AVAILABLE_GRADES.length - 1
+/** All matching routes render on the guide page (the library page is gone). */
+const COMPACT_LIMIT = Infinity
 
 function gradeAt(index) {
   return AVAILABLE_GRADES[Math.min(Math.max(index, 0), LAST_GRADE_INDEX)]
@@ -61,12 +57,7 @@ function GradeRange({ idPrefix, minGrade, maxGrade, onChange }) {
     onChange(index < minIndex ? gradeAt(index) : minGrade, gradeAt(index))
   }
 
-  const sliderProps = {
-    type: 'range',
-    min: 0,
-    max: LAST_GRADE_INDEX,
-    step: 1,
-  }
+  const sliderProps = { type: 'range', min: 0, max: LAST_GRADE_INDEX, step: 1 }
 
   return (
     <div className="grade-range" role="group" aria-labelledby={labelId}>
@@ -120,79 +111,7 @@ function GradeRange({ idPrefix, minGrade, maxGrade, onChange }) {
   )
 }
 
-/** The grade shown as a strong rectangular badge with a small label above it,
-    so hardness reads independently of the name or where the route lives. The
-    difficulty colour cascades from the card as `--tone` / `--tone-ink`. */
-function GradeBadge({ grade }) {
-  return (
-    <div className="explorer-card-grade">
-      <span className="explorer-grade-label">Grade</span>
-      <span className="explorer-badge">{grade}</span>
-    </div>
-  )
-}
-
-/** Venue and area as clearly labelled metadata, so each type of location
-    stays distinguishable. Values are rendered only when present. */
-function RouteMeta({ area, venue }) {
-  return (
-    <div className="explorer-card-meta">
-      {venue && (
-        <div className="explorer-meta-item">
-          <span className="explorer-meta-label">Venue</span>
-          <span className="explorer-meta-value">{venue}</span>
-        </div>
-      )}
-      {area && (
-        <div className="explorer-meta-item">
-          <span className="explorer-meta-label">Area</span>
-          <span className="explorer-meta-value">{area}</span>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/** Full route card — the library presentation (description, pitches). */
-function RouteCard({ route }) {
-  const tone = gradeColor(route.grade)
-  return (
-    <li
-      id={routeSlug(route.name)}
-      className="explorer-card"
-      style={{ '--tone': tone.tone, '--tone-ink': tone.ink, '--tone-accent': tone.accent }}
-    >
-      <GradeBadge grade={formatGrade(route)} />
-      <div className="explorer-card-body">
-        <div className="explorer-card-header">
-          <h3 className="explorer-card-name">
-            <a className="explorer-card-link" href={routeDetailHref(slugify(route.name))}>
-              {route.name}
-              <span className="explorer-card-arrow" aria-hidden="true">↗</span>
-            </a>
-          </h3>
-        </div>
-        {route.length ? <p className="explorer-card-length">{route.length}m</p> : null}
-        <RouteMeta area={route.area} venue={route.venue} />
-        {route.pitches && (
-          <ul className="explorer-pitches" role="list">
-            {route.pitches.map((pitch) => (
-              <li key={pitch.label} className="explorer-pitch">
-                <span className="explorer-pitch-label">{pitch.label}</span>
-                <span className="explorer-pitch-grade">{pitch.grade}</span>
-                {pitch.length ? <span className="explorer-pitch-len">{pitch.length}m</span> : null}
-                <span className="explorer-pitch-desc">{pitch.description}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </li>
-  )
-}
-
-/** Route search input, shared by both explorer modes. Matches route name,
-    venue and area, so the guide page can search without the full filter set. */
+/** Route search input. Matches route name, venue and area. */
 function RouteSearch({ idPrefix, value, onChange, onClear }) {
   return (
     <div className="explorer-field explorer-field-search">
@@ -209,12 +128,7 @@ function RouteSearch({ idPrefix, value, onChange, onClear }) {
           onChange={(event) => onChange(event.target.value)}
         />
         {value.trim() !== '' && (
-          <button
-            type="button"
-            className="explorer-clear"
-            onClick={onClear}
-            aria-label="Clear the route search"
-          >
+          <button type="button" className="explorer-clear" onClick={onClear} aria-label="Clear the route search">
             Clear
           </button>
         )}
@@ -226,9 +140,8 @@ function RouteSearch({ idPrefix, value, onChange, onClear }) {
 export default function RouteExplorer({ routes, areas, mode = 'full' }) {
   const isCompact = mode === 'compact'
 
-  // Full mode: URL sync on (library page). Compact mode: URL sync on (guide page
-  // hero chart drives it via ?minGrade=X&maxGrade=X, and the "Show all" link carries
-  // filters over to the library).
+  // URL sync is on in both modes: the hero chart drives the list through
+  // ?minGrade=X&maxGrade=X and the library button carries the filters over.
   const syncUrl = true
 
   const [filters, setFilters] = useState(defaultFilters)
@@ -242,7 +155,7 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
       setFilters(filtersFromParams(new URLSearchParams(window.location.search), areas))
     applyFromUrl()
     setUrlReady(true)
-    // Back/forward (and returning to a shared link) restores the filters.
+    // Back/forward (and the hero chart's synthetic popstate) restores the filters.
     window.addEventListener('popstate', applyFromUrl)
     return () => window.removeEventListener('popstate', applyFromUrl)
   }, [areas, syncUrl])
@@ -258,49 +171,36 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
   }, [filters, syncUrl, urlReady])
 
   const venues = useMemo(() => venueOptions(areas, filters.area), [areas, filters.area])
-
   const matched = useMemo(() => sortRoutesByGrade(filterRoutes(routes, filters)), [routes, filters])
-
+  const shown = isCompact ? matched.slice(0, COMPACT_LIMIT) : matched
   const active = hasActiveFilters(filters)
 
-  // In full mode, track the selected route by name so the preview aside stays
-  // in sync with the currently filtered list. If the filter removes the selected
-  // route, the selection clears — unless the route was chosen from the preview's
-  // related lists, in which case it is still findable in the full route set.
+  // The preview is tracked by route name. A route picked from the preview's
+  // "related" lists stays selected even if it isn't in the current list.
   const [selectedName, setSelectedName] = useState(null)
+
+  // When the filtered list changes: keep the selection if it is still listed;
+  // otherwise, on desktop, select the first match so the preview is never empty.
+  // On phones nothing opens automatically (the preview is a bottom sheet).
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 981px)').matches
+    setSelectedName((current) => {
+      if (current && matched.some((r) => r.name === current)) return current
+      return desktop && matched.length > 0 ? matched[0].name : null
+    })
+  }, [matched])
+
   const selected = selectedName
-    ? (matched.find((r) => r.name === selectedName) || routes.find((r) => r.name === selectedName))
+    ? matched.find((r) => r.name === selectedName) || routes.find((r) => r.name === selectedName)
     : null
 
   const update = (patch) => setFilters((current) => ({ ...current, ...patch }))
   const reset = () => setFilters(defaultFilters())
-
   const searchActive = filters.search.trim() !== ''
-
-  const count = (
-    <p className="explorer-count" role="status">
-      {isCompact && matched.length === 0 ? (
-        <>{searchActive ? 'No routes match your search.' : 'No routes found for this grade range.'}</>
-      ) : (
-        <>
-          <strong>{matched.length}</strong> {matched.length === 1 ? 'route' : 'routes'} found
-        </>
-      )}
-      {!isCompact && active && (
-        <button type="button" className="explorer-reset" onClick={reset}>
-          Clear all filters
-        </button>
-      )}
-    </p>
-  )
 
   return (
     <div className="explorer-wrap">
-      <div
-        className="explorer-filters"
-        role="search"
-        aria-label={isCompact ? 'Search and filter routes' : 'Filter routes'}
-      >
+      <div className="explorer-filters" role="search" aria-label="Filter routes">
         <div className="explorer-fields">
           <RouteSearch
             idPrefix={idPrefix}
@@ -338,9 +238,7 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
               value={filters.venue}
               onChange={(event) => update({ venue: event.target.value })}
             >
-              <option value={ALL}>
-                {filters.area === ALL ? 'All venues' : 'All venues in this area'}
-              </option>
+              <option value={ALL}>{filters.area === ALL ? 'All venues' : 'All venues in this area'}</option>
               {venues.map((venue) => (
                 <option key={venue.id} value={venue.id}>
                   {venue.name}
@@ -358,13 +256,21 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
         />
       </div>
 
-      <h2 id="route-results">{matched.length} ROUTES FOUND</h2>
+      {/* One count line (replaces the old "59 ROUTES FOUND" heading + count row). */}
+      <p className="explorer-count" id="route-results" role="status">
+        <span>
+          <strong>{matched.length}</strong> {matched.length === 1 ? 'route' : 'routes'} found
+        </span>
+        {active && (
+          <button type="button" className="explorer-reset" onClick={reset}>
+            Clear all filters
+          </button>
+        )}
+      </p>
 
-      {count}
-
-      {matched.length === 0 && !isCompact && (
+      {matched.length === 0 && (
         <div className="explorer-empty">
-          <p>No routes match the selected filters.</p>
+          <p>{searchActive ? 'No routes match your search.' : 'No routes match the selected filters.'}</p>
           <button type="button" className="explorer-reset" onClick={reset}>
             Clear all filters
           </button>
@@ -372,66 +278,37 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
       )}
 
       {matched.length > 0 && (
-        isCompact
-          ? (
-              <ul className="explorer-list" role="list">
-                {matched.map((route) => (
-                  <RouteRow
-                    key={`${route.venueId}-${route.name}`}
-                    route={route}
-                    selected={false}
-                    onSelect={() => window.location.assign(routeDetailHref(slugify(route.name)))}
-                    href={routeDetailHref(slugify(route.name))}
-                  />
-                ))}
-              </ul>
-            )
-          : (
-              <div className="rx-lay">
-                <ul className="rx-list" role="list">
-                  {matched.map((route) => (
-                    <RouteRow
-                      key={`${route.venueId}-${route.name}`}
-                      route={route}
-                      selected={selected?.name === route.name}
-                      onSelect={(r) => setSelectedName(r.name)}
-                      href={routeDetailHref(slugify(route.name))}
-                    />
-                  ))}
-                </ul>
-                <aside className={`rx-aside${selected ? ' is-open' : ''}`}>
-                  <RoutePreview
-                    route={selected}
-                    allRoutes={routes}
-                    grades={AVAILABLE_GRADES}
-                    href={routeDetailHref(slugify(selected?.name || ''))}
-                    onClose={() => setSelectedName(null)}
-                    onSelect={(name) => setSelectedName(name)}
-                  />
-                </aside>
-              </div>
-            )
+        <div className="rx-lay">
+          <ul className="rx-list" role="list">
+            {shown.map((route) => (
+              <RouteRow
+                key={`${route.venueId}-${route.name}`}
+                route={route}
+                selected={selected?.name === route.name}
+                onSelect={(r) => setSelectedName(r.name)}
+                href={routeDetailHref(slugify(route.name))}
+              />
+            ))}
+          </ul>
+          <aside className={`rx-aside${selected ? ' is-open' : ''}`}>
+            <RoutePreview
+              route={selected}
+              allRoutes={routes}
+              grades={AVAILABLE_GRADES}
+              href={routeDetailHref(slugify(selected?.name || ''))}
+              onClose={() => setSelectedName(null)}
+              onSelect={(name) => setSelectedName(name)}
+            />
+          </aside>
+        </div>
       )}
 
       {isCompact && (
         <div className="explorer-actions">
-          {matched.length > 0 && (
-            <p className="explorer-select-hint">
-              Select a route to preview its grade, venue and details.
-            </p>
-          )}
           <p className="explorer-note">
-            Multi-pitch lines are graded by their hardest pitch, so Teamwork is listed under 6c+ even
-            though its first pitch is 4a.
+            Multi-pitch lines are graded by their hardest pitch, so Teamwork is listed under 6c+ even though its
+            first pitch is 4a.
           </p>
-          {matched.length === 0 && (
-            <button type="button" className="explorer-reset" onClick={reset}>
-              Reset filters
-            </button>
-          )}
-          <a className="btn btn-primary" href={routeLibraryHref()}>
-            View All Routes →
-          </a>
         </div>
       )}
     </div>

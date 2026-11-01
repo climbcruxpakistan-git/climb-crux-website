@@ -99,7 +99,6 @@ const faqSchema =
 const crumbs = [
   { name: 'Home', href: `${SITE_URL}/` },
   { name: 'Rock Climbing Guide Islamabad', href: `${SITE_URL}/rock-climbing-guide-islamabad/` },
-  { name: 'Margalla Hills Route Library', href: `${SITE_URL}${ROUTE_LIBRARY_BASE}` },
   { name: route.area, href: `${SITE_URL}${routeLibraryHref({ area: route.areaId })}` },
   { name: route.venue, href: `${SITE_URL}${routeLibraryHref({ area: route.areaId, venue: route.venueId })}` },
   { name: route.name },
@@ -178,7 +177,7 @@ const webpageJsonLd = {
   <section class="section">
     <div class="wrap route-detail">
       <p class="route-detail-back">
-        <a href={`${ROUTE_LIBRARY_BASE}#${routeSlug(route.name)}`}>← All climbing routes</a>
+        <a href="/rock-climbing-guide-islamabad/#guide-intro">← All climbing routes</a>
       </p>
 
       <h2>About {route.name}</h2>
@@ -270,7 +269,7 @@ const webpageJsonLd = {
         ) : (
           <span class="route-nav-ghost" aria-hidden="true"></span>
         )}
-        <a class="route-nav-all" href={ROUTE_LIBRARY_BASE}>All Routes</a>
+        <a class="route-nav-all" href="/rock-climbing-guide-islamabad/#guide-intro">All Routes</a>
         {nextRoute ? (
           <a class="route-nav-link route-nav-next" href={routeDetailHref(slugify(nextRoute.name))}>
             <span class="route-nav-label">Next Route →</span>

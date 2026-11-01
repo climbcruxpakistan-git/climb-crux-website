@@ -143,14 +143,18 @@ export function filtersToParams(filters) {
   return params
 }
 
-/** URL for the route library with filters pre-selected (defaults omitted). */
+/**
+ * URL for the (former) route library — now retargeted to the guide page's
+ * route finder, with the same filters pre-selected (defaults omitted) so every
+ * existing caller keeps working.
+ */
 export function routeLibraryHref(overrides = {}) {
   const filters = defaultFilters()
   for (const key of Object.keys(filters)) {
     if (typeof overrides[key] === 'string' && overrides[key] !== '') filters[key] = overrides[key]
   }
   const query = filtersToParams(filters).toString()
-  return query ? `${ROUTE_LIBRARY_BASE}?${query}` : ROUTE_LIBRARY_BASE
+  return `/rock-climbing-guide-islamabad/${query ? `?${query}` : ''}#guide-intro`
 }
 
 /**
