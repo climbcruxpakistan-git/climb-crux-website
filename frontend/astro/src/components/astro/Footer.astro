@@ -1,6 +1,6 @@
 ---
 import CliffEdge from './CliffEdge.astro';
-import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js';
+import { WHATSAPP_WA_ME, WHATSAPP_DISPLAY } from '../../../../../shared/contact.js';
 ---
 
 <CliffEdge fill="var(--charcoal)" height={48} />
@@ -15,26 +15,25 @@ import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js';
       <ul>
         <li><a href="/sessions/">Public Sessions</a></li>
         <li><a href="/private-premium/">Private &amp; Premium</a></li>
-        <li><a href="/book-now/">Book Now</a></li>
+        <li><a href="/rock-climbing-guide-islamabad/">Climbing Guide</a></li>
+        <li><a href="/check-status/">Check Booking Status</a></li>
       </ul>
     </div>
     <div>
       <h4>Explore</h4>
       <ul>
-        <li><a href="/about/">About</a></li>
         <li><a href="/our-team/">Our Team</a></li>
+        <li><a href="/about/">About</a></li>
         <li><a href="/gallery/">Gallery</a></li>
-        <li><a href="/rock-climbing-guide-islamabad/">Climbing Guide</a></li>
         <li><a href="/shop/">Shop Climbing Equipment</a></li>
-        <li><a href="/check-status/">Check Booking Status</a></li>
       </ul>
     </div>
     <div>
       <h4>Connect</h4>
       <ul>
-        <li><a href="https://instagram.com/climbcruxpakistan" target="_blank" rel="noreferrer">Instagram</a></li>
-        <li><a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">WhatsApp</a></li>
-        <li><a href="mailto:climbcruxpakistan@gmail.com">Email</a></li>
+        <li><a href="https://instagram.com/climbcruxpakistan" target="_blank" rel="noreferrer">Instagram <span class="footer-contact-detail">@climbcruxpakistan</span></a></li>
+        <li><a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">WhatsApp <span class="footer-contact-detail">{WHATSAPP_DISPLAY}</span></a></li>
+        <li><a href="mailto:climbcruxpakistan@gmail.com">Email <span class="footer-contact-detail">climbcruxpakistan@gmail.com</span></a></li>
       </ul>
     </div>
     <div>
@@ -44,7 +43,6 @@ import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js';
         <li><a href="/return-refund-policy/">Return &amp; Refund Policy</a></li>
         <li><a href="/privacy-policy/">Privacy Policy</a></li>
         <li><a href="/shipping-policy/">Shipping Policy</a></li>
-        <li><a href={WHATSAPP_WA_ME}>Contact Us</a></li>
       </ul>
     </div>
   </div>
@@ -65,8 +63,12 @@ import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js';
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
     gap: 40px;
+    align-items: start;
     padding-top: 8px;
     padding-bottom: 56px;
+  }
+  .footer-inner > div {
+    min-width: 0;
   }
   .footer-logo {
     height: 60px;
@@ -81,7 +83,7 @@ import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js';
     color: var(--chalk);
     font-size: 0.85rem;
     letter-spacing: 0.1em;
-    margin-bottom: 1em;
+    margin: 0 0 1em;
   }
   .footer ul {
     list-style: none;
@@ -98,6 +100,10 @@ import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js';
   }
   .footer ul a:hover {
     color: var(--orange-light);
+  }
+  .footer-contact-detail {
+    font-size: 0.78rem;
+    color: #8f8a80;
   }
   .footer-bottom {
     border-top: 1px solid #4a4a4b;

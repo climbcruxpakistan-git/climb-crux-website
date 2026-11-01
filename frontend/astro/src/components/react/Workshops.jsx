@@ -43,7 +43,10 @@ export default function Workshops({ href = '/sessions/' }) {
         </div>
 
         <div className="ws-cta">
-          <a className="pa-btn" href="mailto:bookings@climbcruxpakistan.com?subject=Workshop%20Booking">Book a workshop →</a>
+          <a className="pa-btn" href="mailto:bookings@climbcruxpakistan.com?subject=Workshop%20Booking">
+            <svg className="pa-mail" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4.5" width="20" height="15" rx="2.5"/><path d="m3 7 9 5.5L21 7"/></svg>
+            Book a workshop →
+          </a>
         </div>
       </div>
     </section>

@@ -582,6 +582,7 @@
 .ws-card p { margin: 6px 0 0; font-size: 12px; line-height: 1.32; color: #bdb8ad; align-self: center; }
 .ws-cta { margin-top: 24px; text-align: center; }
 .ws-cta .pa-btn { align-self: auto; }
+.ws-cta .pa-btn .pa-mail { width: 16px; height: 16px; margin-right: 9px; vertical-align: -3px; fill: none; stroke: currentColor; stroke-width: 2; }
 
 @media (max-width: 1400px) { .ws-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 1100px) { .ws-grid { grid-template-columns: repeat(3, 1fr); } }
