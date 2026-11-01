@@ -321,6 +321,23 @@ const faqSchema = {
     margin-top: 0.35em;
   }
 
+  /* Phones: the two-line uppercase heading keeps the desktop clamp minimum,
+     which overflows "Guide Islamabad" on narrow screens — match the shared
+     page-header's mobile scale instead. */
+  @media (max-width: 600px) {
+    .guide-hero .hero-copy h1 {
+      font-size: clamp(1.9rem, 8vw, 2.4rem);
+    }
+
+    .guide-hero .hero-copy .page-header-desc p {
+      font-size: 0.98rem;
+    }
+
+    .guide-hero .hero-split {
+      gap: 24px;
+    }
+  }
+
   .guide-hero-chart-wrap {
     width: 100%;
     max-width: 480px;
@@ -553,13 +570,15 @@ const faqSchema = {
     }
   }
 
-  /* Curved bottom edge into the cream section, tucked behind the stats card. */
+  /* Curved bottom edge into the cream section, tucked behind the stats card.
+     The tuck depth scales with the wave height so on narrow screens the wave
+     never rises above the stats card's bottom edge and clips it. */
   .guide-hero-wave {
     position: relative;
     display: block;
     width: 100%;
     height: clamp(44px, 6vw, 90px);
-    margin-top: -70px;
+    margin-top: clamp(-70px, -4.8vw, -26px);
     z-index: 1;
   }
 

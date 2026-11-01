@@ -342,5 +342,18 @@
 
 @media (max-width: 480px) {
   .gx-grid { grid-template-columns: 1fr; }
-  .gx-feature > .gx-card:first-child { grid-column: auto; }
+  .gx-feature > .gx-card:first-child,
+  .gx-feature-2 > .gx-card:first-child { grid-column: auto; }
+}
+
+@media (max-width: 600px) {
+  .gx-row { flex-wrap: wrap; align-items: flex-start; }
+  .gx-title { font-size: clamp(28px, 8.5vw, 40px); }
+  .gx-pn b { font-size: 16px; }
+  .gx-lb-top { padding: 10px 14px; }
+  .gx-lb-top span { margin-left: 8px; font-size: 12px; }
+  .gx-lb-stage { padding: 0 12px; }
+  .gx-lb figcaption { font-size: 12px; text-align: center; }
+  .gx-thumbs { gap: 8px; padding: 12px 14px 16px; }
+  .gx-thumbs button { width: 56px; height: 56px; }
 }
