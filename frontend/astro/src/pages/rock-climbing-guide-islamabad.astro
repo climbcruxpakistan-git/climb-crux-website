@@ -38,6 +38,8 @@ import { slugify } from '../lib/slug';
 // Kept here only as the page's social share (og:image) preview.
 const HERO_IMAGE_SOURCE = 'https://res.cloudinary.com/ivvx77mg/image/upload/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg';
 const heroImage = optimizeImage(HERO_IMAGE_SOURCE, 1400);
+// Same verified Cloudinary asset as the homepage hero, at hero-background size.
+const heroBgImage = optimizeImage(HERO_IMAGE_SOURCE, 1600);
 
 /* ── Route data ───────────────────────────────────────────────────── */
 const SITE_URL = 'https://www.climbcruxpakistan.com';
@@ -130,24 +132,47 @@ const faqSchema = {
 
   {/* ── 1. Hero ───────────────────────────────────────────────────── */}
   <section class="page-header guide-hero">
-    <div class="page-header-pattern"></div>
-    <div class="page-header-accent"></div>
+    {/* Blurred rock-face photo, dark overlay and contour lines — homepage-style. */}
+    <div class="guide-hero-media" aria-hidden="true">
+      <img class="guide-hero-bg" src={heroBgImage} alt="" />
+    </div>
+    <svg
+      class="guide-hero-topo"
+      viewBox="0 0 1440 720"
+      preserveAspectRatio="none"
+      fill="none"
+      stroke="#F47321"
+      strokeOpacity=".22"
+      strokeWidth="1.3"
+      aria-hidden="true"
+    >
+      <path d="M-50 640C200 560 330 680 560 600S900 460 1100 520 1400 420 1500 460"/>
+      <path d="M-50 600C200 520 330 640 560 560S900 420 1100 480 1400 380 1500 420"/>
+      <path d="M-50 560C200 480 330 600 560 520S900 380 1100 440 1400 340 1500 380"/>
+      <path d="M-50 520C200 440 330 560 560 480S900 340 1100 400 1400 300 1500 340"/>
+      <path d="M-50 480C200 400 330 520 560 440S900 300 1100 360 1400 260 1500 300"/>
+      <path d="M-50 440C200 360 330 480 560 400S900 260 1100 320 1400 220 1500 260"/>
+      <path d="M-50 400C200 320 330 440 560 360S900 220 1100 280 1400 180 1500 220"/>
+    </svg>
     <div class="wrap page-header-inner hero-split">
       <div class="hero-copy">
-        <h1>ROCK CLIMBING</h1>
-      <h1>GUIDE ISLAMABAD</h1>
-      <div class="page-header-desc">
-        <p>A detailed outdoor climbing guide to the Margalla Hills around Islamabad.</p>
-        <p>The climbing areas, venues, routes and grades, all in one place.</p>
-      </div>
+        <h1>
+          <span class="h1-orange">Rock Climbing</span>
+          <span class="h1-cream">Guide Islamabad</span>
+        </h1>
+        <div class="page-header-desc">
+          <p>A detailed outdoor climbing guide to the Margalla Hills around Islamabad.</p>
+          <p>The climbing areas, venues, routes and grades, all in one place.</p>
+        </div>
       </div>
       <div class="guide-hero-chart-wrap">
+        {/* GradeChart renders inside this frosted-glass card (styled via :global below). */}
         <GradeChart client:load data={chartData} libraryBase={ROUTE_LIBRARY_BASE}
           minParam={ROUTE_PARAMS.minGrade} maxParam={ROUTE_PARAMS.maxGrade} mode="filter" />
-        <p class="guide-hero-chart-title">Rock Climbing Routes Islamabad</p>
+        <p class="guide-hero-chart-title">Islamabad Rock Climbing Routes</p>
       </div>
     </div>
-    <div class="wrap" style="position:relative; z-index:2;">
+    <div class="wrap guide-hero-stats">
       <div class="stats-grid" role="list">
       <div class="stat" role="listitem">
         <span class="stat-value">{String(AREAS.length)}</span>
@@ -167,6 +192,10 @@ const faqSchema = {
       </div>
     </div>
   </div>
+  {/* Curved bottom edge into the cream finder section — homepage wave. */}
+  <svg class="guide-hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 60C240 10 480 20 720 50S1200 80 1440 30V90H0Z" fill="var(--chalk)" />
+  </svg>
 </section>
 
   {/* ── 2. Route guide + climb-by-grade explorer ──────────────────── */}
@@ -225,7 +254,7 @@ const faqSchema = {
      nothing overlaps and the charcoal band hugs the content. */
   .guide-hero .hero-split {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 480px);
+    grid-template-columns: minmax(0, 1.15fr) minmax(360px, 560px);
     gap: clamp(28px, 4vw, 56px);
     align-items: center;
   }
@@ -233,16 +262,6 @@ const faqSchema = {
   .guide-hero .page-header-inner {
     padding-top: 32px;
     padding-bottom: 32px;
-  }
-
-  /* Desktop only: the copy keeps shifting left by 20% of its previous anchor.
-     9.6vw minus 20% = 7.68vw of the viewport width. */
-  @media (min-width: 981px) {
-    .guide-hero .hero-copy {
-      margin-left: calc(
-        7.68vw - max((100vw - 1180px) / 2, 0px) - var(--edge, 20px)
-      );
-    }
   }
 
   /* Each sentence on its own line, once the copy has room for it (wide
@@ -264,17 +283,26 @@ const faqSchema = {
     margin-bottom: 0;
   }
 
-  /* No underline below either heading; first line reads in brand orange. */
+  /* No underline below either heading; orange line one, cream line two. */
   .guide-hero .hero-copy h1::after {
     display: none;
   }
 
-  .guide-hero .hero-copy h1:first-of-type {
+  .guide-hero .hero-copy h1 {
+    text-transform: uppercase;
+  }
+
+  .guide-hero .hero-copy h1 span {
+    display: block;
+  }
+
+  .guide-hero .h1-orange {
     color: var(--orange);
   }
 
-  .guide-hero .hero-copy h1 + h1 {
-    margin-top: 0.15em;
+  .guide-hero .h1-cream {
+    color: #f7f3ec;
+    margin-top: 0.08em;
   }
 
   .guide-hero .hero-copy .page-header-desc {
@@ -295,18 +323,19 @@ const faqSchema = {
   .guide-hero-chart-wrap {
     width: 100%;
     max-width: 480px;
-    /* Nudge the chart right by 10% of its own width. */
-    transform: translateX(10%);
+    justify-self: end;
   }
 
   .guide-hero-chart-title {
-    /* Pull the line up so it sits directly under the x-axis grade labels. */
-    margin: -32px 0 6px;
+    margin: 14px 0 0;
+    position: static;
+    transform: none;
     font-family: var(--font-display);
     font-weight: 500;
     font-size: 1.1rem;
     letter-spacing: 0.04em;
-    color: var(--chalk);
+    text-transform: uppercase;
+    color: #fff;
     text-align: center;
   }
 
@@ -319,16 +348,16 @@ const faqSchema = {
   }
 
   /* Stats card mirrors the home-page stats card (white card, 4 columns,
-     orange Oswald numbers, uppercase labels). */
+     orange Oswald numbers, uppercase labels). Full width like the finder. */
   .guide-hero .stats-grid {
     position: relative;
     z-index: 2;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
-    width: min(var(--max-width), calc(100% - 2 * var(--edge)));
-    margin: 16px auto 0;
-    padding: 30px 10px;
+    width: 100%;
+    margin: 0;
+    padding: 34px 0 36px;
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 24px 60px rgba(31, 31, 33, 0.18);
@@ -340,7 +369,7 @@ const faqSchema = {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
-    padding: 0 30px;
+    padding: 0 clamp(24px, 3vw, 48px);
     text-align: left;
     border-right: 1px solid #e8e2d7;
   }
@@ -355,6 +384,7 @@ const faqSchema = {
     font-weight: 700;
     line-height: 1;
     color: #f47321;
+    white-space: nowrap;
   }
 
   .guide-hero .stat-label {
@@ -366,6 +396,12 @@ const faqSchema = {
     text-transform: uppercase;
     color: #6b6b6f;
     max-width: none;
+  }
+
+  @media (max-width: 1100px) {
+    .guide-hero .stat {
+      padding: 0 18px;
+    }
   }
 
   @media (max-width: 980px) {
@@ -384,7 +420,7 @@ const faqSchema = {
     .guide-hero .stats-grid {
       grid-template-columns: 1fr 1fr;
       row-gap: 24px;
-      padding: 22px 10px;
+      padding: 22px 0;
     }
 
     .guide-hero .stat:nth-child(2) {
@@ -403,7 +439,7 @@ const faqSchema = {
   @media (max-width: 500px) {
     .guide-hero .stats-grid {
       row-gap: 18px;
-      padding: 18px 12px;
+      padding: 18px 0;
       border-radius: 12px;
     }
 
@@ -423,6 +459,124 @@ const faqSchema = {
     .guide-hero .stat-label {
       font-size: 0.72rem;
       letter-spacing: 0.1em;
+    }
+  }
+
+  /* ============================== FULL-WIDTH ROUTE FINDER ============================== */
+
+  /* Only this section escapes the 1180px .wrap cap — the token itself and the
+     global utility stay untouched. */
+  #guide-intro .wrap {
+    max-width: none;
+    padding-inline: clamp(20px, 4vw, 64px);
+  }
+
+  /* ============================== HOMEPAGE-STYLE HERO ============================== */
+
+  .guide-hero {
+    position: relative;
+    overflow: hidden;
+    background: #1f1f21;
+    padding-bottom: 0; /* the wave closes the section */
+  }
+
+  /* Align the hero with the full-width route finder below it. */
+  .guide-hero .wrap {
+    max-width: none;
+    padding-inline: clamp(20px, 4vw, 64px);
+  }
+
+  /* Blurred rock-face photo, clipped inside its own layer so the blur can
+     overhang without ever widening the page. */
+  .guide-hero-media {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .guide-hero-media img {
+    position: absolute;
+    inset: -30px;
+    width: calc(100% + 60px);
+    height: calc(100% + 60px);
+    max-width: none;
+    object-fit: cover;
+    filter: blur(14px) brightness(0.38) saturate(1.1);
+  }
+
+  /* Dark overlay with a warm lift on the chart side — mirrors the homepage. */
+  .guide-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      100deg,
+      rgba(31, 31, 33, 0.94) 0%,
+      rgba(31, 31, 33, 0.78) 45%,
+      rgba(244, 115, 33, 0.14) 100%
+    );
+  }
+
+  .guide-hero-topo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .guide-hero .page-header-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .guide-hero .page-header-desc p {
+    color: #c9c4b8;
+  }
+
+  /* Frosted-glass card behind/around the GradeChart. The chart island is
+     reached with :global, since Astro scoping stops at the island boundary. */
+  .guide-hero-chart-wrap :global(.gc) {
+    background: rgba(31, 31, 33, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* The white stats card sits above the wave, overlapping the hero bottom. */
+  .guide-hero-stats {
+    position: relative;
+    z-index: 3;
+    margin-top: 36px;
+  }
+
+  /* Roomier card and larger orange numbers on desktop only — the existing
+     small-screen values below stay in force. */
+  @media (min-width: 801px) {
+    .guide-hero .stat-value {
+      font-size: clamp(2.4rem, 2.8vw, 3rem);
+    }
+  }
+
+  /* Curved bottom edge into the cream section, tucked behind the stats card. */
+  .guide-hero-wave {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: clamp(44px, 6vw, 90px);
+    margin-top: -70px;
+    z-index: 1;
+  }
+
+  @media (max-width: 980px) {
+    .guide-hero-chart-wrap {
+      margin-inline: auto;
     }
   }
 </style>

@@ -471,7 +471,6 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
       {/* Mobile sticky bar */}
       {product.inStock && (
         <div className="px-sticky">
-          <div><small>Total</small><b>PKR {totalPrice.toLocaleString()}</b></div>
           <button className="btn btn-primary" onClick={goBuy}>Buy now</button>
         </div>
       )}

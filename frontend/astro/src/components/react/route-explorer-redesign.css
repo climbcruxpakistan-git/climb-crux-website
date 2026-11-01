@@ -5,8 +5,10 @@
 .rx-grade[data-band='advanced'] { --c:var(--orange,#f36f21); } .rx-grade[data-band='expert'] { --c:#c2371f; color:#fff; }
 .rx-grade--xl { min-width:104px; padding:18px 0; font-size:2.6rem; } .rx-grade--sm { min-width:44px; padding:4px 0; font-size:.9rem; border-radius:4px; }
 
-/* layout: one route per row, big preview on the right */
-.rx-lay { display:grid; grid-template-columns:minmax(0,480px) minmax(0,1fr); gap:32px; align-items:start; }
+/* layout: one route per row, big preview on the right.
+   Two mixed-width columns on desktop: list 5fr, preview 7fr, so the sticky
+   preview fills the room freed up by the full-width finder section. */
+.rx-lay { display:grid; grid-template-columns:minmax(380px, 5fr) minmax(0, 7fr); gap:32px; align-items:start; }
 .rx-list { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
 .rx-row { position:relative; background:#fff; border:1px solid var(--chalk-dim,#ece5d5); border-radius:8px; transition:border-color .15s; }
 .rx-row:hover { border-color:rgba(243,111,33,.5); }
