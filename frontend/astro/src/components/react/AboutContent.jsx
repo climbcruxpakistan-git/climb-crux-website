@@ -11,7 +11,7 @@ Today, Climb Crux is more than a rock climbing club. It's a growing community br
 
 const STATS = [
   { value: '12+', label: 'Years of guiding experience' },
-  { value: '500+', label: 'First-time climbers introduced' },
+  { value: '1000+', label: 'First-time climbers introduced' },
   { value: '200+', label: 'Group sessions led on Margalla Hills' },
   { value: '5', label: 'Workshops offered' },
 ]
@@ -46,7 +46,6 @@ export default function AboutContent({ initial }) {
     <>
       <section className="page-header compact about-hero">
         <div className="page-header-pattern"></div>
-        <div className="page-header-accent"></div>
         <div className="wrap page-header-inner">
           <h1>Built by climbers, for climbers.</h1>
           {headerLead && (

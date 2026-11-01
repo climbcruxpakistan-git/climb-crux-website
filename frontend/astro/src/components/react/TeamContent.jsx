@@ -18,7 +18,6 @@ export default function TeamContent({ initial }) {
     <>
     <section className="page-header compact">
       <div className="page-header-pattern"></div>
-      <div className="page-header-accent"></div>
       <div className="wrap page-header-inner">
         <h1>Our team.</h1>
         <div className="page-header-desc">

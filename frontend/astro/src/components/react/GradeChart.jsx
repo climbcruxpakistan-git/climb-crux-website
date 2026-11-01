@@ -19,6 +19,7 @@ export default function GradeChart({
   maxParam = 'maxGrade',
   mode = 'filter',
   resultsId = 'route-results',
+  caption,
 }) {
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -102,6 +103,7 @@ export default function GradeChart({
           })}
         </div>
       </div>
+      {caption && <figcaption className="gc-caption">{caption}</figcaption>}
     </figure>
   );
 }

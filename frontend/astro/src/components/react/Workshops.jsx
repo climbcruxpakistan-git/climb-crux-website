@@ -43,7 +43,7 @@ export default function Workshops({ href = '/sessions/' }) {
         </div>
 
         <div className="ws-cta">
-          <a className="pa-btn" href="https://www.climbcruxpakistan.com/private-premium/">Book a workshop →</a>
+          <a className="pa-btn" href="mailto:bookings@climbcruxpakistan.com?subject=Workshop%20Booking">Book a workshop →</a>
         </div>
       </div>
     </section>

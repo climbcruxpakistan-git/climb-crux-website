@@ -32,7 +32,6 @@ export default function PremiumContent({ initial }) {
     <>
       <section className="page-header compact">
         <div className="page-header-pattern"></div>
-        <div className="page-header-accent"></div>
         <div className="wrap page-header-inner">
           <h1>{c.ppHeaderTitle || 'Your route, your pace.'}</h1>
           <div className="page-header-desc">

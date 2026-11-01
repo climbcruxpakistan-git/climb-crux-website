@@ -166,10 +166,11 @@ const faqSchema = {
         </div>
       </div>
       <div class="guide-hero-chart-wrap">
-        {/* GradeChart renders inside this frosted-glass card (styled via :global below). */}
+        {/* GradeChart renders inside this frosted-glass card (styled via :global below).
+            The caption is the card's own figcaption, below the bars. */}
         <GradeChart client:load data={chartData} libraryBase={ROUTE_LIBRARY_BASE}
-          minParam={ROUTE_PARAMS.minGrade} maxParam={ROUTE_PARAMS.maxGrade} mode="filter" />
-        <p class="guide-hero-chart-title">Islamabad Rock Climbing Routes</p>
+          minParam={ROUTE_PARAMS.minGrade} maxParam={ROUTE_PARAMS.maxGrade} mode="filter"
+          caption="Islamabad Rock Climbing Routes" />
       </div>
     </div>
     <div class="wrap guide-hero-stats">
@@ -326,18 +327,6 @@ const faqSchema = {
     justify-self: end;
   }
 
-  .guide-hero-chart-title {
-    margin: 14px 0 0;
-    position: static;
-    transform: none;
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.1rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #fff;
-    text-align: center;
-  }
 
   /* Keep the "Find a route by grade" intro on a single line on desktop. */
   @media (min-width: 660px) {

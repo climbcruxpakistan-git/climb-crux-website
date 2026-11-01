@@ -15,7 +15,7 @@ export default function RouteRow({ route, selected, onSelect, href }) {
           </span>
         </span>
       </button>
-      <a className="rx-row-link" href={href} aria-label={`Open the ${route.name} route page`}>↗</a>
+      <a className="rx-row-link" href={href} aria-label={`Open the ${route.name} route page`}>View full route ↗</a>
     </li>
   );
 }

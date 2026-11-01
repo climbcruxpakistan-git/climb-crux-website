@@ -297,10 +297,6 @@
   margin-bottom: 0.5em;
 }
 
-.guide-explorer-head .guide-lede {
-  margin-bottom: 0;
-}
-
 .guide-stats {
   display: flex;
   flex-wrap: wrap;
@@ -335,7 +331,6 @@
 /* ============================== ROUTE EXPLORER (React island) ============================== */
 
 .explorer-wrap {
-  border-top: 4px solid var(--charcoal);
   background: #fffdf9;
   border: 1px solid var(--chalk-dim);
   padding: clamp(20px, 3vw, 34px);

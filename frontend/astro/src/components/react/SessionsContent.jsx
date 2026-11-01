@@ -63,7 +63,6 @@ export default function SessionsContent({ initial }) {
     <>
       <section className="page-header compact">
         <div className="page-header-pattern"></div>
-        <div className="page-header-accent"></div>
         <div className="wrap page-header-inner">
           <h1>{c.sessionsHeaderTitle || 'Climb with the group.'}</h1>
           <div className="page-header-desc">
