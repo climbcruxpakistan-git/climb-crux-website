@@ -22,6 +22,25 @@
 .rx-row-link { position:absolute; top:12px; right:14px; display:flex; align-items:center; gap:5px; color:var(--orange,#f36f21); text-decoration:none; font:600 .7rem var(--font-body,'Work Sans',sans-serif); text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; padding:8px 10px; border-radius:20px; }
 .rx-row-link:hover { background:var(--chalk,#f6f2e9); }
 
+/* phone (<640px): badge left, info right, "View full page" on its own bottom
+   line so it can never overlap the title. */
+@media (max-width:640px) {
+  .rx-row { display:flex; flex-direction:column; }
+  .rx-row-main { gap:12px; padding:16px 16px 2px; }
+  .rx-row-main .rx-grade { min-width:48px; height:40px; padding:0; font-size:1.1rem; }
+  .rx-row-body { flex:1; min-width:0; display:block; }
+  /* Title gets the full remaining width and wraps naturally — the link no longer shares its line.
+     Line-height 1.35 fits Oswald's tall glyphs, so descenders never touch the line below. */
+  .rx-row-body strong { display:block; width:100%; white-space:normal; line-height:1.35; }
+  .rx-row-venue { display:block; margin-top:2px; font-size:.78rem; color:var(--stone-dark,#5a5650); }
+  .rx-chips { flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .rx-chips em { white-space:nowrap; }
+  /* Link leaves the title row: subtle text button, bottom-right of the card. */
+  .rx-row-link { position:static; display:flex; align-items:center; justify-content:flex-end; gap:5px;
+    width:100%; box-sizing:border-box; min-height:44px; padding:0 16px; border-radius:0; }
+  .rx-row-link:hover { background:transparent; text-decoration:underline; }
+}
+
 /* preview panel */
 .rx-aside { position:sticky; top:110px; max-height:calc(100vh - 130px); overflow:auto; background:var(--charcoal-deep,#201f21); color:#fff;
   border-top:4px solid var(--orange,#f36f21); border-radius:14px; box-shadow:0 24px 50px rgba(0,0,0,.25); }
