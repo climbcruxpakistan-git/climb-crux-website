@@ -38,11 +38,6 @@
   padding: clamp(28px, 4vw, 48px) var(--edge);
   text-align: center;
 }
-/* About page: the stats band and footer are both charcoal, so the footer's
-   top cliff divider is invisible anyway — drop only that divider, keeping
-   the footer itself. (Select the svg that is immediately followed by the
-   footer, not the footer.) */
-svg.cliff-edge:has(+ .footer) { display: none; }
 .stat {
   display: flex;
   flex-direction: column;

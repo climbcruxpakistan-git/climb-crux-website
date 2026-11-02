@@ -184,98 +184,10 @@
   }
 }
 
-/* ============================== FOOTER ============================== */
+/* The cliff-edge divider immediately above the footer
+   (the footer itself is styled by Footer.astro's scoped styles). */
 
 .cliff-edge {
   display: block;
   width: 100%;
-}
-
-.footer {
-  background: var(--charcoal);
-  color: var(--chalk-dim);
-}
-
-.footer-inner {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr;
-  gap: 40px;
-  padding-top: 8px;
-  padding-bottom: 56px;
-}
-
-.footer-logo {
-  height: 60px;
-  margin-bottom: 16px;
-  filter: brightness(0) invert(1);
-}
-
-.footer-brand p {
-  color: #a9a49a;
-  font-size: 0.92rem;
-}
-
-.footer h4 {
-  color: var(--chalk);
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
-  margin-bottom: 1em;
-}
-
-.footer ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.footer ul a {
-  color: #c9c4b8;
-  font-size: 0.92rem;
-  transition: color 0.15s ease;
-}
-
-.footer ul a:hover {
-  color: var(--orange-light);
-}
-
-.footer-bottom {
-  border-top: 1px solid #4a4a4b;
-}
-
-.footer-bottom-inner {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px var(--edge);
-  font-size: 0.8rem;
-  color: #8f8a80;
-}
-
-@media (max-width: 760px) {
-  .footer-inner {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .footer-bottom-inner {
-    flex-direction: column;
-    gap: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-inner {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    padding-top: 0;
-    padding-bottom: 40px;
-  }
-  .footer-logo { height: 48px; }
-  .footer h4 { font-size: 0.78rem; }
-  .footer ul a { font-size: 0.85rem; }
-  .footer-bottom-inner {
-    font-size: 0.72rem;
-    text-align: center;
-  }
 }

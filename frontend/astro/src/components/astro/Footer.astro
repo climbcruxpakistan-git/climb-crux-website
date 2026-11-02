@@ -3,22 +3,33 @@ import CliffEdge from './CliffEdge.astro';
 import { WHATSAPP_WA_ME, WHATSAPP_DISPLAY } from '../../../../../shared/contact.js';
 ---
 
-<CliffEdge fill="var(--charcoal)" height={48} />
+<CliffEdge fill="var(--charcoal-deep)" height={48} />
 <footer class="footer">
+  <svg class="footer-topo" viewBox="0 0 1440 520" preserveAspectRatio="none" fill="none" stroke="#F36F21" stroke-opacity=".16" stroke-width="1.2" aria-hidden="true">
+    <path d="M-50 140C200 60 330 180 560 100S900 -40 1100 20 1400 -80 1500 -40"/>
+    <path d="M-50 180C200 100 330 220 560 140S900 0 1100 60 1400 -40 1500 0"/>
+    <path d="M-50 220C200 140 330 260 560 180S900 40 1100 100 1400 0 1500 40"/>
+    <path d="M-50 260C200 180 330 300 560 220S900 80 1100 140 1400 40 1500 80"/>
+    <path d="M-50 300C200 220 330 340 560 260S900 120 1100 180 1400 80 1500 120"/>
+    <path d="M-50 340C200 260 330 380 560 300S900 160 1100 220 1400 120 1500 160"/>
+  </svg>
+
   <div class="wrap footer-inner">
     <div class="footer-brand">
-      <img src="/logo.png" alt="Climb Crux" class="footer-logo" width="60" height="60" />
-      <p>Islamabad's premier rock climbing club</p>
+      <img src="/logo.png" alt="Climb Crux" class="footer-logo" width="101" height="96" />
+      <p>Islamabad's premier rock climbing club.</p>
     </div>
+
     <div>
       <h4>Climb</h4>
       <ul>
-        <li><a href="/sessions/">Public Sessions</a></li>
+        <li><a href="/sessions/" class="footer-link-primary">Public Sessions</a></li>
         <li><a href="/private-premium/">Private &amp; Premium</a></li>
         <li><a href="/rock-climbing-guide-islamabad/">Climbing Guide</a></li>
         <li><a href="/check-status/">Check Booking Status</a></li>
       </ul>
     </div>
+
     <div>
       <h4>Explore</h4>
       <ul>
@@ -28,14 +39,37 @@ import { WHATSAPP_WA_ME, WHATSAPP_DISPLAY } from '../../../../../shared/contact.
         <li><a href="/shop/">Shop Climbing Equipment</a></li>
       </ul>
     </div>
+
     <div>
       <h4>Connect</h4>
-      <ul>
-        <li><a href="https://instagram.com/climbcruxpakistan" target="_blank" rel="noreferrer">Instagram <span class="footer-contact-detail">@climbcruxpakistan</span></a></li>
-        <li><a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">WhatsApp <span class="footer-contact-detail">{WHATSAPP_DISPLAY}</span></a></li>
-        <li><a href="mailto:climbcruxpakistan@gmail.com">Email <span class="footer-contact-detail">climbcruxpakistan@gmail.com</span></a></li>
+      <ul class="footer-contact">
+        <li>
+          <a href="https://instagram.com/climbcruxpakistan" target="_blank" rel="noreferrer">
+            <span class="footer-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#F36F21" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>
+            </span>
+            <span class="footer-contact-text"><small>Instagram</small><strong>@climbcruxpakistan</strong></span>
+          </a>
+        </li>
+        <li>
+          <a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">
+            <span class="footer-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#F36F21" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/><path d="M9 9.5c.3 2.2 2.5 4.4 5 5l1.4-1.2-1.8-1-.8.6c-.9-.4-1.6-1.1-2-2l.6-.8-1-1.8z"/></svg>
+            </span>
+            <span class="footer-contact-text"><small>WhatsApp</small><strong>{WHATSAPP_DISPLAY}</strong></span>
+          </a>
+        </li>
+        <li>
+          <a href="mailto:climbcruxpakistan@gmail.com">
+            <span class="footer-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#F36F21" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/></svg>
+            </span>
+            <span class="footer-contact-text"><small>Email</small><strong>climbcruxpakistan@gmail.com</strong></span>
+          </a>
+        </li>
       </ul>
     </div>
+
     <div>
       <h4>Legal</h4>
       <ul>
@@ -46,6 +80,7 @@ import { WHATSAPP_WA_ME, WHATSAPP_DISPLAY } from '../../../../../shared/contact.
       </ul>
     </div>
   </div>
+
   <div class="footer-bottom">
     <div class="footer-bottom-inner wrap">
       <span>&copy; {new Date().getFullYear()} Climb Crux Pakistan. All rights reserved.</span>
@@ -54,76 +89,3 @@ import { WHATSAPP_WA_ME, WHATSAPP_DISPLAY } from '../../../../../shared/contact.
   </div>
 </footer>
 
-<style>
-  .footer {
-    background: var(--charcoal);
-    color: var(--chalk-dim);
-  }
-  .footer-inner {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
-    gap: 40px;
-    align-items: start;
-    padding-top: 8px;
-    padding-bottom: 56px;
-  }
-  .footer-inner > div {
-    min-width: 0;
-  }
-  .footer-logo {
-    height: 60px;
-    margin-bottom: 16px;
-    filter: brightness(0) invert(1);
-  }
-  .footer-brand p {
-    color: #a9a49a;
-    font-size: 0.92rem;
-  }
-  .footer h4 {
-    color: var(--chalk);
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    margin: 0 0 1em;
-  }
-  .footer ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .footer ul a {
-    color: #c9c4b8;
-    font-size: 0.92rem;
-    transition: color 0.15s ease;
-  }
-  .footer ul a:hover {
-    color: var(--orange-light);
-  }
-  .footer-contact-detail {
-    font-size: 0.78rem;
-    color: #8f8a80;
-  }
-  .footer-bottom {
-    border-top: 1px solid #4a4a4b;
-  }
-  .footer-bottom-inner {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px var(--edge);
-    font-size: 0.8rem;
-    color: #8f8a80;
-  }
-  @media (max-width: 760px) {
-    .footer-inner { grid-template-columns: 1fr 1fr; }
-    .footer-bottom-inner { flex-direction: column; gap: 6px; }
-  }
-  @media (max-width: 480px) {
-    .footer-inner { grid-template-columns: 1fr; gap: 28px; padding-top: 0; padding-bottom: 40px; }
-    .footer-logo { height: 48px; }
-    .footer h4 { font-size: 0.78rem; }
-    .footer ul a { font-size: 0.85rem; }
-    .footer-bottom-inner { font-size: 0.72rem; text-align: center; }
-  }
-</style>
