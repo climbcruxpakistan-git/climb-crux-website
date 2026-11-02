@@ -3,6 +3,7 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import PageHeader from '../../components/astro/PageHeader.astro';
 import Shop from '../../components/react/Shop.jsx';
 import { getProducts } from '../../lib/api';
+import { categorySlug } from '../../lib/shopCategories';
 import '../../styles/Shop.css';
 
 // Rendered on-demand so the ItemList structured data always reflects the current
@@ -54,18 +55,17 @@ const breadcrumbJsonLd = {
 ---
 
 <MainLayout
-  title="Climbing Gear & Equipment in Pakistan | Climb Crux"
-  description="Buy climbing gear in Pakistan — harnesses, helmets, ropes, carabiners, climbing shoes and more. Curated climbing equipment from Climb Crux, delivered across Pakistan."
+  title="Rock Climbing Equipment & Climbing Gear in Pakistan | Climb Crux"
+  description="Shop rock climbing equipment in Pakistan at Climb Crux. Explore climbing harnesses, carabiners, helmets, quickdraws, belay devices and other essential climbing gear."
+  keywords="rock climbing equipment, climbing equipment, climbing gear, buy climbing equipment, climbing equipment Pakistan, carabiners, climbing harnesses, helmets, quickdraws, belay devices, climbing ropes, climbing helmets"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
   </Fragment>
 
-  {/* Same page header as every other page (hero image and the extra badges
-      were removed so the catalogue starts higher up). */}
-  <PageHeader title="Gear up." compact>
-    <p>Rock climbing equipment— harnesses, helmets, ropes and the hardware that keeps every move safe.</p>
+  <PageHeader title="Rock Climbing Equipment & Climbing Gear" compact>
+    <p>Harnesses, helmets, ropes, carabiners and the hardware that keeps every move safe — delivered across Pakistan.</p>
   </PageHeader>
 
   <div id="shop-catalogue">
@@ -76,12 +76,20 @@ const breadcrumbJsonLd = {
     <div class="wrap">
       <h2>Climbing equipment in Pakistan</h2>
       <div class="shop-seo-copy">
-        <p>Climb Crux stocks the climbing gear that keeps you safe on the wall — harnesses, helmets, ropes, carabiners, belay devices, climbing shoes and more. Every piece is selected for the limestone crags of Margalla Hills and delivered across Pakistan, with all safety hardware meeting climbing safety standards.</p>
+        <p>
+          Use the filter to browse the whole catalogue, or jump straight to a category —
+          each has its own page: <a href="/shop/category/carabiners/">carabiners</a>,
+          <a href="/shop/category/harness/">climbing harnesses</a>,
+          <a href="/shop/category/ropes/">climbing ropes</a>,
+          <a href="/shop/category/helmets/"> helmets</a>,
+          <a href="/shop/category/quick-draws/">quickdraws</a> and
+          <a href="/shop/category/belaying-devices/">belay devices</a>.
+        </p>
       </div>
       {categories.length > 0 && (
         <nav class="shop-seo-categories" aria-label="Equipment categories">
           {categories.map((cat) => (
-            <a key={cat} class="shop-seo-cat-link" href={`/shop/?cat=${encodeURIComponent(cat)}`}>{cat}</a>
+            <a key={cat} class="shop-seo-cat-link" href={`/shop/category/${categorySlug(cat)}/`}>{cat}</a>
           ))}
         </nav>
       )}

@@ -1,0 +1,180 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getProducts } from '../../../lib/api';
+import { categorySlug, categoryTitle, categoryDescription } from '../../../lib/shopCategories';
+import { optimizeImage } from '../../../lib/api';
+import '../../../styles/Shop.css';
+
+// Rendered on-demand so a category added in the admin (via product.category)
+// gets its page immediately — server-rendered for SEO, no redeploy needed.
+export const prerender = false;
+
+const SITE_URL = 'https://www.climbcruxpakistan.com';
+const products = await getProducts().catch(() => []);
+const categories = [...new Set(products.filter((p) => p.status !== 'draft' && p.status !== 'archived').map((p) => p.category).filter(Boolean))];
+const requestedSlug = String(Astro.params.slug || '').toLowerCase();
+
+// Only known categories with live products are indexable pages; unknown slugs
+// 404 (noindex, no canonical) rather than rendering an empty page.
+const knownSlugs = categories.map(categorySlug);
+const notFound = !products || !knownSlugs.includes(requestedSlug);
+if (notFound) Astro.response.status = 404;
+const category = products.find((p) => p.status !== 'draft' && p.status !== 'archived' && categorySlug(p.category) === requestedSlug)?.category;
+const liveProducts = category
+  ? products.filter((p) => p.status !== 'draft' && p.status !== 'archived' && p.category === category)
+  : [];
+
+const pageTitle = category ? `${categoryTitle(category)} in Pakistan | Climb Crux` : 'Category not found — Climb Crux Pakistan';
+const pageDescription = category ? categoryDescription(category) : '';
+
+// ItemList of the products in this category, plus the Home › Shop › Category trail.
+const itemListJsonLd = category && {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: `${categoryTitle(category)} — Climb Crux Pakistan`,
+  description: categoryDescription(category),
+  numberOfItems: liveProducts.length,
+  itemListElement: liveProducts.map((p, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: p.name,
+    url: `${SITE_URL}/shop/${p.id || p._id}/`,
+    image: p.imageUrl || undefined,
+  })),
+};
+
+const breadcrumbJsonLd = category && {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Rock Climbing Equipment & Climbing Gear', item: `${SITE_URL}/shop/` },
+    { '@type': 'ListItem', position: 3, name: categoryTitle(category), item: `${SITE_URL}/shop/category/${categorySlug(category)}/` },
+  ],
+};
+
+const otherCategories = category ? categories.filter((c) => categorySlug(c) !== requestedSlug) : [];
+---
+
+<MainLayout
+  title={pageTitle}
+  description={pageDescription}
+  keywords={category ? `${categoryTitle(category)}, ${categoryTitle(category).toLowerCase()} in Pakistan, buy climbing equipment Pakistan, climbing gear Pakistan` : undefined}
+  image={liveProducts.find((p) => p.imageUrl)?.imageUrl}
+  noindex={notFound}
+  noCanonical={notFound}
+>
+  {
+    category && (
+      <Fragment slot="head">
+        <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
+        <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+      </Fragment>
+    )
+  }
+
+  <section class="section">
+    <div class="wrap">
+      {
+        category ? (
+          <>
+            <p class="cat-breadcrumbs">
+              <a href="/">Home</a> › <a href="/shop/">Rock Climbing Equipment &amp; Climbing Gear</a> › <span>{categoryTitle(category)}</span>
+            </p>
+            <h1>{categoryTitle(category)}</h1>
+            <p class="cat-lede">{categoryDescription(category)}</p>
+            <nav class="shop-seo-categories" aria-label="Other equipment categories">
+              {otherCategories.map((c) => (
+                <a key={c} class="shop-seo-cat-link" href={`/shop/category/${categorySlug(c)}/`}>{c}</a>
+              ))}
+              <a class="shop-seo-cat-link" href="/shop/">All climbing equipment</a>
+            </nav>
+            <div class="cat-product-grid">
+              {liveProducts.map((p) => (
+                <a class="cat-product-card" href={`/shop/${p.id || p._id}/`}>
+                  {p.imageUrl && (
+                    <img
+                      src={optimizeImage(p.imageUrl, 560)}
+                      alt={`${p.name} — climbing equipment`}
+                      width="560"
+                      height="420"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  <span class="cat-product-name">{p.name}</span>
+                  {p.price != null && <span class="cat-product-price">PKR {Number(p.price).toLocaleString()}</span>}
+                </a>
+              ))}
+            </div>
+            <p class="cat-back">
+              <a href="/shop/">← Browse all rock climbing equipment &amp; climbing gear</a>
+            </p>
+          </>
+        ) : (
+          <>
+            <h1>Category not found</h1>
+            <p class="cat-lede">Look for climbing equipment on the <a href="/shop/">shop page</a>.</p>
+          </>
+        )
+      }
+    </div>
+  </section>
+
+  <style>
+    .cat-breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--stone);
+      margin-bottom: 14px;
+    }
+    .cat-breadcrumbs a:hover { color: var(--orange); }
+    .cat-lede {
+      max-width: 68ch;
+      margin-bottom: 18px;
+    }
+    .shop-seo-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 28px;
+    }
+    .cat-product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .cat-product-card {
+      background: var(--chalk);
+      border: 1px solid var(--chalk-dim);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cat-product-card img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: var(--chalk-dim);
+    }
+    .cat-product-name {
+      font-family: var(--font-display);
+      color: var(--charcoal);
+      font-size: 0.98rem;
+      line-height: 1.25;
+    }
+    .cat-product-price {
+      color: var(--stone-dark);
+      font-size: 0.9rem;
+    }
+    .cat-product-card:hover .cat-product-name {
+      color: var(--orange);
+    }
+    .cat-back {
+      margin-top: 32px;
+      font-size: 0.9rem;
+    }
+    .cat-back a:hover { color: var(--orange); }
+  </style>
+</MainLayout>

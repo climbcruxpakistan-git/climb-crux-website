@@ -8,6 +8,7 @@ import { readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildCollections } from '../src/gallery/data.js'
+import { categorySlug } from '../src/lib/shopCategories.js'
 
 const SITE_URL = 'https://www.climbcruxpakistan.com'
 const DIST_DIR = fileURLToPath(new URL('../.vercel/output/static', import.meta.url))
@@ -92,6 +93,21 @@ async function fetchDynamicUrls() {
         priority: '0.8',
         changefreq: 'weekly',
         images,
+      })
+    }
+    // One URL per product category (its own indexable landing page).
+    const seenCats = new Set()
+    for (const p of products) {
+      if (p.status === 'draft' || p.status === 'archived' || !p.category) continue
+      const slug = categorySlug(p.category)
+      if (seenCats.has(slug)) continue
+      seenCats.add(slug)
+      urls.push({
+        loc: `${SITE_URL}/shop/category/${slug}/`,
+        lastmod: today,
+        priority: '0.7',
+        changefreq: 'weekly',
+        images: p.imageUrl ? [p.imageUrl] : [],
       })
     }
   } catch { /* API unreachable — skip dynamic product URLs */ }

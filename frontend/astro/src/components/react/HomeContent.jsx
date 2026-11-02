@@ -96,6 +96,9 @@ export default function HomeContent({ initial }) {
           src="https://res.cloudinary.com/ivvx77mg/image/upload/w_1600,q_auto,f_auto/v1785872185/climb-crux/eswc8bon6d6ognvow4mj.jpg"
           alt=""
           aria-hidden="true"
+          width="1600"
+          height="900"
+          decoding="async"
         />
         <svg className="hero-topo" viewBox="0 0 1440 720" preserveAspectRatio="none" fill="none" stroke="#F47321" strokeOpacity=".22" strokeWidth="1.3" aria-hidden="true">
           <path d="M-50 640C200 560 330 680 560 600S900 460 1100 520 1400 420 1500 460"/>
