@@ -3,6 +3,9 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import { GalleryHome } from '../../gallery/Gallery.jsx';
 import { buildCollections, toCollectionView } from '../../gallery/data';
 import { getGallery, getUploads } from '../../lib/api';
+// The mobile collections filter reuses the shop page's filter sheet (sp-*
+// drawer markup), so its stylesheet must be present here too.
+import '../../styles/Shop.css';
 import '../../gallery/gallery.css';
 
 // Rendered on-demand so photos and collections added in the admin show up

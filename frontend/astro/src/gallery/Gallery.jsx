@@ -23,7 +23,29 @@ export function GalleryHome({ collections }) {
   // Picking a collection in the rail opens its sub-categories (albums) in the
   // grid beside it instead of leaving the page.
   const [active, setActive] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const selected = active ? list.find((c) => c.slug === active) || null : null;
+
+  // Same open/close behaviour as the shop filters drawer: body scroll lock,
+  // Escape closes, and resizing up to the tab-row width closes the sheet.
+  useEffect(() => {
+    if (!filtersOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setFiltersOpen(false);
+    };
+    const onResize = () => {
+      if (window.innerWidth > 640) setFiltersOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [filtersOpen]);
 
   return (
     <div className="gx">
@@ -54,6 +76,115 @@ export function GalleryHome({ collections }) {
             </ul>
           </aside>
           <div className="gx-pane">
+            {/* Mobile-only collections filter — the same sheet/drawer the shop
+                page uses (Shop.css), replacing the horizontal tab row on phones. */}
+            <div className="gx-mobile-filter">
+              <button
+                type="button"
+                className="sp-filter-toggle"
+                onClick={() => setFiltersOpen(true)}
+                aria-expanded={filtersOpen}
+                aria-controls="gx-collections-filter"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <line x1="4" y1="6" x2="20" y2="6" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="18" x2="20" y2="18" />
+                  <circle cx="9" cy="6" r="2" fill="var(--chalk)" />
+                  <circle cx="15" cy="12" r="2" fill="var(--chalk)" />
+                  <circle cx="8" cy="18" r="2" fill="var(--chalk)" />
+                </svg>
+                Filter
+                {selected && <span className="sp-filter-count">1</span>}
+              </button>
+              {selected && (
+                <button
+                  type="button"
+                  className="gx-filter-chip"
+                  onClick={() => setActive(null)}
+                  aria-label={`Remove the ${selected.title} filter`}
+                >
+                  {selected.title} <span aria-hidden="true">×</span>
+                </button>
+              )}
+              <button
+                type="button"
+                className="gx-clear-link"
+                onClick={() => setActive(null)}
+                disabled={!selected}
+              >
+                Clear
+              </button>
+            </div>
+            <p className="gx-results" role="status">
+              {selected
+                ? <><b>{selected.albums.length}</b> {selected.albums.length === 1 ? 'album' : 'albums'} in {selected.title}</>
+                : <><b>{list.length}</b> {list.length === 1 ? 'collection' : 'collections'}</>}
+            </p>
+
+            {filtersOpen && (
+              <div className="sp-drawer-overlay" onClick={() => setFiltersOpen(false)} aria-hidden="true" />
+            )}
+            <aside
+              id="gx-collections-filter"
+              className={`sp-sidebar ${filtersOpen ? 'is-open' : ''}`}
+              aria-label="Collection filters"
+            >
+              <div className="sp-sidebar-head">
+                <h2 className="sp-sidebar-title">
+                  Collections
+                  {selected && <span className="sp-filter-count">1</span>}
+                </h2>
+                <button type="button" className="sp-clear" onClick={() => setActive(null)} disabled={!selected}>
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  className="sp-sidebar-close"
+                  onClick={() => setFiltersOpen(false)}
+                  aria-label="Close filters"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="sp-filter-group">
+                <h3 className="sp-filter-title">Collection</h3>
+                <ul className="sp-cat-list">
+                  <li>
+                    <button
+                      type="button"
+                      className={`sp-cat${!selected ? ' is-active' : ''}`}
+                      onClick={() => { setActive(null); setFiltersOpen(false); }}
+                    >
+                      <span>All</span>
+                      <span className="sp-cat-count">{list.length}</span>
+                    </button>
+                  </li>
+                  {list.map((c) => (
+                    <li key={c.slug}>
+                      <button
+                        type="button"
+                        className={`sp-cat${selected?.slug === c.slug ? ' is-active' : ''}`}
+                        onClick={() => { setActive(c.slug); setFiltersOpen(false); }}
+                      >
+                        <span>{c.title}</span>
+                        <span className="sp-cat-count">{c.albumCount}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary sp-drawer-apply"
+                onClick={() => setFiltersOpen(false)}
+              >
+                {selected
+                  ? `Show ${plural(selected.albums.length, 'album')}`
+                  : `Show all ${plural(list.length, 'collection')}`}
+              </button>
+            </aside>
+
             {selected ? (
               <>
                 <div className="gx-folder-head">
