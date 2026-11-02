@@ -1,191 +1,106 @@
-import { useState, useEffect } from 'react'
-import { getSessionReviews, submitSessionReview } from '../../lib/api'
+import { useEffect, useRef, useState } from 'react'
+import { getSessionReviews } from '../../lib/api.js'
 
 /**
- * Reviews & Ratings section — shared by the Public Sessions page
- * (type="public") and the Private Sessions page (type="private").
- *
- * The two categories are fetched from separate backend endpoints, so an
- * approved Public review can never appear on the Private page and vice-versa.
- * The review type itself is decided server-side from the endpoint used —
- * the visitor never picks one.
+ * One-card-at-a-time review slider, shown on the sessions and
+ * private/premium pages. Newest first (server sorts by reviewDate).
  */
-
-/** "2026-08-22T10:00:00Z" → "August 2026" */
-function formatMonthYear(value) {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return String(value)
-  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-}
-
-/** Read-only star display (1–5). */
-function Stars({ rating, size = 16 }) {
-  const stars = []
-  for (let i = 1; i <= 5; i++) {
-    stars.push(
-      <span
-        key={i}
-        className={`rv-star${rating >= i ? ' rv-star-full' : ''}`}
-        style={{ fontSize: size }}
-        aria-hidden="true"
-      >
-        ★
-      </span>
-    )
-  }
-  return (
-    <span className="rv-stars" role="img" aria-label={`${rating} out of 5 stars`}>
-      {stars}
-    </span>
-  )
-}
-
-/** Interactive 1–5 star picker. Submission is blocked until a value is set. */
-function StarPicker({ value, onChange }) {
-  const [hover, setHover] = useState(0)
-  const shown = hover || value
-  return (
-    <div className="rv-picker" onMouseLeave={() => setHover(0)} role="radiogroup" aria-label="Select a rating from 1 to 5 stars">
-      <div className="rv-picker-stars">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <button
-            key={i}
-            type="button"
-            className={`rv-pick-star${shown >= i ? ' is-active' : ''}`}
-            onClick={() => onChange(i)}
-            onMouseEnter={() => setHover(i)}
-            onFocus={() => setHover(i)}
-            onBlur={() => setHover(0)}
-            aria-label={`${i} star${i > 1 ? 's' : ''}`}
-            aria-pressed={value === i}
-          >
-            ★
-          </button>
-        ))}
-      </div>
-      <span className={`rv-picker-hint${shown ? ' is-set' : ''}`} aria-live="polite">
-        {shown ? `${shown} / 5` : 'Tap a star to rate *'}
-      </span>
-    </div>
-  )
-}
-
 export default function ReviewsSection({ type = 'public' }) {
-  const [data, setData] = useState({ reviews: [], total: 0, avgRating: 0 })
-  const [loading, setLoading] = useState(true)
-  const [rating, setRating] = useState(0)
-  const [name, setName] = useState('')
-  const [comment, setComment] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState('')
+  const [reviews, setReviews] = useState([])
+  const [status, setStatus] = useState('loading') // loading | ready
+  const [index, setIndex] = useState(0)
+  const touchStartX = useRef(null)
 
   useEffect(() => {
-    let active = true
+    let alive = true
     getSessionReviews(type)
-      .then((fresh) => {
-        if (!active) return
-        setData({
-          reviews: fresh.reviews || [],
-          total: fresh.total || 0,
-          avgRating: fresh.avgRating || 0,
-        })
+      .then((data) => {
+        if (!alive) return
+        setReviews(data.reviews || [])
+        setStatus('ready')
       })
-      .catch(() => {})
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
+      .catch(() => {
+        if (!alive) return
+        setReviews([])
+        setStatus('ready')
+      })
+    return () => { alive = false }
   }, [type])
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-    // Frontend validation mirrors the server rules — the server re-validates.
-    if (!rating || rating < 1 || rating > 5) {
-      setError('Please select a star rating (1–5)')
-      return
-    }
-    if (!name.trim()) {
-      setError('Please enter your name')
-      return
-    }
-    setError('')
-    setSubmitting(true)
-    try {
-      await submitSessionReview(type, { rating, name: name.trim(), comment: comment.trim() })
-      setSubmitted(true)
-    } catch (err) {
-      setError(err.message || 'Failed to submit your review. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+  // No approved reviews yet (or still loading) — hide the section.
+  if (status !== 'ready' || reviews.length === 0) return null
+
+  const count = reviews.length
+  const review = reviews[index]
+  const isLatest = index === 0
+
+  const go = (delta) => setIndex((i) => (i + delta + count) % count)
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX }
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1)
+    touchStartX.current = null
   }
 
-  const reviews = data.reviews || []
-  const total = data.total || 0
+  const date = new Date(review.reviewDate || review.createdAt || Date.now())
+  const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <section className="section rv-section" id="reviews" aria-label="Reviews and ratings">
+    <section className="rv-section">
       <div className="wrap">
-        <h2>How was your climbing experience with Climb Crux?</h2>
+        <h2 className="rv-heading">What climbers say</h2>
+        <div className="rv-slider" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          {count > 1 && (
+            <button
+              className="rv-arrow rv-prev"
+              onClick={() => go(-1)}
+              aria-label="Previous review"
+            >
+              ‹
+            </button>
+          )}
 
-        {loading ? (
-          <div className="btn-spinner" style={{ margin: '24px auto' }} aria-label="Loading reviews" />
-        ) : total > 0 ? (
-          <div className="rv-summary">
-            <div className="rv-summary-score">{data.avgRating}</div>
-            <div className="rv-summary-meta">
-              <Stars rating={data.avgRating} size={22} />
-              <p className="rv-summary-count">
-                Based on {total} approved review{total > 1 ? 's' : ''}
-              </p>
+          <div className="rv-window">
+            <div
+              className="rv-track"
+              style={{ transform: `translateX(-${index * 100}%)`, transition: 'transform 0.55s ease' }}
+            >
+              {reviews.map((r, i) => (
+                <article className="rv-card" key={r.id}>
+                  <div className="rv-quote" aria-hidden="true">“</div>
+                  <p className="rv-text">{r.comment}</p>
+                  {isLatest && i === 0 && <span className="rv-latest-tag">Latest</span>}
+                  <div className="rv-meta">
+                    <strong className="rv-name">{r.name}</strong>
+                    <span className="rv-date">{monthYear}</span>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
-        ) : null}
 
-        <div className="rv-form-card">
-          <h3>Leave a review</h3>
-          {submitted ? (
-            <div className="rv-success" role="status">
-              <span className="rv-success-icon" aria-hidden="true">✓</span>
-              <div>
-                <strong>Thank you for your review!</strong>
-                <p>Your review has been submitted and is awaiting approval.</p>
-              </div>
-            </div>
-          ) : (
-            <form className="rv-form" onSubmit={handleSubmit} noValidate>
-              <div className="rv-field">
-                <label>Your Rating *</label>
-                <StarPicker value={rating} onChange={setRating} />
-              </div>
-              <div className="rv-field">
-                <label htmlFor={`rv-name-${type}`}>Your Name *</label>
-                <input id={`rv-name-${type}`} value={name} onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name" maxLength={80} required />
-              </div>
-              <div className="rv-field">
-                <label htmlFor={`rv-comment-${type}`}>Your Review (optional)</label>
-                <textarea id={`rv-comment-${type}`} rows={3} value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Tell us about your experience…" maxLength={500} />
-              </div>
-              {error && <div className="form-error-banner" role="alert">{error}</div>}
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit Review'}
-              </button>
-            </form>
+          {count > 1 && (
+            <button
+              className="rv-arrow rv-next"
+              onClick={() => go(1)}
+              aria-label="Next review"
+            >
+              ›
+            </button>
           )}
         </div>
 
-        {!loading && total > 0 && (
-          <div className="rv-list">
-            {reviews.map((r) => (
-              <article key={r.id} className="rv-review-card">
-                <Stars rating={r.rating} size={15} />
-                <div className="rv-review-name">{r.name}</div>
-                {r.comment && <p className="rv-review-comment">&ldquo;{r.comment}&rdquo;</p>}
-                <div className="rv-review-date">{formatMonthYear(r.createdAt)}</div>
-              </article>
+        {count > 1 && (
+          <div className="rv-dots" role="tablist">
+            {reviews.map((r, i) => (
+              <button
+                key={r.id}
+                className={`rv-dot ${i === index ? 'rv-dot-active' : ''}`}
+                onClick={() => setIndex(i)}
+                aria-label={`Go to review ${i + 1} of ${count}`}
+              />
             ))}
           </div>
         )}

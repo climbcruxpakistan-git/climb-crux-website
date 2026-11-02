@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getSessionReviews, approveSessionReview, rejectSessionReview, deleteSessionReview } from '../store.js'
+import { getSessionReviews, approveSessionReview, rejectSessionReview, deleteSessionReview, createSessionReview, updateSessionReview } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 import { formatDate } from '../formatDate.js'
@@ -40,16 +40,6 @@ const TYPE_LABEL = {
   PRIVATE: 'Private Session',
 }
 
-function Stars({ rating }) {
-  return (
-    <span className="rv-admin-stars" title={`${rating} out of 5`}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} style={{ color: rating >= i ? '#f36f21' : '#d8d0bc' }}>★</span>
-      ))}
-    </span>
-  )
-}
-
 export default function ReviewsManager() {
   const { addToast } = useToast()
   const [reviews, setReviews] = useState([])
@@ -57,6 +47,17 @@ export default function ReviewsManager() {
   const [filter, setFilter] = useState('All')
   const [acting, setActing] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [editing, setEditing] = useState(null)
+  // 'new' opens a blank form ({ reviewType: 'PUBLIC', name: '', comment: '', reviewDate: today })
+  const [formOpen, setFormOpen] = useState(false) // true = form visible
+
+  const blankForm = () => ({
+    reviewType: 'PUBLIC',
+    name: '',
+    comment: '',
+    reviewDate: new Date().toISOString().slice(0, 10),
+  })
+  const [form, setForm] = useState(blankForm())
 
   async function load(currentFilter = filter) {
     setLoading(true)
@@ -79,6 +80,52 @@ export default function ReviewsManager() {
     setFilter(next)
     await load(next)
   }
+
+  function openAdd() {
+    setEditing(null)
+    setForm(blankForm())
+    setFormOpen(true)
+  }
+
+  function openEdit(review) {
+    setEditing(review)
+    setForm({
+      reviewType: review.reviewType || 'PUBLIC',
+      name: review.name || '',
+      comment: review.comment || '',
+      reviewDate: review.reviewDate || review.createdAt || '',
+    })
+    setFormOpen(true)
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setActing(true)
+    try {
+      const body = {
+        reviewType: form.reviewType,
+        name: form.name.trim(),
+        comment: form.comment.trim(),
+      }
+      if (form.reviewDate) body.reviewDate = new Date(form.reviewDate).toISOString()
+      if (editing) {
+        await updateSessionReview(editing.id, body)
+        addToast('Review updated', 'success')
+      } else {
+        await createSessionReview(body)
+        addToast('Review added and published', 'success')
+      }
+      setFormOpen(false)
+      setEditing(null)
+      await load()
+    } catch (err) {
+      addToast(`Failed: ${err.message}`, 'error')
+    } finally {
+      setActing(false)
+    }
+  }
+
+  const canSubmit = form.name.trim().length > 0 && form.comment.trim().length > 0
 
   async function handleApprove(review) {
     if (!confirm(`Approve this ${TYPE_LABEL[review.reviewType]} review from ${review.name}?\n\nIt will become publicly visible on the website.`)) return
@@ -136,7 +183,7 @@ export default function ReviewsManager() {
           <h2>Session Reviews ({reviews.length})</h2>
         </div>
 
-        <div className="card-admin-header" style={{ justifyContent: 'flex-start', gap: 18 }}>
+        <div className="card-admin-header" style={{ justifyContent: 'flex-start', gap: 18, flexWrap: 'wrap' }}>
           <h2>Filter</h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {FILTERS.map((f) => (
@@ -149,6 +196,14 @@ export default function ReviewsManager() {
               </button>
             ))}
           </div>
+          <button
+            className="btn-admin btn-admin-sm btn-admin-primary"
+            style={{ marginLeft: 'auto' }}
+            onClick={openAdd}
+            title="Add a new review manually (published immediately)"
+          >
+            + Add review
+          </button>
         </div>
 
         {loading ? (
@@ -169,7 +224,6 @@ export default function ReviewsManager() {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Rating</th>
                     <th>Type</th>
                     <th>Comment</th>
                     <th>Date</th>
@@ -181,12 +235,11 @@ export default function ReviewsManager() {
                   {reviews.map((r) => (
                     <tr key={r.id}>
                       <td><strong>{r.name}</strong></td>
-                      <td><Stars rating={r.rating} /></td>
                       <td>{typeBadge(r.reviewType)}</td>
                       <td className="cell-truncate" title={r.comment || ''}>
                         {r.comment || <span className="cell-muted">— no comment —</span>}
                       </td>
-                      <td>{formatDate(r.createdAt)}</td>
+                      <td>{formatDate(r.reviewDate || r.createdAt)}</td>
                       <td>
                         <span className={`badge ${STATUS_BADGE[r.status] || 'badge-gray'}`}>
                           {STATUS_LABEL[r.status] || r.status}
@@ -217,6 +270,15 @@ export default function ReviewsManager() {
                             </button>
                           )}
                           <button
+                            className="btn-admin btn-admin-sm"
+                            style={{ background: 'transparent', color: '#374151', border: '1px solid #d1d5db', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
+                            onClick={() => openEdit(r)}
+                            disabled={acting}
+                            title="Edit name, comment, page or date"
+                          >
+                            ✎ Edit
+                          </button>
+                          <button
                             className="btn-admin-icon danger"
                             onClick={() => setDeleting(r)}
                             disabled={acting}
@@ -242,10 +304,9 @@ export default function ReviewsManager() {
             Permanently delete this {TYPE_LABEL[deleting.reviewType]} review from{' '}
             <strong>{deleting.name}</strong>? This cannot be undone.
           </p>
-          {deleting.comment && (
+          {editing && (
             <div className="payment-detail-card" style={{ marginBottom: 16 }}>
-              <Stars rating={deleting.rating} />
-              <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#444' }}>{deleting.comment}</p>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#444' }}>{editing.comment}</p>
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -262,6 +323,98 @@ export default function ReviewsManager() {
           </div>
         </Modal>
       )}
+
+      {/* ── Add / Edit review form (modal) ── */}
+      {formOpen && (
+        <Modal
+          title={editing ? `Edit review — ${editing.name}` : 'Add review'}
+          onClose={() => { setFormOpen(false); setEditing(null) }}
+        >
+          <form onSubmit={handleSubmit}>
+            <label style={formLabel}>Page</label>
+            <select
+              value={form.reviewType}
+              onChange={(e) => setForm({ ...form, reviewType: e.target.value })}
+              style={formInput}
+              disabled={acting}
+            >
+              <option value="PUBLIC">Public sessions</option>
+              <option value="PRIVATE">Private premium</option>
+            </select>
+
+            <label style={formLabel}>Name</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              maxLength={80}
+              required
+              style={formInput}
+              disabled={acting}
+              placeholder="Reviewer name"
+            />
+
+            <label style={formLabel}>Review text</label>
+            <textarea
+              value={form.comment}
+              onChange={(e) => setForm({ ...form, comment: e.target.value })}
+              maxLength={500}
+              required
+              rows={4}
+              style={{ ...formInput, resize: 'vertical' }}
+              disabled={acting}
+              placeholder="What did they say?"
+            />
+
+            <label style={formLabel}>Date</label>
+            <input
+              type="date"
+              value={form.reviewDate}
+              onChange={(e) => setForm({ ...form, reviewDate: e.target.value })}
+              style={formInput}
+              disabled={acting}
+            />
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>
+              <button
+                type="submit"
+                className="btn-admin btn-admin-sm btn-admin-primary"
+                disabled={acting || !canSubmit}
+              >
+                {editing ? 'Save changes' : 'Add review'}
+              </button>
+              <button
+                type="button"
+                className="btn-admin btn-admin-outline"
+                onClick={() => { setFormOpen(false); setEditing(null) }}
+                disabled={acting}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </>
   )
+}
+
+const formLabel = {
+  display: 'block',
+  margin: '12px 0 4px',
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  color: '#666',
+}
+
+const formInput = {
+  width: '100%',
+  padding: '8px 10px',
+  fontSize: '0.85rem',
+  border: '1px solid #d6cfbc',
+  borderRadius: 4,
+  boxSizing: 'border-box',
+  background: '#fff',
 }

@@ -219,8 +219,3 @@ export async function getSessionReviews(type) {
   if (data.reviews) data.reviews = mapId(data.reviews)
   return data
 }
-
-/** Submit a session review. The server decides the reviewType from the endpoint. */
-export async function submitSessionReview(type, review) {
-  return await postJson(`/session-reviews/${type}`, review)
-}

@@ -1,290 +1,163 @@
-/* ===================================================================
-   REVIEWS & RATINGS (Public + Private Sessions pages)
-   =================================================================== */
+/* Session reviews — one-card slider (sessions + private/premium pages). */
 
 .rv-section {
-  background: var(--chalk-dim);
+  padding: 56px 0 64px;
+  background: #fff;
 }
 
-.rv-summary,
-.rv-form-card,
-.rv-review-card {
-  background: var(--chalk);
-  border: 1px solid #ded5bf;
-}
-
-/* ── Average rating summary ── */
-
-.rv-summary {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  max-width: 520px;
-  margin-bottom: 28px;
-  padding: 26px 30px;
-  border-left: 3px solid var(--orange);
-}
-
-.rv-summary-score {
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 3.2rem);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--charcoal);
-}
-
-.rv-summary-score::after {
-  content: ' / 5';
-  font-size: 0.45em;
-  color: var(--stone);
-  font-weight: 500;
-}
-
-.rv-summary-count {
-  margin: 6px 0 0;
-  font-size: 0.88rem;
-  color: var(--stone-dark);
-}
-
-/* ── Stars ── */
-
-.rv-stars {
-  display: inline-flex;
-  gap: 2px;
-  line-height: 1;
-}
-
-.rv-star {
-  color: #d8d0bc;
-  transition: color 0.15s ease;
-}
-
-.rv-star-full {
-  color: var(--orange);
-}
-
-/* ── Empty state ── */
-
-.rv-empty {
-  background: var(--chalk);
-  border: 2px dashed #d8d0bc;
-  border-radius: 16px;
-  padding: 40px 28px;
-  margin-bottom: 28px;
-  max-width: 520px;
+.rv-heading {
+  font-family: var(--font-display, Oswald, sans-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   text-align: center;
+  color: #2E2E30;
+  margin: 0 0 36px;
 }
 
-.rv-empty h3 {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  margin-bottom: 8px;
-}
-
-.rv-empty p {
-  margin: 0;
-  color: var(--stone);
-  font-size: 0.92rem;
-}
-
-/* ── Submission form ── */
-
-.rv-form-card {
-  padding: 30px 32px;
-  margin-bottom: 32px;
-  border-top: 3px solid var(--orange);
-  box-shadow: 0 10px 34px rgba(32, 31, 33, 0.06);
-}
-
-.rv-form-card h3 {
-  font-size: 1.15rem;
-  margin-bottom: 18px;
-}
-
-.rv-form {
+.rv-slider {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 480px;
-}
-
-.rv-field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.rv-field label {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--stone-dark);
-}
-
-.rv-field input,
-.rv-field textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #d8d0bc;
-  border-radius: var(--radius);
-  background: #fffdf8;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  color: var(--ink);
-  resize: vertical;
-}
-
-.rv-field input:focus,
-.rv-field textarea:focus {
-  outline: 3px solid rgba(243, 111, 33, 0.35);
-  outline-offset: 1px;
-  border-color: var(--orange);
-}
-
-/* Interactive star picker */
-
-.rv-picker {
-  display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 12px;
-  flex-wrap: wrap;
+  max-width: 820px;
+  margin: 0 auto;
 }
 
-.rv-picker-stars {
-  display: inline-flex;
-  gap: 4px;
+.rv-window {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 14px;
 }
 
-.rv-pick-star {
-  width: 40px;
-  height: 40px;
-  font-size: 26px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: #d8d0bc;
-  transition: transform 0.12s ease, color 0.12s ease;
-}
-
-.rv-pick-star:hover,
-.rv-pick-star:focus-visible {
-  transform: scale(1.18);
-}
-
-.rv-pick-star.is-active {
-  color: var(--orange);
-}
-
-.rv-picker-hint {
-  font-size: 0.82rem;
-  color: var(--stone);
-}
-
-.rv-picker-hint.is-set {
-  color: var(--orange-dark);
-  font-weight: 600;
-}
-
-/* ── Approved review list ── */
-
-.rv-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-}
-
-.rv-review-card {
-  padding: 22px 24px;
-  border-left: 3px solid var(--orange);
-}
-
-.rv-review-name {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-  color: var(--charcoal);
-  margin-top: 10px;
-  font-size: 0.95rem;
-}
-
-.rv-review-comment {
-  margin: 8px 0 10px;
-  color: var(--stone-dark);
-  font-size: 0.93rem;
-  line-height: 1.65;
-}
-
-.rv-review-date {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--stone);
-}
-
-/* ── Success message ── */
-
-.rv-success {
+.rv-track {
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  background: rgba(34, 197, 94, 0.08);
-  border: 1px solid rgba(34, 197, 94, 0.35);
-  border-radius: var(--radius);
-  padding: 16px 18px;
+  /* transition is set inline (0.55s transform) so React keeps it simple */
 }
 
-.rv-success-icon {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #16a34a;
+.rv-card {
+  flex: 0 0 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: #FAF6ED; /* cream */
+  border: 1px solid #ece5d4;
+  border-radius: 14px;
+  padding: 44px 48px 34px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.rv-quote {
+  position: absolute;
+  top: 2px;
+  left: 24px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 84px;
+  line-height: 1;
+  color: #F47321;
+  user-select: none;
+}
+
+.rv-text {
+  flex: 1;
+  margin: 0;
+  padding-top: 34px; /* clear the quote mark */
+  font-size: 1.12rem;
+  line-height: 1.7;
+  color: #2E2E30;
+}
+
+.rv-latest-tag {
+  align-self: flex-start;
+  margin: 18px 0 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #F47321;
   color: #fff;
-  border-radius: 50%;
+  font-family: var(--font-display, Oswald, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.rv-meta {
+  margin-top: 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rv-name {
+  font-family: var(--font-display, Oswald, sans-serif);
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2E2E30;
+}
+
+.rv-date {
   font-size: 0.85rem;
-  font-weight: 700;
+  color: #8a8375;
+  white-space: nowrap;
 }
 
-.rv-success strong {
-  color: var(--charcoal);
-  font-size: 0.95rem;
+/* Arrows — loop, sit outside the card on wide screens. */
+.rv-arrow {
+  align-self: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid #d9d2c0;
+  background: #fff;
+  color: #F47321;
+  font-size: 1.4rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.rv-success p {
-  margin: 2px 0 0;
-  font-size: 0.88rem;
-  color: var(--stone-dark);
+.rv-arrow:hover { background: #F47321; border-color: #F47321; color: #fff; }
+
+/* Dots. */
+.rv-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
 }
 
-/* ── Mobile ── */
+.rv-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 999px;
+  border: none;
+  background: #d9d2c0;
+  cursor: pointer;
+  transition: background 0.15s ease, width 0.15s ease;
+}
 
-@media (max-width: 700px) {
-  .rv-list {
-    grid-template-columns: 1fr;
-  }
+.rv-dot-active { background: #F47321; width: 22px; }
 
-  .rv-summary {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 22px;
+@media (max-width: 640px) {
+  .rv-section { padding: 40px 0 48px; }
+  .rv-heading { font-size: 1.5rem; margin-bottom: 24px; }
+  .rv-slider { gap: 0; position: relative; }
+  .rv-card { padding: 34px 22px 26px; }
+  .rv-quote { font-size: 64px; left: 16px; }
+  .rv-text { font-size: 1rem; padding-top: 28px; }
+  /* Keep arrows overlaid on the card so they don't steal width. */
+  .rv-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.92);
   }
-
-  .rv-form-card {
-    padding: 24px 20px;
-  }
-
-  .rv-pick-star {
-    width: 44px;
-    height: 44px;
-    font-size: 28px;
-  }
+  .rv-prev { left: 8px; }
+  .rv-next { right: 8px; }
 }

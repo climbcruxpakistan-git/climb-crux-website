@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import SessionReview from '../models/SessionReview.js'
 import { requireAdmin, requireAdminStrict } from '../middleware/auth.js'
-import { reviewLimiter } from '../middleware/rateLimiter.js'
 
 const router = Router()
 
@@ -12,7 +11,7 @@ const router = Router()
 
 const TYPES = { public: 'PUBLIC', private: 'PRIVATE' }
 
-/* ── Sanitization / validation helpers ────────────────────────────────── */
+/* ── Validation helpers (shared by public validation style) ─────────────── */
 
 /** Strip control characters and trim. Keeps unicode letters intact. */
 function safeText(value, max) {
@@ -24,87 +23,52 @@ function safeText(value, max) {
 
 function validateSubmission(body) {
   const name = safeText(body.name, 80)
-  if (!name) return { error: 'Please enter your name' }
+  if (!name) return { error: 'Please enter the name' }
 
-  const rating = Number(body.rating)
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { error: 'Rating must be a whole number from 1 to 5' }
+  // Rating is optional (legacy fields). When present it must be 1-5.
+  let rating
+  if (body.rating !== undefined && body.rating !== null && body.rating !== '') {
+    rating = Number(body.rating)
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return { error: 'Rating must be a whole number from 1 to 5' }
+    }
   }
 
   const comment = safeText(body.comment, 500)
   return { values: { name, rating, comment } }
 }
 
+/** Parse an optional ISO date string (or any value handed to new Date()). */
+function parseDate(value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/* ── Public: approved reviews per category ─────────────────────────────── */
+
 /**
- * Public list for one category — returns ONLY APPROVED reviews of that type.
+ * Public list for one category — returns ONLY APPROVED reviews of that type,
+ * newest by reviewDate first (falling back to createdAt for legacy docs).
+ * Response shape: { reviews: [{ id, name, comment, reviewDate }], total }.
  * PENDING / REJECTED reviews are never exposed through these endpoints.
  */
 async function listApproved(type, res, next) {
   try {
     const reviews = await SessionReview.find({ reviewType: type, status: 'APPROVED' })
-      .sort({ createdAt: -1 })
-
-    const total = reviews.length
-    const avgRating = total > 0
-      ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / total) * 10) / 10
-      : 0
-    const distribution = [0, 0, 0, 0, 0]
-    reviews.forEach((r) => {
-      if (r.rating >= 1 && r.rating <= 5) distribution[r.rating - 1] += 1
-    })
+      .sort({ reviewDate: -1 })
 
     res.json({
       reviews: reviews.map((r) => ({
         id: r._id,
         name: r.name,
-        rating: r.rating,
         comment: r.comment || '',
-        createdAt: r.createdAt,
+        reviewDate: r.reviewDate || r.createdAt,
       })),
-      total,
-      avgRating,
-      distribution,
+      total: reviews.length,
     })
   } catch (err) { next(err) }
 }
-
-/* ── Public: create a review (type determined by the URL, server-side) ── */
-
-router.post('/public', reviewLimiter, async (req, res, next) => {
-  try {
-    const { values, error } = validateSubmission(req.body || {})
-    if (error) return res.status(400).json({ error })
-
-    const review = await SessionReview.create({
-      reviewType: 'PUBLIC',
-      name: values.name,
-      rating: values.rating,
-      comment: values.comment,
-      status: 'PENDING',
-      approvedAt: null,
-    })
-    res.status(201).json({ id: review._id, status: review.status })
-  } catch (err) { next(err) }
-})
-
-router.post('/private', reviewLimiter, async (req, res, next) => {
-  try {
-    const { values, error } = validateSubmission(req.body || {})
-    if (error) return res.status(400).json({ error })
-
-    const review = await SessionReview.create({
-      reviewType: 'PRIVATE',
-      name: values.name,
-      rating: values.rating,
-      comment: values.comment,
-      status: 'PENDING',
-      approvedAt: null,
-    })
-    res.status(201).json({ id: review._id, status: review.status })
-  } catch (err) { next(err) }
-})
-
-/* ── Public: approved reviews per category ─────────────────────────────── */
 
 router.get('/public', async (req, res, next) => listApproved('PUBLIC', res, next))
 router.get('/private', async (req, res, next) => listApproved('PRIVATE', res, next))
@@ -121,6 +85,92 @@ router.get('/all', requireAdminStrict, async (req, res, next) => {
 
     const reviews = await SessionReview.find(filter).sort({ createdAt: -1 })
     res.json(reviews)
+  } catch (err) { next(err) }
+})
+
+/* ── Admin: create (published immediately) + edit ───────────────────────── */
+
+// POST /api/session-reviews — admin creates a review directly.
+// Body: reviewType ('PUBLIC' | 'PRIVATE'), name (1-80), comment (1-500,
+// required), reviewDate (ISO date, defaults to now). Optional rating (1-5)
+// is accepted for backwards compatibility but is not part of the public
+// display any more. The review is created status APPROVED / approvedAt now.
+router.post('/', requireAdminStrict, async (req, res, next) => {
+  try {
+    const body = req.body || {}
+    const reviewType = String(body.reviewType || '').toUpperCase()
+    if (!Object.values(TYPES).includes(reviewType)) {
+      return res.status(400).json({ error: 'reviewType must be PUBLIC or PRIVATE' })
+    }
+
+    const { values, error } = validateSubmission(body)
+    if (error) return res.status(400).json({ error })
+    if (!values.comment) return res.status(400).json({ error: 'Please enter the review text' })
+
+    const reviewDate = parseDate(body.reviewDate, new Date())
+    if (reviewDate === null) return res.status(400).json({ error: 'Invalid review date' })
+
+    const review = await SessionReview.create({
+      reviewType,
+      name: values.name,
+      rating: values.rating,
+      comment: values.comment,
+      reviewDate,
+      status: 'APPROVED',
+      approvedAt: new Date(),
+    })
+    res.status(201).json(review)
+  } catch (err) { next(err) }
+})
+
+// PATCH /api/session-reviews/:id — admin edits name, comment, reviewType and
+// reviewDate (pass only the fields to change with values; use null to clear
+// a value).
+router.patch('/:id', requireAdminStrict, async (req, res, next) => {
+  try {
+    const review = await SessionReview.findById(req.params.id)
+    if (!review) return res.status(404).json({ error: 'Review not found' })
+
+    const body = req.body || {}
+    const patch = {}
+
+    if ('name' in body) {
+      const name = safeText(body.name, 80)
+      if (!name) return res.status(400).json({ error: 'Please enter the name' })
+      patch.name = name
+    }
+
+    if ('comment' in body) {
+      const comment = safeText(body.comment, 500)
+      if (!comment) return res.status(400).json({ error: 'Please enter the review text' })
+      patch.comment = comment
+    }
+
+    if ('reviewType' in body) {
+      const reviewType = String(body.reviewType || '').toUpperCase()
+      if (!Object.values(TYPES).includes(reviewType)) {
+        return res.status(400).json({ error: 'reviewType must be PUBLIC or PRIVATE' })
+      }
+      patch.reviewType = reviewType
+    }
+
+    if ('reviewDate' in body) {
+      const reviewDate = parseDate(body.reviewDate)
+      if (reviewDate === null) return res.status(400).json({ error: 'Invalid review date' })
+      patch.reviewDate = reviewDate
+    }
+
+    if ('rating' in body && body.rating !== null) {
+      const rating = Number(body.rating)
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: 'Rating must be a whole number from 1 to 5' })
+      }
+      patch.rating = rating
+    }
+
+    Object.assign(review, patch)
+    await review.save()
+    res.json(review)
   } catch (err) { next(err) }
 })
 

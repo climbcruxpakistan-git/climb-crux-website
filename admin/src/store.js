@@ -385,3 +385,18 @@ export async function rejectSessionReview(id) {
 export async function deleteSessionReview(id) {
   return request('DELETE', `/session-reviews/${id}`)
 }
+
+/**
+ * Manually create a session review (created straight into APPROVED).
+ * body: { reviewType, name, comment, reviewDate? } (ISO strings/Date).
+ */
+export async function createSessionReview(body) {
+  return mapId(await request('POST', '/session-reviews', body))
+}
+
+/**
+ * Edit an existing session review — name, comment, reviewType, reviewDate.
+ */
+export async function updateSessionReview(id, body) {
+  return mapId(await request('PATCH', `/session-reviews/${id}`, body))
+}
