@@ -135,16 +135,19 @@
 
 /* ---- Included-only extras (rendered per heading by BandSection callers) --- */
 
-/* Mini French grade scale under "Beginner-friendly routes". */
+/* Mini French grade scale under "Beginner-friendly routes" — the graded
+   working range only. Fixed-width chips flush with the paragraph's left edge,
+   so the extra content shares the column's text alignment instead of floating
+   mid-column. */
 .band-scale {
   display: flex;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 6px;
   margin: 22px 0 0;
 }
 
 .band-scale span {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 62px;
   padding: 9px 0;
   border-radius: 3px;
   text-align: center;
@@ -159,17 +162,6 @@
 .band-scale span[data-lit] {
   background: var(--orange);
   color: #fff;
-}
-
-/* Caption under the grade scale: Work Sans, small. It's a <p> inside
-   .band-item, so it needs the (0,2,0) selector or the .band-item p rule
-   renders it at paragraph size with body copy colour. */
-.band-item .band-scale-caption {
-  margin: 10px 0 0;
-  font-family: var(--font-body);
-  font-size: 0.875rem; /* never below the 0.8rem floor */
-  line-height: 1.4;
-  color: #6b6a66;
 }
 
 /* Climber cap stat under "Small groups". Same (0,2,0) trick as the caption:
@@ -212,6 +204,18 @@
     align-items: stretch;
   }
 
+  /* The desktop hairline (#E3DACA) disappears against the cream on small
+     screens, leaving the stacked items reading as one wall of text — darken
+     it here so the rules actually structure the section. The band also gets
+     a warmer, deeper tone than the chalk sections around it, so on phones and
+     tablets the two band sections read as their own place instead of more
+     page-cream. */
+  .band {
+    --band-divider: #cfc0a4;
+    --band-muted-bg: #e9dcc6;
+    background: #f3ead9;
+  }
+
   .band-item {
     padding: 28px 0 28px 24px;
     border-right: none;
@@ -232,6 +236,12 @@
 
 /* Mobile: 1 column, headline row stacks. */
 @media (max-width: 640px) {
+  .band {
+    /* the full clamp() builds up to ~130px of dead space under the last item
+       on phones once the next section's own padding joins it */
+    padding-block: 56px 60px;
+  }
+
   .band-head {
     flex-direction: column;
     align-items: flex-start;

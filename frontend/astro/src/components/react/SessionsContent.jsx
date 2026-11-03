@@ -31,22 +31,20 @@ const DEFAULT_FEATURES = ['2–3 hour guided session', 'Certified instructor & s
 const DEFAULT_MEMBERSHIP_FEATURES = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Professional Instructors', 'All Climbing Equipment Provided', 'Save PKR 2,000']
 
 /* Mini French grade scale shown under the "Beginner-friendly routes" item in
-   the "What's included" band. Only lit when the heading matches, so the CMS
-   stays the source of truth if items are renamed. */
-const GRADE_STEPS = ['3', '4', '5', '6a', '6b', '6c', '7a']
+   the "What's included" band. Only shows the graded working range (4–6a, all
+   lit) — unlit steps above the range were dropped. The CMS stays the source
+   of truth if items are renamed. */
+const GRADE_STEPS = ['4', '5', '6a']
 
 /** Extra JSX for the Included band items — keyed on the item heading. */
 function includedItemExtra(heading) {
   if (/^Beginner-friendly routes$/i.test(heading)) {
     return (
-      <>
-        <div className="band-scale">
-          {GRADE_STEPS.map((g) => (
-            <span key={g} data-lit={/^(4|5|6a)$/.test(g) ? '' : undefined}>{g}</span>
-          ))}
-        </div>
-        <p className="band-scale-caption">Set at grades 4–6a, French scale</p>
-      </>
+      <div className="band-scale">
+        {GRADE_STEPS.map((g) => (
+          <span key={g} data-lit="">{g}</span>
+        ))}
+      </div>
     )
   }
   if (/^Small groups$/i.test(heading)) {
