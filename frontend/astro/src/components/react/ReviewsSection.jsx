@@ -16,12 +16,93 @@ import { getSessionReviews } from '../../lib/api.js'
  * other review has to peek on BOTH sides, so it is rendered a second time as
  * an aria-hidden twin (keyed by index so it re-mounts instead of sliding
  * across the front).
+ *
+ * Reviews longer than the card clamp end in a "More" button that opens the
+ * full review in a larger dialog (RvModal).
  */
+
+/** ISO reviewDate → "10 Jan 2026" (the date the review was sent). */
+function formatDate(iso) {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime())
+    ? ''
+    : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+/** The clamped review text. Reports via state whether the CSS line-clamp is
+    actually cutting content, so the "More" button only appears when needed. */
+function RvText({ comment, onMore }) {
+  const ref = useRef(null)
+  const [clamped, setClamped] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const check = () => setClamped(el.scrollHeight > el.clientHeight + 1)
+    check()
+    // Late-loading fonts / resizes change wrapping — recheck.
+    document.fonts?.ready?.then(check).catch(() => {})
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [comment])
+
+  return (
+    <>
+      <p className="rv-text" ref={ref}>
+        <span className="rv-qm">“</span>
+        {comment}
+        <span className="rv-qm">”</span>
+      </p>
+      {clamped && (
+        <button
+          type="button"
+          className="rv-more"
+          onClick={(e) => {
+            e.stopPropagation() // peek cards advance on card click; this shouldn't
+            onMore()
+          }}
+        >
+          More…
+        </button>
+      )}
+    </>
+  )
+}
+
+/** Full-review dialog: same dark card look, larger, no text clamp. */
+function RvModal({ review, onClose }) {
+  return (
+    <div className="rv-modal-backdrop" onClick={onClose}>
+      <article
+        className="rv-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Review by ${review.name}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button type="button" className="rv-modal-close" onClick={onClose} aria-label="Close review">
+          ✕
+        </button>
+        <p className="rv-modal-text">
+          <span className="rv-qm">“</span>
+          {review.comment}
+          <span className="rv-qm">”</span>
+        </p>
+        <div className="rv-footer">
+          <span className="rv-date">{formatDate(review.reviewDate)}</span>
+          <strong className="rv-name">{review.name}</strong>
+        </div>
+      </article>
+    </div>
+  )
+}
 
 export default function ReviewsSection({ type = 'public' }) {
   const [reviews, setReviews] = useState([])
   const [status, setStatus] = useState('loading') // loading | ready
   const [index, setIndex] = useState(0)
+  const [expanded, setExpanded] = useState(null) // review shown in RvModal
   const touchStartX = useRef(null)
 
   useEffect(() => {
@@ -39,6 +120,18 @@ export default function ReviewsSection({ type = 'public' }) {
       })
     return () => { alive = false }
   }, [type])
+
+  // Modal side-effects: Escape closes, page scroll locks while open.
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (e) => { if (e.key === 'Escape') setExpanded(null) }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [expanded])
 
   // No approved reviews yet (or still loading) — hide the section.
   if (status !== 'ready' || reviews.length === 0) return null
@@ -78,13 +171,10 @@ export default function ReviewsSection({ type = 'public' }) {
     >
       {isLatest && <span className="rv-latest-tag">Latest</span>}
 
-      <p className="rv-text">
-        <span className="rv-qm">“</span>
-        {r.comment}
-        <span className="rv-qm">”</span>
-      </p>
+      <RvText comment={r.comment} onMore={() => setExpanded(r)} />
 
       <div className="rv-footer">
+        <span className="rv-date">{formatDate(r.reviewDate)}</span>
         <strong className="rv-name">{r.name}</strong>
       </div>
     </article>
@@ -144,6 +234,8 @@ export default function ReviewsSection({ type = 'public' }) {
           </div>
         )}
       </div>
+
+      {expanded && <RvModal review={expanded} onClose={() => setExpanded(null)} />}
     </section>
   )
 }
