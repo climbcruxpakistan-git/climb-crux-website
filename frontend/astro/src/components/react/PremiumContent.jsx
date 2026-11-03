@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getPlans, getSessionContent } from '../../lib/api'
+import BandSection from './BandSection.jsx'
 
 const DEFAULT_CUSTOM_ITEMS = [
   { h: 'Route & difficulty', p: 'Pick the grade you want to work — from an easy confidence climb to our toughest premium line.' },
@@ -75,20 +76,11 @@ export default function PremiumContent({ initial }) {
         </div>
       </section>
 
-      <section className="section" style={{ background: 'var(--chalk-dim)' }}>
-        <div className="wrap">
-          <span className="eyebrow">{c.ppCustomEyebrow || 'What gets customized'}</span>
-          <h2>{c.ppCustomSectionTitle || "Built around your goal, not a template"}</h2>
-          <div className="info-grid">
-            {ppCustomItems.map((item) => (
-              <div className="info-card" key={item.h}>
-                <h4>{item.h}</h4>
-                <p>{item.p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <BandSection
+        title={c.ppCustomSectionTitle || 'Built around your goal, not a template'}
+        lede="Tell us what you're training toward. We shape the day around it."
+        items={ppCustomItems}
+      />
     </>
   )
 }

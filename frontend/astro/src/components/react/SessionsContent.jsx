@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getAvailableSessions, getSessionContent } from '../../lib/api'
+import BandSection from './BandSection.jsx'
 
 /** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
 function formatShortDate(iso) {
@@ -28,6 +29,36 @@ const DEFAULT_FAQS = [
 
 const DEFAULT_FEATURES = ['2–3 hour guided session', 'Certified instructor & safety briefing', 'Harness, helmet, rope, belay gear & climbing shoes', 'Group of up to 20 climbers']
 const DEFAULT_MEMBERSHIP_FEATURES = ['4 Rock Climbing Sessions', 'Valid for 1 Month', 'Professional Instructors', 'All Climbing Equipment Provided', 'Save PKR 2,000']
+
+/* Mini French grade scale shown under the "Beginner-friendly routes" item in
+   the "What's included" band. Only lit when the heading matches, so the CMS
+   stays the source of truth if items are renamed. */
+const GRADE_STEPS = ['3', '4', '5', '6a', '6b', '6c', '7a']
+
+/** Extra JSX for the Included band items — keyed on the item heading. */
+function includedItemExtra(heading) {
+  if (/^Beginner-friendly routes$/i.test(heading)) {
+    return (
+      <>
+        <div className="band-scale">
+          {GRADE_STEPS.map((g) => (
+            <span key={g} data-lit={/^(4|5|6a)$/.test(g) ? '' : undefined}>{g}</span>
+          ))}
+        </div>
+        <p className="band-scale-caption">Set at grades 4–6a, French scale</p>
+      </>
+    )
+  }
+  if (/^Small groups$/i.test(heading)) {
+    return (
+      <p className="band-stat">
+        <strong>20</strong>
+        <span>climbers max</span>
+      </p>
+    )
+  }
+  return null
+}
 
 export default function SessionsContent({ initial }) {
   const [data, setData] = useState(initial || { sessions: [], content: {} })
@@ -131,24 +162,14 @@ export default function SessionsContent({ initial }) {
         </div>
       </section>
 
-      <section className="section">
-        <div className="wrap">
-          <span className="eyebrow">What's included</span>
-          <h2>{c.includedSectionTitle || "Everything you need, nothing to bring"}</h2>
-          <div className="info-grid">
-            {included.map((i) => (
-              <div className="info-card" key={i.h}>
-                <h4>{i.h}</h4>
-                <p>{i.p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <BandSection
+        title={c.includedSectionTitle || 'Everything you need, nothing to bring'}
+        lede="Show up in comfortable clothes. We handle the instruction, the equipment and the routes."
+        items={included.map((i) => ({ h: i.h, p: i.p, extra: includedItemExtra(i.h) }))}
+      />
 
       <section className="section faq-section">
         <div className="wrap">
-          <span className="eyebrow">{c.faqEyebrow || 'Good to know'}</span>
           <h2>{c.faqSectionTitle || 'Frequently asked questions'}</h2>
           <div className="faq">
             {faqs.map((f) => (

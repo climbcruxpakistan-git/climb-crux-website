@@ -1,0 +1,261 @@
+/* ============================================================================
+   BAND — "What's included" (sessions page) & "What gets customized" (private-
+   & premium page): a contour-lined backdrop, a split headline row and a
+   4-across ruled text column row.
+
+   Scoped to .band only — the shared .info-grid / .info-card rules in
+   shared.css are left untouched (About, InstructorProfile and the skeleton
+   loaders still use them), and the old orange .info-card hover no longer
+   applies here because these sections no longer use the .info-card class.
+
+   Local tokens: #E3DACA, #EDE5D6 and #a39d8f have no global equivalents, so
+   they live as custom properties on .band. Everything else uses the site
+   tokens (--chalk, --orange, --charcoal, --stone-dark, --font-display,
+   --font-body).
+   ========================================================================= */
+
+.band {
+  --band-divider: #E3DACA; /* hairline between the ruled columns */
+  --band-muted-text: #a39d8f; /* unlit grade boxes */
+  --band-muted-bg: #EDE5D6; /* unlit grade boxes */
+
+  position: relative;
+  overflow: hidden;
+  background: var(--chalk);
+  padding-block: clamp(64px, 8vw, 104px);
+}
+
+/* Decorative contour lines behind the content. non-scaling-stroke (set on each
+   path in BandSection.jsx) keeps the hairlines even under the stretched viewBox;
+   the z-index pair puts them behind .wrap so text contrast never drops. */
+.band-contours {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--charcoal);
+  stroke-width: 1.5;
+  opacity: 0.06;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.band .wrap {
+  position: relative; /* content above the contours */
+  z-index: 1;
+}
+
+/* Header row: big split title left, short intro paragraph right. */
+.band-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 48px;
+  margin-bottom: 56px;
+}
+
+.band-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+  line-height: 1.05;
+  color: var(--charcoal);
+}
+
+/* Second line of the title (after the first comma / full stop). */
+.band-title-accent {
+  color: var(--orange);
+}
+
+.band-lede {
+  max-width: 400px;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #6b6a66;
+}
+
+/* Item row: one continuous orange rule along the top, plain text columns —
+   no cards, no side borders, no shadow, no radius, no hover. column-gap 0
+   keeps the dividers continuous; align-items start lets columns without
+   extras (grade scale / stat) simply end earlier. */
+.band-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 0;
+  align-items: start; /* columns without extras simply end earlier */
+  border-top: 3px solid var(--orange);
+}
+
+/* 44px top gives every heading the same distance from the orange rule; 28px
+   either side puts >=24px of clear space between text and the dividers. */
+.band-item {
+  padding: 44px 28px 12px;
+  border-right: 1px solid var(--band-divider);
+  min-width: 0;
+}
+
+.band-item:first-child {
+  padding-left: 0;
+}
+
+.band-item:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+/* Class-scoped (never the bare tag): the global h1-h4 rule in index.css and
+   the @media h2/h3/h4 size rules must not set this text. margin/letter-spacing/
+   line-height are all restated so nothing leaks in. */
+.band-item-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  line-height: 1.15;
+  letter-spacing: normal;
+  white-space: normal;
+}
+
+@media (min-width: 1100px) {
+  .band-item-title {
+    white-space: nowrap;
+  }
+}
+
+.band-item p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--stone-dark);
+}
+
+/* ---- Included-only extras (rendered per heading by BandSection callers) --- */
+
+/* Mini French grade scale under "Beginner-friendly routes". */
+.band-scale {
+  display: flex;
+  gap: 4px;
+  margin: 22px 0 0;
+}
+
+.band-scale span {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  border-radius: 3px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1;
+  background: var(--band-muted-bg);
+  color: var(--band-muted-text);
+}
+
+.band-scale span[data-lit] {
+  background: var(--orange);
+  color: #fff;
+}
+
+/* Caption under the grade scale: Work Sans, small. It's a <p> inside
+   .band-item, so it needs the (0,2,0) selector or the .band-item p rule
+   renders it at paragraph size with body copy colour. */
+.band-item .band-scale-caption {
+  margin: 10px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* never below the 0.8rem floor */
+  line-height: 1.4;
+  color: #6b6a66;
+}
+
+/* Climber cap stat under "Small groups". Same (0,2,0) trick as the caption:
+   as a bare .band-item p it would get the body-paragraph margin of 0 and end
+   up jammed against the text above it. */
+.band-item .band-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 22px 0 0;
+}
+
+.band-item .band-stat strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.75rem;
+  line-height: 1;
+  color: var(--orange);
+}
+
+.band-item .band-stat span {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.1rem;
+  color: var(--stone-dark);
+}
+
+/* ---- Responsive ------------------------------------------------------------ */
+
+/* Tablet (and anything below the 4-column range): 2 columns; the vertical
+   dividers become a 1px rule under each item, headings may wrap and padding
+   drops to 28px top/bottom. The last row's two items drop the rule so the
+   section doesn't end on a floating line. */
+@media (max-width: 1024px) {
+  .band-grid {
+    grid-template-columns: repeat(2, 1fr);
+    /* rows are 2-across with full-width rules under each item, so the items in
+       a row must share one height again — the desktop align-items: start would
+       stagger their border-bottoms mid-row */
+    align-items: stretch;
+  }
+
+  .band-item {
+    padding: 28px 0 28px 24px;
+    border-right: none;
+    border-bottom: 1px solid var(--band-divider);
+  }
+
+  /* Left column starts flush with the container edge; the right column keeps
+     a 24px gutter so text never collides across the (now invisible) vertical
+     split — same 24px minimum as the desktop dividers. */
+  .band-item:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  .band-item:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+}
+
+/* Mobile: 1 column, headline row stacks. */
+@media (max-width: 640px) {
+  .band-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+
+  .band-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Single column: no side gutter — the 24px inset the 2-column rule gives
+     even items must not survive here. */
+  .band-item,
+  .band-item:nth-child(odd) {
+    padding: 28px 0;
+  }
+
+  /* Back to one rule under every item except the very last. */
+  .band-item:nth-last-child(-n + 2):not(:last-child) {
+    border-bottom: 1px solid var(--band-divider);
+  }
+
+  .band-item:last-child {
+    border-bottom: none;
+  }
+}
