@@ -506,14 +506,25 @@ tbody tr:hover {
   color: #2563eb;
 }
 
-/* Session review stars (Reviews page) */
-.rv-admin-stars {
-  display: inline-flex;
-  gap: 1px;
-  font-size: 0.9rem;
-  line-height: 1;
-  letter-spacing: 1px;
+/* Session review quote (Reviews page) — mirrors the site's review cards */
+.rv-admin-quote {
+  font-family: var(--font-body, 'Work Sans', sans-serif);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
+
+.rv-admin-quote::before,
+.rv-admin-quote::after {
+  font-family: var(--font-display, Oswald, sans-serif);
+  color: #F47321;
+  font-size: 1.25em;
+  line-height: 0;
+  vertical-align: -0.1em;
+}
+
+.rv-admin-quote::before { content: '“'; }
+.rv-admin-quote::after { content: '”'; }
 
 
 /* =========================== EMAIL VIEW MODAL =========================== */

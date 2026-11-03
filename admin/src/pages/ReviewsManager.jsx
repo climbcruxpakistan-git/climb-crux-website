@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { getSessionReviews, approveSessionReview, rejectSessionReview, deleteSessionReview, createSessionReview, updateSessionReview } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
-import { formatDate } from '../formatDate.js'
 
 /**
  * Session review moderation — Public & Private reviews live in one admin
@@ -36,8 +35,8 @@ const STATUS_LABEL = {
 }
 
 const TYPE_LABEL = {
-  PUBLIC: 'Public Session',
-  PRIVATE: 'Private Session',
+  PUBLIC: 'Public sessions',
+  PRIVATE: 'Private premium',
 }
 
 export default function ReviewsManager() {
@@ -128,7 +127,7 @@ export default function ReviewsManager() {
   const canSubmit = form.name.trim().length > 0 && form.comment.trim().length > 0
 
   async function handleApprove(review) {
-    if (!confirm(`Approve this ${TYPE_LABEL[review.reviewType]} review from ${review.name}?\n\nIt will become publicly visible on the website.`)) return
+    if (!confirm(`Approve this review from ${review.name}?\n\nIt will become publicly visible on the ${TYPE_LABEL[review.reviewType]} page.`)) return
     setActing(true)
     try {
       await approveSessionReview(review.id)
@@ -224,9 +223,8 @@ export default function ReviewsManager() {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Type</th>
-                    <th>Comment</th>
-                    <th>Date</th>
+                    <th>Page</th>
+                    <th>Review</th>
                     <th>Status</th>
                     <th style={{ width: 170 }}>Actions</th>
                   </tr>
@@ -237,9 +235,10 @@ export default function ReviewsManager() {
                       <td><strong>{r.name}</strong></td>
                       <td>{typeBadge(r.reviewType)}</td>
                       <td className="cell-truncate" title={r.comment || ''}>
-                        {r.comment || <span className="cell-muted">— no comment —</span>}
+                        {r.comment
+                          ? <span className="rv-admin-quote">{r.comment}</span>
+                          : <span className="cell-muted">— no review text —</span>}
                       </td>
-                      <td>{formatDate(r.reviewDate || r.createdAt)}</td>
                       <td>
                         <span className={`badge ${STATUS_BADGE[r.status] || 'badge-gray'}`}>
                           {STATUS_LABEL[r.status] || r.status}
@@ -301,8 +300,8 @@ export default function ReviewsManager() {
       {deleting && (
         <Modal title={`Delete review — ${deleting.name}`} onClose={() => setDeleting(null)}>
           <p style={{ margin: '0 0 16px', color: '#666', fontSize: '0.85rem', lineHeight: 1.6 }}>
-            Permanently delete this {TYPE_LABEL[deleting.reviewType]} review from{' '}
-            <strong>{deleting.name}</strong>? This cannot be undone.
+            Permanently delete this review from <strong>{deleting.name}</strong> on the{' '}
+            {TYPE_LABEL[deleting.reviewType]} page? This cannot be undone.
           </p>
           {editing && (
             <div className="payment-detail-card" style={{ marginBottom: 16 }}>

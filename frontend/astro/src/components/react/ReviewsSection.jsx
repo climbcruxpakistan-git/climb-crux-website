@@ -2,9 +2,22 @@ import { useEffect, useRef, useState } from 'react'
 import { getSessionReviews } from '../../lib/api.js'
 
 /**
- * One-card-at-a-time review slider, shown on the sessions and
- * private/premium pages. Newest first (server sorts by reviewDate).
+ * One-card-at-a-time review slider with peeking neighbours, shown on the
+ * sessions and private/premium pages. Newest first (server sorts by
+ * reviewDate).
+ *
+ * Position model: every card carries data-pos relative to the active review,
+ * wrap-around style — 0 = active, -1 = previous, +1 = next, ±2+ = hidden.
+ * data-dir (left/right) tells CSS which way an offscreen card leaves/enters.
+ * All cards stack in one grid cell, so the slider is as tall as the tallest
+ * card and never jumps while sliding.
+ *
+ * No DOM nodes are duplicated for looping — with exactly 2 reviews, the only
+ * other review has to peek on BOTH sides, so it is rendered a second time as
+ * an aria-hidden twin (keyed by index so it re-mounts instead of sliding
+ * across the front).
  */
+
 export default function ReviewsSection({ type = 'public' }) {
   const [reviews, setReviews] = useState([])
   const [status, setStatus] = useState('loading') // loading | ready
@@ -42,17 +55,46 @@ export default function ReviewsSection({ type = 'public' }) {
     touchStartX.current = null
   }
 
-  /** Card's own date, shown as "Month YYYY". */
-  const monthYearFor = (fetchedAt, createdAt) =>
-    new Date(fetchedAt || createdAt || Date.now()).toLocaleDateString(
-      'en-US',
-      { month: 'long', year: 'numeric' }
-    )
+  /**
+   * Position of review i relative to the active one, wrapped to the shortest
+   * path around the loop: -1 (previous), 0 (active), +1 (next), ±2+ (hidden).
+   * This is what fills the peeks at both ends of the list without clones.
+   */
+  const relativePos = (i) => {
+    let d = (i - index) % count
+    if (d > count / 2) d -= count
+    if (d < -count / 2) d += count
+    return d
+  }
+
+  const renderCard = (r, { key, pos, isLatest }) => (
+    <article
+      key={key}
+      className="rv-card"
+      data-pos={pos}
+      data-dir={pos < 0 ? 'left' : 'right'}
+      aria-hidden={pos !== 0}
+      onClick={pos !== 0 ? () => setIndex(reviews.indexOf(r)) : undefined}
+    >
+      {isLatest && <span className="rv-latest-tag">Latest</span>}
+
+      <p className="rv-text">
+        <span className="rv-qm">“</span>
+        {r.comment}
+        <span className="rv-qm">”</span>
+      </p>
+
+      <div className="rv-footer">
+        <strong className="rv-name">{r.name}</strong>
+      </div>
+    </article>
+  )
 
   return (
     <section className="rv-section">
       <div className="wrap">
         <h2 className="rv-heading">What climbers say</h2>
+
         <div className="rv-slider" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           {count > 1 && (
             <button
@@ -65,21 +107,16 @@ export default function ReviewsSection({ type = 'public' }) {
           )}
 
           <div className="rv-window">
-            <div
-              className="rv-track"
-              style={{ transform: `translateX(-${index * 100}%)`, transition: 'transform 0.55s ease' }}
-            >
-              {reviews.map((r, i) => (
-                <article className="rv-card" key={r.id}>
-                  <div className="rv-quote" aria-hidden="true">“</div>
-                  <p className="rv-text">{r.comment}</p>
-                  {i === 0 && <span className="rv-latest-tag">Latest</span>}
-                  <div className="rv-meta">
-                    <strong className="rv-name">{r.name}</strong>
-                    <span className="rv-date">{monthYearFor(r.reviewDate, r.createdAt)}</span>
-                  </div>
-                </article>
-              ))}
+            <div className="rv-cards">
+              {reviews.map((r, i) =>
+                renderCard(r, { key: r.id, pos: relativePos(i), isLatest: i === 0 })
+              )}
+              {count === 2 &&
+                renderCard(reviews[(index + 1) % count], {
+                  key: `twin-${index}`,
+                  pos: -relativePos((index + 1) % count),
+                  isLatest: (index + 1) % count === 0,
+                })}
             </div>
           </div>
 
