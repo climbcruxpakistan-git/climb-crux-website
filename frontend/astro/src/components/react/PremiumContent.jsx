@@ -3,10 +3,10 @@ import { getPlans, getSessionContent } from '../../lib/api'
 import BandSection from './BandSection.jsx'
 
 const DEFAULT_CUSTOM_ITEMS = [
-  { h: 'Route & difficulty', p: 'Pick the grade you want to work — from an easy confidence climb to our toughest premium line.' },
-  { h: 'Group size & mix', p: 'Go solo, bring your own group, or fold in a friend or two. You set the roster.' },
-  { h: 'Pacing & duration', p: "Half-day, full-day, or a multi-session block built around a goal you're training toward." },
-  { h: 'Coaching focus', p: 'Technique, endurance, fear management, or grade progression — tell us the focus, we build the plan.' },
+  { h: 'Climbing difficulty', p: "Choose the climbing difficulty you want to try, from easy routes to more challenging climbs for experienced climbers." },
+  { h: 'Group size', p: "Come on your own, bring your own group or invite a few friends. We'll arrange the session according to your group size." },
+  { h: 'Session duration', p: 'Choose a half-day, full-day, or multiple sessions based on your availability and climbing goals.' },
+  { h: 'Training focus', p: "Tell us what you'd like to focus on, whether it's improving your climbing technique, building endurance or joining a specific climbing workshop." },
 ]
 
 const DEFAULT_CUSTOM_FEATURES = ['Pick your own date, time & group size', 'Choose the grade and climbing focus', 'Solo, small group, or large private group', 'Full gear & certified instructor included']

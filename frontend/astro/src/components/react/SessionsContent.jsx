@@ -13,9 +13,9 @@ function formatShortDate(iso) {
 }
 
 const DEFAULT_INCLUDED = [
-  { h: 'Certified guidance', p: 'Every session is led by a certified climbing instructor, start to finish.' },
-  { h: 'Full safety gear', p: 'Harness, helmet, rope, belay setup, and climbing shoes provided.' },
-  { h: 'Beginner-friendly routes', p: 'Routes are set for first-timers, roughly grade 4–6a on the French scale.' },
+  { h: 'Certified guidance', p: 'Every session is led by a certified climbing instructor.' },
+  { h: 'Full safety gear', p: 'Harness, helmet, rope and climbing shoes provided.' },
+  { h: 'Beginner-friendly routes', p: 'Routes are set for first timers, roughly grade 4–6a.' },
   { h: 'Small groups', p: "Group sessions capped at 20 climbers so there's plenty of room on the wall." },
 ]
 
