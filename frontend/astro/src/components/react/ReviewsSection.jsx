@@ -31,8 +31,6 @@ export default function ReviewsSection({ type = 'public' }) {
   if (status !== 'ready' || reviews.length === 0) return null
 
   const count = reviews.length
-  const review = reviews[index]
-  const isLatest = index === 0
 
   const go = (delta) => setIndex((i) => (i + delta + count) % count)
 
@@ -44,8 +42,12 @@ export default function ReviewsSection({ type = 'public' }) {
     touchStartX.current = null
   }
 
-  const date = new Date(review.reviewDate || review.createdAt || Date.now())
-  const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  /** Card's own date, shown as "Month YYYY". */
+  const monthYearFor = (fetchedAt, createdAt) =>
+    new Date(fetchedAt || createdAt || Date.now()).toLocaleDateString(
+      'en-US',
+      { month: 'long', year: 'numeric' }
+    )
 
   return (
     <section className="rv-section">
@@ -71,10 +73,10 @@ export default function ReviewsSection({ type = 'public' }) {
                 <article className="rv-card" key={r.id}>
                   <div className="rv-quote" aria-hidden="true">“</div>
                   <p className="rv-text">{r.comment}</p>
-                  {isLatest && i === 0 && <span className="rv-latest-tag">Latest</span>}
+                  {i === 0 && <span className="rv-latest-tag">Latest</span>}
                   <div className="rv-meta">
                     <strong className="rv-name">{r.name}</strong>
-                    <span className="rv-date">{monthYear}</span>
+                    <span className="rv-date">{monthYearFor(r.reviewDate, r.createdAt)}</span>
                   </div>
                 </article>
               ))}
