@@ -8,7 +8,7 @@ import Booking from '../models/Booking.js'
 import Payment from '../models/Payment.js'
 import Session from '../models/Session.js'
 import { BOOKING_TERMS } from '../membershipForm.js'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireAdmin, optionalAdmin } from '../middleware/auth.js'
 import { generateBookingPdf } from '../services/pdfService.js'
 import { nextBookingReference } from '../services/sequence.js'
 import {
@@ -27,6 +27,44 @@ function todayStr() {
   const day = String(d.getDate()).padStart(2, '0')
   return `${d.getFullYear()}-${m}-${day}`
 }
+
+const NON_PRIVATE = ['public', 'membership', 'custom-group']
+const PENDING_PAYMENT_HOLD_HOURS = 48
+const MAX_DAYS_AHEAD = 30
+
+const isPrivateType = (sessionId) => !NON_PRIVATE.includes(String(sessionId || '').toLowerCase())
+
+const karachiToday = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date())
+
+const isValidDateStr = (s) =>
+  typeof s === 'string' &&
+  /^\d{4}-\d{2}-\d{2}$/.test(s) &&
+  new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s
+
+/** Add days to a YYYY-MM-DD string (UTC-safe). */
+const addDaysStr = (dateStr, days) => {
+  const d = new Date(`${dateStr}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+const activeBookingFilter = () => ({
+  $or: [
+    { booking_status: { $in: ['pending_verification', 'confirmed'] } },
+    {
+      booking_status: 'pending_payment',
+      created_at: { $gte: new Date(Date.now() - PENDING_PAYMENT_HOLD_HOURS * 3600 * 1000) },
+    },
+  ],
+})
+
+const isDateBooked = async (date) =>
+  !!(await Booking.exists({
+    date,
+    session_id: { $nin: NON_PRIVATE },
+    ...activeBookingFilter(),
+  }))
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const tmpDir = path.join(__dirname, '..', 'tmp')
@@ -83,9 +121,12 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/', optionalAdmin, async (req, res, next) => {
   try {
     const { customer_name, customer_email } = req.body
+    const session_id = String(req.body.session_id || '')
+    const date = String(req.body.date || '')
+    const isAdminRequest = req.user?.role === 'admin'
     if (!customer_name || !customer_email) {
       return res.status(400).json({ error: 'customer_name and customer_email are required' })
     }
@@ -106,7 +147,7 @@ router.post('/', async (req, res, next) => {
     // customers can never pick an arbitrary date. The chosen session's details
     // are snapshotted onto the booking so later edits to the session never
     // rewrite the historical booking record.
-    const isPublic = String(req.body.session_id || '').toLowerCase() === 'public'
+    const isPublic = session_id.toLowerCase() === 'public'
     let sessionSnapshot = null
     if (isPublic) {
       const sessionId = String(req.body.public_session_id || '').trim()
@@ -145,6 +186,27 @@ router.post('/', async (req, res, next) => {
       }
     }
 
+    if (!isAdminRequest && isPrivateType(session_id)) {
+      if (!isValidDateStr(date)) {
+        return res.status(400).json({ code: 'INVALID_DATE', error: 'Please choose a valid date.' })
+      }
+      if (date < karachiToday()) {
+        return res.status(400).json({ code: 'PAST_DATE', error: 'Past dates cannot be booked.' })
+      }
+      if (date > addDaysStr(karachiToday(), MAX_DAYS_AHEAD)) {
+        return res.status(400).json({
+          code: 'DATE_TOO_FAR',
+          error: `Private sessions can only be booked up to ${MAX_DAYS_AHEAD} days in advance.`,
+        })
+      }
+      if (await isDateBooked(date)) {
+        return res.status(409).json({
+          code: 'DATE_BOOKED',
+          error: 'This date is already booked. Please confirm with Team Climb Crux on WhatsApp.',
+        })
+      }
+    }
+
     // Auto-generate booking number: CCS-XXXXX (sequential)
     // Never-repeating atomic counter — two bookings can never receive the
     // same number (even booked simultaneously, or after older bookings are
@@ -161,10 +223,10 @@ router.post('/', async (req, res, next) => {
       emergency_contact_name: req.body.emergency_contact_name || '',
       emergency_contact_phone: req.body.emergency_contact_phone || '',
       agreed_terms: agreedTerms,
-      session_id: req.body.session_id || '',
+      session_id,
       date: isPublic
-        ? (sessionSnapshot?.session_date || req.body.date || '')
-        : (req.body.date || ''),
+        ? (sessionSnapshot?.session_date || date)
+        : date,
       time: isPublic ? '' : String(req.body.time || ''),
       ...(sessionSnapshot || {}),
       participants: req.body.participants || 1,
@@ -194,6 +256,19 @@ router.post('/', async (req, res, next) => {
 })
 
 // ── Static sub-routes (MUST be before /:id) ────────────────────────
+
+router.get('/booked-dates', async (req, res, next) => {
+  try {
+    const rows = await Booking.find({
+      date: { $gte: karachiToday() },
+      session_id: { $nin: NON_PRIVATE },
+      ...activeBookingFilter(),
+    }).select('date -_id').lean()
+
+    res.set('Cache-Control', 'no-store')
+    res.json({ dates: [...new Set(rows.map((r) => r.date))] })
+  } catch (err) { next(err) }
+})
 
 // GET /api/bookings/search?number=CCS-00110 — admin-only exact search.
 // Server-side lookup by booking number so the dashboard never loads the full

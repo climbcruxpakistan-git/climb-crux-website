@@ -19,7 +19,16 @@ async function postJson(url, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  if (!res.ok) {
+    let data = {}
+    try {
+      data = await res.json()
+    } catch {}
+    const err = new Error(`API error: ${res.status}`)
+    err.status = res.status
+    err.code = data?.code
+    throw err
+  }
   return res.json()
 }
 
@@ -93,6 +102,16 @@ export async function getBookingByNumber(bookingNumber) {
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   return mapId(await res.json())
 }
+
+export async function getBookedDates() {
+  const res = await fetch(`${API}/bookings/booked-dates`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const data = await res.json()
+  return data.dates || []
+}
+
+export const getTodayKarachi = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date())
 
 export async function createPayment(bookingId, data) {
   // Multipart (with payment screenshot) — send as FormData without a Content-Type header.

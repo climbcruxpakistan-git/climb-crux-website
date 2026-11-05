@@ -45,3 +45,25 @@ export function requireAdminStrict(req, res, next) {
   req.user = decoded
   next()
 }
+
+export function optionalAdmin(req, res, next) {
+  const header = req.headers.authorization
+  if (header?.startsWith('Bearer ')) {
+    const token = header.slice(7)
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET)
+      if (decoded?.role === 'admin') req.user = decoded
+    } catch (err) {
+      // An admin whose session expired must be told to log in again — falling
+      // through would surface PAST_DATE / DATE_BOOKED instead. Any other bad
+      // token (or a customer's stale one) is simply treated as a public request.
+      if (err.name === 'TokenExpiredError') {
+        const decoded = jwt.decode(token)
+        if (decoded?.role === 'admin') {
+          return res.status(401).json({ error: 'Session expired. Please log in again.' })
+        }
+      }
+    }
+  }
+  next()
+}

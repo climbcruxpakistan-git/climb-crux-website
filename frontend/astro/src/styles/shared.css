@@ -405,6 +405,176 @@
   margin-top: 4px;
 }
 
+.date-notice {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--orange);
+  background: var(--chalk-dim);
+  color: var(--ink);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.date-notice p {
+  margin: 6px 0 0;
+}
+
+.btn-whatsapp {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 9px 16px;
+  background: #25d366;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-whatsapp:hover {
+  background: #1fb955;
+}
+
+/* Booking calendar (Book Now — private/premium date picker) */
+.cc-cal {
+  max-width: 380px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e5ded2;
+  border-radius: 12px;
+}
+
+.cc-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cc-cal-title {
+  font-weight: 700;
+}
+
+.cc-cal-nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e5ded2;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.cc-cal-nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cc-cal-weekdays,
+.cc-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cc-cal-weekdays span {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b6b6b;
+  padding: 4px 0;
+}
+
+.cc-day {
+  aspect-ratio: 1;
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+  cursor: pointer;
+}
+
+.cc-day.is-free {
+  background: #1b8a4b;
+}
+
+.cc-day.is-free:hover {
+  background: #157040;
+}
+
+.cc-day.is-booked {
+  background: repeating-linear-gradient(135deg, #c2410c 0 6px, #a93509 6px 12px);
+}
+
+.cc-day.is-booked:hover {
+  filter: brightness(1.12);
+}
+
+.cc-day.is-past {
+  background: #eee9e0;
+  color: #a7a39a;
+  font-weight: 400;
+  cursor: not-allowed;
+}
+
+.cc-day.is-today:not(.is-selected) {
+  outline: 2px dashed #1f1f21;
+  outline-offset: -3px;
+}
+
+.cc-day.is-selected {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 5px #1f1f21;
+  position: relative;
+}
+
+.cc-day:focus-visible,
+.cc-cal-nav:focus-visible {
+  outline: 3px solid #1f1f21;
+  outline-offset: 2px;
+}
+
+.cc-cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+
+.cc-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+.cc-swatch.free {
+  background: #1b8a4b;
+}
+
+.cc-swatch.booked {
+  background: repeating-linear-gradient(135deg, #c2410c 0 4px, #a93509 4px 8px);
+}
+
+.cc-swatch.past {
+  background: #eee9e0;
+  border: 1px solid #d8d2c6;
+}
+
+.cc-cal-hint {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.date-selected {
+  margin: 8px 0 0;
+  font-weight: 600;
+  color: #1b8a4b;
+}
+
 /* Session details panel (Book Now — admin-managed public sessions) */
 .session-details-panel {
   background: var(--chalk-dim);

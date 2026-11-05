@@ -4,6 +4,9 @@ node_modules/
 # Build outputs
 dist/
 
+# Local design screenshots
+frontend/astro/.shots/
+
 # Environment variables
 .env
 

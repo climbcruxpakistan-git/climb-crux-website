@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
-import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl } from '../api.js'
-import { WHATSAPP_DISPLAY } from '../../../../shared/contact.js'
+import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl, getBookedDates, getTodayKarachi } from '../api.js'
+import { WHATSAPP_DISPLAY, WHATSAPP_WA_ME } from '../../../../shared/contact.js'
+import BookingCalendar, { formatDateLabel } from '../components/BookingCalendar.jsx'
 
 /** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
 function formatLongDate(iso) {
@@ -12,15 +13,6 @@ function formatLongDate(iso) {
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   return `${weekdays[d.getDay()]}, ${m[3]}-${m[2]}-${m[1]}`
-}
-
-/** Get today's date as YYYY-MM-DD for the min attribute on date input */
-function getTodayString() {
-  const d = new Date()
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
 }
 
 // Hardcoded options that don't come from the API
@@ -60,6 +52,13 @@ export default function BookNow() {
   const [selectedPublicSession, setSelectedPublicSession] = useState(null)
   const [loaded, setLoaded] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState([])
+  const [selectedDate, setSelectedDate] = useState('')
+  const [bookedDates, setBookedDates] = useState([])
+  const todayStr = getTodayKarachi()
+
+  useEffect(() => {
+    getBookedDates().then(setBookedDates).catch(() => {})
+  }, [])
 
   function toggleTerm(term) {
     setAgreedTerms((prev) =>
@@ -127,6 +126,17 @@ export default function BookNow() {
 
   const isCustom = sessionType === 'custom-group'
   const isMembership = sessionType === 'membership'
+  const isPrivateSession =
+    Boolean(sessionType) && !['public', 'membership', 'custom-group'].includes(sessionType)
+  const isPastDate =
+    Boolean(isPrivateSession && selectedDate && selectedDate < todayStr)
+  const isBooked =
+    Boolean(isPrivateSession && selectedDate && bookedDates.includes(selectedDate))
+  const waLink = selectedDate
+    ? `${WHATSAPP_WA_ME}?text=${encodeURIComponent(
+        `Hi Climb Crux team, I'd like to check availability for a private/premium session on ${formatDateLabel(selectedDate)}.`
+      )}`
+    : WHATSAPP_WA_ME
   // Public sessions are only held on announced dates — customers may only pick
   // one of the sessions the club has scheduled (admin → Sessions).
   const publicSessions = sessionsDisabled ? [] : (announcedSessions || [])
@@ -148,6 +158,12 @@ export default function BookNow() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    // The hidden date input skips the browser's required check.
+    if (isPrivateSession && !selectedDate) {
+      setError('Please select a date from the calendar.')
+      return
+    }
+    if (isBooked || isPastDate) return
     if (isCustom) return  // custom sessions are booked via email
     if (isMembership) return  // membership is applied for via the membership section
     if (sessionType === 'public') {
@@ -176,7 +192,7 @@ export default function BookNow() {
       emergency_contact_name: form['emergency-contact-name']?.value || '',
       emergency_contact_phone: form['emergency-contact-phone']?.value || '',
       session_id: sessionType,
-      date: sessionType === 'public' ? (selectedPublicSession?.date || '') : form['preferred-date'].value,
+      date: sessionType === 'public' ? (selectedPublicSession?.date || '') : selectedDate,
       time: sessionType === 'public' ? '' : (form['preferred-time']?.value || ''),
       // Snapshot of the chosen announced session — future edits to the session
       // never change the historical details of this booking.
@@ -204,7 +220,18 @@ export default function BookNow() {
       const bookingNumber = created.booking_number || `CCS-${String(created.id || '').slice(-5).padStart(5, '0')}`
       navigate(`/booking/${encodeURIComponent(bookingNumber)}/payment`)
     } catch (err) {
-      setError('Failed to create booking. Please try again.')
+      if (err.code === 'DATE_BOOKED') {
+        setError('This date was just booked by someone else. Please confirm on WhatsApp or choose another date.')
+        getBookedDates().then(setBookedDates).catch(() => {})
+      } else if (err.code === 'PAST_DATE') {
+        setError('Past dates cannot be booked. Please choose today or a future date.')
+      } else if (err.code === 'DATE_TOO_FAR') {
+        setError('Private sessions can be booked up to 30 days in advance. Please choose a closer date.')
+      } else if (err.code === 'INVALID_DATE') {
+        setError('Please choose a valid date.')
+      } else {
+        setError('Failed to create booking. Please try again.')
+      }
     } finally {
       setSending(false)
     }
@@ -333,8 +360,32 @@ export default function BookNow() {
                   ) : (
                     <>
                       <div className="field">
-                        <label htmlFor="preferred-date">Preferred date</label>
-                        <input id="preferred-date" name="preferred-date" type="date" min={getTodayString()} required />
+                        <label>Preferred date</label>
+                        <BookingCalendar
+                          value={selectedDate}
+                          onChange={setSelectedDate}
+                          bookedDates={bookedDates}
+                          todayStr={todayStr}
+                        />
+                        {/* keeps the value available to the existing submit code */}
+                        <input type="hidden" id="preferred-date" name="preferred-date" value={selectedDate} />
+
+                        {selectedDate && !isBooked && (
+                          <p className="date-selected">Selected: {formatDateLabel(selectedDate)}</p>
+                        )}
+
+                        {isBooked && (
+                          <div className="date-notice" role="alert">
+                            <strong>{formatDateLabel(selectedDate)} is already booked.</strong>
+                            <p>
+                              Our team may be fully booked that day, or training may still be possible.
+                              Please confirm with Team Climb Crux on WhatsApp for verification, or pick a green day.
+                            </p>
+                            <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
+                              Confirm on WhatsApp
+                            </a>
+                          </div>
+                        )}
                       </div>
                       <div className="field">
                         <label htmlFor="preferred-time">Preferred time</label>
@@ -481,7 +532,7 @@ export default function BookNow() {
 
               {!isCustom && !isMembership && (
                 <div className="form-actions" style={{ flexDirection: 'column' }}>
-                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || (sessionType === 'public' && (publicSessions.length === 0 || !selectedPublicSession)) || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
+                  <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || isBooked || isPastDate || (sessionType === 'public' && (publicSessions.length === 0 || !selectedPublicSession)) || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
                     {sending ? (
                       <><span className="btn-spinner" /> Creating booking…</>
                     ) : (
