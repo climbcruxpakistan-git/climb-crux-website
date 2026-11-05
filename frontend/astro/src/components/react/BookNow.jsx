@@ -1,449 +1,338 @@
-import { useState, useEffect, useRef } from 'react'
-import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl, getBookedDates, getTodayKarachi } from '../../lib/api'
-import { WHATSAPP_DISPLAY, WHATSAPP_WA_ME } from '../../../../../shared/contact.js'
-import BookingCalendar, { formatDateLabel } from './BookingCalendar'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import BookingCalendar, { prettyDate } from './BookingCalendar.jsx'
+import {
+  createBooking,
+  getAvailableSessions,
+  getBookedDates,
+  getMembershipFormUrl,
+  getPlans,
+  getSessionContent,
+} from '../../lib/api'
+import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js'
+import './booknow.css'
 
-function parsePrice(val) {
-  if (!val) return 0
-  return Number(String(val).replace(/,/g, '')) || 0
-}
+const CUSTOM_GROUP_EMAIL = 'climbcruxpakistan@gmail.com'
+const PRIVATE_MAX_PEOPLE = 20
+const TIME_SLOTS = [['06:30', '6:30 AM'], ['08:00', '8:00 AM'], ['10:00', '10:00 AM'], ['12:00', '12:00 PM'], ['15:00', '3:00 PM'], ['16:30', '4:30 PM']]
 
-/** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
-function formatLongDate(iso) {
-  if (!iso) return ''
-  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return String(iso)
-  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
-  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  return `${weekdays[d.getDay()]}, ${m[3]}-${m[2]}-${m[1]}`
-}
-
-// Session booking Terms & Conditions — every box must be ticked to continue.
-// Kept in sync with backend/src/membershipForm.js BOOKING_TERMS.
+// Keep identical to the existing BOOKING_TERMS (also in backend/src/membershipForm.js).
 const BOOKING_TERMS = [
   'I agree to follow all instructions given by Climb Crux instructors and staff.',
   'I understand that rock climbing involves inherent risks, including the risk of injury. I voluntarily choose to participate, accept these risks and agree not to hold Climb Crux, its instructors, staff or volunteers responsible for any injury or loss resulting from my participation.',
   'I have read, understood and agree to the Climb Crux Liability Waiver and Terms & Conditions.',
 ]
-
-/** Read the ?type= query param directly in the browser as a fallback */
-function getUrlType() {
-  if (typeof window === 'undefined') return ''
-  return new URLSearchParams(window.location.search).get('type') || ''
+const ERRORS = {
+  DATE_BOOKED: 'That day was just booked. Pick another day or confirm with us on WhatsApp.',
+  PAST_DATE: 'That date has passed. Please pick a date from today onwards.',
+  DATE_TOO_FAR: 'Private sessions can be booked up to 30 days ahead.',
+  INVALID_DATE: 'That date isn’t valid. Please pick it again from the calendar.',
 }
 
+/** Prices come from the CMS as display strings ("8,000"). */
+const parsePrice = (val) => (val ? Number(String(val).replace(/,/g, '')) || 0 : 0)
+const fmt = (n) => `PKR ${Number(n).toLocaleString('en-PK')}`
+const isPrivate = (t) => t === 'private-starter' || t === 'private-advanced'
+const waLink = (text) => `${WHATSAPP_WA_ME}?text=${encodeURIComponent(text)}`
+
+/* ── Small pieces ───────────────────────────────────────────────────────── */
+function Select({ value, options, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    const away = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', away)
+    return () => document.removeEventListener('mousedown', away)
+  }, [])
+  const cur = options.find((o) => o.value === value)
+  const pick = (v) => { onChange(v); setOpen(false) }
+  return (
+    <div className="bn-select" ref={ref} onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
+      <button type="button" id="session-type" className={`bn-select-btn${open ? ' is-open' : ''}`}
+        aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span className="bn-opt">
+          {cur ? (<><b>{cur.label}</b><small>{cur.desc}</small></>) : <b className="bn-placeholder">Choose a session type</b>}
+        </span>
+        {cur?.price != null && <span className="bn-price">{fmt(cur.price)}</span>}
+        <svg className="bn-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      {open && (
+        <ul className="bn-menu" role="listbox">
+          {options.map((o) => (
+            <li key={o.value} role="option" aria-selected={o.value === value} tabIndex={0}
+              className={o.value === value ? 'is-on' : ''} onClick={() => pick(o.value)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), pick(o.value))}>
+              <span className="bn-opt"><b>{o.label}</b><small>{o.desc}</small></span>
+              {o.price != null && <span className="bn-price">{fmt(o.price)}</span>}
+              {o.value === value && <svg width="18" height="18" viewBox="0 0 14 14"><path d="M2 7.5l3.3 3.2L12 3.5" stroke="currentColor" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+const Field = ({ label, id, children }) => (
+  <div className="bn-field"><label htmlFor={id}>{label}</label>{children}</div>
+)
+
+/* ── Page ───────────────────────────────────────────────────────────────── */
 export default function BookNow({ preselected = '' }) {
-  const effectivePreselected = preselected || getUrlType()
-  const [error, setError] = useState('')
-  const [sending, setSending] = useState(false)
-  const [sessionType, setSessionType] = useState(effectivePreselected || '')
-  const [participants, setParticipants] = useState(1)
-  const [pricing, setPricing] = useState({ publicPrice: 2500 })
-  const [membership, setMembership] = useState({})
-  const [planOptions, setPlanOptions] = useState([])
-  const [announcedSessions, setAnnouncedSessions] = useState([])
+  const [plans, setPlans] = useState([])
+  const [sessions, setSessions] = useState([])
   const [sessionsDisabled, setSessionsDisabled] = useState(false)
-  const [selectedPublicSession, setSelectedPublicSession] = useState(null)
-  const [loaded, setLoaded] = useState(false)
-  const [agreedTerms, setAgreedTerms] = useState([])
-  const [selectedDate, setSelectedDate] = useState('')
   const [bookedDates, setBookedDates] = useState([])
-  const [dateError, setDateError] = useState(false)
-  const dateFieldRef = useRef(null)
-  const todayStr = getTodayKarachi()
+  const [membershipTitle, setMembershipTitle] = useState('Monthly Membership')
+  const [publicPrice, setPublicPrice] = useState(2500)
+  const [loaded, setLoaded] = useState(false)
+
+  const [type, setType] = useState('')
+  const [f, setF] = useState({ name: '', phone: '', email: '', ecName: '', ecPhone: '' })
+  const [people, setPeople] = useState(1)
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const [otherTime, setOtherTime] = useState(false)
+  const [sessionId, setSessionId] = useState('')
+  const [agreed, setAgreed] = useState([])
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
+  const [tried, setTried] = useState(false)
 
   useEffect(() => {
-    getBookedDates().then(setBookedDates).catch(() => {})
+    Promise.allSettled([
+      getSessionContent(),
+      getPlans(),
+      getAvailableSessions(),
+      getBookedDates(),
+    ]).then(([c, p, s, b]) => {
+      if (c.status === 'fulfilled' && c.value) {
+        setPublicPrice(parsePrice(c.value.pricingPrice) || 2500)
+        setMembershipTitle(c.value.membership?.title || 'Monthly Membership')
+        setSessionsDisabled(Boolean(c.value.sessionsDisabled))
+      }
+      if (p.status === 'fulfilled') setPlans(Array.isArray(p.value) ? p.value : [])
+      if (s.status === 'fulfilled') setSessions(Array.isArray(s.value) ? s.value : [])
+      if (b.status === 'fulfilled') setBookedDates(Array.isArray(b.value) ? b.value : [])
+      setLoaded(true)
+    })
   }, [])
 
-  function toggleTerm(term) {
-    setAgreedTerms((prev) =>
-      prev.includes(term) ? prev.filter((t) => t !== term) : [...prev, term]
-    )
-  }
+  // Plans are keyed by `type`, which is also the value sent as `session_id`.
+  const starter = plans.find((p) => p.type === 'private-starter')
+  const advanced = plans.find((p) => p.type === 'private-advanced')
+  const priceOf = (p) => (p ? parsePrice(p.price) : null)
 
-  useEffect(() => {
-    Promise.all([getSessionContent(), getPlans(), getAvailableSessions().catch(() => [])])
-      .then(([content, plans, sessions]) => {
-        const publicPrice = parsePrice(content.pricingPrice) || 2500
-        setPricing({ publicPrice })
-        setMembership(content.membership || {})
-        const privatePlans = (plans || [])
-          .filter((p) => p.type === 'private-starter' || p.type === 'private-advanced')
-          .map((p) => ({
-            value: p.type,
-            label: p.title,
-            price: parsePrice(p.price),
-            desc: `${p.title} — PKR ${p.price}/person`,
-          }))
-        setPlanOptions(privatePlans)
-        setAnnouncedSessions(sessions || [])
-        setSessionsDisabled(content.sessionsDisabled || false)
-        const allValues = ['public', 'membership', 'custom-group', ...privatePlans.map((p) => p.value)]
-        if (effectivePreselected && allValues.includes(effectivePreselected)) {
-          setSessionType(effectivePreselected)
-        }
-        setLoaded(true)
-      })
-      .catch(() => {
-        setPricing({ publicPrice: 2500 })
-        setLoaded(true)
-      })
-  }, [effectivePreselected])
+  const options = useMemo(() => [
+    { value: 'public', label: 'Public Session', desc: 'Beginner-friendly climb with a small group' },
+    { value: 'membership', label: membershipTitle, desc: 'Discounted climbing all month long' },
+    ...(starter ? [{ value: 'private-starter', label: 'Starter Private', desc: 'Your own route, pace and instructor', price: priceOf(starter) }] : []),
+    ...(advanced ? [{ value: 'private-advanced', label: 'Advanced Private', desc: 'Higher grades, tailored coaching', price: priceOf(advanced) }] : []),
+    { value: 'custom-group', label: 'Customize Group Session', desc: 'A group session built around your team' },
+  ], [starter, advanced, membershipTitle])
 
-  const membershipPrice = parsePrice(membership.price) || 8000
+  // Honour ?type= only if it matches a real option.
+  useEffect(() => { if (loaded && !type && options.some((o) => o.value === preselected)) setType(preselected) }, [loaded]) // eslint-disable-line
 
-  const allSessionOptions = (() => {
-    const opts = []
-    opts.push({ value: 'public', label: 'Public Session', desc: 'Join a guided group session on Margalla Hills — every other Sunday.' })
-    opts.push({ value: 'membership', label: membership.title || 'Monthly Membership', desc: `${membership.sessionsIncluded || '4'} sessions / month — PKR ${membership.price || '8,000'} · save ${membership.discount || '20%'}` })
-    planOptions.forEach((po) => { opts.push({ value: po.value, label: po.label, desc: po.desc }) })
-    opts.push({ value: 'custom-group', label: 'Customize Group Session', desc: 'Build a session for your own group — pick the date, size, and focus.' })
-    return opts
-  })()
+  const publicSessions = sessionsDisabled ? [] : sessions
+  const session = publicSessions.find((s) => String(s.id ?? s._id) === sessionId)
+  const plan = type === 'private-starter' ? starter : type === 'private-advanced' ? advanced : null
+  const maxPeople = type === 'public'
+    ? Math.max(1, Math.min(PRIVATE_MAX_PEOPLE, Number(session?.remaining ?? PRIVATE_MAX_PEOPLE)))
+    : PRIVATE_MAX_PEOPLE
+  const perPerson = type === 'public' ? publicPrice : priceOf(plan) ?? 0
+  const total = perPerson * people
+  const isBooked = isPrivate(type) && bookedDates.includes(date)
 
-  const isCustom = sessionType === 'custom-group'
-  const isMembership = sessionType === 'membership'
-  const isPrivateSession =
-    Boolean(sessionType) && !['public', 'membership', 'custom-group'].includes(sessionType)
-  const isPastDate =
-    Boolean(isPrivateSession && selectedDate && selectedDate < todayStr)
-  const isBooked =
-    Boolean(isPrivateSession && selectedDate && bookedDates.includes(selectedDate))
-  const waLink = selectedDate
-    ? `${WHATSAPP_WA_ME}?text=${encodeURIComponent(
-        `Hi Climb Crux team, I'd like to check availability for a private/premium session on ${formatDateLabel(selectedDate)}.`
-      )}`
-    : WHATSAPP_WA_ME
-  // Public sessions are only held on announced dates — customers may only pick
-  // one of the sessions the club has scheduled (admin → Sessions).
-  const publicSessions = sessionsDisabled ? [] : (announcedSessions || [])
-  const perPersonPrice = (type) => {
-    if (type === 'public') return pricing.publicPrice
-    if (type === 'membership') return membershipPrice
-    const plan = planOptions.find((p) => p.value === type)
-    return plan ? plan.price : 0
-  }
-  const totalAmount = sessionType && !isCustom ? perPersonPrice(sessionType) * participants : 0
-  // Once a public session is chosen, the price summary shows its Session Name
-  // instead of the generic "Public Session" type label.
-  const sessionLabel = sessionType === 'public' && selectedPublicSession
-    ? (selectedPublicSession.title || 'Public Session')
-    : (allSessionOptions.find((t) => t.value === sessionType)?.label || sessionType)
+  const setField = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
+  const choose = (v) => { setType(v); setPeople(1); setDate(''); setTime(''); setOtherTime(false); setSessionId(''); setError(''); setTried(false) }
+  const clamp = (n) => setPeople(Math.min(maxPeople, Math.max(1, n || 1)))
+  const toggleTerm = (i) => setAgreed((a) => (a.includes(i) ? a.filter((x) => x !== i) : [...a, i]))
+  const allTerms = agreed.length === BOOKING_TERMS.length
+  const toggleAll = () => setAgreed(allTerms ? [] : BOOKING_TERMS.map((_, i) => i))
 
-  async function handleSubmit(e) {
+  const missing = (isPrivate(type) && !date) ? 'date' : (isPrivate(type) && !time) ? 'time' : (type === 'public' && !sessionId) ? 'session' : ''
+  const disabled = sending || !loaded || !type || !allTerms || isBooked || (type === 'public' && !sessionId)
+
+  async function submit(e) {
     e.preventDefault()
-    // The hidden date input skips the browser's required check, so put the
-    // message next to the calendar and bring it into view — otherwise the
-    // banner is far above the button and the click looks like it did nothing.
-    if (isPrivateSession && !selectedDate) {
-      setError('Please select a date from the calendar.')
-      setDateError(true)
-      dateFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setTried(true); setError('')
+    if (missing) {
+      setError(missing === 'session' ? 'Choose a public session to continue.' : `Choose a ${missing} to continue.`)
       return
     }
-    if (isBooked || isPastDate) return
-    if (isCustom) return
-    if (isMembership) return
-    if (sessionType === 'public') {
-      if (publicSessions.length === 0) {
-        setError('No public sessions are announced right now. Check the Sessions page for upcoming dates or book a private session.')
-        return
-      }
-      if (!selectedPublicSession) {
-        setError('Please choose an announced public session to continue.')
-        return
-      }
-    }
-    if (agreedTerms.length < BOOKING_TERMS.length) {
-      setError('Please tick all three Terms & Conditions to continue')
-      return
-    }
-    setError('')
     setSending(true)
-    const form = e.target
-    const data = {
-      customer_name: form['customer-name'].value,
-      customer_email: form['customer-email'].value,
-      customer_phone: form['customer-phone'].value,
-      emergency_contact_name: form['emergency-contact-name']?.value || '',
-      emergency_contact_phone: form['emergency-contact-phone']?.value || '',
-      session_id: sessionType,
-      date: sessionType === 'public' ? (selectedPublicSession?.date || '') : selectedDate,
-      time: sessionType === 'public' ? '' : (form['preferred-time']?.value || ''),
-      // Snapshot of the chosen announced session — future edits to the session
-      // never change the historical details of this booking.
-      ...(sessionType === 'public' && selectedPublicSession ? {
-        public_session_id: selectedPublicSession.id,
-        session_title: selectedPublicSession.title || '',
-        session_date: selectedPublicSession.date || '',
-        session_start_time: selectedPublicSession.startTime || '',
-        session_end_time: selectedPublicSession.endTime || '',
-        session_location: selectedPublicSession.locationName || '',
-        session_maps_url: selectedPublicSession.mapsUrl || '',
-        session_meeting_point: selectedPublicSession.meetingPoint || '',
-        session_meeting_point_maps_url: selectedPublicSession.meetingPointMapsUrl || '',
-        session_meeting_time: selectedPublicSession.meetingTime || '',
-      } : {}),
-      participants,
-      amount: totalAmount,
-      agreed_terms: agreedTerms,
-      booking_status: 'pending_payment',
-      payment_status: 'pending',
-    }
     try {
-      const created = await createBooking(data)
-      const bookingNumber = created.booking_number || `CCS-${String(created.id || '').slice(-5).padStart(5, '0')}`
-      window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/payment/`
-    } catch (err) {
-      if (err.code === 'DATE_BOOKED') {
-        setError('This date was just booked by someone else. Please confirm on WhatsApp or choose another date.')
-        getBookedDates().then(setBookedDates).catch(() => {})
-      } else if (err.code === 'PAST_DATE') {
-        setError('Past dates cannot be booked. Please choose today or a future date.')
-      } else if (err.code === 'DATE_TOO_FAR') {
-        setError('Private sessions can be booked up to 30 days in advance. Please choose a closer date.')
-      } else if (err.code === 'INVALID_DATE') {
-        setError('Please choose a valid date.')
-      } else {
-        setError('Failed to create booking. Please try again.')
+      const body = {
+        customer_name: f.name.trim(), customer_email: f.email.trim(), customer_phone: f.phone.trim(),
+        emergency_contact_name: f.ecName.trim(), emergency_contact_phone: f.ecPhone.trim(),
+        session_id: type,
+        date: type === 'public' ? (session?.date || '') : date,
+        time: type === 'public' ? '' : time,
+        ...(type === 'public' && session ? {
+          public_session_id: session.id ?? session._id,
+          session_title: session.title || '',
+          session_date: session.date || '',
+          session_start_time: session.startTime || '',
+          session_end_time: session.endTime || '',
+          session_location: session.locationName || '',
+          session_maps_url: session.mapsUrl || '',
+          session_meeting_point: session.meetingPoint || '',
+          session_meeting_point_maps_url: session.meetingPointMapsUrl || '',
+          session_meeting_time: session.meetingTime || '',
+        } : {}),
+        participants: people,
+        amount: total,
+        agreed_terms: agreed.map((i) => BOOKING_TERMS[i]),
+        booking_status: 'pending_payment',
+        payment_status: 'pending',
       }
+      const created = await createBooking(body)
+      const num = created.booking_number || `CCS-${String(created.id || '').slice(-5).padStart(5, '0')}`
+      window.location.href = `/booking/${encodeURIComponent(num)}/payment/`
+    } catch (err) {
+      setError(ERRORS[err.code] || 'We couldn’t create your booking. Please try again, or message us on WhatsApp.')
+      if (err.code === 'DATE_BOOKED') getBookedDates().then(setBookedDates).catch(() => {})
     } finally {
       setSending(false)
     }
   }
 
+  let n = 0
   return (
-    <section className="section">
-      <div className="wrap">
-        <div className="book-now-grid">
-          <div className="book-now-main">
-            <div className="form-card" style={{ maxWidth: 680, margin: '0 auto' }}>
-          {error && (
-            <div className="form-error-banner">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <div className="field">
-              <label htmlFor="session-type">Session type</label>
-              <select id="session-type" value={sessionType} onChange={(e) => { setSessionType(e.target.value); setParticipants(1); setSelectedPublicSession(null) }} required>
-                <option value="" disabled>Choose a session type</option>
-                {allSessionOptions.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-            {!isCustom && !isMembership && (
-              <>
-                <div className="form-row">
-                  <div className="field"><label htmlFor="customer-name">Full name</label><input id="customer-name" type="text" required /></div>
-                  <div className="field"><label htmlFor="customer-phone">Phone / WhatsApp</label><input id="customer-phone" type="tel" required /></div>
-                </div>
-                <div className="form-row">
-                  <div className="field"><label htmlFor="customer-email">Email</label><input id="customer-email" type="email" required /></div>
-                  <div className="field"><label htmlFor="group-size">Number of people</label><input id="group-size" type="number" min="1" defaultValue="1" onChange={(e) => setParticipants(Math.max(1, Number(e.target.value)))} /></div>
-                </div>
-                {sessionType === 'public' ? (
-                  publicSessions.length > 0 ? (
-                    <>
-                      <div className="field">
-                        <label htmlFor="preferred-date">Available public session</label>
-                        <select
-                          id="preferred-date"
-                          required
-                          value={selectedPublicSession?.id || ''}
-                          onChange={(e) => {
-                            const s = publicSessions.find((x) => x.id === e.target.value) || null
-                            setSelectedPublicSession(s)
-                          }}
-                        >
-                          <option value="" disabled>Select an announced session</option>
-                          {publicSessions.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {formatLongDate(s.date)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      {selectedPublicSession && (
-                        <div className="session-details-panel">
-                          <div className="session-details-title">{selectedPublicSession.title || 'Public Session'}</div>
-                          <div className="session-details-row">📅 {formatLongDate(selectedPublicSession.date)}</div>
-                          <div className="session-details-row">🕘 {selectedPublicSession.startTime} – {selectedPublicSession.endTime}</div>
-                          <div className="session-details-row">📍 {selectedPublicSession.locationName}</div>
-                          {selectedPublicSession.maxParticipants > 0 && (
-                            <div className="session-details-row">
-                              👥 {selectedPublicSession.remaining > 0
-                                ? `${selectedPublicSession.remaining} ${selectedPublicSession.remaining === 1 ? 'spot' : 'spots'} remaining`
-                                : 'Session full'}
-                            </div>
-                          )}
-                          {selectedPublicSession.specialNotes && (
-                            <div className="session-details-note">{selectedPublicSession.specialNotes}</div>
-                          )}
-                          {selectedPublicSession.mapsUrl ? (
-                            <a className="session-details-map-btn" href={selectedPublicSession.mapsUrl} target="_blank" rel="noreferrer">
-                              View Location →
-                            </a>
-                          ) : null}
-                        </div>
-                      )}
-                    </>
-                  ) : loaded ? (
-                    <div className="field">
-                      <label htmlFor="preferred-date">Session date</label>
-                      <div className="form-note" style={{ margin: 0, padding: '12px 14px', background: 'var(--chalk-dim)', borderRadius: 8 }}>
-                        No public sessions are announced right now. Please check the <a href="/sessions/">Sessions page</a> for upcoming dates, or book a private session.
-                      </div>
-                    </div>
-                  ) : null
-                ) : (
-                  <>
-                    <div className="field" ref={dateFieldRef}>
-                      <label>Preferred date</label>
-                      <BookingCalendar
-                        value={selectedDate}
-                        onChange={(d) => { setSelectedDate(d); setDateError(false) }}
-                        bookedDates={bookedDates}
-                        todayStr={todayStr}
-                      />
-                      {dateError && !selectedDate && (
-                        <p className="date-error" role="alert">Please choose a date from the calendar to continue.</p>
-                      )}
-                      {/* keeps the value available to the existing submit code */}
-                      <input type="hidden" id="preferred-date" name="preferred-date" value={selectedDate} />
-
-                      {selectedDate && !isBooked && (
-                        <p className="date-selected">Selected: {formatDateLabel(selectedDate)}</p>
-                      )}
-
-                      {isBooked && (
-                        <div className="date-notice" role="alert">
-                          <strong>{formatDateLabel(selectedDate)} is already booked.</strong>
-                          <p>
-                            Our team may be fully booked that day, or training may still be possible.
-                            Please confirm with Team Climb Crux on WhatsApp for verification, or pick a green day.
-                          </p>
-                          <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-                            Confirm on WhatsApp
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    <div className="field"><label htmlFor="preferred-time">Preferred time</label><input id="preferred-time" name="preferred-time" type="time" required /></div>
-                  </>
-                )}
-                <div className="form-row">
-                  <div className="field"><label htmlFor="emergency-contact-name">Emergency contact</label><input id="emergency-contact-name" type="text" placeholder="Name" required /></div>
-                  <div className="field"><label htmlFor="emergency-contact-phone">Emergency contact phone</label><input id="emergency-contact-phone" type="tel" placeholder="03XX-XXXXXXX" required /></div>
-                </div>
-              </>
-            )}
-            {isMembership && (
-              <div className="membership-card" style={{ background: 'linear-gradient(135deg, #f8f4ef, #f0ebe3)', borderRadius: 12, padding: '28px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)', textAlign: 'center' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--charcoal)', margin: '0 0 8px' }}>Monthly Membership (4 Sessions)</h3>
-                <p style={{ fontSize: '0.94rem', color: 'var(--stone-dark)', lineHeight: 1.6, margin: '0 auto 20px', maxWidth: '46ch' }}>
-                  Become a Climb Crux member and enjoy four guided climbing sessions each month.
-                </p>
-                <a href="/membership/apply/" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  Apply Membership Online
-                </a>
-                <div style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.12em', color: 'var(--stone)', margin: '18px 0 16px' }}>or</div>
-                <a href={getMembershipFormUrl()} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 12"/></svg>
-                  Download Membership Form (PDF)
-                </a>
-                <p style={{ fontSize: '0.82rem', color: 'var(--stone)', lineHeight: 1.55, margin: '8px auto 0', maxWidth: '44ch' }}>
-                  Prefer to register in person? Download, print, complete, and submit the membership form at the Climb Crux office.
-                </p>
-              </div>
-            )}
-            {isCustom && (
-              <div className="custom-session-card" style={{ background: 'linear-gradient(135deg, #f8f4ef, #f0ebe3)', borderRadius: 12, padding: '28px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)', textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>✉️</div>
-                <h3 style={{ margin: '0 0 8px', fontSize: 18, color: 'var(--ink)' }}>Custom sessions are built on request</h3>
-                <p style={{ fontSize: 14, color: 'var(--text-dim)', margin: '0 0 16px', lineHeight: 1.6 }}>Tell us your group size, preferred grade, and ideal date — we'll design a session around you. Reach out and we'll respond within 24 hours.</p>
-                <a href="mailto:climbcruxpakistan@gmail.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--ink)', color: '#fff', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>
-                  climbcruxpakistan@gmail.com
-                </a>
-                <p style={{ fontSize: 12, color: 'var(--stone)', margin: '12px 0 0' }}>Or call / WhatsApp: <strong>{WHATSAPP_DISPLAY}</strong></p>
-              </div>
-            )}
-            {sessionType && !isCustom && !isMembership && (
-              <div className="price-summary-card" style={{ background: 'var(--chalk-dim)', borderRadius: 12, padding: '20px 24px', marginBottom: 20, border: '1px solid var(--chalk-dim)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8 }}>
-                  <div>
-                    <div style={{ fontSize: 13, color: 'var(--stone)', marginBottom: 4 }}>{sessionLabel}</div>
-                    <div style={{ fontSize: 14, color: 'var(--text-dim)' }}>
-                      {sessionType === 'membership' && membership.originalPrice && (
-                        <span style={{ textDecoration: 'line-through', color: 'var(--stone)', marginRight: 8 }}>PKR {membership.originalPrice}</span>
-                      )}
-                      PKR {perPersonPrice(sessionType).toLocaleString()} <span style={{ color: 'var(--stone)' }}>× {participants} {participants === 1 ? 'person' : 'people'}</span>
-                      {sessionType === 'membership' && (
-                        <span style={{ display: 'block', color: 'var(--orange-dark)', fontWeight: 600, marginTop: 4 }}>🔥 Save {membership.discount || '20%'} — {membership.sessionsIncluded || '4'} sessions, valid {membership.duration || '1 month'}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 12, color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2 }}>PKR {totalAmount.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {!isCustom && !isMembership && (
-              <div className="terms-card">
-                <h3 className="terms-card-title">Terms &amp; Conditions</h3>
-                <p className="terms-card-desc">
-                  Please read and accept all three statements below to continue to payment.
-                </p>
-                {BOOKING_TERMS.map((term) => {
-                  const checked = agreedTerms.includes(term)
-                  return (
-                    <label key={term} className={`terms-checkbox ${checked ? 'is-checked' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleTerm(term)}
-                      />
-                      <span className="terms-checkbox-mark" aria-hidden="true" />
-                      <span className="terms-checkbox-label">{term}</span>
-                    </label>
-                  )
-                })}
-                {agreedTerms.length < BOOKING_TERMS.length && (
-                  <p className="terms-hint">Tick all three boxes to continue</p>
-                )}
-              </div>
-            )}
-            {!isCustom && !isMembership && (
-              <div className="form-actions" style={{ flexDirection: 'column' }}>
-                <button type="submit" className="btn btn-primary" disabled={sending || !sessionType || !loaded || isBooked || isPastDate || (sessionType === 'public' && (publicSessions.length === 0 || !selectedPublicSession)) || agreedTerms.length < BOOKING_TERMS.length} style={{ width: '100%', justifyContent: 'center' }}>
-                  {sending ? <><span className="btn-spinner" /> Creating booking…</> : 'Continue to payment →'}
-                </button>
-              </div>
-            )}
-          </form>
-            </div>
+    <section className="bn">
+      <div className="bn-wrap">
+        <form className="bn-main" onSubmit={submit}>
+          <div className="bn-card">
+            <h2><span>{++n}</span>Choose your session</h2>
+            <Field label="Session type" id="session-type"><Select value={type} options={options} onChange={choose} /></Field>
           </div>
 
-          <aside className="check-status-card" aria-label="Check your booking or membership status">
-            <p className="check-status-desc">
-              Check the current status of your session booking or membership request using your unique reference number.
-            </p>
-            <a className="btn btn-primary check-status-cta" href="/check-status/">
-              <span className="check-status-icon" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </span>
-              Check Status
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-            </a>
-          </aside>
-        </div>
+          {type === 'membership' && (
+            <div className="bn-card bn-note-card">
+              <h3>Apply for {membershipTitle}</h3>
+              <p>Memberships are set up with our team. Apply online, or download the form and send it back to us.</p>
+              <div className="bn-actions">
+                <a className="bn-btn" href="/membership/apply/">Apply membership online</a>
+                <a className="bn-btn bn-btn-ghost" href={getMembershipFormUrl()} target="_blank" rel="noreferrer">Download PDF form</a>
+              </div>
+            </div>
+          )}
+
+          {type === 'custom-group' && (
+            <div className="bn-card bn-note-card">
+              <h3>Tell us about your group</h3>
+              <p>Custom sessions are planned one by one. Email us your group size, preferred dates and what you want to focus on.</p>
+              <div className="bn-actions">
+                <a className="bn-btn" href={`mailto:${CUSTOM_GROUP_EMAIL}?subject=Custom%20group%20session`}>Email {CUSTOM_GROUP_EMAIL}</a>
+              </div>
+            </div>
+          )}
+
+          {type !== 'membership' && type !== 'custom-group' && (
+            <>
+              <div className="bn-card">
+                <h2><span>{++n}</span>Your details</h2>
+                <div className="bn-grid2">
+                  <Field label="Full name" id="customer-name"><input id="customer-name" required autoComplete="name" value={f.name} onChange={setField('name')} /></Field>
+                  <Field label="Phone / WhatsApp" id="customer-phone"><input id="customer-phone" type="tel" required autoComplete="tel" value={f.phone} onChange={setField('phone')} /></Field>
+                  <Field label="Email" id="customer-email"><input id="customer-email" type="email" required autoComplete="email" value={f.email} onChange={setField('email')} /></Field>
+                  <Field label="Number of people" id="group-size">
+                    <div className="bn-stepper">
+                      <button type="button" aria-label="Fewer people" disabled={people <= 1} onClick={() => clamp(people - 1)}>−</button>
+                      <input id="group-size" inputMode="numeric" value={people} onChange={(e) => clamp(parseInt(e.target.value, 10))} />
+                      <button type="button" aria-label="More people" disabled={people >= maxPeople} onClick={() => clamp(people + 1)}>+</button>
+                    </div>
+                  </Field>
+                </div>
+              </div>
+
+              {isPrivate(type) && (
+                <div className="bn-card">
+                  <h2><span>{++n}</span>Pick a date and time</h2>
+                  <div className="bn-when">
+                    <div>
+                      <BookingCalendar value={date} onChange={setDate} bookedDates={bookedDates} />
+                      {tried && !date && <p className="bn-err">Choose a date to continue.</p>}
+                      {isBooked && (
+                        <p className="bn-notice" role="status">
+                          {prettyDate(date)} is already booked. <a href={waLink(`Hi Climb Crux, is ${prettyDate(date)} still possible for a private session?`)} target="_blank" rel="noreferrer">Confirm on WhatsApp</a>
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <span className="bn-label">Preferred time</span>
+                      <div className="bn-slots">
+                        {TIME_SLOTS.map(([v, l]) => (
+                          <button key={v} type="button" className={!otherTime && time === v ? 'is-on' : ''} onClick={() => { setOtherTime(false); setTime(v) }}>{l}</button>
+                        ))}
+                      </div>
+                      <button type="button" className={`bn-other${otherTime ? ' is-on' : ''}`} onClick={() => { setOtherTime(true); setTime('') }}>Other time</button>
+                      {otherTime && <input id="preferred-time" className="bn-time" type="time" required value={time} onChange={(e) => setTime(e.target.value)} />}
+                      {tried && !time && <p className="bn-err">Choose a time to continue.</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {type === 'public' && (
+                <div className="bn-card">
+                  <h2><span>{++n}</span>Pick a session</h2>
+                  {publicSessions.length === 0 ? (
+                    <p className="bn-empty">No public sessions are announced yet. Check back soon, or book a private session instead.</p>
+                  ) : (
+                    <>
+                      <Field label="Available public session" id="preferred-date">
+                        <select id="preferred-date" required value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+                          <option value="" disabled>Choose a session</option>
+                          {publicSessions.map((s) => <option key={s.id ?? s._id} value={s.id ?? s._id}>{s.title} · {s.date}</option>)}
+                        </select>
+                      </Field>
+                      {session && (
+                        <dl className="bn-details">
+                          <div><dt>Date</dt><dd>{session.date}</dd></div>
+                          <div><dt>Time</dt><dd>{session.startTime}{session.endTime ? ` – ${session.endTime}` : ''}</dd></div>
+                          <div><dt>Location</dt><dd>{session.locationName}</dd></div>
+                          {session.remaining != null && <div><dt>Spots left</dt><dd>{session.remaining}</dd></div>}
+                          {session.mapsUrl && <div><dt>Map</dt><dd><a href={session.mapsUrl} target="_blank" rel="noreferrer">Open in Maps</a></dd></div>}
+                        </dl>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="bn-card">
+                <h2><span>{++n}</span>Emergency contact</h2>
+                <div className="bn-grid2">
+                  <Field label="Contact name" id="emergency-contact-name"><input id="emergency-contact-name" required placeholder="Name" value={f.ecName} onChange={setField('ecName')} /></Field>
+                  <Field label="Contact phone" id="emergency-contact-phone"><input id="emergency-contact-phone" type="tel" required placeholder="03XX-XXXXXXX" value={f.ecPhone} onChange={setField('ecPhone')} /></Field>
+                </div>
+              </div>
+
+              <div className="bn-card">
+                <h2><span>{++n}</span>Terms and conditions</h2>
+                <p className="bn-sub">Accept all three statements to continue to payment.</p>
+                {BOOKING_TERMS.map((t, i) => (
+                  <label className="bn-check" key={i}>
+                    <input type="checkbox" checked={agreed.includes(i)} onChange={() => toggleTerm(i)} /><span className="bn-box" /><span>{t}</span>
+                  </label>
+                ))}
+                <button type="button" className="bn-link" onClick={toggleAll}>{allTerms ? 'Clear all' : 'Accept all'}</button>
+
+                {total > 0 && <p className="bn-total"><span>Total</span><b>{fmt(total)}</b><small>{people} {people === 1 ? 'person' : 'people'}</small></p>}
+                {error && <p className="bn-err bn-banner" role="alert">{error}</p>}
+                <button className="bn-btn bn-submit" type="submit" disabled={disabled}>{sending ? 'Creating booking…' : 'Continue to payment'}</button>
+                {!allTerms && <p className="bn-hint">Accept all three statements to continue.</p>}
+              </div>
+            </>
+          )}
+        </form>
+
+        <aside className="bn-status">
+          <h3>Already booked?</h3>
+          <p>Check the current status of your booking, membership request or order.</p>
+          <a className="bn-btn bn-btn-dark" href="/check-status/">Check status</a>
+        </aside>
       </div>
     </section>
   )
