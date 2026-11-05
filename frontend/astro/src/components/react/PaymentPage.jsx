@@ -1,22 +1,200 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getBookingByNumber, createPayment } from '../../lib/api'
+import { WHATSAPP_WA_ME } from '../../../../../shared/contact.js'
+import PaymentSteps from './PaymentSteps'
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconBank,
+  IconCalendar,
+  IconCard,
+  IconCheck,
+  IconClock,
+  IconError,
+  IconFile,
+  IconMail,
+  IconPhone,
+  IconPhoneSmall,
+  IconPin,
+  IconTag,
+  IconUpload,
+  IconUser,
+} from './PaymentIcons'
+import { CopyButton, ErrorBanner, formatPayDate, getSessionKind, getSessionLabel } from './paymentUtils'
+import './payment.css'
 
-/** Site-wide date format: Day-Month-Year (DD-MM-YYYY), e.g. 05-08-2026. */
-function formatDate(value) {
-  if (!value) return ''
-  const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (m) return `${m[3]}-${m[2]}-${m[1]}`
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return String(value)
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  return `${dd}-${mm}-${d.getFullYear()}`
+function formatFileSize(bytes) {
+  if (!bytes) return '0 KB'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function ScreenshotField({
+  screenshot,
+  screenshotName,
+  fileError,
+  isDragging,
+  inputRef,
+  onInput,
+  onOpen,
+  onDrop,
+  onDragOver,
+  onDragLeave,
+  onRemove,
+}) {
+  return (
+    <div>
+      {screenshot ? (
+        <div className="pay-file">
+          <span className="pay-file-thumb">
+            <IconFile size={22} />
+          </span>
+          <span className="pay-file-info">
+            <strong>{screenshotName}</strong>
+            <span>{formatFileSize(screenshot.size)} · Ready to submit</span>
+          </span>
+          <button type="button" className="pay-file-remove" onClick={onRemove}>
+            Remove
+          </button>
+        </div>
+      ) : (
+        <div
+          className={`pay-drop ${isDragging ? 'is-drag' : ''} ${fileError ? 'has-error' : ''}`}
+          role="button"
+          tabIndex={0}
+          onClick={onOpen}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              onOpen()
+            }
+          }}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+        >
+          <span className="pay-drop-icon">
+            <IconUpload size={22} />
+          </span>
+          <div>
+            <strong>Drop your payment screenshot here</strong>
+            <p>or choose a file from your device</p>
+          </div>
+          <button
+            type="button"
+            className="pay-drop-btn"
+            onClick={(event) => {
+              event.stopPropagation()
+              onOpen()
+            }}
+          >
+            Choose file
+          </button>
+          <small>JPG, PNG or PDF · max 10 MB</small>
+        </div>
+      )}
+      <input
+        ref={inputRef}
+        id="payment-screenshot"
+        className="pay-file-input"
+        type="file"
+        accept="image/jpeg,image/png,application/pdf"
+        onChange={onInput}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      {fileError && (
+        <p className="pay-file-error" role="alert">
+          {fileError}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function BookingSummary({ booking, bookingNumber }) {
+  const amount = Number(booking.amount) || 0
+  const people = Number(booking.participants) || 1
+  const sessionLabel = getSessionLabel(booking)
+  const date = formatPayDate(booking.session_date || booking.date)
+  const time = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
+
+  return (
+    <aside className="pay-side">
+      <div className="pay-sum">
+        <div className="pay-sum-head">
+          <span className="pay-sum-label">Booking summary</span>
+          <span className="pay-ref">{booking.booking_number || bookingNumber}</span>
+        </div>
+
+        <div className="pay-sess">
+          <i>
+            <IconTag size={19} />
+          </i>
+          <div>
+            <strong>{sessionLabel}</strong>
+            <span>
+              {getSessionKind(booking)} · {people} {people === 1 ? 'person' : 'people'}
+            </span>
+          </div>
+        </div>
+
+        <div className="pay-det">
+          <IconCalendar size={16} />
+          <span>{date || 'To be confirmed'}</span>
+        </div>
+        {time && (
+          <div className="pay-det">
+            <IconClock size={16} />
+            <span>{time}</span>
+          </div>
+        )}
+        {booking.session_location && (
+          <div className="pay-det">
+            <IconPin size={16} />
+            <span>{booking.session_location}</span>
+          </div>
+        )}
+        <div className="pay-det">
+          <IconUser size={16} />
+          <span>
+            <b>{booking.customer_name || '—'}</b>
+          </span>
+        </div>
+        {booking.customer_email && (
+          <div className="pay-det">
+            <IconMail size={16} />
+            <span>{booking.customer_email}</span>
+          </div>
+        )}
+        {booking.customer_phone && (
+          <div className="pay-det">
+            <IconPhoneSmall size={16} />
+            <span>{booking.customer_phone}</span>
+          </div>
+        )}
+
+        <div className="pay-sum-line">
+          <span>
+            {sessionLabel} × {people}
+          </span>
+          <span>PKR {amount.toLocaleString()}</span>
+        </div>
+        <div className="pay-total">
+          <span>Total to pay</span>
+          <b>PKR {amount.toLocaleString()}</b>
+        </div>
+      </div>
+    </aside>
+  )
 }
 
 export default function PaymentPage({ bookingNumber }) {
   const [booking, setBooking] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [fileError, setFileError] = useState('')
   const [sending, setSending] = useState(false)
   const [flow, setFlow] = useState('select')
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -26,6 +204,8 @@ export default function PaymentPage({ bookingNumber }) {
   const [easypaisaPhone, setEasypaisaPhone] = useState('')
   const [screenshot, setScreenshot] = useState(null)
   const [screenshotName, setScreenshotName] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (!bookingNumber) return
@@ -44,195 +224,525 @@ export default function PaymentPage({ bookingNumber }) {
 
   function handleMethodSelect(method) {
     setPaymentMethod(method)
-    if (method === 'bank_transfer') setFlow('bank-form')
-    if (method === 'easypaisa') setFlow('easypaisa-form')
+    setError('')
   }
 
-  function handleScreenshotChange(e) {
-    const file = e.target.files?.[0] || null
-    if (!file) { setScreenshot(null); setScreenshotName(''); return }
-    const okType = /\.(jpe?g|png|pdf)$/i.test(file.name) || file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'application/pdf'
-    if (!okType) { setScreenshot(null); setScreenshotName(''); setError('Please upload a JPG, PNG or PDF payment screenshot'); return }
-    if (file.size > 10 * 1024 * 1024) { setScreenshot(null); setScreenshotName(''); setError('Payment screenshot must be 10 MB or smaller'); return }
+  function continueToForm() {
+    if (!paymentMethod) return
     setError('')
+    setFlow(paymentMethod === 'bank_transfer' ? 'bank-form' : 'easypaisa-form')
+  }
+
+  function changeMethod() {
+    setError('')
+    setFileError('')
+    setFlow('select')
+  }
+
+  function applyFile(file) {
+    if (!file) {
+      setScreenshot(null)
+      setScreenshotName('')
+      return
+    }
+    const okType =
+      /\.(jpe?g|png|pdf)$/i.test(file.name) ||
+      file.type === 'image/jpeg' ||
+      file.type === 'image/png' ||
+      file.type === 'application/pdf'
+    if (!okType) {
+      setScreenshot(null)
+      setScreenshotName('')
+      setFileError('Please upload a JPG, PNG or PDF payment screenshot')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setScreenshot(null)
+      setScreenshotName('')
+      setFileError('Payment screenshot must be 10 MB or smaller')
+      return
+    }
+    setError('')
+    setFileError('')
     setScreenshot(file)
     setScreenshotName(file.name)
   }
 
+  function handleScreenshotChange(event) {
+    applyFile(event.target.files?.[0] || null)
+    event.target.value = ''
+  }
+
+  function handleDrop(event) {
+    event.preventDefault()
+    setIsDragging(false)
+    applyFile(event.dataTransfer.files?.[0] || null)
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault()
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(event) {
+    event.preventDefault()
+    setIsDragging(false)
+  }
+
+  function removeFile() {
+    setScreenshot(null)
+    setScreenshotName('')
+    setFileError('')
+    setError('')
+  }
+
   async function submitPayment(method, extra) {
-    if (!screenshot) { setError('Please attach your payment screenshot before submitting for verification'); return }
+    if (!screenshot) {
+      setError('Please attach your payment screenshot before submitting for verification')
+      return
+    }
     setSending(true)
     try {
       const fd = new FormData()
       fd.append('method', method)
-      Object.entries(extra).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      Object.entries(extra).forEach(([key, value]) => {
+        if (value) fd.append(key, value)
+      })
       fd.append('payment_screenshot', screenshot)
       await createPayment(booking.id, fd)
-      const route = method === 'bank_transfer' ? 'bank-transfer-confirmation' : 'easypaisa-confirmation'
+      const route =
+        method === 'bank_transfer' ? 'bank-transfer-confirmation' : 'easypaisa-confirmation'
       window.location.href = `/booking/${encodeURIComponent(bookingNumber)}/${route}/`
-    } catch (err) { setError(err.message || 'Failed to process payment. Please try again.') } finally { setSending(false) }
+    } catch (err) {
+      setError(err.message || 'Failed to process payment. Please try again.')
+    } finally {
+      setSending(false)
+    }
   }
 
-  function handleBankSubmit(e) {
-    e.preventDefault(); setError('')
+  function handleBankSubmit(event) {
+    event.preventDefault()
+    setError('')
+    if (!bankName.trim() || !accountHolder.trim()) {
+      setError('Please add your sender bank name and account holder name.')
+      return
+    }
     submitPayment('bank_transfer', { payer_name: accountHolder, payer_bank: bankName })
   }
 
-  function handleEasypaisaSubmit(e) {
-    e.preventDefault(); setError('')
+  function handleEasypaisaSubmit(event) {
+    event.preventDefault()
+    setError('')
+    if (!easypaisaSender.trim() || !easypaisaPhone.trim()) {
+      setError('Please add your sender name and phone number.')
+      return
+    }
     submitPayment('easypaisa', { payer_name: easypaisaSender, payer_phone: easypaisaPhone })
-  }
-
-  function getSessionLabel(sessionId) {
-    const map = { public: 'Public Session', private: 'Private Session', membership: 'Monthly Membership', 'custom-group': 'Custom Group Session' }
-    return map[sessionId] || sessionId?.replace(/-/g, ' ') || '—'
   }
 
   if (loading) {
     return (
-      <section className="section"><div className="wrap" style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <div className="btn-spinner" style={{ margin: '0 auto 16px', width: 24, height: 24, borderWidth: 3 }} />
-        <p style={{ color: 'var(--stone)' }}>Loading booking details…</p>
-      </div></section>
+      <section className="pay">
+        <PaymentSteps step={2} />
+        <div className="pay-state">
+          <div className="pay-state-spinner" />
+          <p>Loading booking details…</p>
+        </div>
+      </section>
     )
   }
 
   if (error && !booking) {
     return (
-      <section className="section"><div className="wrap" style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-        <h3>Booking not found</h3>
-        <p style={{ color: 'var(--stone)', maxWidth: '40ch', margin: '8px auto 24px' }}>{error}</p>
-        <a href="/book-now/" className="btn btn-primary">Back to booking</a>
-      </div></section>
+      <section className="pay">
+        <PaymentSteps step={2} />
+        <div className="pay-state">
+          <div className="pay-state-icon">
+            <IconError size={28} />
+          </div>
+          <h1 className="pay-h1">Booking not found</h1>
+          <p>{error}</p>
+          <a href="/book-now/" className="pay-btn pay-btn-go">
+            Back to booking
+          </a>
+        </div>
+      </section>
     )
   }
 
-  return (
-    <section className="section">
-      <div className="wrap">
-        <div className="form-card" style={{ maxWidth: 680, margin: '0 auto' }}>
-          <div className="booking-summary">
-            <h3 className="summary-title">Booking summary</h3>
-            <div className="summary-grid">
-              <div className="summary-item"><span className="summary-key">Booking #</span><span className="summary-val ref-code">{booking.booking_number || bookingNumber}</span></div>
-              <div className="summary-item"><span className="summary-key">Session</span><span className="summary-val">{booking.session_title || getSessionLabel(booking.session_id)}</span></div>
-              <div className="summary-item"><span className="summary-key">Name</span><span className="summary-val">{booking.customer_name}</span></div>
-              <div className="summary-item"><span className="summary-key">People</span><span className="summary-val">{booking.participants}</span></div>
-              <div className="summary-item"><span className="summary-key">Date</span><span className="summary-val">{formatDate(booking.session_date || booking.date) || 'To be confirmed'}</span></div>
-              {(booking.session_start_time || booking.session_end_time) && (
-                <div className="summary-item"><span className="summary-key">Time</span><span className="summary-val">{[booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')}</span></div>
-              )}
-              {booking.session_location && (
-                <div className="summary-item"><span className="summary-key">Location</span><span className="summary-val">{booking.session_location}</span></div>
-              )}
-              <div className="summary-item" style={{ gridColumn: '1 / -1' }}><span className="summary-key">Email / Phone</span><span className="summary-val" style={{ fontSize: '0.85rem' }}>{booking.customer_email} · {booking.customer_phone}</span></div>
-            </div>
-            <div className="summary-total"><span>Total to pay</span><span className="summary-amount">PKR {(booking.amount || 0).toLocaleString()}</span></div>
-          </div>
+  const reference = booking.booking_number || bookingNumber
+  const amount = Number(booking.amount) || 0
+  const amountText = `PKR ${amount.toLocaleString()}`
+  const formReady =
+    flow === 'bank-form'
+      ? Boolean(bankName.trim() && accountHolder.trim() && screenshot)
+      : flow === 'easypaisa-form'
+        ? Boolean(easypaisaSender.trim() && easypaisaPhone.trim() && screenshot)
+        : false
 
-          {error && (
-            <div className="form-error-banner">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-              {error}
-            </div>
-          )}
+  const screenshotField = (
+    <ScreenshotField
+      screenshot={screenshot}
+      screenshotName={screenshotName}
+      fileError={fileError}
+      isDragging={isDragging}
+      inputRef={fileInputRef}
+      onInput={handleScreenshotChange}
+      onOpen={() => fileInputRef.current?.click()}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onRemove={removeFile}
+    />
+  )
+
+  return (
+    <section className="pay">
+      <PaymentSteps step={2} />
+      <div className="pay-wrap">
+        <div className="pay-main">
+          <div className="pay-eyebrow">Step 2 of 3</div>
 
           {flow === 'select' && (
             <>
-              <h3 className="summary-title" style={{ color: 'var(--charcoal)', marginBottom: 16 }}>Choose payment method</h3>
-              <div className="payment-method-grid">
-                <div className={`payment-method-card ${paymentMethod === 'bank_transfer' ? 'is-selected' : ''}`} onClick={() => handleMethodSelect('bank_transfer')}>
-                  <div className="payment-method-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /></svg></div>
-                  <span className="payment-method-label">Bank Transfer</span>
-                  <div className="payment-method-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg></div>
-                </div>
-                <div className={`payment-method-card ${paymentMethod === 'easypaisa' ? 'is-selected' : ''}`} onClick={() => handleMethodSelect('easypaisa')}>
-                  <div className="payment-method-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg></div>
-                  <span className="payment-method-label">EasyPaisa</span>
-                  <div className="payment-method-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg></div>
-                </div>
-                <div className="payment-method-card" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                  <div className="payment-method-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg></div>
-                  <span className="payment-method-label">Credit / Debit Card<span style={{ display: 'block', fontSize: '0.7rem', opacity: 0.6, marginTop: 2 }}>Coming soon</span></span>
+              <h1 className="pay-h1">Choose how to pay</h1>
+              <p className="pay-sub">
+                Pick a payment method and we will show you exactly where to send your payment.
+              </p>
+
+              {error && <ErrorBanner>{error}</ErrorBanner>}
+
+              <div className="pay-card">
+                <h3 className="pay-card-title">
+                  <b>1</b>Payment method
+                </h3>
+                <div className="pay-methods">
+                  <button
+                    type="button"
+                    className={`pay-m ${paymentMethod === 'bank_transfer' ? 'is-selected' : ''}`}
+                    onClick={() => handleMethodSelect('bank_transfer')}
+                    aria-pressed={paymentMethod === 'bank_transfer'}
+                  >
+                    <span className="pay-radio">
+                      {paymentMethod === 'bank_transfer' && <IconCheck size={13} />}
+                    </span>
+                    <span className="pay-m-icon">
+                      <IconBank size={22} />
+                    </span>
+                    <span>
+                      <strong>Bank transfer</strong>
+                      <small>Direct transfer from your bank app.</small>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`pay-m ${paymentMethod === 'easypaisa' ? 'is-selected' : ''}`}
+                    onClick={() => handleMethodSelect('easypaisa')}
+                    aria-pressed={paymentMethod === 'easypaisa'}
+                  >
+                    <span className="pay-radio">
+                      {paymentMethod === 'easypaisa' && <IconCheck size={13} />}
+                    </span>
+                    <span className="pay-m-icon">
+                      <IconPhone size={22} />
+                    </span>
+                    <span>
+                      <strong>Easypaisa</strong>
+                      <small>Send from your Easypaisa wallet.</small>
+                    </span>
+                  </button>
+
+                  <div className="pay-m is-disabled" aria-disabled="true">
+                    <span className="pay-soon">Coming soon</span>
+                    <span className="pay-m-icon">
+                      <IconCard size={22} />
+                    </span>
+                    <span>
+                      <strong>Credit / debit card</strong>
+                      <small>Pay with Visa or Mastercard.</small>
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="form-actions">
-                <a href="/book-now/" className="btn btn-outline" style={{ flex: 1, justifyContent: 'center' }}>← Change details</a>
-                <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={!paymentMethod}
-                  onClick={() => { if (paymentMethod === 'bank_transfer') setFlow('bank-form'); if (paymentMethod === 'easypaisa') setFlow('easypaisa-form') }}>Continue</button>
+
+              <div className="pay-actions">
+                <a href="/book-now/" className="pay-btn pay-btn-back">
+                  <IconArrowLeft size={18} />
+                  Change details
+                </a>
+                <button
+                  type="button"
+                  className="pay-btn pay-btn-go"
+                  disabled={!paymentMethod}
+                  onClick={continueToForm}
+                >
+                  Continue
+                  <IconArrowRight size={18} />
+                </button>
               </div>
             </>
           )}
 
           {flow === 'bank-form' && (
-            <form onSubmit={handleBankSubmit}>
-              <h3 className="summary-title" style={{ color: 'var(--charcoal)', marginBottom: 16 }}>Bank Transfer Details</h3>
-              <div className="payment-bank-info">
-                <div className="bank-info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /></svg></div>
-                <div>
-                  <p className="bank-detail-title">Transfer to our bank account</p>
-                  <p className="bank-detail-row"><span className="bank-label">Bank:</span> Bank Al Habib Limited</p>
-                  <p className="bank-detail-row"><span className="bank-label">Account name:</span> CLIMB CRUX</p>
-                  <p className="bank-detail-row"><span className="bank-label">IBAN:</span> PK93 BAHL 5742 0081 0003 9501</p>
-                  <p className="bank-detail-row"><span className="bank-label">Branch Code:</span> 5742</p>
-                  <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>Please transfer <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the account above.</p>
-                  <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
-                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, upload your payment screenshot below and submit it for verification. Our team verifies your payment and <strong style={{ color: 'var(--orange-dark)' }}>emails you</strong> once your booking is confirmed.</p>
+            <>
+              <h1 className="pay-h1">Bank transfer</h1>
+              <p className="pay-sub">
+                Send the amount below, then upload your payment screenshot so we can verify it.
+              </p>
+
+              {error && <ErrorBanner>{error}</ErrorBanner>}
+
+              <form onSubmit={handleBankSubmit}>
+                <div className="pay-chip">
+                  <b>
+                    <IconBank size={18} />
+                    Bank transfer
+                  </b>
+                  <button type="button" onClick={changeMethod}>
+                    Change method
+                  </button>
+                </div>
+
+                <div className="pay-card">
+                  <h3 className="pay-card-title">
+                    <b>1</b>Transfer to our bank account
+                  </h3>
+
+                  <div className="pay-row">
+                    <span>Amount to send</span>
+                    <b className="pay-amount">{amountText}</b>
+                  </div>
+                  <div className="pay-row">
+                    <span>Bank</span>
+                    <b>Bank Al Habib Limited</b>
+                  </div>
+                  <div className="pay-row">
+                    <span>Account name</span>
+                    <b>CLIMB CRUX</b>
+                  </div>
+                  <div className="pay-row">
+                    <span>IBAN</span>
+                    <span className="pay-row-val">
+                      <b className="pay-mono">PK93 BAHL 5742 0081 0003 9501</b>
+                      <CopyButton value="PK93 BAHL 5742 0081 0003 9501" />
+                    </span>
+                  </div>
+                  <div className="pay-row">
+                    <span>Branch code</span>
+                    <span className="pay-row-val">
+                      <b className="pay-mono">5742</b>
+                      <CopyButton value="5742" />
+                    </span>
+                  </div>
+                  <div className="pay-row">
+                    <span>Payment reference</span>
+                    <span className="pay-row-val">
+                      <b className="pay-mono">{reference}</b>
+                      <CopyButton value={reference} />
+                    </span>
+                  </div>
+
+                  <div className="pay-note">
+                    If you face any issues with your booking or payment, please contact us on{' '}
+                    <a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">
+                      WhatsApp
+                    </a>{' '}
+                    for assistance.
                   </div>
                 </div>
-              </div>
-              <div className="field"><label>Sender bank name</label><input type="text" placeholder="e.g. HBL, Meezan Bank, UBL" required value={bankName} onChange={(e) => setBankName(e.target.value)} /></div>
-              <div className="field"><label>Account holder name</label><input type="text" placeholder="Name on the account used for payment" required value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} /></div>
-              <div className="field">
-                <label>Payment screenshot / proof</label>
-                <input type="file" accept="image/jpeg,image/png,application/pdf" onChange={handleScreenshotChange} required />
-                {screenshotName ? (
-                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>📎 {screenshotName} attached — ready to submit</p>
-                ) : (
-                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>JPG, PNG or PDF · max 10 MB</p>
-                )}
-              </div>
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => setFlow('select')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>{sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit for Verification'}</button>
-              </div>
-            </form>
+
+                <div className="pay-card">
+                  <h3 className="pay-card-title">
+                    <b>2</b>Your payment details
+                  </h3>
+                  <div className="pay-grid2">
+                    <div className="pay-field">
+                      <label htmlFor="pay-bank-name">Sender bank name</label>
+                      <input
+                        id="pay-bank-name"
+                        className="pay-input"
+                        type="text"
+                        placeholder="e.g. HBL, Meezan Bank, UBL"
+                        required
+                        value={bankName}
+                        onChange={(event) => setBankName(event.target.value)}
+                      />
+                    </div>
+                    <div className="pay-field">
+                      <label htmlFor="pay-account-holder">Account holder name</label>
+                      <input
+                        id="pay-account-holder"
+                        className="pay-input"
+                        type="text"
+                        placeholder="Name on the account used for payment"
+                        required
+                        value={accountHolder}
+                        onChange={(event) => setAccountHolder(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pay-card">
+                  <h3 className="pay-card-title">
+                    <b>3</b>Payment screenshot
+                  </h3>
+                  {screenshotField}
+                </div>
+
+                <div className="pay-actions">
+                  <button type="button" className="pay-btn pay-btn-back" onClick={changeMethod}>
+                    <IconArrowLeft size={18} />
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="pay-btn pay-btn-go"
+                    disabled={!formReady || sending}
+                  >
+                    {sending ? (
+                      <>
+                        <span className="pay-spinner" />
+                        Processing…
+                      </>
+                    ) : (
+                      <>
+                        Submit for verification
+                        <IconArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </>
           )}
 
           {flow === 'easypaisa-form' && (
-            <form onSubmit={handleEasypaisaSubmit}>
-              <h3 className="summary-title" style={{ color: 'var(--charcoal)', marginBottom: 16 }}>EasyPaisa Transfer Details</h3>
-              <div className="payment-bank-info">
-                <div className="bank-info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg></div>
-                <div>
-                  <p className="bank-detail-title">Send payment via EasyPaisa</p>
-                  <p className="bank-detail-row"><span className="bank-label">EasyPaisa number:</span> 0313 2690377</p>
-                  <p className="bank-detail-row"><span className="bank-label">Account name:</span> Saif Ud Din</p>
-                  <p className="bank-detail-row" style={{ marginTop: 8, fontWeight: 500, color: 'var(--orange-dark)' }}>Please send <strong>PKR {(booking.amount || 0).toLocaleString()}</strong> to the EasyPaisa account above.</p>
-                  <div style={{ marginTop: 12, padding: 12, background: '#fef7ed', border: '1px solid #fde4c8', borderRadius: 8 }}>
-                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--stone-dark)', lineHeight: 1.5 }}><strong style={{ color: 'var(--orange-dark)' }}>📤 After sending the payment</strong>, upload your payment screenshot below and submit it for verification. Our team verifies your payment and <strong style={{ color: 'var(--orange-dark)' }}>emails you</strong> once your booking is confirmed.</p>
+            <>
+              <h1 className="pay-h1">Easypaisa</h1>
+              <p className="pay-sub">
+                Send the amount below, then upload your payment screenshot so we can verify it.
+              </p>
+
+              {error && <ErrorBanner>{error}</ErrorBanner>}
+
+              <form onSubmit={handleEasypaisaSubmit}>
+                <div className="pay-chip">
+                  <b>
+                    <IconPhone size={18} />
+                    Easypaisa
+                  </b>
+                  <button type="button" onClick={changeMethod}>
+                    Change method
+                  </button>
+                </div>
+
+                <div className="pay-card">
+                  <h3 className="pay-card-title">
+                    <b>1</b>Send to our Easypaisa account
+                  </h3>
+
+                  <div className="pay-row">
+                    <span>Amount to send</span>
+                    <b className="pay-amount">{amountText}</b>
+                  </div>
+                  <div className="pay-row">
+                    <span>Easypaisa number</span>
+                    <span className="pay-row-val">
+                      <b className="pay-mono">0313 2690377</b>
+                      <CopyButton value="0313 2690377" />
+                    </span>
+                  </div>
+                  <div className="pay-row">
+                    <span>Account name</span>
+                    <b>Saif Ud Din</b>
+                  </div>
+                  <div className="pay-row">
+                    <span>Payment reference</span>
+                    <span className="pay-row-val">
+                      <b className="pay-mono">{reference}</b>
+                      <CopyButton value={reference} />
+                    </span>
+                  </div>
+
+                  <div className="pay-note">
+                    If you face any issues with your booking or payment, please contact us on{' '}
+                    <a href={WHATSAPP_WA_ME} target="_blank" rel="noreferrer">
+                      WhatsApp
+                    </a>{' '}
+                    for assistance.
                   </div>
                 </div>
-              </div>
-              <div className="field"><label>Sender name</label><input type="text" placeholder="Your full name" required value={easypaisaSender} onChange={(e) => setEasypaisaSender(e.target.value)} /></div>
-              <div className="field"><label>Phone number</label><input type="tel" placeholder="03XX-XXXXXXX" required value={easypaisaPhone} onChange={(e) => setEasypaisaPhone(e.target.value)} /></div>
-              <div className="field">
-                <label>Payment screenshot / proof</label>
-                <input type="file" accept="image/jpeg,image/png,application/pdf" onChange={handleScreenshotChange} required />
-                {screenshotName ? (
-                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--orange-dark)', fontWeight: 600 }}>📎 {screenshotName} attached — ready to submit</p>
-                ) : (
-                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--stone)' }}>JPG, PNG or PDF · max 10 MB</p>
-                )}
-              </div>
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => setFlow('select')} style={{ flex: 1, justifyContent: 'center' }}>← Back</button>
-                <button type="submit" className="btn btn-primary" disabled={sending} style={{ flex: 1, justifyContent: 'center' }}>{sending ? <><span className="btn-spinner" /> Processing…</> : 'Submit for Verification'}</button>
-              </div>
-            </form>
+
+                <div className="pay-card">
+                  <h3 className="pay-card-title">
+                    <b>2</b>Your payment details
+                  </h3>
+                  <div className="pay-grid2">
+                    <div className="pay-field">
+                      <label htmlFor="pay-easypaisa-sender">Sender name</label>
+                      <input
+                        id="pay-easypaisa-sender"
+                        className="pay-input"
+                        type="text"
+                        placeholder="Your full name"
+                        required
+                        value={easypaisaSender}
+                        onChange={(event) => setEasypaisaSender(event.target.value)}
+                      />
+                    </div>
+                    <div className="pay-field">
+                      <label htmlFor="pay-easypaisa-phone">Phone number</label>
+                      <input
+                        id="pay-easypaisa-phone"
+                        className="pay-input"
+                        type="tel"
+                        placeholder="03XX-XXXXXXX"
+                        required
+                        value={easypaisaPhone}
+                        onChange={(event) => setEasypaisaPhone(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pay-card">
+                  <h3 className="pay-card-title">
+                    <b>3</b>Payment screenshot
+                  </h3>
+                  {screenshotField}
+                </div>
+
+                <div className="pay-actions">
+                  <button type="button" className="pay-btn pay-btn-back" onClick={changeMethod}>
+                    <IconArrowLeft size={18} />
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="pay-btn pay-btn-go"
+                    disabled={!formReady || sending}
+                  >
+                    {sending ? (
+                      <>
+                        <span className="pay-spinner" />
+                        Processing…
+                      </>
+                    ) : (
+                      <>
+                        Submit for verification
+                        <IconArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </>
           )}
         </div>
+
+        <BookingSummary booking={booking} bookingNumber={reference} />
       </div>
     </section>
   )

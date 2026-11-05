@@ -1,6 +1,5 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
-import PageHeader from '../../../components/astro/PageHeader.astro';
 import BankTransferConfirmation from '../../../components/react/BankTransferConfirmation.jsx';
 
 // Rendered on-demand so any booking number works after a customer books.
@@ -14,8 +13,5 @@ const { bookingNumber } = Astro.params;
   description="Your bank transfer payment proof has been submitted for verification — Climb Crux rock climbing bookings in Islamabad on Margalla Hills."
   noindex
 >
-  <PageHeader title="Payment Submitted for Verification">
-    <p slot="default">Your payment proof has been submitted and is awaiting verification by our team.</p>
-  </PageHeader>
   <BankTransferConfirmation client:load bookingNumber={bookingNumber} />
 </MainLayout>

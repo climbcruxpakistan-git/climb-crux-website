@@ -195,7 +195,7 @@ p {
 
 /* Fade-in for page content on load — mirrors the previous site's feel */
 .page-fade-in {
-  animation: fadeSlideIn 0.35s ease both;
+  animation: fadeSlideIn 0.35s ease;
 }
 
 /* Grade badge — the site's signature recurring element.

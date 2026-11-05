@@ -1,6 +1,5 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
-import PageHeader from '../../../components/astro/PageHeader.astro';
 import PaymentPage from '../../../components/react/PaymentPage.jsx';
 
 // Rendered on-demand so any booking number works after a customer books.
@@ -14,8 +13,5 @@ const { bookingNumber } = Astro.params;
   description="Review your climbing booking and complete payment for your rock climbing session in Islamabad — bank transfer or EasyPaisa."
   noindex
 >
-  <PageHeader title="Complete your payment.">
-    <p slot="default">Review your booking details and choose how you'd like to pay.</p>
-  </PageHeader>
   <PaymentPage client:load bookingNumber={bookingNumber} />
 </MainLayout>
