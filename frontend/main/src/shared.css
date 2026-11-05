@@ -705,6 +705,13 @@
   color: #1b8a4b;
 }
 
+.date-error {
+  margin: 8px 0 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #b91c1c;
+}
+
 /* Session details panel (Book Now — admin-managed public sessions) */
 .session-details-panel {
   background: var(--chalk-dim);

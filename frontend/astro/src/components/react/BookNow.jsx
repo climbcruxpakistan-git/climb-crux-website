@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createBooking, getSessionContent, getPlans, getAvailableSessions, getMembershipFormUrl, getBookedDates, getTodayKarachi } from '../../lib/api'
 import { WHATSAPP_DISPLAY, WHATSAPP_WA_ME } from '../../../../../shared/contact.js'
 import BookingCalendar, { formatDateLabel } from './BookingCalendar'
@@ -48,6 +48,8 @@ export default function BookNow({ preselected = '' }) {
   const [agreedTerms, setAgreedTerms] = useState([])
   const [selectedDate, setSelectedDate] = useState('')
   const [bookedDates, setBookedDates] = useState([])
+  const [dateError, setDateError] = useState(false)
+  const dateFieldRef = useRef(null)
   const todayStr = getTodayKarachi()
 
   useEffect(() => {
@@ -131,9 +133,13 @@ export default function BookNow({ preselected = '' }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    // The hidden date input skips the browser's required check.
+    // The hidden date input skips the browser's required check, so put the
+    // message next to the calendar and bring it into view — otherwise the
+    // banner is far above the button and the click looks like it did nothing.
     if (isPrivateSession && !selectedDate) {
       setError('Please select a date from the calendar.')
+      setDateError(true)
+      dateFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
     if (isBooked || isPastDate) return
@@ -295,14 +301,17 @@ export default function BookNow({ preselected = '' }) {
                   ) : null
                 ) : (
                   <>
-                    <div className="field">
+                    <div className="field" ref={dateFieldRef}>
                       <label>Preferred date</label>
                       <BookingCalendar
                         value={selectedDate}
-                        onChange={setSelectedDate}
+                        onChange={(d) => { setSelectedDate(d); setDateError(false) }}
                         bookedDates={bookedDates}
                         todayStr={todayStr}
                       />
+                      {dateError && !selectedDate && (
+                        <p className="date-error" role="alert">Please choose a date from the calendar to continue.</p>
+                      )}
                       {/* keeps the value available to the existing submit code */}
                       <input type="hidden" id="preferred-date" name="preferred-date" value={selectedDate} />
 
