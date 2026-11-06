@@ -11,7 +11,7 @@ export default function ReturnRefundPolicy() {
   return (
     <>
       <PageHeader eyebrow="Legal" title="Return & Refund Policy">
-        <p>Last Updated: August 30, 2026</p>
+        <p>Last Updated: November 6, 2026</p>
       </PageHeader>
 
       <section className="section policy-section">
@@ -22,84 +22,193 @@ export default function ReturnRefundPolicy() {
               This Return &amp; Refund Policy applies to all climbing equipment purchased through the
               official Climb Crux website.
             </p>
-          </section>
-
-          <section className="policy-block">
-            <h2>2. Product Returns</h2>
-            <p>Products may only be returned in the following cases:</p>
-            <ul>
-              <li>The product was damaged when received.</li>
-              <li>The product is defective.</li>
-              <li>The wrong product was received.</li>
-            </ul>
-          </section>
-
-          <section className="policy-block">
-            <h2>3. Non-Returnable Products</h2>
             <p>
-              Climbing equipment is not eligible for return if the customer has used the equipment while
-              climbing.
+              Climb Crux accepts eligible returns within <strong>7 days of delivery</strong>. Customers
+              must submit their return request within this period and comply with the conditions outlined
+              in this policy.
             </p>
             <p>
-              Products that have been used, damaged through use, or show signs of use may not be accepted
-              for return.
+              We aim to make the return process clear and straightforward while maintaining the safety
+              and integrity of climbing equipment.
             </p>
           </section>
 
           <section className="policy-block">
-            <h2>4. Return Time Limit</h2>
-            <p>Return requests must be submitted within 7 days of receiving the order.</p>
-            <p>Requests submitted after this period may not be accepted.</p>
-          </section>
-
-          <section className="policy-block">
-            <h2>5. Return Shipping</h2>
+            <h2>2. Return Eligibility</h2>
             <p>
-              If the return is approved, Climb Crux will provide instructions regarding the return of the
-              product.
-            </p>
-            <p>
-              The customer should not send the product back before contacting Climb Crux and receiving
-              return instructions.
-            </p>
-          </section>
-
-          <section className="policy-block">
-            <h2>6. Refund Process</h2>
-            <p>
-              To request a return or refund, contact Climb Crux through our official WhatsApp number and
-              provide:
+              Customers may request a return within 7 days of receiving their order for the following
+              reasons:
             </p>
             <ul>
-              <li>Your order details/order number</li>
-              <li>A description of the issue</li>
-              <li>Clear photographs or other proof showing the damage, defect, or incorrect product received</li>
+              <li><strong>Damaged products:</strong> The product arrived damaged.</li>
+              <li>
+                <strong>Defective products:</strong> The product has a manufacturing defect or is not
+                functioning as intended.
+              </li>
+              <li>
+                <strong>Incorrect products:</strong> The customer received a different product from the
+                one ordered.
+              </li>
+              <li>
+                <strong>Change of mind:</strong> The customer no longer wishes to keep the product,
+                provided it meets the return conditions outlined in this policy.
+              </li>
             </ul>
-            <p>Our team will review the request and determine whether the product qualifies for a return or refund.</p>
+            <p>All returned products are subject to inspection and approval by Climb Crux.</p>
           </section>
 
           <section className="policy-block">
-            <h2>7. Refund Timeline</h2>
+            <h2>3. Product Condition Requirements</h2>
             <p>
-              Once the returned product has been received at the Climb Crux office and the return has been
-              reviewed and approved, the refund will be processed within 7 days.
+              To qualify for a return, a product must be in a condition suitable for inspection and
+              resale, where applicable.
             </p>
-            <p>The refund timeline begins from the date the returned product is received at the Climb Crux office.</p>
+            <p>The following conditions apply:</p>
+            <ul>
+              <li>Products must not have been used while climbing.</li>
+              <li>Products must not show signs of climbing use, wear, or damage caused by use.</li>
+              <li>Products must not have been altered or modified.</li>
+              <li>
+                Original packaging, tags, accessories, and other supplied items should be included where
+                applicable.
+              </li>
+            </ul>
+            <p>
+              <strong>Important:</strong> Climbing equipment that has been used while climbing is not
+              eligible for return, even if the customer subsequently changes their mind.
+            </p>
+            <p>
+              This restriction is in place to protect the safety, reliability, and integrity of climbing
+              equipment.
+            </p>
+            <p>
+              This condition does not remove a customer's right to request a return for a product that
+              was defective, damaged, or incorrect when received.
+            </p>
           </section>
 
           <section className="policy-block">
-            <h2>8. How to Request a Return or Refund</h2>
-            <p>Please contact Climb Crux through our official WhatsApp number:</p>
+            <h2>4. Non-Returnable Products</h2>
+            <p>Climbing equipment that has been used while climbing is not eligible for return.</p>
+            <p>This includes products that:</p>
+            <ul>
+              <li>Have been used during climbing activities.</li>
+              <li>Show signs of wear or damage resulting from climbing use.</li>
+              <li>Have been altered or modified after delivery.</li>
+            </ul>
+            <p>
+              This restriction applies to all climbing equipment and is intended to maintain appropriate
+              safety standards.
+            </p>
+          </section>
+
+          <section className="policy-block">
+            <h2>5. Return Window</h2>
+            <p>Climb Crux accepts eligible return requests within <strong>7 calendar days</strong> of delivery.</p>
+            <p>
+              The return request must be submitted within 7 days from the date the customer receives the
+              order.
+            </p>
+            <p>Requests submitted after the 7-day return period may not be accepted.</p>
+            <p>
+              Once a return request is approved, the customer must follow the return instructions
+              provided by Climb Crux.
+            </p>
+          </section>
+
+          <section className="policy-block">
+            <h2>6. Return Method</h2>
+            <p>Approved returns are accepted through courier services within Pakistan.</p>
+            <p>
+              Customers must contact Climb Crux through the official WhatsApp number before sending any
+              product back.
+            </p>
+            <p>After reviewing and approving the return request, our team will provide:</p>
+            <ul>
+              <li>Return shipping instructions.</li>
+              <li>The designated return address.</li>
+              <li>Any additional information required to complete the return.</li>
+            </ul>
+            <p>Products sent back without prior authorization may not be accepted.</p>
+          </section>
+
+          <section className="policy-block">
+            <h2>7. Return Shipping Costs</h2>
+            <p>Return shipping costs depend on the reason for the return.</p>
+            <h3>A. Damaged, Defective, or Incorrect Products</h3>
+            <p>
+              If a product arrives damaged, is defective, or is different from the product ordered,
+              Climb Crux will cover the return shipping costs.
+            </p>
+            <p>
+              Our team will provide the customer with return instructions and arrange or reimburse the
+              reasonable return courier charges.
+            </p>
+            <h3>B. Change-of-Mind Returns</h3>
+            <p>
+              For change-of-mind returns or other returns where the product is not defective, damaged,
+              or incorrectly supplied, the customer is responsible for all return shipping and associated
+              logistics costs.
+            </p>
+            <p>These shipping costs are non-refundable.</p>
+            <h3>C. Restocking Fees</h3>
+            <p>Climb Crux does not charge any restocking fees for approved returns.</p>
+          </section>
+
+          <section className="policy-block">
+            <h2>8. Return and Refund Request Process</h2>
+            <p>
+              To request a return or refund, customers must contact Climb Crux through the official
+              WhatsApp number and provide:
+            </p>
+            <ul>
+              <li>Order number.</li>
+              <li>Reason for requesting the return.</li>
+              <li>Clear photographs or other relevant evidence, where applicable.</li>
+            </ul>
+            <p>
+              For damaged, defective, or incorrect products, photographs or other evidence may be
+              requested to verify the issue.
+            </p>
+            <p>Our team will review the request and notify the customer whether the return is approved.</p>
+            <p>Once approved, the customer will receive the necessary return shipping instructions.</p>
+          </section>
+
+          <section className="policy-block">
+            <h2>9. Refund Processing Time</h2>
+            <p>
+              Once the returned product has been received by Climb Crux and inspected and approved, the
+              refund will be processed within <strong>7 calendar days</strong>.
+            </p>
+            <p>
+              The refund processing period begins from the date the returned product is received and the
+              return is approved.
+            </p>
+            <p>
+              Any return shipping or associated logistics costs paid by the customer for an eligible
+              change-of-mind return are non-refundable.
+            </p>
+          </section>
+
+          <section className="policy-block">
+            <h2>10. How to Request a Return or Refund</h2>
+            <p>Customers can contact Climb Crux through our official WhatsApp number:</p>
             <p className="policy-whatsapp">WhatsApp: <a href="https://wa.me/923350044403">{WHATSAPP_DISPLAY}</a></p>
-            <p>Please provide your order number, explain the issue, and send clear photographs or other relevant proof.</p>
-            <p>Our team will review your request and guide you through the next steps.</p>
+            <p>
+              Please include your order number, the reason for your return request, and clear
+              photographs or other relevant information where applicable.
+            </p>
+            <p>Our team will review your request and provide the necessary instructions.</p>
           </section>
 
           <section className="policy-block">
-            <h2>9. Contact Information</h2>
+            <h2>11. Contact Information</h2>
             <p>Climb Crux Pakistan</p>
             <p className="policy-whatsapp">Official WhatsApp: <a href="https://wa.me/923350044403">{WHATSAPP_DISPLAY}</a></p>
-            <p>For any questions regarding returns or refunds, please contact us through our official WhatsApp number.</p>
+            <p>
+              For questions or assistance regarding returns and refunds, please contact us through our
+              official WhatsApp number.
+            </p>
           </section>
         </div>
       </section>
