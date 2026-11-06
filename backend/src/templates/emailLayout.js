@@ -15,6 +15,13 @@ export const LOGO_URL = 'https://climbcruxpakistan.com/logo.png'
 export const SITE_URL = 'https://climbcruxpakistan.com'
 export const SITE_EMAIL = 'climbcruxpakistan@gmail.com'
 
+/**
+ * Solid background that survives auto dark-mode inversion (Gmail / Outlook.com).
+ * Using a gradient image as well as background-color stops most clients from recoloring it.
+ */
+export const bg = (c) => `background-color:${c};background-image:linear-gradient(${c},${c})`
+export const FONT = "'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+
 /** Escape user-provided values before interpolating them into email HTML. */
 export function escapeHtml(value) {
   return String(value ?? '')
@@ -94,6 +101,97 @@ export function referenceBox(label, value) {
     </div>`
 }
 
+/**
+ * Dark "ticket" card carrying the booking number and its status pill.
+ * Used on the booking-approved email only (referenceBox/statusChip stay the
+ * shared blocks for every other email).
+ */
+export function bookingTicket({ number }) {
+  const CARD = '#1f1f21'
+  const PAGE = '#ffffff' // must equal the body background behind the card
+  const H = 116          // ticket content height in px
+  const M = H - 16       // middle (dashed) section height
+  return `
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD}"
+         style="margin:22px 0 8px;${bg(CARD)};border-radius:14px;border-collapse:separate">
+    <tr>
+      <!-- Left: booking number -->
+      <td class="tk-col" height="${H}" valign="middle" style="height:${H}px;padding:0 16px 0 24px;vertical-align:middle">
+        <div style="font-family:${FONT};font-size:11px;line-height:1.4;color:#9a9a9f;text-transform:uppercase;letter-spacing:0.22em;margin:0 0 8px;white-space:nowrap">Booking Number</div>
+        <div class="tk-num" style="font-family:${FONT};font-size:32px;line-height:1.1;font-weight:700;letter-spacing:1px;color:#f36f21;white-space:nowrap">${escapeHtml(number)}</div>
+      </td>
+
+      <!-- Middle: dashed divider + notches (hidden on mobile) -->
+      <td class="tk-col tk-div" width="16" height="${H}" valign="top" style="width:16px;height:${H}px;padding:0;font-size:0;line-height:0">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="16" height="${H}" style="width:16px;height:${H}px;border-collapse:collapse">
+          <tr>
+            <td colspan="2" height="8" style="height:8px;padding:0;font-size:0;line-height:0">
+              <div style="width:16px;height:8px;font-size:0;line-height:0;${bg(PAGE)};border-radius:0 0 8px 8px">&nbsp;</div>
+            </td>
+          </tr>
+          <tr>
+            <td width="7" height="${M}" style="width:7px;height:${M}px;padding:0;border-right:2px dashed #4a4a4e;font-size:0;line-height:0">&nbsp;</td>
+            <td width="7" height="${M}" style="width:7px;height:${M}px;padding:0;font-size:0;line-height:0">&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="2" height="8" valign="bottom" style="height:8px;padding:0;font-size:0;line-height:0">
+              <div style="width:16px;height:8px;font-size:0;line-height:0;${bg(PAGE)};border-radius:8px 8px 0 0">&nbsp;</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- Right: status -->
+      <td class="tk-col tk-right" width="150" height="${H}" valign="middle" style="width:150px;height:${H}px;padding:0 20px;vertical-align:middle;text-align:center">
+        <div style="font-family:${FONT};font-size:11px;line-height:1.4;color:#9a9a9f;text-transform:uppercase;letter-spacing:0.2em;margin:0 0 10px">Status</div>
+        <table class="tk-pill" role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto">
+          <tr>
+            <td bgcolor="#f36f21" style="${bg('#f36f21')};border-radius:999px;padding:10px 20px;font-family:${FONT};font-size:14px;font-weight:700;color:#ffffff;white-space:nowrap">
+              <span style="color:#ffffff">&#10003;&nbsp; Confirmed</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`
+}
+
+/**
+ * Dark booking-number card with a split "PENDING | Payment verification" pill.
+ * Used ONLY by the booking-request-received email.
+ * (referenceBox/statusChip are untouched; other emails still use them.)
+ */
+export function bookingRequestCard({ number }) {
+  const CARD = '#1c1c1c'
+  return `
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="${CARD}"
+         style="margin:22px 0 8px;${bg(CARD)};border-radius:16px;border-collapse:separate">
+    <tr>
+      <td class="rq-pad" align="center" style="padding:28px 20px 0;text-align:center">
+        <div style="font-family:${FONT};font-size:11px;line-height:1.4;color:#9a9a9f;text-transform:uppercase;letter-spacing:0.3em">Booking Number</div>
+        <div class="rq-num" style="font-family:${FONT};font-size:34px;line-height:1.25;font-weight:700;letter-spacing:2px;color:#f36f21;margin-top:6px;white-space:nowrap">${escapeHtml(number)}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="rq-pad" style="padding:18px 28px 0">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+          <tr><td height="1" bgcolor="#3a3a3e" style="height:1px;font-size:0;line-height:0;${bg('#3a3a3e')}">&nbsp;</td></tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="rq-pad" align="center" style="padding:18px 20px 28px;text-align:center">
+        <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;border-collapse:separate">
+          <tr>
+            <td class="rq-p1" bgcolor="#f5a623" style="${bg('#f5a623')};border-radius:999px 0 0 999px;padding:9px 14px 9px 18px;font-family:${FONT};font-size:11px;font-weight:700;letter-spacing:0.14em;color:#1c1c1c;white-space:nowrap">PENDING</td>
+            <td class="rq-p2" bgcolor="#2c2c30" style="${bg('#2c2c30')};border-radius:0 999px 999px 0;padding:9px 18px 9px 14px;font-family:${FONT};font-size:12px;font-weight:600;color:#ffffff;white-space:nowrap">Payment verification</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`
+}
+
 /** Orange pill showing the booking/membership status. */
 export function statusChip(text) {
   return `<div style="display:inline-block;background:#f36f21;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:999px;margin:4px 0 18px">${text}</div>`
@@ -108,7 +206,7 @@ export function whatsappBlock({ number, items = [], confirmText = '' }) {
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:22px 0 0;background:#f6faf6;border:1px solid #e0efe0;border-radius:12px">
       <tr>
         <td style="padding:20px 22px">
-          <div style="font-size:13px;font-weight:800;color:#1c1c1c;margin-bottom:4px">💬 Complete your payment via WhatsApp</div>
+          <div style="font-size:13px;font-weight:700;color:#1c1c1c;margin-bottom:4px">💬 Complete your payment via WhatsApp</div>
           <p style="margin:6px 0 10px;font-size:13px;color:#666;line-height:1.6">Please send the following to our official WhatsApp number:</p>
           <ul style="margin:0 0 12px;padding-left:18px">${list}</ul>
           ${confirmText ? `<p style="margin:0 0 14px;font-size:13px;color:#666;line-height:1.6">${confirmText}</p>` : ''}
@@ -133,32 +231,51 @@ export function renderEmailLayout({ headerTitle, headerSubtitle, greeting = '', 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light only" />
   <title>${headerTitle}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { color-scheme: light only; supported-color-schemes: light only; }
+    @media only screen and (max-width:480px) {
+      .px { padding-left:20px !important; padding-right:20px !important; }
+      .tk-col { display:block !important; width:100% !important; height:auto !important;
+                box-sizing:border-box !important; padding:20px 22px !important; }
+      .tk-div { display:none !important; height:0 !important; width:0 !important; }
+      .tk-right { border-top:2px dashed #4a4a4e !important; text-align:left !important; }
+      .tk-pill { margin:0 !important; }
+      .tk-num { font-size:28px !important; }
+      .rq-num { font-size:28px !important; letter-spacing:1px !important; }
+      .rq-pad { padding-left:12px !important; padding-right:12px !important; }
+      .rq-p1 { padding:8px 10px 8px 14px !important; font-size:10px !important; }
+      .rq-p2 { padding:8px 14px 8px 10px !important; font-size:11px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 16px">
+<body bgcolor="#f5f5f5" style="margin:0;padding:0;${bg('#f5f5f5')};font-family:${FONT}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#f5f5f5" style="${bg('#f5f5f5')};padding:32px 16px">
     <tr><td align="center">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06)">
+      <table role="presentation" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width:600px;width:100%;${bg('#ffffff')};border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06)">
         <!-- Header -->
         <tr>
-          <td style="background:#1c1c1c;padding:28px 32px 24px;text-align:center">
+          <td class="px" bgcolor="#1c1c1c" style="${bg('#1c1c1c')};padding:28px 32px 24px;text-align:center">
             <img src="${LOGO_URL}" alt="Climb Crux" width="150" style="max-width:150px;height:auto;display:inline-block" />
-            <div style="margin-top:14px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:0.02em">${headerTitle}</div>
-            <div style="margin-top:4px;font-size:13px;color:#b8b8b8">${headerSubtitle}</div>
+            <div style="margin-top:14px;font-family:${FONT};font-size:21px;font-weight:700;color:#ffffff;letter-spacing:0.02em">${headerTitle}</div>
+            <div style="margin-top:4px;font-family:${FONT};font-size:13px;color:#b8b8b8">${headerSubtitle}</div>
           </td>
         </tr>
         <!-- Orange accent bar -->
         <tr><td style="height:5px;background:linear-gradient(90deg,#f36f21,#e85d0f)"></td></tr>
         <!-- Body -->
         <tr>
-          <td style="padding:28px 32px 24px">
-            ${greeting ? `<p style="margin:0 0 14px;font-size:15px;color:#1c1c1c;font-weight:700">${greeting}</p>` : ''}
+          <td class="px" bgcolor="#ffffff" style="${bg('#ffffff')};padding:28px 32px 24px;font-family:${FONT}">
+            ${greeting ? `<p style="margin:0 0 14px;font-family:${FONT};font-size:15px;color:#1c1c1c;font-weight:700">${greeting}</p>` : ''}
             ${bodyHtml}
           </td>
         </tr>
         <!-- Footer -->
         <tr>
-          <td style="background:#fafafa;border-top:1px solid #eee;padding:22px 32px;text-align:center">
+          <td class="px" bgcolor="#fafafa" style="${bg('#fafafa')};border-top:1px solid #eee;padding:22px 32px;text-align:center">
             <div style="font-size:13px;color:#666;line-height:1.8">
               <strong style="color:#1c1c1c">Climb Crux Pakistan</strong><br />
               <a href="${SITE_URL}" style="color:#f36f21;text-decoration:none">climbcruxpakistan.com</a><br />

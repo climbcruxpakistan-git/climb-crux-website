@@ -4,7 +4,8 @@ import Payment from '../models/Payment.js'
 import Booking from '../models/Booking.js'
 import Session from '../models/Session.js'
 import { generateBookingPdf } from '../services/pdfService.js'
-import { sendBookingApprovedEmail, sendBookingDeclinedEmail } from '../services/emailService.js'
+import { sendBookingDeclinedEmail } from '../services/emailService.js'
+import { deliverBookingConfirmationEmail } from '../services/bookingConfirmationEmail.js'
 
 /** Classify a booking as Public or Private based on its session_id. */
 function bookingTypeLabel(sessionId) {
@@ -97,6 +98,9 @@ router.post('/verify', async (req, res, next) => {
       booking.approval_date = new Date().toISOString()
       booking.rejected_by = ''
       booking.rejection_date = ''
+      booking.confirmation_email_status = 'pending'
+      booking.confirmation_email_attempts = 0
+      booking.confirmation_email_last_error = ''
       logEvent(booking, {
         type: 'booking_approved',
         description: 'Booking approved and payment verified',
@@ -105,33 +109,18 @@ router.post('/verify', async (req, res, next) => {
       })
       await booking.save()
 
-      // Best-effort session time for the PDF — client's preferred time first, then snapshot, then legacy lookup
-      let sessionTime = booking.time || ''
-      if (booking.session_start_time || booking.session_end_time) {
-        sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
-      } else if (!sessionTime) {
-        try {
-          const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-          sessionTime = s?.time || ''
-        } catch { /* ignore */ }
-      }
-      // Generate the confirmed-booking PDF (best-effort)
-      let pdfBuffer = null
-      try {
-        pdfBuffer = await generateBookingPdf(booking, { status: 'confirmed', sessionType, time: sessionTime })
-      } catch (pdfErr) {
-        console.error('[payments] Confirmation PDF failed:', pdfErr.message)
-      }
-
-      // Send the customer confirmation email (don't block response on failure).
-      // No admin notification here — the admin was already alerted when the
-      // payment screenshot was submitted, and this is an admin-initiated action.
-      sendBookingApprovedEmail({ booking, sessionType, pdfBuffer }).catch(() => {})
+      // Await the send so the response reflects the real result. If it fails,
+      // the booking stays 'pending' and the background retry loop resends it.
+      const emailSent = await deliverBookingConfirmationEmail(booking)
 
       res.json({
         success: true,
         message: 'Payment approved and booking confirmed',
         booking,
+        emailSent,
+        note: emailSent
+          ? undefined
+          : 'Booking confirmed. The confirmation email is queued and will retry automatically.',
         payment: {
           id: payment._id,
           status: payment.status,

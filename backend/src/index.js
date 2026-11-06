@@ -30,6 +30,7 @@ import emailRoutes from './routes/emails.js'
 
 import { requireAdmin, requireAdminStrict } from './middleware/auth.js'
 import { authLimiter, bookingLimiter, apiLimiter, statusLimiter } from './middleware/rateLimiter.js'
+import { retryPendingConfirmationEmails, CONFIRMATION_EMAIL_RETRY_MS } from './services/bookingConfirmationEmail.js'
 
 const PORT = process.env.PORT || 4000
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/climb-crux'
@@ -143,6 +144,16 @@ mongoose
   .then(() => {
     console.log(`Connected to MongoDB at ${MONGODB_URI}`)
     app.listen(PORT, () => console.log(`API server on http://localhost:${PORT}`))
+
+    retryPendingConfirmationEmails().catch((err) =>
+      console.error('[confirmation-email] startup retry failed:', err.message)
+    )
+    const retryTimer = setInterval(() => {
+      retryPendingConfirmationEmails().catch((err) =>
+        console.error('[confirmation-email] scheduled retry failed:', err.message)
+      )
+    }, CONFIRMATION_EMAIL_RETRY_MS)
+    retryTimer.unref?.()
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err.message)

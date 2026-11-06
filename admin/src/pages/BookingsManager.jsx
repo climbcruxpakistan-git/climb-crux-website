@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, searchBookings, getSessions } from '../store.js'
+import { getBookings, saveBooking, deleteBooking, patchBookingStatus, patchPaymentStatus, approveBooking, rejectBooking, resendBookingConfirmation, searchBookings, getSessions } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 import { formatDate, formatDateTime, formatTime12h } from '../formatDate.js'
@@ -334,12 +334,31 @@ export default function BookingsManager() {
       await refresh()
       if (searchState.active) await runSearch(searchInput, true)
       if (res.emailSent === false) {
-        addToast('Booking confirmed, but the confirmation email could not be sent', 'error')
+        addToast('Booking confirmed — email queued and will retry automatically', 'error')
       } else {
         addToast('Booking approved — confirmation email sent', 'success')
       }
     } catch (err) {
       addToast(`Failed to approve: ${err.message}`, 'error')
+    } finally {
+      setActing(false)
+    }
+  }
+
+  async function handleResend(b) {
+    if (!confirm(`Resend the confirmation email to ${b.customer_email}?`)) return
+    setActing(true)
+    try {
+      const res = await resendBookingConfirmation(b.id)
+      await refresh()
+      if (searchState.active) await runSearch(searchInput, true)
+      if (res.emailSent === false) {
+        addToast('Email could not be sent right now — it will retry automatically', 'error')
+      } else {
+        addToast('Confirmation email resent', 'success')
+      }
+    } catch (err) {
+      addToast(`Failed to resend: ${err.message}`, 'error')
     } finally {
       setActing(false)
     }
@@ -658,6 +677,16 @@ export default function BookingsManager() {
                               title="Cancel booking (no email)"
                             >
                               ✕
+                            </button>
+                          )}
+                          {b.booking_status === 'confirmed' && (
+                            <button
+                              className="btn-admin-icon"
+                              onClick={() => handleResend(b)}
+                              disabled={acting}
+                              title="Resend confirmation email"
+                            >
+                              {'\u2709'}
                             </button>
                           )}
                           <button className="btn-admin-icon danger" onClick={() => handleDelete(b.id)} title="Delete">🗑</button>

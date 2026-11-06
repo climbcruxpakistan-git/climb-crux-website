@@ -226,6 +226,11 @@ export async function rejectBooking(id, reason = 'payment') {
   return mapId(await request('POST', `/bookings/${id}/reject`, { reason }))
 }
 
+/** Admin re-sends the confirmed-booking email (with PDF). */
+export async function resendBookingConfirmation(id) {
+  return mapId(await request('POST', `/bookings/${id}/resend-confirmation`))
+}
+
 /* ---------- Payments ---------- */
 
 export async function getPendingPayments() {

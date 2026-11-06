@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getPendingPayments, getBookings, patchBookingStatus, patchPaymentStatus } from '../store.js'
+import { getPendingPayments, getBookings, patchBookingStatus, patchPaymentStatus, approveBooking } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import { formatDate } from '../formatDate.js'
 
@@ -39,11 +39,14 @@ export default function PaymentsManager() {
     setProcessing(bookingId)
     try {
       if (action === 'approve') {
-        await Promise.all([
-          patchBookingStatus(bookingId, 'confirmed'),
-          patchPaymentStatus(bookingId, 'paid'),
-        ])
-        addToast('Payment approved ✓ Booking confirmed', 'success')
+        // Use the approval endpoint so the customer's confirmation email is
+        // sent automatically (the status-patch endpoints never email).
+        const res = await approveBooking(bookingId)
+        if (res.emailSent === false) {
+          addToast('Payment approved ✓ Booking confirmed — email will retry automatically', 'error')
+        } else {
+          addToast('Payment approved ✓ Booking confirmed — email sent', 'success')
+        }
       } else {
         await Promise.all([
           patchBookingStatus(bookingId, 'pending_payment'),

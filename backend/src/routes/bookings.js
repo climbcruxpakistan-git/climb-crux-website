@@ -13,10 +13,10 @@ import { generateBookingPdf } from '../services/pdfService.js'
 import { nextBookingReference } from '../services/sequence.js'
 import {
   sendBookingConfirmation,
-  sendBookingApprovedEmail,
   sendBookingDeclinedEmail,
   sendAdminPaymentProofNotification,
 } from '../services/emailService.js'
+import { deliverBookingConfirmationEmail } from '../services/bookingConfirmationEmail.js'
 
 const router = Router()
 
@@ -527,6 +527,11 @@ router.post('/:id/approve', requireAdmin, async (req, res, next) => {
     booking.approval_date = new Date().toISOString()
     booking.rejected_by = ''
     booking.rejection_date = ''
+    // Durable email state — persisted with the confirmation so a send that is
+    // interrupted (e.g. a dev-server restart) is retried automatically.
+    booking.confirmation_email_status = 'pending'
+    booking.confirmation_email_attempts = 0
+    booking.confirmation_email_last_error = ''
 
     // Audit trail: approved (admin identity + timestamp)
     logEvent(booking, {
@@ -543,31 +548,40 @@ router.post('/:id/approve', requireAdmin, async (req, res, next) => {
       { status: 'paid', paid_at: new Date() }
     )
 
-    const sessionType = bookingTypeLabel(booking.session_id)
-    // Best-effort session time for the PDF — snapshot first, then legacy lookup
-    let sessionTime = booking.time || ''
-    if (booking.session_start_time || booking.session_end_time) {
-      sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
-    } else if (!sessionTime) {
-      try {
-        const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-        sessionTime = s?.time || ''
-      } catch { /* ignore */ }
-    }
-    // Generate the confirmed-booking PDF (best-effort — never blocks approval)
-    let pdfBuffer = null
-    try {
-      pdfBuffer = await generateBookingPdf(booking, { status: 'confirmed', sessionType, time: sessionTime })
-    } catch (pdfErr) {
-      console.error('[bookings] Confirmation PDF failed:', pdfErr.message)
-    }
-    const emailSent = await sendBookingApprovedEmail({ booking, sessionType, pdfBuffer }).catch(() => false)
+    const emailSent = await deliverBookingConfirmationEmail(booking)
     res.json({
       booking,
       emailSent,
       note: emailSent
         ? undefined
-        : 'Booking confirmed, but the confirmation email could not be sent. Check the server logs.',
+        : 'Booking confirmed. The confirmation email is queued and will retry automatically.',
+    })
+  } catch (err) { next(err) }
+})
+
+/* ── POST /api/bookings/:id/resend-confirmation — admin ──────────────────
+   Re-sends the confirmed-booking email (with the PDF) and updates the
+   delivery flags so the retry loop can take over if the send fails.        */
+router.post('/:id/resend-confirmation', requireAdmin, async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+    if (!booking) return res.status(404).json({ error: 'Booking not found' })
+    if (booking.booking_status !== 'confirmed') {
+      return res.status(409).json({ error: 'Only confirmed bookings can receive a confirmation email.' })
+    }
+
+    booking.confirmation_email_status = 'pending'
+    booking.confirmation_email_attempts = 0
+    booking.confirmation_email_last_error = ''
+    await booking.save()
+
+    const emailSent = await deliverBookingConfirmationEmail(booking)
+    res.json({
+      booking,
+      emailSent,
+      note: emailSent
+        ? undefined
+        : 'Booking confirmed. The confirmation email is queued and will retry automatically.',
     })
   } catch (err) { next(err) }
 })

@@ -1,5 +1,5 @@
-import PaymentSubmitted from './PaymentSubmitted'
+import PaymentConfirmation from './PaymentConfirmation'
 
 export default function BankTransferConfirmation({ bookingNumber }) {
-  return <PaymentSubmitted bookingNumber={bookingNumber} method="bank_transfer" />
+  return <PaymentConfirmation bookingNumber={bookingNumber} />
 }

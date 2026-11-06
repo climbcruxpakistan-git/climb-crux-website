@@ -533,7 +533,7 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
     }
 
     const fieldHeight = (field, width) => {
-      if (field.pill) return 30
+      if (field.pill) return 28
       doc.font(fonts.medium).fontSize(12.5)
       return 10 + doc.heightOfString(field.value, { width })
     }
@@ -544,9 +544,12 @@ export function generateBookingPdf(booking, { status = 'pending', sessionType = 
       if (field.pill) {
         doc.font(fonts.bold).fontSize(8.5)
         const pillWidth = doc.widthOfString(field.pill) + 22
-        doc.roundedRect(x, yTop + 10, pillWidth, 18, 9).fill(field.color)
+        const pillHeight = 18
+        const pillTop = yTop + 10
+        doc.roundedRect(x, pillTop, pillWidth, pillHeight, 9).fill(field.color)
+        const pillTextTop = pillTop + (pillHeight - doc.currentLineHeight()) / 2
         doc.fillColor('#ffffff').font(fonts.bold).fontSize(8.5)
-          .text(field.pill, x, yTop + 15, { width: pillWidth, align: 'center' })
+          .text(field.pill, x, pillTextTop, { width: pillWidth, align: 'center' })
       } else {
         doc.fillColor(INK).font(fonts.medium).fontSize(12.5)
           .text(field.value, x, yTop + 10, { width })

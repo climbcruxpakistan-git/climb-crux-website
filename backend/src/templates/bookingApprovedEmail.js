@@ -2,7 +2,7 @@
  * Booking approval email — sent to the customer after an administrator
  * verifies their payment screenshot and confirms the booking.
  */
-import { renderEmailLayout, referenceBox, statusChip, escapeHtml, summaryTable, whatsappLink, bookingSessionRows } from './emailLayout.js'
+import { renderEmailLayout, bookingTicket, escapeHtml, summaryTable, whatsappLink, bookingSessionRows } from './emailLayout.js'
 import { formatDateDDMMYYYY, formatTime12h } from '../services/dateFormat.js'
 
 const STATUS = 'Confirmed'
@@ -38,19 +38,20 @@ export function bookingApprovedEmail({ booking, sessionType = 'Public Session', 
   rows.push(['Participants', String(booking.participants || 1)])
   rows.push(['Total', `PKR ${(booking.amount || 0).toLocaleString()}`])
 
+  const firstName = (booking.customer_name || 'there').split(' ')[0]
+
   const html = renderEmailLayout({
     headerTitle: 'Booking Confirmed',
-    headerSubtitle: 'Your payment has been verified 🧗',
-    greeting: `Hi ${escapeHtml((booking.customer_name || 'there').split(' ')[0])},`,
+    headerSubtitle: 'Your payment has been verified',
     bodyHtml: `
-      <p style="margin:0 0 6px;font-size:14px;color:#444;line-height:1.7">
-        Great news — your payment has been <strong>verified</strong> and your
-        <strong>${escapeHtml(sessionTitle)}</strong> booking is now
-        <strong>confirmed</strong>.
+      <p style="margin:0 0 12px;font-size:24px;font-weight:700;color:#1c1c1c">Hi ${escapeHtml(firstName)},</p>
+      <p style="margin:0 0 6px;font-size:16px;color:#5f5f64;line-height:1.7">
+        Great news — your payment has been <strong style="color:#1c1c1c">verified</strong> and your
+        <strong style="color:#1c1c1c">${escapeHtml(sessionTitle)}</strong> booking is now
+        <strong style="color:#e85d0f">confirmed</strong>.
       </p>
-      ${referenceBox('Booking Number', reference)}
-      ${statusChip(STATUS)}
-      <div style="margin:18px 0 4px;font-size:12px;font-weight:800;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Booking summary</div>
+      ${bookingTicket({ number: reference })}
+      <div style="margin:18px 0 4px;font-size:12px;font-weight:700;color:#1c1c1c;text-transform:uppercase;letter-spacing:0.06em">Booking summary</div>
       ${summaryTable(rows)}
       <p style="margin:18px 0 0;font-size:14px;color:#444;line-height:1.7">
         A <strong>PDF copy of your confirmed booking</strong> has been attached to

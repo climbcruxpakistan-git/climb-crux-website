@@ -54,6 +54,17 @@ const bookingSchema = new mongoose.Schema({
   approval_date: { type: String, default: '' }, // set when the booking is confirmed
   rejected_by: { type: String, default: '' },
   rejection_date: { type: String, default: '' }, // set when the booking is declined
+  // ── Confirmation email delivery (durable retry state) ──
+  // 'pending' is written in the same save that confirms the booking, so an
+  // interrupted send is picked up by the background retry loop.
+  confirmation_email_status: {
+    type: String,
+    default: '',
+    enum: ['', 'pending', 'sent', 'failed'],
+  },
+  confirmation_email_sent_at: { type: Date, default: null },
+  confirmation_email_attempts: { type: Number, default: 0 },
+  confirmation_email_last_error: { type: String, default: '' },
   // ── Audit log (every admin action + key customer events) ──
   history: {
     type: [

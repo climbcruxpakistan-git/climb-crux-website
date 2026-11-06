@@ -7,6 +7,7 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed.js",
+    "email:resend": "node src/resend-confirmation.js",
     "db:backup": "node src/backup.js",
     "db:restore": "node src/restore.js"
   },

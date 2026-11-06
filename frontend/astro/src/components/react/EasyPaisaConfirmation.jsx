@@ -1,5 +1,5 @@
-import PaymentSubmitted from './PaymentSubmitted'
+import PaymentConfirmation from './PaymentConfirmation'
 
 export default function EasyPaisaConfirmation({ bookingNumber }) {
-  return <PaymentSubmitted bookingNumber={bookingNumber} method="easypaisa" />
+  return <PaymentConfirmation bookingNumber={bookingNumber} />
 }

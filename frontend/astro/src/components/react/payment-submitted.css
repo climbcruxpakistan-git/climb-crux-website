@@ -1,0 +1,272 @@
+/* Payment submitted page. Namespaced .pay-*; uses existing tokens with fallbacks. */
+.pay-sub {
+  --o: var(--orange, #f36f21);
+  --od: var(--orange-dark, #cf5711);
+  --d: var(--charcoal, #383839);
+  --mut: var(--stone, #8c8578);
+  --line: #e3dacb;
+  --green: #1e9e6a;
+  padding: clamp(28px, 4vw, 48px) var(--edge, clamp(20px, 5vw, 64px)) clamp(56px, 8vw, 100px);
+  color: var(--ink, #201f1c);
+  font-family: var(--font-body, 'Work Sans', sans-serif);
+}
+.pay-sub * {
+  box-sizing: border-box;
+}
+/* payment.css (the payment form page) also styles a .pay-sub paragraph and its own
+   .pay-steps/.pay-step bar, and both stylesheets load on these two routes. Reset the
+   properties that would otherwise leak onto this page, with extra specificity so the
+   result does not depend on stylesheet order. The progress bar below is scoped to
+   .pay-sub for the same reason: it must not restyle PaymentSteps on the old
+   loading/not-found states. */
+.pay-sub.pay-sub {
+  max-width: none;
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* progress bar — scoped to this page so it stays independent of PaymentSteps */
+.pay-sub .pay-steps {
+  display: flex;
+  max-width: none;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+.pay-sub .pay-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--mut);
+}
+.pay-sub .pay-step + .pay-step:before {
+  content: '';
+  width: clamp(28px, 6vw, 88px);
+  height: 2px;
+  margin: 0 clamp(10px, 1.4vw, 18px);
+  background: var(--line);
+}
+.pay-sub .pay-step.is-done + .pay-step:before,
+.pay-sub .pay-step.is-now:before {
+  background: var(--d);
+}
+.pay-sub .pay-step-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--line);
+  background: #fff;
+  font-size: 14px;
+}
+.pay-sub .pay-step.is-done {
+  color: var(--d);
+}
+.pay-sub .pay-step.is-done .pay-step-dot {
+  background: var(--d);
+  border-color: var(--d);
+  color: #fff;
+}
+.pay-sub .pay-step.is-now {
+  color: var(--d);
+}
+.pay-sub .pay-step.is-now .pay-step-dot {
+  background: var(--o);
+  border-color: var(--o);
+  color: #fff;
+  box-shadow: 0 0 0 6px rgba(243, 111, 33, 0.18);
+}
+
+/* body */
+.pay-sub-col {
+  max-width: 520px;
+  margin: clamp(36px, 6vw, 72px) auto 0;
+}
+.pay-sub-check {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.pay-sub h1 {
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: clamp(28px, 4vw, 34px);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 22px 0 10px;
+}
+.pay-sub-lead {
+  margin: 0;
+  color: var(--mut);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.pay-sub-rows {
+  margin: 36px 0 0;
+  border-top: 1px solid var(--line);
+}
+.pay-sub-rows > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15.5px;
+}
+.pay-sub-rows dt {
+  color: var(--mut);
+}
+.pay-sub-rows dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  text-align: right;
+}
+.pay-sub-mono {
+  font-family: ui-monospace, Menlo, monospace;
+  letter-spacing: 0.05em;
+  font-weight: 600 !important;
+}
+.pay-sub-copy {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--od);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  letter-spacing: 0;
+  font-family: var(--font-body, 'Work Sans', sans-serif);
+}
+.pay-sub-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e8a317;
+  flex: none;
+}
+.pay-sub-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.pay-sub-h2 {
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  color: var(--mut);
+  margin: 36px 0 14px;
+}
+.pay-sub-next {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pay-sub-next li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 15.5px;
+}
+.pay-sub-next i {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #cfc6b6;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.pay-sub-next .is-done i {
+  background: var(--green);
+  border-color: var(--green);
+}
+.pay-sub-next .is-later {
+  color: var(--mut);
+}
+.pay-sub-next small {
+  margin-left: auto;
+  color: var(--mut);
+  font-size: 14px;
+}
+
+.pay-sub-actions {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-top: 44px;
+  flex-wrap: wrap;
+}
+.pay-sub-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  padding: 0 30px;
+  border-radius: 8px;
+  background: var(--o);
+  color: #fff;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pay-sub-btn:hover {
+  background: var(--od);
+}
+.pay-sub-link {
+  color: var(--d);
+  font-size: 15px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.pay-sub a:focus-visible,
+.pay-sub button:focus-visible {
+  outline: 3px solid rgba(243, 111, 33, 0.45);
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .pay-sub .pay-step-label {
+    display: none;
+  }
+  .pay-sub .pay-step.is-now .pay-step-label {
+    display: inline;
+  }
+  .pay-sub-rows > div {
+    font-size: 15px;
+  }
+  .pay-sub-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
