@@ -287,10 +287,14 @@ export default function BookingsManager() {
       ? { id: null, ...form }
       : { id: editing, ...form }
     try {
-      await saveBooking(booking)
+      const saved = await saveBooking(booking)
       setBookings(await getBookings())
       setEditing(null)
-      addToast('Booking saved', 'success')
+      if (saved?.emailSent === false) {
+        addToast('Booking saved, but the decline email could not be sent', 'error')
+      } else {
+        addToast('Booking saved', 'success')
+      }
     } catch (err) {
       addToast(err.message, 'error')
     }
@@ -305,11 +309,19 @@ export default function BookingsManager() {
   }
 
   async function updateStatus(id, status) {
+    // Declining emails the customer, so don't let a single stray click do it.
+    if (status === 'cancelled' && !confirm('Decline this booking?\n\nThe customer will be emailed and the booking marked as declined.')) return
     try {
-      await patchBookingStatus(id, status)
+      const res = await patchBookingStatus(id, status)
       setBookings(await getBookings())
       if (searchState.active) await runSearch(searchInput, true)
-      addToast(`Booking ${status}`, 'success')
+      if (status === 'cancelled' && res?.emailSent === false) {
+        addToast('Booking declined, but the decline email could not be sent', 'error')
+      } else if (status === 'cancelled') {
+        addToast('Booking declined — email sent to customer', 'success')
+      } else {
+        addToast(`Booking ${status}`, 'success')
+      }
     } catch (err) {
       addToast(`Failed to update status: ${err.message}`, 'error')
     }
@@ -674,7 +686,7 @@ export default function BookingsManager() {
                               className="btn-admin btn-admin-sm"
                               style={{ background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', fontSize: '0.6rem' }}
                               onClick={() => updateStatus(b.id, 'cancelled')}
-                              title="Cancel booking (no email)"
+                              title="Decline — cancel & email customer"
                             >
                               ✕
                             </button>

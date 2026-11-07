@@ -50,14 +50,19 @@
 .bn-cal-head button:disabled{opacity:.35;cursor:not-allowed}
 .bn-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
 .bn-cal-dow span{font-size:11.5px;color:var(--mut);padding-bottom:6px}
-.bn-day{height:42px;border:0;border-radius:9px;font:inherit;font-weight:500;font-size:14.5px;cursor:pointer}
+.bn-day{position:relative;height:42px;border:0;border-radius:9px;font:inherit;font-weight:500;font-size:14.5px;cursor:pointer}
 .bn-day.is-free{background:#e6f4ec;color:#14744d}
-.bn-day.is-booked{background:#fde5d3;color:#b94e0a}
-.bn-day.is-out{background:#efeae0;color:#b3ab9c;text-decoration:line-through;cursor:not-allowed}
+.bn-day.is-booked{background:#fdecea;color:#b3261e}
+.bn-day.is-out{background:#4b4844;color:#d8d2c6;text-decoration:line-through;cursor:not-allowed}
 .bn-day.is-selected{background:var(--d);color:#fff;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--o)}
+/* day tooltip (hover / keyboard focus) */
+.bn-day[data-tip]:hover:after,.bn-day[data-tip]:focus-visible:after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);z-index:30;white-space:nowrap;pointer-events:none;
+  background:var(--dd);color:#fff;font-size:12px;font-weight:500;line-height:1.2;letter-spacing:.01em;padding:6px 10px;border-radius:7px;box-shadow:0 8px 20px rgba(32,31,33,.22)}
+.bn-day[data-tip]:hover:before,.bn-day[data-tip]:focus-visible:before{content:"";position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);z-index:30;pointer-events:none;
+  border:6px solid transparent;border-top-color:var(--dd)}
 .bn-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:13px;color:var(--mut)}
 .bn-legend span{display:flex;align-items:center;gap:7px}.bn-legend i{width:14px;height:14px;border-radius:4px}
-.bn-legend .free{background:#6fcb9f}.bn-legend .booked{background:#f4a56b}.bn-legend .out{background:#d9d2c4}
+.bn-legend .free{background:#6fcb9f}.bn-legend .booked{background:#e8837c}.bn-legend .out{background:#4b4844}
 .bn-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .bn-slots button,.bn-other{height:52px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font:inherit;font-weight:500;cursor:pointer}
 .bn-slots button.is-on,.bn-other.is-on{background:var(--o);border-color:var(--o);color:#fff}
@@ -108,4 +113,5 @@
   .bn-opt small{display:none}.bn-select-btn{gap:10px;padding:12px 14px}
   .bn-actions .bn-btn{width:100%}
 }
+@media (hover:none){.bn-day[data-tip]:hover:after,.bn-day[data-tip]:hover:before{display:none}}
 @media (prefers-reduced-motion:reduce){.bn *{transition:none!important}}

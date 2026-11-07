@@ -103,10 +103,10 @@ export function referenceBox(label, value) {
 
 /**
  * Dark "ticket" card carrying the booking number and its status pill.
- * Used on the booking-approved email only (referenceBox/statusChip stay the
- * shared blocks for every other email).
+ * Shared by the booking-approved and booking-declined emails so both read as
+ * the same design; the status label/icon are parameterised.
  */
-export function bookingTicket({ number }) {
+export function bookingTicket({ number, status = 'Confirmed', icon = '\u2713', pillColor = '#f36f21' }) {
   const CARD = '#1f1f21'
   const PAGE = '#ffffff' // must equal the body background behind the card
   const H = 116          // ticket content height in px
@@ -146,8 +146,8 @@ export function bookingTicket({ number }) {
         <div style="font-family:${FONT};font-size:11px;line-height:1.4;color:#9a9a9f;text-transform:uppercase;letter-spacing:0.2em;margin:0 0 10px">Status</div>
         <table class="tk-pill" role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto">
           <tr>
-            <td bgcolor="#f36f21" style="${bg('#f36f21')};border-radius:999px;padding:10px 20px;font-family:${FONT};font-size:14px;font-weight:700;color:#ffffff;white-space:nowrap">
-              <span style="color:#ffffff">&#10003;&nbsp; Confirmed</span>
+            <td bgcolor="${pillColor}" style="${bg(pillColor)};border-radius:999px;padding:10px 20px;font-family:${FONT};font-size:14px;font-weight:700;color:#ffffff;white-space:nowrap">
+              <span style="color:#ffffff">${icon}&nbsp; ${escapeHtml(status)}</span>
             </td>
           </tr>
         </table>

@@ -55,13 +55,16 @@ export default function BookingCalendar({ value, onChange, bookedDates = [], max
           const k = keyOf(view.y, view.m, d)
           const out = k < today || k > last
           const state = out ? 'out' : booked.has(k) ? 'booked' : 'free'
+          const tip = state === 'booked' ? 'Already booked' : state === 'out' ? 'Unavailable' : 'Free'
           return (
             <button
-              key={k} type="button" disabled={out}
+              key={k} type="button"
               className={`bn-day is-${state}${value === k ? ' is-selected' : ''}`}
+              data-tip={tip}
+              aria-disabled={out || undefined}
               aria-pressed={value === k}
-              aria-label={`${prettyDate(k)}${state === 'booked' ? ', already booked' : ''}`}
-              onClick={() => onChange(k)}
+              aria-label={`${prettyDate(k)} — ${tip}`}
+              onClick={() => { if (!out) onChange(k) }}
             >{d}</button>
           )
         })}

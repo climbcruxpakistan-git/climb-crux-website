@@ -2,15 +2,8 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 import Payment from '../models/Payment.js'
 import Booking from '../models/Booking.js'
-import Session from '../models/Session.js'
-import { generateBookingPdf } from '../services/pdfService.js'
-import { sendBookingDeclinedEmail } from '../services/emailService.js'
 import { deliverBookingConfirmationEmail } from '../services/bookingConfirmationEmail.js'
-
-/** Classify a booking as Public or Private based on its session_id. */
-function bookingTypeLabel(sessionId) {
-  return String(sessionId || '').toLowerCase() === 'public' ? 'Public Session' : 'Private Session'
-}
+import { deliverBookingDeclinedEmail } from '../services/bookingDeclinedEmail.js'
 
 /** Append an event to the booking's audit history (bounded to the last 100). */
 function logEvent(booking, entry) {
@@ -85,7 +78,6 @@ router.post('/verify', async (req, res, next) => {
     }
 
     const adminEmail = req.user?.email || req.body?.verified_by || 'Admin'
-    const sessionType = bookingTypeLabel(booking.session_id)
 
     if (action === 'approve') {
       payment.status = 'paid'
@@ -143,31 +135,19 @@ router.post('/verify', async (req, res, next) => {
       })
       await booking.save()
 
-      // Best-effort session time for the PDF — client's preferred time first, then snapshot, then legacy lookup
-      let sessionTime = booking.time || ''
-      if (booking.session_start_time || booking.session_end_time) {
-        sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
-      } else if (!sessionTime) {
-        try {
-          const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-          sessionTime = s?.time || ''
-        } catch { /* ignore */ }
-      }
-      // Generate the booking-form PDF (best-effort)
-      let pdfBuffer = null
-      try {
-        pdfBuffer = await generateBookingPdf(booking, { status: 'declined', sessionType, time: sessionTime })
-      } catch (pdfErr) {
-        console.error('[payments] Decline PDF failed:', pdfErr.message)
-      }
-
-      // Notify the customer their booking was declined
-      sendBookingDeclinedEmail({ booking, sessionType, reason: 'payment', pdfBuffer }).catch(() => {})
+      // Notify the customer their booking was declined. Awaited so the response
+      // reports the real delivery result instead of losing failures to a
+      // fire-and-forget send.
+      const emailSent = await deliverBookingDeclinedEmail({ booking, reason: 'payment' })
 
       res.json({
         success: true,
         message: 'Payment rejected',
         booking,
+        emailSent,
+        note: emailSent
+          ? undefined
+          : 'Payment rejected, but the decline email could not be sent. Check the server logs.',
         payment: {
           id: payment._id,
           status: payment.status,

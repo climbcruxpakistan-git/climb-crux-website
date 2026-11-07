@@ -9,14 +9,13 @@ import Payment from '../models/Payment.js'
 import Session from '../models/Session.js'
 import { BOOKING_TERMS } from '../membershipForm.js'
 import { requireAdmin, optionalAdmin } from '../middleware/auth.js'
-import { generateBookingPdf } from '../services/pdfService.js'
 import { nextBookingReference } from '../services/sequence.js'
 import {
   sendBookingConfirmation,
-  sendBookingDeclinedEmail,
   sendAdminPaymentProofNotification,
 } from '../services/emailService.js'
 import { deliverBookingConfirmationEmail } from '../services/bookingConfirmationEmail.js'
+import { deliverBookingDeclinedEmail } from '../services/bookingDeclinedEmail.js'
 
 const router = Router()
 
@@ -312,6 +311,9 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
       payer_bank, payer_name, payer_phone,
     } = req.body
 
+    const before = await Booking.findById(req.params.id)
+    if (!before) return res.status(404).json({ error: 'Not found' })
+
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
       {
@@ -332,7 +334,12 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
       actor: req.user?.email || 'Admin',
     })
     await booking.save()
-    res.json(booking)
+    // Declining via the edit form follows the same rule: the customer is told.
+    let emailSent
+    if (booking_status === 'cancelled' && before.booking_status !== 'cancelled') {
+      emailSent = await deliverBookingDeclinedEmail({ booking, reason: 'payment' })
+    }
+    res.json(emailSent === undefined ? booking : { ...booking.toObject(), emailSent })
   } catch (err) { next(err) }
 })
 
@@ -359,7 +366,13 @@ router.patch('/:id/booking-status', requireAdmin, async (req, res, next) => {
       details: { from: existing.booking_status, to: booking_status },
     })
     await booking.save()
-    res.json(booking)
+    // A plain status change to cancelled (the quick ✕ in the admin table) must
+    // still notify the customer — otherwise declines happen silently.
+    let emailSent
+    if (booking_status === 'cancelled' && existing.booking_status !== 'cancelled') {
+      emailSent = await deliverBookingDeclinedEmail({ booking, reason: 'payment' })
+    }
+    res.json(emailSent === undefined ? booking : { ...booking.toObject(), emailSent })
   } catch (err) { next(err) }
 })
 
@@ -626,25 +639,7 @@ router.post('/:id/reject', requireAdmin, async (req, res, next) => {
       { status: 'failed' }
     )
 
-    const sessionType = bookingTypeLabel(booking.session_id)
-    // Best-effort session time for the PDF — snapshot first, then legacy lookup
-    let sessionTime = booking.time || ''
-    if (booking.session_start_time || booking.session_end_time) {
-      sessionTime = [booking.session_start_time, booking.session_end_time].filter(Boolean).join(' – ')
-    } else if (!sessionTime) {
-      try {
-        const s = booking.date ? await Session.findOne({ date: booking.date }) : null
-        sessionTime = s?.time || ''
-      } catch { /* ignore */ }
-    }
-    // Generate the booking-form PDF (best-effort — never blocks the decline)
-    let pdfBuffer = null
-    try {
-      pdfBuffer = await generateBookingPdf(booking, { status: 'declined', sessionType, time: sessionTime })
-    } catch (pdfErr) {
-      console.error('[bookings] Decline PDF failed:', pdfErr.message)
-    }
-    const emailSent = await sendBookingDeclinedEmail({ booking, sessionType, reason, pdfBuffer }).catch(() => false)
+    const emailSent = await deliverBookingDeclinedEmail({ booking, reason })
     res.json({
       booking,
       emailSent,

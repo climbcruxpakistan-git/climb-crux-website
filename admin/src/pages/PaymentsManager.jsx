@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getPendingPayments, getBookings, patchBookingStatus, patchPaymentStatus, approveBooking } from '../store.js'
+import { getPendingPayments, getBookings, approveBooking, rejectBooking } from '../store.js'
 import { useToast } from '../components/Toast.jsx'
 import { formatDate } from '../formatDate.js'
 
@@ -48,11 +48,15 @@ export default function PaymentsManager() {
           addToast('Payment approved ✓ Booking confirmed — email sent', 'success')
         }
       } else {
-        await Promise.all([
-          patchBookingStatus(bookingId, 'pending_payment'),
-          patchPaymentStatus(bookingId, 'failed'),
-        ])
-        addToast('Payment rejected', 'error')
+        // Use the decline endpoint so the booking, its payment record and the
+        // customer's decline email are all handled together (status patches
+        // never email).
+        const res = await rejectBooking(bookingId, 'payment')
+        if (res.emailSent === false) {
+          addToast('Payment rejected — decline email could not be sent', 'error')
+        } else {
+          addToast('Payment rejected — decline email sent to customer', 'success')
+        }
       }
       loadData()
     } catch (err) {
