@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader.jsx'
 import { getProducts, optimizeImage } from '../api.js'
+import { CONDITION_CONFIG, normalizeCondition } from '../lib/conditions.js'
 import './Shop.css'
 
 const WISHLIST_KEY = 'cc_wishlist'
@@ -52,30 +53,58 @@ function getStock(product) {
   }
 }
 
-// Exported so the product-page filter panel counts certifications exactly the
-// same way the shop sidebar does.
-export function getCert(product) {
-  const specs = product.specifications || []
-  const match = specs.find((spec) => /certif|standard/i.test(`${spec.key} ${spec.value}`))
-  if (match?.value) return match.value
-  if (Array.isArray(product.certifications) && product.certifications.length) {
-    return product.certifications[0]
-  }
-  const text = [
-    product.name,
-    product.description,
-    ...(product.features || []),
-    ...specs.map((spec) => `${spec.key} ${spec.value}`),
-  ].join(' ')
-  const found = text.match(/\b(?:CE|UIAA|EN\s?\d{3,4}|ISO\s?\d+)\b/i)
-  return found ? found[0].toUpperCase() : ''
+function getCondition(product) {
+  const direct = normalizeCondition(product?.condition)
+  if (direct) return direct
+  const feature = (product?.features || []).find((f) => /^condition:/i.test(String(f || '')))
+  if (feature) return normalizeCondition(String(feature).replace(/^condition:\s*/i, ''))
+  const spec = (product?.specifications || []).find((s) => /^condition$/i.test(String(s?.key || '')))
+  if (spec?.value) return normalizeCondition(spec.value)
+  return ''
 }
 
-function getCondition(product) {
-  const condition = (product.features || []).find((feature) => /^condition:/i.test(feature))
-  if (condition) return condition.replace(/^condition:\s*/i, '').trim()
-  const spec = (product.specifications || []).find((item) => /^condition$/i.test(item?.key || ''))
-  return spec?.value ? String(spec.value).trim() : ''
+function TruckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 6h11v10H2zM13 10h4l4 3v3h-8" />
+      <circle cx="7" cy="18" r="2" />
+      <circle cx="17" cy="18" r="2" />
+    </svg>
+  )
+}
+
+function CartIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 4h3l2.4 11h10l2-8H7" />
+      <circle cx="9.5" cy="19.5" r="1.4" />
+      <circle cx="17.5" cy="19.5" r="1.4" />
+    </svg>
+  )
+}
+
+function ConditionIcon({ icon }) {
+  const common = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
+  if (icon === 'circle-check') return (
+    <svg {...common}><circle cx="12" cy="12" r="9.5" /><path d="M8 12.3l2.8 2.8L16.2 9.5" /></svg>
+  )
+  if (icon === 'history') return (
+    <svg {...common}><circle cx="12" cy="12" r="9.5" /><path d="M12 7v5l3 2" /></svg>
+  )
+  return (
+    <svg {...common}><path d="M20 12a8 8 0 1 1-2.6-5.9" /><path d="M20 4v5h-5" /></svg>
+  )
+}
+
+function ConditionChip({ condition }) {
+  const cfg = CONDITION_CONFIG[condition]
+  if (!cfg) return null
+  return (
+    <span className="condition-chip" style={{ background: cfg.bg, color: cfg.fg }}>
+      <ConditionIcon icon={cfg.icon} />
+      <span>{cfg.label}</span>
+    </span>
+  )
 }
 
 function searchScore(product, query) {
@@ -108,12 +137,13 @@ function searchScore(product, query) {
 }
 
 function ProductCard({ product, saved, onToggleSave }) {
-  const cert = getCert(product)
   const stock = getStock(product)
   const condition = getCondition(product)
   const price = Number(product.price) || 0
   const originalPrice = Number(product.originalPrice || product.compareAtPrice || 0)
   const discount = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0
+  const saving = discount > 0 ? originalPrice - price : 0
+
   const available = stock.status !== 'out_of_stock'
   const href = `/shop/${product.id}`
   const image = product.imageUrl || product.images?.[0]
@@ -163,34 +193,37 @@ function ProductCard({ product, saved, onToggleSave }) {
       <div className="sp-card-body">
         <div className="sp-card-brandline">
           <span className="sp-card-brand">{product.brand || product.category || 'Climb Crux'}</span>
-          {cert && <span className="sp-cert">{cert}</span>}
         </div>
 
         <h3 className="sp-card-title">
           <Link to={href}>{product.name}</Link>
         </h3>
 
-        {condition && <p className="sp-card-spec">Condition: {condition}</p>}
-
         <div className="sp-card-price">
-          <span className="sp-card-price-main">{money(price)}</span>
+          <span className="sp-card-price-main">
+            <small>PKR</small>
+            {price.toLocaleString('en-PK')}
+          </span>
           {discount > 0 && (
-            <>
+            <span className="sp-card-price-side">
               <span className="sp-card-price-old">{money(originalPrice)}</span>
-              <span className="sp-card-discount">-{discount}%</span>
-            </>
+              <span className="sp-card-save">Save {saving.toLocaleString('en-PK')}</span>
+            </span>
           )}
         </div>
 
+        <ConditionChip condition={condition} />
+
         <div className={`sp-stock sp-stock-${stock.tone}`}>
-          <span className="sp-stock-dot" aria-hidden="true" />
-          <span>
+          <span className="sp-stock-state">
+            <span className="sp-stock-dot" aria-hidden="true" />
             {stock.label}
             {stock.quantity !== null && stock.status === 'low_stock' ? ` · ${stock.quantity} left` : ''}
           </span>
           {(product.shipping?.deliveryTime || product.shipping?.freeShipping) && (
             <span className="sp-ship">
-              {product.shipping.freeShipping ? 'Free delivery' : product.shipping.deliveryTime}
+              <TruckIcon />
+              {product.shipping.freeShipping ? 'Free delivery' : `Delivers in ${product.shipping.deliveryTime}`}
             </span>
           )}
         </div>
@@ -198,7 +231,7 @@ function ProductCard({ product, saved, onToggleSave }) {
         <div className="sp-card-actions">
           <Link className="btn btn-outline sp-card-view" to={href}>View</Link>
           {available ? (
-            <Link className="btn btn-primary sp-card-buy" to={`${href}/checkout`}>Buy now</Link>
+            <Link className="btn btn-primary sp-card-buy" to={`${href}/checkout`}><CartIcon />Buy now</Link>
           ) : (
             <span className="btn sp-card-buy is-disabled" aria-disabled="true">Sold out</span>
           )}
@@ -232,7 +265,6 @@ export default function Shop() {
     SORTS.some((sort) => sort.value === searchParams.get('sort')) ? searchParams.get('sort') : 'featured'
   )
   const [selectedBrands, setSelectedBrands] = useState(() => parseList(searchParams.get('brand')))
-  const [selectedCerts, setSelectedCerts] = useState(() => parseList(searchParams.get('cert')))
   const [inStockOnly, setInStockOnly] = useState(() => searchParams.get('stock') === 'in')
   const [savedOnly, setSavedOnly] = useState(() => searchParams.get('saved') === '1')
   const [priceMin, setPriceMin] = useState(() => {
@@ -332,23 +364,15 @@ export default function Shop() {
     [catalogue]
   )
 
-  const certs = useMemo(
-    () => [...new Set(catalogue.map(getCert).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [catalogue]
-  )
-
   const facetCounts = useMemo(() => {
     const byCategory = {}
     const byBrand = {}
-    const byCert = {}
     for (const product of catalogue) {
       const category = product.category || 'Uncategorized'
       byCategory[category] = (byCategory[category] || 0) + 1
       if (product.brand) byBrand[product.brand] = (byBrand[product.brand] || 0) + 1
-      const cert = getCert(product)
-      if (cert) byCert[cert] = (byCert[cert] || 0) + 1
     }
-    return { byCategory, byBrand, byCert }
+    return { byCategory, byBrand }
   }, [catalogue])
 
   const query = searchQuery.trim().toLowerCase()
@@ -356,7 +380,6 @@ export default function Shop() {
     Boolean(query) ||
     activeCategory !== 'All' ||
     selectedBrands.size > 0 ||
-    selectedCerts.size > 0 ||
     priceChanged ||
     inStockOnly ||
     savedOnly
@@ -364,7 +387,6 @@ export default function Shop() {
     Boolean(query),
     activeCategory !== 'All',
     selectedBrands.size > 0,
-    selectedCerts.size > 0,
     priceChanged,
     inStockOnly,
     savedOnly,
@@ -374,7 +396,6 @@ export default function Shop() {
     return catalogue
       .filter((product) => activeCategory === 'All' || product.category === activeCategory)
       .filter((product) => selectedBrands.size === 0 || selectedBrands.has(product.brand || ''))
-      .filter((product) => selectedCerts.size === 0 || selectedCerts.has(getCert(product)))
       .filter((product) => {
         const price = Number(product.price) || 0
         return price >= effectiveMin && price <= effectiveMax
@@ -406,7 +427,6 @@ export default function Shop() {
     catalogue,
     activeCategory,
     selectedBrands,
-    selectedCerts,
     effectiveMin,
     effectiveMax,
     inStockOnly,
@@ -422,7 +442,6 @@ export default function Shop() {
     if (activeCategory !== 'All') params.set('cat', activeCategory)
     if (sortBy !== 'featured') params.set('sort', sortBy)
     if (selectedBrands.size > 0) params.set('brand', [...selectedBrands].join(','))
-    if (selectedCerts.size > 0) params.set('cert', [...selectedCerts].join(','))
     if (priceChanged) params.set('min', String(effectiveMin))
     if (priceChanged) params.set('max', String(effectiveMax))
     if (inStockOnly) params.set('stock', 'in')
@@ -436,7 +455,6 @@ export default function Shop() {
     activeCategory,
     sortBy,
     selectedBrands,
-    selectedCerts,
     priceChanged,
     effectiveMin,
     effectiveMax,
@@ -453,15 +471,6 @@ export default function Shop() {
     })
   }
 
-  const toggleCert = (cert) => {
-    setSelectedCerts((previous) => {
-      const next = new Set(previous)
-      if (next.has(cert)) next.delete(cert)
-      else next.add(cert)
-      return next
-    })
-  }
-
   const toggleSave = (id) => {
     setWishlist((previous) =>
       previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id]
@@ -472,7 +481,6 @@ export default function Shop() {
     setSearchQuery('')
     setActiveCategory('All')
     setSelectedBrands(new Set())
-    setSelectedCerts(new Set())
     setInStockOnly(false)
     setSavedOnly(false)
     setPriceMin(null)
@@ -634,25 +642,6 @@ export default function Shop() {
                 </label>
               </div>
             </div>
-
-            {certs.length > 0 && (
-              <div className="sp-filter-group">
-                <h3 className="sp-filter-title">Certification</h3>
-                <div className="sp-check-list">
-                  {certs.map((cert) => (
-                    <label key={cert} className="sp-check">
-                      <input
-                        type="checkbox"
-                        checked={selectedCerts.has(cert)}
-                        onChange={() => toggleCert(cert)}
-                      />
-                      <span>{cert}</span>
-                      <span className="sp-check-count">{facetCounts.byCert[cert] || 0}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <button
               type="button"

@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import PageHeader from '../../components/astro/PageHeader.astro';
+import ShopAnnouncementBar from '../../components/astro/ShopAnnouncementBar.astro';
 import Shop from '../../components/react/Shop.jsx';
 import { getProducts } from '../../lib/api';
 import { categorySlug } from '../../lib/shopCategories';
@@ -20,7 +21,6 @@ const initialParams = {
   cat: Astro.url.searchParams.get('cat') || '',
   sort: Astro.url.searchParams.get('sort') || '',
   brand: Astro.url.searchParams.get('brand') || '',
-  cert: Astro.url.searchParams.get('cert') || '',
   stock: Astro.url.searchParams.get('stock') || '',
   saved: Astro.url.searchParams.get('saved') || '',
   min: Astro.url.searchParams.get('min') || '',
@@ -63,6 +63,7 @@ const breadcrumbJsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
   </Fragment>
+  <ShopAnnouncementBar />
 
   <PageHeader title="Rock Climbing Equipment & Climbing Gear" compact>
     <p>Harnesses, helmets, ropes, carabiners and the hardware that keeps every move safe — delivered across Pakistan.</p>

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { getProduct, getProducts, getProductReviews, submitProductReview, optimizeImage } from '../../lib/api'
-import { getCert } from './Shop.jsx'
+import { CONDITION_CONFIG, normalizeCondition } from '../../lib/conditions'
 
 const WHATSAPP = '923350044403'
 const SITE_URL = 'https://www.climbcruxpakistan.com'
@@ -9,6 +9,30 @@ function formatDate(value) {
   if (!value) return ''
   const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
   return m ? `${m[3]}-${m[2]}-${m[1]}` : String(value)
+}
+
+function ConditionIcon({ icon }) {
+  const common = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
+  if (icon === 'circle-check') return (
+    <svg {...common}><circle cx="12" cy="12" r="9.5" /><path d="M8 12.3l2.8 2.8L16.2 9.5" /></svg>
+  )
+  if (icon === 'history') return (
+    <svg {...common}><circle cx="12" cy="12" r="9.5" /><path d="M12 7v5l3 2" /></svg>
+  )
+  return (
+    <svg {...common}><path d="M20 12a8 8 0 1 1-2.6-5.9" /><path d="M20 4v5h-5" /></svg>
+  )
+}
+
+function ConditionChip({ condition }) {
+  const cfg = CONDITION_CONFIG[condition]
+  if (!cfg) return null
+  return (
+    <span className="condition-chip" style={{ background: cfg.bg, color: cfg.fg }}>
+      <ConditionIcon icon={cfg.icon} />
+      <span>{cfg.label}</span>
+    </span>
+  )
 }
 
 function StarRating({ rating, size = 20, interactive = false, onChange }) {
@@ -20,7 +44,7 @@ function StarRating({ rating, size = 20, interactive = false, onChange }) {
           <span key={i} className={`pd-star pd-star-${fill} ${interactive ? 'pd-star-interactive' : ''}`}
             style={{ fontSize: size }} onClick={() => interactive && onChange?.(i)}
             role={interactive ? 'button' : undefined} aria-label={interactive ? `${i} star` : undefined}>
-            {fill === 'empty' ? '☆' : '★'}
+            {fill === 'empty' ? 'â˜†' : 'â˜…'}
           </span>
         )
       })}
@@ -64,8 +88,8 @@ function ShopFilters({ products }) {
   )
 
   const facets = useMemo(() => {
-    const categories = [], brands = [], certs = []
-    const categoryCount = {}, brandCount = {}, certCount = {}
+    const categories = [], brands = []
+    const categoryCount = {}, brandCount = {}
     let low = null, high = null
     for (const p of catalogue) {
       if (p.category) {
@@ -76,21 +100,15 @@ function ShopFilters({ products }) {
         if (!brandCount[p.brand]) brands.push(p.brand)
         brandCount[p.brand] = (brandCount[p.brand] || 0) + 1
       }
-      const cert = getCert(p)
-      if (cert) {
-        if (!certCount[cert]) certs.push(cert)
-        certCount[cert] = (certCount[cert] || 0) + 1
-      }
       const price = Number(p.price) || 0
       low = low === null ? price : Math.min(low, price)
       high = high === null ? price : Math.max(high, price)
     }
     brands.sort((a, b) => a.localeCompare(b))
-    certs.sort((a, b) => a.localeCompare(b))
     const min = low === null ? 0 : Math.floor(low / 500) * 500
     let max = high === null ? 500 : Math.ceil(high / 500) * 500
     if (max <= min) max = min + 500
-    return { categories, brands, certs, categoryCount, brandCount, certCount, min, max }
+    return { categories, brands, categoryCount, brandCount, min, max }
   }, [catalogue])
 
   const lo = priceLo === null ? facets.min : Math.min(Math.max(priceLo, facets.min), facets.max)
@@ -184,18 +202,6 @@ function ShopFilters({ products }) {
           </div>
         </div>
 
-        {facets.certs.length > 0 && (
-          <div className="sp-filter-group">
-            <h3 className="sp-filter-title">Certification</h3>
-            <div className="sp-check-list">
-              {facets.certs.map((c) => (
-                <a key={c} className="sp-check px-facet" href={shopHref({ cert: c })}>
-                  <span>{c}</span><span className="sp-check-count">{facets.certCount[c]}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </aside>
   )
@@ -253,12 +259,10 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
   if (loading) return <section className="section"><div className="wrap" style={{ textAlign: 'center', padding: '60px 20px' }}><p>Loading product…</p></div></section>
   if (!product) return null
 
-  // ── Derived display data ──
+  // â”€â”€ Derived display data â”€â”€
   const parsed = parseDescription(product.description)
   const specs = product.specifications?.length ? product.specifications : parsed.rows
-  const find = (re) => specs.find((s) => re.test(s.key))
-  const certRow = find(/certif/i)
-  const condition = (product.features || []).find((f) => /^condition:/i.test(f))?.replace(/^condition:\s*/i, '')
+  const condition = normalizeCondition(product.condition) || normalizeCondition((product.features || []).find((f) => /^condition:/i.test(String(f || '')))?.replace(/^condition:\s*/i, '') || '')
 
   const qty = product.stockQuantity ?? 10
   const maxQty = Math.max(1, Math.min(10, qty))
@@ -289,7 +293,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
         </nav>
 
         <div className={`px-top ${allImages.length > 1 ? 'has-thumbs' : ''}`}>
-          {/* ── Gallery ── */}
+          {/* â”€â”€ Gallery â”€â”€ */}
           <div className="px-gallery">
             <div className="px-stage" onClick={() => setZoomOpen(true)}
               onTouchStart={(e) => (touchStartX.current = touchEndX.current = e.touches[0].clientX)}
@@ -313,14 +317,13 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
             )}
           </div>
 
-          {/* ── Buy box ── */}
+          {/* â”€â”€ Buy box â”€â”€ */}
           <div className="px-buy">
             {product.brand && <span className="px-brand">{product.brand}</span>}
             {/* Name and badge share one non-wrapping row, so the badge always
                 sits on the same line as the product name. */}
             <div className="px-headline">
               <h1 className="px-title">{product.name}</h1>
-              {certRow && <span className="px-cert"><i />{certRow.value.replace(/\s*certified$/i, '')} certified</span>}
             </div>
             {reviewData.total > 0 && (
               <a className="px-rating" href="#reviews"><StarRating rating={reviewData.avgRating} size={16} /> {reviewData.avgRating} ({reviewData.total})</a>
@@ -334,8 +337,8 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
             </div>
             <p className={`px-stock px-stock-${low ? 'low' : status}`}>
               <i />{status === 'out_of_stock' ? 'Sold out' : low ? `Only ${qty} left` : 'In stock'}
-              {condition && <span> · {condition}</span>}
             </p>
+            {condition && <ConditionChip condition={condition} />}
             {product.variants?.length > 0 && (
               <div className="px-variants">
                 {product.variants.map((v, i) => (
@@ -350,7 +353,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
               {product.inStock && (
                 <div className="px-qty-row">
                   <div className="px-qty">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1} aria-label="Decrease quantity">−</button>
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1} aria-label="Decrease quantity">âˆ’</button>
                     <span>{quantity}</span>
                     <button onClick={() => setQuantity(Math.min(maxQty, quantity + 1))} disabled={quantity >= maxQty} aria-label="Increase quantity">+</button>
                   </div>
@@ -372,7 +375,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           </div>
         </div>
 
-        {/* ── Specifications ── */}
+        {/* â”€â”€ Specifications â”€â”€ */}
         {(specs.length > 0 || parsed.bullets.length > 0) && (
           <div className="px-specs">
             <h2>Specifications</h2>
@@ -381,7 +384,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           </div>
         )}
 
-        {/* ── Complete your setup ── */}
+        {/* â”€â”€ Complete your setup â”€â”€ */}
         {related.length > 0 && (
           <div className="px-setup">
             <h2>Complete your setup <small>Gear that goes with this product</small></h2>
@@ -403,7 +406,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           </div>
         )}
 
-      {/* ── Reviews (unchanged markup/classes) ── */}
+      {/* â”€â”€ Reviews (unchanged markup/classes) â”€â”€ */}
       <div id="reviews" style={{ marginTop: 64 }}>
         <h2 className="pd-section-title">Customer Reviews</h2>
         {reviewData.total > 0 ? (
@@ -415,7 +418,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
               <div className="pd-reviews-distribution">
                 {[5, 4, 3, 2, 1].map((s) => (
                   <div key={s} className="pd-reviews-bar-row">
-                    <span className="pd-reviews-bar-label">{s}★</span>
+                    <span className="pd-reviews-bar-label">{s}â˜…</span>
                     <div className="pd-reviews-bar-track"><div className="pd-reviews-bar-fill" style={{ width: `${(reviewData.distribution[s - 1] / reviewData.total) * 100}%` }} /></div>
                     <span className="pd-reviews-bar-count">{reviewData.distribution[s - 1]}</span>
                   </div>
@@ -477,7 +480,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
 
       {zoomOpen && allImages[activeImg] && (
         <div className="pd-zoom-overlay" onClick={() => setZoomOpen(false)}>
-          <button className="pd-zoom-close" onClick={() => setZoomOpen(false)} aria-label="Close">✕</button>
+          <button className="pd-zoom-close" onClick={() => setZoomOpen(false)} aria-label="Close">×</button>
           <img className="pd-zoom-image" src={optimizeImage(allImages[activeImg])} alt={`${product.name} enlarged`} onClick={(e) => e.stopPropagation()} />
           {allImages.length > 1 && (
             <div className="pd-zoom-nav">
@@ -491,3 +494,4 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
     </section>
   )
 }
+

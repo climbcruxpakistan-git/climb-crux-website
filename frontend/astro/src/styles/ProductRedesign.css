@@ -32,8 +32,7 @@
 /* Buy box */
 .px-buy { display: flex; flex-direction: column; gap: 14px; align-self: stretch; }
 .px-brand { font-family: var(--font-display); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-dark, var(--orange)); }
-/* Name + certification badge share one row (title and badge are sized to fit the
-   column side by side; wrap is only a safety net for very long values). */
+/* Name row on the product page. */
 .px-headline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .px-title { flex: 0 1 auto; min-width: 0; font-size: clamp(1.85rem, 3.2vw, 2.5rem); line-height: 1.05; margin: 0; }
 .px-rating { font-size: .85rem; color: var(--stone-dark); text-decoration: none; }
@@ -41,9 +40,7 @@
 .px-price { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; color: var(--orange-dark, var(--orange)); }
 .px-was { color: #999; }
 .px-off { background: #dc2626; color: #fff; font-size: .75rem; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
-.px-cert { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; font-size: .7rem; font-weight: 600; line-height: 1.2; border: 1px solid var(--px-line); background: #fff; border-radius: 8px; padding: 3px 9px; white-space: nowrap; }
-.px-cert i, .px-stock i { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block; }
-.px-cert i { width: 6px; height: 6px; flex: 0 0 auto; }
+.px-stock i { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block; }
 .px-stock { display: flex; align-items: center; gap: 8px; margin: 0; font-size: .88rem; color: var(--stone); }
 .px-stock i { margin-right: 0; }
 .px-stock-low { color: var(--orange-dark, var(--orange)); font-weight: 600; } .px-stock-low i { background: var(--orange); }

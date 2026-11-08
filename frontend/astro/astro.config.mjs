@@ -47,6 +47,9 @@ export default defineConfig({
     // fallback). Allow VITE_* so the documented build-time API URL works in
     // both the client bundle and the prerender/server bundle.
     envPrefix: ['VITE_', 'PUBLIC_'],
+    resolve: {
+      dedupe: ['react', 'react-dom'],
+    },
     server: {
       // Allow the dev server to serve files from this project plus the shared
       // config at ../../shared/contact.js. Providing fs.allow replaces the

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { getProducts, saveProduct, deleteProduct } from '../store.js'
+import { CONDITIONS } from '../lib/conditions.js'
 import { useToast } from '../components/Toast.jsx'
 import Modal from '../components/Modal.jsx'
 
@@ -43,7 +44,7 @@ export default function ShopManager() {
   const [editorTab, setEditorTab] = useState('general')
   const [editing, setEditing] = useState(null)
 
-  // ── Search, Filters, Sorting ──
+  // â”€â”€ Search, Filters, Sorting â”€â”€
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
   const [filterBrand, setFilterBrand] = useState('')
@@ -54,15 +55,15 @@ export default function ShopManager() {
   const [sortBy, setSortBy] = useState('name')
   const [sortDir, setSortDir] = useState('asc')
 
-  // ── Form state ──
+  // â”€â”€ Form state â”€â”€
   const [form, setForm] = useState({
     name: '', slug: '', sku: '', brand: '', category: 'Uncategorized', condition: '',
     price: '', compareAtPrice: '',
     description: '',
     imageUrl: '', featuredImageAlt: '', images: emptyImages(),
     stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
-    specifications: [], certifications: [],
-    features: [], faqs: [],
+      specifications: [],
+      features: [], faqs: [],
     deliveryTime: '', freeShipping: false,
     returnWindow: '', returnPolicy: '',
     seoTitle: '', metaDescription: '', canonicalUrl: '',
@@ -84,7 +85,7 @@ export default function ShopManager() {
     return getProducts().then(setProducts).catch(console.error)
   }
 
-  // ── Derive unique categories & brands for filter dropdowns ──
+  // â”€â”€ Derive unique categories & brands for filter dropdowns â”€â”€
   const categories = useMemo(() => {
     const set = new Set(products.map((p) => p.category).filter(Boolean))
     return [...set].sort()
@@ -95,7 +96,7 @@ export default function ShopManager() {
     return [...set].sort()
   }, [products])
 
-  // ── Search + Filter + Sort logic ──
+  // â”€â”€ Search + Filter + Sort logic â”€â”€
   const filteredProducts = useMemo(() => {
     let list = [...products]
 
@@ -135,7 +136,7 @@ export default function ShopManager() {
 
   function toggleSortDir() { setSortDir((d) => (d === 'asc' ? 'desc' : 'asc')) }
 
-  // ── Form helpers ──
+  // â”€â”€ Form helpers â”€â”€
   function emptyForm() {
     setForm({
       name: '', slug: '', sku: '', brand: '', category: 'Uncategorized', condition: '',
@@ -144,7 +145,7 @@ export default function ShopManager() {
       imageUrl: '', featuredImageAlt: '', images: emptyImages(),
       stockQuantity: 0, lowStockThreshold: 5, stockStatus: 'in_stock',
       variants: [],
-      specifications: [], certifications: [],
+      specifications: [],
       features: [], faqs: [],
       deliveryTime: '', freeShipping: false,
       returnWindow: '', returnPolicy: '',
@@ -163,14 +164,13 @@ export default function ShopManager() {
     const rawImages = (p.images || []).filter(Boolean)
     const imgs = rawImages.length > 0 ? [...rawImages, ''] : ['']
     const featureList = (p.features || []).filter(Boolean)
-    const conditionFeature = featureList.find((f) => /^condition:/i.test(f))
     setForm({
       name: p.name || '',
       slug: p.slug || '',
       sku: p.sku || '',
       brand: p.brand || '',
       category: p.category || 'Uncategorized',
-      condition: conditionFeature ? conditionFeature.replace(/^condition:\s*/i, '') : '',
+      condition: p.condition || (featureList.find((f) => /^condition:/i.test(f)) || '').replace(/^condition:\s*/i, '') || '',
       price: p.price?.toString() || '',
       compareAtPrice: (p.compareAtPrice ?? p.originalPrice)?.toString() || '',
       description: p.description || '',
@@ -181,7 +181,6 @@ export default function ShopManager() {
       lowStockThreshold: p.lowStockThreshold ?? 5,
       stockStatus: p.stockStatus || 'in_stock',
       specifications: (p.specifications || []).length > 0 ? p.specifications : [],
-      certifications: (p.certifications || []).filter(Boolean),
       features: featureList.filter((f) => !/^condition:/i.test(f)),
       faqs: (p.faqs || []).map((f) => ({ question: f.question || '', answer: f.answer || '' })),
       deliveryTime: p.shipping?.deliveryTime || '',
@@ -206,7 +205,6 @@ export default function ShopManager() {
     }
 
     const features = form.features.filter((f) => f.trim() && !/^condition:/i.test(f))
-    if (form.condition.trim()) features.unshift(`Condition: ${form.condition.trim()}`)
 
     const data = {
       name: form.name,
@@ -214,6 +212,7 @@ export default function ShopManager() {
       sku: form.sku,
       brand: form.brand,
       category: form.category,
+      condition: String(form.condition || '').trim(),
       price: parseFloat(form.price),
       compareAtPrice: form.compareAtPrice ? parseFloat(form.compareAtPrice) : null,
       originalPrice: form.compareAtPrice ? parseFloat(form.compareAtPrice) : null,
@@ -227,7 +226,6 @@ export default function ShopManager() {
       inStock: form.stockStatus === 'in_stock' || form.stockStatus === 'low_stock' || form.stockStatus === 'backorder',
       variants: [],
       specifications: form.specifications.filter((s) => s.key.trim()),
-      certifications: form.certifications.map((c) => c.trim()).filter(Boolean),
       features,
       faqs: form.faqs
         .filter((f) => f.question.trim() || f.answer.trim())
@@ -254,7 +252,7 @@ export default function ShopManager() {
     addToast('Product deleted', 'success')
   }
 
-  // ── Array field helpers ──
+  // â”€â”€ Array field helpers â”€â”€
   function addListItem(field, empty) { setForm({ ...form, [field]: [...form[field], { ...empty }] }) }
   function updateListItem(field, idx, key, val) {
     setForm({ ...form, [field]: form[field].map((item, i) => i === idx ? { ...item, [key]: val } : item) })
@@ -268,17 +266,12 @@ export default function ShopManager() {
     setForm({ ...form, [field]: items })
   }
 
-  // ── Feature helpers ──
+  // â”€â”€ Feature helpers â”€â”€
   function addFeature() { setForm({ ...form, features: [...form.features, ''] }) }
   function updateFeature(idx, val) { setForm({ ...form, features: form.features.map((f, i) => i === idx ? val : f) }) }
   function removeFeature(idx) { setForm({ ...form, features: form.features.filter((_, i) => i !== idx) }) }
 
-  // ── Certification helpers ──
-  function addCertification() { setForm({ ...form, certifications: [...form.certifications, ''] }) }
-  function updateCertification(idx, val) { setForm({ ...form, certifications: form.certifications.map((c, i) => i === idx ? val : c) }) }
-  function removeCertification(idx) { setForm({ ...form, certifications: form.certifications.filter((_, i) => i !== idx) }) }
-
-  // ── Image Upload ──
+  // â”€â”€ Image Upload â”€â”€
   async function uploadMainImage(file) {
     if (!file) return
     const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']
@@ -332,7 +325,7 @@ export default function ShopManager() {
     setForm({ ...form, images: [...filled, ''] })
   }
 
-  // ── Badge helpers ──
+  // â”€â”€ Badge helpers â”€â”€
   const stockBadge = (p) => {
     const colors = { in_stock: 'badge-green', low_stock: 'badge-yellow', out_of_stock: 'badge-red', backorder: 'badge-blue' }
     const labels = { in_stock: 'In Stock', low_stock: 'Low', out_of_stock: 'Out', backorder: 'Backorder' }
@@ -348,9 +341,8 @@ export default function ShopManager() {
     if (!ca || !p.price || ca <= p.price) return 0
     return Math.round(((ca - p.price) / ca) * 100)
   }
-  const firstCert = (p) => (p.certifications || []).find(Boolean) || null
 
-  // ── Tabbed editor ──
+  // â”€â”€ Tabbed editor â”€â”€
   function renderEditorTab() {
     switch (editorTab) {
       case 'general': return renderGeneral()
@@ -365,7 +357,7 @@ export default function ShopManager() {
     }
   }
 
-  /* ── Tab Content ── */
+  /* â”€â”€ Tab Content â”€â”€ */
 
   function renderGeneral() {
     return (
@@ -395,7 +387,10 @@ export default function ShopManager() {
         </div>
         <div className="admin-field">
           <label>Condition</label>
-          <input value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} placeholder="e.g. New, Used, Like New" />
+          <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })}>
+            <option value="">Select condition</option>
+            {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
           <span className="field-hint">Shown next to stock availability on the product page.</span>
         </div>
         <div className="admin-field">
@@ -418,7 +413,7 @@ export default function ShopManager() {
           <div className="admin-field">
             <label>Compare-at Price (sale)</label>
             <input type="number" value={form.compareAtPrice} onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value })} placeholder="Leave empty if not on sale" min="0" />
-            <span className="field-hint">If higher than the price, a −% sale badge appears on the shop card.</span>
+            <span className="field-hint">If higher than the price, a âˆ’% sale badge appears on the shop card.</span>
           </div>
         </div>
         {form.compareAtPrice && parseFloat(form.compareAtPrice) > parseFloat(form.price) && (
@@ -486,7 +481,7 @@ export default function ShopManager() {
               <div style={{ position: 'relative', display: 'inline-block' }}>
                 <img src={form.imageUrl} alt="" style={{ maxHeight: 100, borderRadius: 6, border: '1px solid var(--border)' }} />
                 <button className="btn-admin-icon danger" onClick={() => setForm({ ...form, imageUrl: '', featuredImageAlt: '' })}
-                  style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>✕</button>
+                  style={{ position: 'absolute', top: -6, right: -6, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>×</button>
               </div>
               <div style={{ marginTop: 6 }}>
                 <label style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--stone)' }}>Alt Text</label>
@@ -529,7 +524,7 @@ export default function ShopManager() {
                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                     <button className="btn-admin-icon" onClick={() => moveGalleryImage(i, -1)} disabled={i === 0} title="Move up">↑</button>
                     <button className="btn-admin-icon" onClick={() => moveGalleryImage(i, 1)} disabled={i === form.images.filter((u) => u.trim()).length - 1} title="Move down">↓</button>
-                    <button className="btn-admin-icon danger" onClick={() => removeGalleryImage(i)} title="Remove">✕</button>
+                    <button className="btn-admin-icon danger" onClick={() => removeGalleryImage(i)} title="Remove">×</button>
                   </div>
                 </div>
               ))}
@@ -556,7 +551,7 @@ export default function ShopManager() {
               <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <input style={{ flex: 1 }} value={s.key} onChange={(e) => updateListItem('specifications', i, 'key', e.target.value)} placeholder="e.g. Material" />
                 <input style={{ flex: 1 }} value={s.value} onChange={(e) => updateListItem('specifications', i, 'value', e.target.value)} placeholder="e.g. Nylon" />
-                <button className="btn-admin-icon danger" onClick={() => removeListItem('specifications', i)}>✕</button>
+                <button className="btn-admin-icon danger" onClick={() => removeListItem('specifications', i)}>×</button>
               </div>
             ))}
           </div>
@@ -575,30 +570,12 @@ export default function ShopManager() {
             {form.features.map((f, i) => (
               <div key={i} style={{ display: 'flex', gap: 6 }}>
                 <input style={{ flex: 1 }} value={f} onChange={(e) => updateFeature(i, e.target.value)} placeholder={`Feature ${i + 1}`} />
-                <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>✕</button>
+                <button className="btn-admin-icon danger" onClick={() => removeFeature(i)}>×</button>
               </div>
             ))}
           </div>
         )}
 
-        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '20px 0 16px' }} />
-        <h4 style={{ fontSize: '0.78rem', color: 'var(--stone)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Certifications</h4>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--stone)' }}>Shown as a badge on shop cards and the product page.</p>
-          <button className="btn-admin btn-admin-sm btn-admin-primary" onClick={addCertification}>+ Add Certification</button>
-        </div>
-        {form.certifications.length === 0 ? (
-          <p style={{ fontSize: '0.85rem', color: 'var(--stone)', padding: 20, textAlign: 'center' }}>No certifications yet.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {form.certifications.map((c, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input style={{ flex: 1 }} value={c} onChange={(e) => updateCertification(i, e.target.value)} placeholder="e.g. CE EN 12277" />
-                <button className="btn-admin-icon danger" onClick={() => removeCertification(i)}>✕</button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     )
   }
@@ -618,7 +595,7 @@ export default function ShopManager() {
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 10, background: '#f8f6f2', borderRadius: 6 }}>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <input style={{ flex: 1 }} value={f.question} onChange={(e) => updateListItem('faqs', i, 'question', e.target.value)} placeholder="Question" />
-                  <button className="btn-admin-icon danger" onClick={() => removeListItem('faqs', i)} title="Remove FAQ">✕</button>
+                  <button className="btn-admin-icon danger" onClick={() => removeListItem('faqs', i)} title="Remove FAQ">×</button>
                 </div>
                 <textarea rows={2} value={f.answer} onChange={(e) => updateListItem('faqs', i, 'answer', e.target.value)} placeholder="Answer" />
               </div>
@@ -711,7 +688,7 @@ export default function ShopManager() {
     )
   }
 
-  // ── Reset filters ──
+  // â”€â”€ Reset filters â”€â”€
   function resetFilters() {
     setSearch('')
     setFilterCategory('')
@@ -738,9 +715,9 @@ export default function ShopManager() {
         <button className="btn-admin btn-admin-primary" onClick={openNew}>+ Add Product</button>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           PRODUCTS LIST
-          ═══════════════════════════════════════════════════════════════ */}
+          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {/* Search + Filters bar */}
           <div className="card-admin" style={{ padding: '16px 20px', marginBottom: 16 }}>
             <div className="admin-form-row" style={{ alignItems: 'flex-end' }}>
@@ -852,11 +829,6 @@ export default function ShopManager() {
                           </td>
                           <td>
                             <span className="badge badge-gray">{p.category}</span>
-                            {firstCert(p) && (
-                              <div style={{ marginTop: 4 }}>
-                                <span style={{ display: 'inline-block', fontSize: '0.58rem', fontWeight: 600, padding: '2px 7px', border: '1px solid var(--border)', borderRadius: 999, color: 'var(--stone-dark)', letterSpacing: '0.03em' }}>🛡 {firstCert(p)}</span>
-                              </div>
-                            )}
                           </td>
                           <td style={{ whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -869,11 +841,11 @@ export default function ShopManager() {
                           </td>
                           <td>{stockBadge(p)}</td>
                           <td>{pubBadge(p.status || 'published')}</td>
-                          <td>{p.featured ? '⭐' : '—'}</td>
+                          <td>{p.featured ? '★' : '—'}</td>
                           <td>
                             <div style={{ display: 'flex', gap: 4 }}>
                               <button className="btn-admin-icon" onClick={() => openEdit(p)} title="Edit">✎</button>
-                              <button className="btn-admin-icon danger" onClick={() => handleDelete(p.id)} title="Delete">✕</button>
+                              <button className="btn-admin-icon danger" onClick={() => handleDelete(p.id)} title="Delete">×</button>
                             </div>
                           </td>
                         </tr>
@@ -885,9 +857,9 @@ export default function ShopManager() {
             )}
           </div>
 
-      {/* ═══════════════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           TABBED PRODUCT EDITOR MODAL
-          ═══════════════════════════════════════════════════════════════ */}
+          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {editing && (
         <Modal title={editing === 'new' ? 'Add Product' : 'Edit Product'} onClose={() => setEditing(null)} wide>
           {/* Tab navigation */}
@@ -925,3 +897,5 @@ export default function ShopManager() {
     </>
   )
 }
+
+

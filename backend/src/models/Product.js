@@ -7,6 +7,7 @@ const productSchema = new mongoose.Schema({
   slug: { type: String, default: '' },
   sku: { type: String, default: '' },
   category: { type: String, default: 'Uncategorized' },
+  condition: { type: String, enum: ['', 'Brand New', 'Almost New', 'Slightly Used', 'Used', 'Old'], default: '' },
 
   // ── Pricing ──
   price: { type: Number, required: true },
@@ -53,7 +54,6 @@ const productSchema = new mongoose.Schema({
   // ── Features ──
   features: [{ type: String }],
   featureIcons: [{ type: String }], // icon emoji for each feature, e.g. "✓", "⚡", "🛡️"
-  certifications: [{ type: String }], // e.g. "CE EN 12277", "UIAA 105"
 
   // ── FAQs ──
   faqs: [

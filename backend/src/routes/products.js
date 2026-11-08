@@ -19,6 +19,18 @@ import {
 
 const router = Router()
 
+const ALLOWED_CONDITIONS = new Set(['', 'Brand New', 'Almost New', 'Slightly Used', 'Used', 'Old'])
+function readCondition(body) {
+  if (body.condition === undefined) return undefined
+  const value = typeof body.condition === 'string' ? body.condition.trim() : ''
+  if (!ALLOWED_CONDITIONS.has(value)) {
+    const err = new Error('Invalid condition. Allowed values: Brand New, Almost New, Slightly Used, Used, Old, or empty.')
+    err.status = 400
+    throw err
+  }
+  return value
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const tmpDir = path.join(__dirname, '..', 'tmp')
 
@@ -394,7 +406,10 @@ router.patch('/orders/:id/payment', requireAdmin, async (req, res, next) => {
     const order = await ProductOrder.findByIdAndUpdate(req.params.id, update, { new: true })
     if (!order) return res.status(404).json({ error: 'Order not found' })
     res.json(order)
-  } catch (err) { next(err) }
+  } catch (err) {
+    if (err?.status === 400) return res.status(400).json({ error: err.message })
+    next(err)
+  }
 })
 
 // DELETE /api/products/orders/:id — admin: delete an order
@@ -434,15 +449,17 @@ router.post('/', requireAdmin, async (req, res, next) => {
     if (!name || price === undefined) {
       return res.status(400).json({ error: 'Name and price are required' })
     }
+    const condition = readCondition(req.body)
     const product = await Product.create({
-      name,
-      price,
+      name: req.body.name,
+      slug: req.body.slug || slugify(req.body.name),
       brand: req.body.brand || '',
-      slug: req.body.slug || '',
       sku: req.body.sku || '',
       category: req.body.category || 'Uncategorized',
-      compareAtPrice: req.body.compareAtPrice || null,
-      originalPrice: req.body.originalPrice || null,
+      condition: condition ?? '',
+      price: req.body.price,
+      compareAtPrice: req.body.compareAtPrice || req.body.originalPrice || null,
+      originalPrice: req.body.originalPrice || req.body.compareAtPrice || null,
       description: req.body.description || '',
       imageUrl: req.body.imageUrl || '',
       featuredImageAlt: req.body.featuredImageAlt || '',
@@ -450,22 +467,22 @@ router.post('/', requireAdmin, async (req, res, next) => {
       stockQuantity: req.body.stockQuantity ?? 0,
       lowStockThreshold: req.body.lowStockThreshold ?? 5,
       stockStatus: req.body.stockStatus || 'in_stock',
-      inStock: req.body.inStock !== false,
+      inStock: req.body.inStock ?? true,
       variants: req.body.variants || [],
       specifications: req.body.specifications || [],
       features: req.body.features || [],
-      certifications: req.body.certifications || [],
       faqs: req.body.faqs || [],
-      shipping: req.body.shipping || { deliveryTime: '', freeShipping: false },
-      warranty: req.body.warranty || { period: '', details: '' },
-      returns: req.body.returns || { window: '', policy: '' },
-      seo: req.body.seo || { title: '', metaDescription: '', canonicalUrl: '' },
-      status: req.body.status || 'published',
-      featured: req.body.featured || false,
-      sortOrder: req.body.sortOrder || 0,
+      shipping: req.body.shipping || {},
+      seo: req.body.seo || {},
+      tags: req.body.tags || [],
+      featured: req.body.featured ?? false,
+      status: req.body.status || 'active',
     })
     res.status(201).json(product)
-  } catch (err) { next(err) }
+  } catch (err) {
+    if (err?.status === 400) return res.status(400).json({ error: err.message })
+    next(err)
+  }
 })
 
 // PUT /api/products/:id — admin update
@@ -473,24 +490,29 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
     const fields = [
-      'name', 'brand', 'slug', 'sku', 'category',
+      'name', 'brand', 'slug', 'sku', 'category', 'condition',
       'price', 'compareAtPrice', 'originalPrice',
       'description',
       'imageUrl', 'featuredImageAlt', 'images',
       'stockQuantity', 'lowStockThreshold', 'stockStatus', 'inStock',
-      'variants', 'specifications', 'features', 'featureIcons', 'certifications', 'faqs',
+      'variants', 'specifications', 'features', 'featureIcons', 'faqs',
       'shipping', 'warranty', 'returns',
       'seo',
       'status',
       'featured', 'sortOrder',
     ]
+    const condition = readCondition(req.body)
     for (const f of fields) {
       if (req.body[f] !== undefined) update[f] = req.body[f]
     }
+    if (condition !== undefined) update.condition = condition
     const product = await Product.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true })
     if (!product) return res.status(404).json({ error: 'Not found' })
     res.json(product)
-  } catch (err) { next(err) }
+  } catch (err) {
+    if (err?.status === 400) return res.status(400).json({ error: err.message })
+    next(err)
+  }
 })
 
 // DELETE /api/products/:id — admin delete
