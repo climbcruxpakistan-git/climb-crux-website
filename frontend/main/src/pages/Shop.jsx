@@ -71,15 +71,11 @@ export function getCert(product) {
   return found ? found[0].toUpperCase() : ''
 }
 
-function specLine(product) {
-  const specs = (product.specifications || []).filter((spec) => spec?.key && spec?.value)
-  if (specs.length) {
-    return specs
-      .slice(0, 2)
-      .map((spec) => `${spec.key}: ${spec.value}`)
-      .join(' · ')
-  }
-  return (product.features || [])[0] || product.description || ''
+function getCondition(product) {
+  const condition = (product.features || []).find((feature) => /^condition:/i.test(feature))
+  if (condition) return condition.replace(/^condition:\s*/i, '').trim()
+  const spec = (product.specifications || []).find((item) => /^condition$/i.test(item?.key || ''))
+  return spec?.value ? String(spec.value).trim() : ''
 }
 
 function searchScore(product, query) {
@@ -114,7 +110,7 @@ function searchScore(product, query) {
 function ProductCard({ product, saved, onToggleSave }) {
   const cert = getCert(product)
   const stock = getStock(product)
-  const spec = specLine(product)
+  const condition = getCondition(product)
   const price = Number(product.price) || 0
   const originalPrice = Number(product.originalPrice || product.compareAtPrice || 0)
   const discount = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0
@@ -174,7 +170,7 @@ function ProductCard({ product, saved, onToggleSave }) {
           <Link to={href}>{product.name}</Link>
         </h3>
 
-        {spec && <p className="sp-card-spec">{spec}</p>}
+        {condition && <p className="sp-card-spec">Condition: {condition}</p>}
 
         <div className="sp-card-price">
           <span className="sp-card-price-main">{money(price)}</span>
