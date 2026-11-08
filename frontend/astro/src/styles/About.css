@@ -8,7 +8,13 @@
 }
 @media (min-width: 1000px) {
   .page-header.compact.about-hero .page-header-desc {
-    width: min(calc(100% + 120px), calc(100vw - 160px));
+    /* Derive the widened lead from the container token instead of hard-coded
+       pixel caps: the 120px overhang keeps it slightly wider than the
+       headline, and the viewport bound follows --edge. */
+    width: min(
+      calc(var(--max-width) - 2 * var(--edge) + 120px),
+      calc(100vw - 2 * var(--edge))
+    );
   }
   .page-header.compact.about-hero .page-header-desc p {
     font-size: 0.82rem;
@@ -27,7 +33,7 @@
 .about-story.section { padding-bottom: 0; }
 /* Keep .wrap's 1180px column so Our Story aligns with the About Climb Crux paragraph */
 .story-copy h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); margin-bottom: 0.6em; }
-.story-copy p { line-height: 1.75; max-width: 68ch; }
+.story-copy p { line-height: 1.75; max-width: 75ch; }
 
 /* ── Stats band ── */
 .stats-band { background: var(--charcoal); }

@@ -1,20 +1,36 @@
 /**
  * API client for Climb Crux — works both at build time (SSG) and client-side.
  *
- * In production (build time on Vercel), uses the Render backend URL directly.
- * In development (astro dev), uses the proxy via astro.config.mjs.
+ * The base URL is configured at build time with VITE_API_URL (environment or
+ * frontend/astro/.env). Without it, production builds use the deployed Render
+ * API and `astro dev` uses the local backend.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://climb-crux-backend.onrender.com/api'
+const DEFAULT_PROD_API = 'https://climb-crux-backend.onrender.com/api'
+
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:4000/api' : DEFAULT_PROD_API)
+
+// A slow or unreachable API must not hang a page (or a production build) forever.
+// On timeout the fetch rejects, so callers' .catch() can render fallback content.
+const REQUEST_TIMEOUT_MS = 10_000
+
+export function apiFetch(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    signal: options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  })
+}
 
 async function fetchJson(url) {
-  const res = await fetch(`${API_BASE}${url}`)
+  const res = await apiFetch(`${API_BASE}${url}`)
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   return res.json()
 }
 
 async function postJson(url, body) {
-  const res = await fetch(`${API_BASE}${url}`, {
+  const res = await apiFetch(`${API_BASE}${url}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -83,7 +99,7 @@ export async function createBooking(data) {
 }
 
 export async function updateBooking(id, data) {
-  const res = await fetch(`${API_BASE}/bookings/${id}`, {
+  const res = await apiFetch(`${API_BASE}/bookings/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -97,13 +113,13 @@ export async function getUploads() {
 }
 
 export async function getBookingByNumber(bookingNumber) {
-  const res = await fetch(`${API_BASE}/bookings/by-number/${encodeURIComponent(bookingNumber)}`)
+  const res = await apiFetch(`${API_BASE}/bookings/by-number/${encodeURIComponent(bookingNumber)}`)
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   return mapId(await res.json())
 }
 
 export async function getBookedDates() {
-  const res = await fetch(`${API_BASE}/bookings/booked-dates`, { cache: 'no-store' })
+  const res = await apiFetch(`${API_BASE}/bookings/booked-dates`, { cache: 'no-store' })
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   const data = await res.json()
   return data.dates || []
@@ -115,7 +131,7 @@ export const getTodayKarachi = () =>
 export async function createPayment(bookingId, data) {
   // Multipart (with payment screenshot) — send as FormData without a Content-Type header.
   if (data instanceof FormData) {
-    const res = await fetch(`${API_BASE}/bookings/${bookingId}/create-payment`, {
+    const res = await apiFetch(`${API_BASE}/bookings/${bookingId}/create-payment`, {
       method: 'POST',
       body: data,
     })
@@ -144,7 +160,7 @@ export function optimizeImage(url, width) {
 /* ---------- Membership ---------- */
 
 export async function submitMembershipApplication(formData) {
-  const res = await fetch(`${API_BASE}/membership/apply`, {
+  const res = await apiFetch(`${API_BASE}/membership/apply`, {
     method: 'POST',
     body: formData,
   })
@@ -191,14 +207,14 @@ export async function placeOrder(data) {
 
 /** Look up an equipment order by its Order ID (CCE-XXXXXX) — for the payment page. */
 export async function getOrderByNumber(orderNumber) {
-  const res = await fetch(`${API_BASE}/products/orders/by-number/${encodeURIComponent(orderNumber)}`)
+  const res = await apiFetch(`${API_BASE}/products/orders/by-number/${encodeURIComponent(orderNumber)}`)
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   return mapId(await res.json())
 }
 
 /** Upload the payment screenshot for an order — moves it to Verification Pending. */
 export async function submitOrderPaymentProof(orderId, formData) {
-  const res = await fetch(`${API_BASE}/products/orders/${orderId}/payment-proof`, {
+  const res = await apiFetch(`${API_BASE}/products/orders/${orderId}/payment-proof`, {
     method: 'POST',
     body: formData,
   })

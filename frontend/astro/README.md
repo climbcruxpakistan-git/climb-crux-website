@@ -11,15 +11,24 @@ npm install
 npm run dev
 ```
 
-> **Note:** The site fetches from the deployed backend API (`https://climb-crux-backend.onrender.com/api`) by default. To point at a local backend, set `VITE_API_URL=http://localhost:4000/api` in a `.env` file (or your shell).
+> **Note:** `astro dev` defaults to the local backend (`http://localhost:4000/api`) so pages render even when the deployed API is unreachable. If `VITE_API_URL` is set (shell or `.env`), it takes precedence. Production builds use the deployed backend by default — see [Configuration](#-configuration).
 
 ---
 
 ## 🔧 Configuration
 
+`VITE_API_URL` configures the backend API base URL at **build time** — it is read by `astro build` and by `scripts/generate-sitemap.mjs`, so both always target the same API. Set it in your shell or in `frontend/astro/.env` (copy `.env.example`).
+
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `VITE_API_URL` | `https://climb-crux-backend.onrender.com/api` | Backend API base URL |
+| `VITE_API_URL` | dev: `http://localhost:4000/api` · build: `https://climb-crux-backend.onrender.com/api` | Backend API base URL |
+
+```bash
+# Build against a staging/local backend instead of the default
+VITE_API_URL=https://staging-api.example.com/api npm run build
+```
+
+All build-time API requests time out after 10 seconds and fall back to empty/default content, so an unreachable backend cannot hang the build.
 
 The site URL is set in `astro.config.mjs` (`site: 'https://climbcruxpakistan.com'`).
 

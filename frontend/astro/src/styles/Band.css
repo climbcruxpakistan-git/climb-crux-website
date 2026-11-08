@@ -79,13 +79,13 @@
 }
 
 /* Item row: one continuous orange rule along the top, plain text columns —
-   no cards, no side borders, no shadow, no radius, no hover. column-gap 0
-   keeps the dividers continuous; align-items start lets columns without
-   extras (grade scale / stat) simply end earlier. */
+   no cards, no side borders, no shadow, no radius, no hover. A 24px gap keeps
+   text columns from touching; align-items start lets columns without extras
+   (grade scale / stat) simply end earlier. */
 .band-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  column-gap: 0;
+  column-gap: 24px;
   align-items: start; /* columns without extras simply end earlier */
   border-top: 3px solid var(--orange);
 }
@@ -104,7 +104,7 @@
 
 .band-item:last-child {
   border-right: none;
-  padding-right: 0;
+  padding-right: 28px;
 }
 
 /* Class-scoped (never the bare tag): the global h1-h4 rule in index.css and
@@ -117,13 +117,6 @@
   font-size: clamp(1.1rem, 1.6vw, 1.3rem);
   line-height: 1.15;
   letter-spacing: normal;
-  white-space: normal;
-}
-
-@media (min-width: 1100px) {
-  .band-item-title {
-    white-space: nowrap;
-  }
 }
 
 .band-item p {
@@ -220,6 +213,11 @@
     padding: 28px 0 28px 24px;
     border-right: none;
     border-bottom: 1px solid var(--band-divider);
+  }
+
+  /* Keep the final column's text off the container edge here too. */
+  .band-item:last-child {
+    padding-right: 24px;
   }
 
   /* Left column starts flush with the container edge; the right column keeps

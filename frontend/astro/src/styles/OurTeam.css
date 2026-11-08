@@ -4,6 +4,13 @@
   gap: 32px;
 }
 
+/* Four instructors across on the large container. */
+@media (min-width: 1320px) {
+  .instructor-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .instructor-card {
   background: var(--chalk);
   border: 1px solid var(--chalk-dim);

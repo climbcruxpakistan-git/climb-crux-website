@@ -42,6 +42,11 @@ export default defineConfig({
     '/rock-climbing-guide-islamabad/routes': '/rock-climbing-guide-islamabad/',
   },
   vite: {
+    // Astro only exposes PUBLIC_* variables to import.meta.env by default, so
+    // VITE_API_URL was silently ignored (builds always used the hardcoded
+    // fallback). Allow VITE_* so the documented build-time API URL works in
+    // both the client bundle and the prerender/server bundle.
+    envPrefix: ['VITE_', 'PUBLIC_'],
     server: {
       // Allow the dev server to serve files from this project plus the shared
       // config at ../../shared/contact.js. Providing fs.allow replaces the

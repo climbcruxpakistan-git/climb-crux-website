@@ -23,9 +23,16 @@
   --font-body: 'Work Sans', sans-serif;
 
   /* Layout */
-  --max-width: 1180px;
+  --max-width: 1320px;
   --edge: clamp(20px, 5vw, 64px);
   --radius: 3px;
+}
+
+/* Wide desktops get a little more room without stretching the text columns. */
+@media (min-width: 1600px) {
+  :root {
+    --max-width: 1440px;
+  }
 }
 
 * {

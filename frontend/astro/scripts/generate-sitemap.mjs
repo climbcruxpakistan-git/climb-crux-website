@@ -4,15 +4,30 @@
  * (shop listing, shop products, team members) fetched from the API so they
  * stay indexed. Run after `astro build`.
  */
-import { readdirSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildCollections } from '../src/gallery/data.js'
 import { categorySlug } from '../src/lib/shopCategories.js'
 
+// This script runs after `astro build`, outside Vite, so load the same .env
+// files Vite reads — otherwise VITE_API_URL set only in .env would configure
+// the build but not the sitemap. Real environment variables win over files.
+for (const file of ['.env', '.env.local', '.env.production']) {
+  const envPath = fileURLToPath(new URL(`../${file}`, import.meta.url))
+  if (existsSync(envPath)) process.loadEnvFile(envPath)
+}
+
 const SITE_URL = 'https://www.climbcruxpakistan.com'
 const DIST_DIR = fileURLToPath(new URL('../.vercel/output/static', import.meta.url))
-const API_BASE = process.env.VITE_API_URL || 'https://climb-crux-backend.onrender.com/api'
+const DEFAULT_PROD_API = 'https://climb-crux-backend.onrender.com/api'
+const API_BASE = process.env.VITE_API_URL || DEFAULT_PROD_API
+
+// Don't let an unreachable API stall the build — time out and skip the
+// dynamic URLs, matching the page-level .catch() fallbacks.
+const REQUEST_TIMEOUT_MS = 10_000
+const apiFetch = (url, options = {}) =>
+  fetch(url, { ...options, signal: options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
 
 /** Exclude these path patterns from the sitemap */
 function shouldExclude(pathname) {
@@ -78,7 +93,7 @@ async function fetchDynamicUrls() {
   urls.push({ loc: `${SITE_URL}/book-now/`, lastmod: today, priority: '0.9', changefreq: 'weekly' })
 
   try {
-    const res = await fetch(`${API_BASE}/products`)
+    const res = await apiFetch(`${API_BASE}/products`)
     const products = await res.json()
     for (const p of products) {
       // Raw API returns _id; fall back the same way mapId() does client-side
@@ -112,7 +127,7 @@ async function fetchDynamicUrls() {
     }
   } catch { /* API unreachable — skip dynamic product URLs */ }
   try {
-    const res = await fetch(`${API_BASE}/team`)
+    const res = await apiFetch(`${API_BASE}/team`)
     const members = await res.json()
     for (const m of members) {
       const id = m.id || m._id
@@ -131,8 +146,8 @@ async function fetchDynamicUrls() {
   // admin), so its URLs never show up in the static scan above.
   try {
     const [galleryRes, uploadsRes] = await Promise.all([
-      fetch(`${API_BASE}/gallery`),
-      fetch(`${API_BASE}/uploads`),
+      apiFetch(`${API_BASE}/gallery`),
+      apiFetch(`${API_BASE}/uploads`),
     ])
     if (galleryRes.ok) {
       const uploads = uploadsRes.ok ? await uploadsRes.json() : []

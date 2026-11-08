@@ -471,6 +471,16 @@
   gap: clamp(16px, 2vw, 24px);
 }
 
+/* Four across once the large container kicks in. The 252px filter sidebar and
+   the 44px gap leave ~896px for products at 1320px, so a 230px minimum cannot
+   fit four tracks (4×230 + 3×24 = 992px); let the tracks share the space
+   instead of overflowing. */
+@media (min-width: 1320px) {
+  .sp-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .sp-card {
   position: relative;
   display: flex;

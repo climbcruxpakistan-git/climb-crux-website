@@ -196,6 +196,13 @@
   color: var(--chalk-dim);
 }
 
+/* Full-width footer, matching the Astro frontend: the columns align with the
+   navbar and page edges instead of the 1180px content column. */
+.footer .wrap {
+  max-width: none;
+  padding-inline: var(--edge);
+}
+
 .footer-inner {
   display: grid;
   grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
