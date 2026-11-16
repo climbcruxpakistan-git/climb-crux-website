@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { getPlans, getSessionContent } from '../../lib/api'
-import BandSection from './BandSection.jsx'
+import Testimonials from './Testimonials.jsx'
 
 const DEFAULT_CUSTOM_ITEMS = [
-  { h: 'Climbing difficulty', p: "Choose the climbing difficulty you want to try, from easy routes to more challenging climbs for experienced climbers." },
-  { h: 'Group size', p: "Come on your own, bring your own group or invite a few friends. We'll arrange the session according to your group size." },
-  { h: 'Session duration', p: 'Choose a half-day, full-day, or multiple sessions based on your availability and climbing goals.' },
-  { h: 'Training focus', p: "Tell us what you'd like to focus on, whether it's improving your climbing technique, building endurance or joining a specific climbing workshop." },
+  { h: 'How difficult should it be?', p: 'Choose the climbing difficulty you want to try, from easy routes to more challenging climbs for experienced climbers.' },
+  { h: 'Who is coming with you?', p: "Come on your own, bring your own group or invite a few friends. We'll arrange the session according to your group size." },
+  { h: 'How long do you want to climb?', p: 'Choose a half-day, full-day, or multiple sessions based on your availability and climbing goals.' },
+  { h: 'What do you want to work on?', p: "Tell us what you'd like to focus on \u2014 improving your climbing technique, building endurance or joining a specific climbing workshop." },
 ]
 
 const DEFAULT_CUSTOM_FEATURES = ['Pick your own date, time & group size', 'Choose the grade and climbing focus', 'Solo, small group, or large private group', 'Full gear & certified instructor included']
@@ -76,11 +76,23 @@ export default function PremiumContent({ initial }) {
         </div>
       </section>
 
-      <BandSection
-        title={c.ppCustomSectionTitle || 'Built around your goal, not a template'}
-        lede="Tell us what you're training toward. We shape the day around it."
-        items={ppCustomItems}
-      />
+      <Testimonials />
+
+      {/* Same accordion as the public sessions page FAQ: the four things we
+          customize, each one asked as a question. */}
+      <section className="section faq-section">
+        <div className="wrap">
+          <h2>Frequently asked questions</h2>
+          <div className="faq">
+            {ppCustomItems.map((item, i) => (
+              <details key={item.h || i}>
+                <summary>{item.h}</summary>
+                <p>{item.p}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
     </>
   )
 }

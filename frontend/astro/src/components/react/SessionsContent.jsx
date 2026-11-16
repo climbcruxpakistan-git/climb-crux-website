@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAvailableSessions, getSessionContent } from '../../lib/api'
 import BandSection from './BandSection.jsx'
+import Testimonials from './Testimonials.jsx'
 
 /** "2026-08-15" → "Saturday, 01-10-2026" (weekday + DD-MM-YYYY) */
 function formatShortDate(iso) {
@@ -159,6 +160,8 @@ export default function SessionsContent({ initial }) {
           </div>
         </div>
       </section>
+
+      <Testimonials />
 
       <BandSection
         title={c.includedSectionTitle || 'Everything you need, nothing to bring'}

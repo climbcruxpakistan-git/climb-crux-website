@@ -4,6 +4,7 @@ import CliffEdge from './CliffEdge.jsx'
 import HeroSlider from './HeroSlider.jsx'
 import PickAdventure from './PickAdventure.jsx';
 import Workshops from './Workshops.jsx';
+import Testimonials from './Testimonials.jsx';
 import LifeOnTheRock from './LifeOnTheRock.jsx';
 import RockClimbingPakistan from './RockClimbingPakistan.jsx';
 
@@ -163,6 +164,7 @@ export default function HomeContent({ initial }) {
         publicImage={heroPhotoUrl}
         privateImage="https://res.cloudinary.com/ivvx77mg/image/upload/v1784735793/climb-crux/o5g2kwkbnfqwr4azraze.jpg"
       />
+      <Testimonials />
       <Workshops />
 
       <LifeOnTheRock />

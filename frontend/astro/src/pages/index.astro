@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import HomeContent from '../components/react/HomeContent.jsx';
 import { getHomeContent, getUploads } from '../lib/api';
 import '../styles/Home.css';
+import '../styles/Testimonials.css';
 
 const content = await getHomeContent().catch(() => null);
 const uploads = await getUploads().catch(() => []);

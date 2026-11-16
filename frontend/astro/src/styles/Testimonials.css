@@ -1,0 +1,86 @@
+/* ============================================================================
+   Fixed climber testimonials — the dark quote card from the review slider
+   (Reviews.css), three across. No section background so the strip sits on
+   whatever the page already uses; only the cards themselves are dark.
+   ============================================================================ */
+
+.tst {
+  padding: clamp(40px, 6vw, 72px) 0 clamp(24px, 4vw, 40px);
+}
+
+.tst-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.tst-card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 34px 34px 26px;
+  border-radius: 18px;
+  background: #26262a;
+  color: #f6efe3;
+  box-shadow: 0 18px 40px rgba(38, 38, 42, 0.18);
+}
+
+.tst-text {
+  flex: 1;
+  margin: 0;
+  /* The global `p` rule paints paragraphs stone-grey and caps them at 60ch;
+     the card sets its own colour so the quote stays cream on charcoal. */
+  color: inherit;
+  max-width: none;
+  font-family: var(--font-body, 'Work Sans', sans-serif);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+/* Orange opening / closing quotation marks, same as the review cards. */
+.tst-qm {
+  font-family: var(--font-display, Oswald, sans-serif);
+  color: #f47321;
+  font-size: 1.6em;
+  line-height: 0;
+  vertical-align: -0.12em;
+}
+
+.tst-footer {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid #45454b;
+}
+
+.tst-name {
+  margin: 0;
+  color: inherit;
+  max-width: none;
+  font-family: var(--font-display, Oswald, sans-serif);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+.tst-name span {
+  color: rgba(246, 239, 227, 0.68);
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .tst-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .tst-card {
+    padding: 26px 24px 20px;
+  }
+
+  .tst-text {
+    font-size: 1rem;
+  }
+}

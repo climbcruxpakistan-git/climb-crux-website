@@ -6,6 +6,11 @@ dist/
 
 # Local design screenshots
 frontend/astro/.shots/
+.email-review/
+.payment-review/
+
+# Temporary browser/debug probe scripts
+frontend/astro/.probe*.mjs
 
 # Environment variables
 .env
