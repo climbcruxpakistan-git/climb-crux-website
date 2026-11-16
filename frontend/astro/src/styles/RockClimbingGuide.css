@@ -1036,6 +1036,13 @@
   .explorer-search-row {
     flex-wrap: wrap;
   }
+
+  /* iOS zooms the whole page when a focused field's text is smaller than 16px,
+     which left the route finder half off-screen after typing a search. */
+  .explorer-search,
+  .explorer-select {
+    font-size: 1rem;
+  }
   .explorer-clear {
     margin: 8px 0 0;
   }

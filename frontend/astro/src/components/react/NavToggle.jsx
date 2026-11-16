@@ -56,7 +56,7 @@ export default function NavToggle() {
         .navbar-toggle.is-open span:nth-child(3) {
           transform: translateY(-8px) rotate(-45deg);
         }
-        @media (min-width: 861px) {
+        @media (min-width: 1200px) {
           .navbar-toggle { display: none; }
         }
       `}</style>

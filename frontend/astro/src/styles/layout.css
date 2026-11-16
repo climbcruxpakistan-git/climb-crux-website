@@ -18,7 +18,10 @@
   max-width: 100%;
 }
 
-@media (max-width: 860px) {
+/* The desktop row (logo + 7 links + 2 CTAs) needs ~1200px; below that it
+   squashed the logo to zero width and wrapped link labels, so the menu takes
+   over earlier. */
+@media (max-width: 1199px) {
   .navbar {
     position: relative;
   }
@@ -89,7 +92,7 @@
   flex-shrink: 0;
 }
 
-@media (min-width: 861px) {
+@media (min-width: 1200px) {
   .navbar-toggle {
     display: none;
   }
@@ -116,7 +119,7 @@
   transform: translateY(-8px) rotate(-45deg);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1199px) {
   .navbar-toggle {
     display: flex;
   }
@@ -136,8 +139,12 @@
     transition: max-height 0.25s ease;
   }
 
+  /* A landscape phone is shorter than the menu; cap it to the space under the
+     header and let the menu scroll so no link is stranded off-screen. */
   .navbar-links.is-open {
-    max-height: 640px;
+    max-height: min(640px, calc(100vh - 88px));
+    max-height: min(640px, calc(100dvh - 88px));
+    overflow-y: auto;
   }
 
   .navbar-link {
@@ -174,6 +181,10 @@
 @media (max-width: 500px) {
   .navbar-links {
     top: 68px;
+  }
+  .navbar-links.is-open {
+    max-height: calc(100vh - 68px);
+    max-height: calc(100dvh - 68px);
   }
   .navbar-link {
     padding: 14px var(--edge);

@@ -31,4 +31,9 @@
 .gc-key li[data-band='expert']::before { background:var(--b-expert); }
 .gc-hint { margin:10px 0 0; font-size:.72rem; color:var(--stone,#8c8578); }
 @media (prefers-reduced-motion: reduce) { .gc-bar { transition:none; } }
-@media (max-width:560px) { .gc { padding:18px 14px 14px; } .gc-plot { height:180px; margin-left:24px; } .gc-x { font-size:.5rem; } .gc-cols { gap:3px; } }
+/* Phone: 18 grade columns never fit as horizontal ticks — at 8px the labels
+   ran into each other ("5b 5c 5c+"). Angle them under their own bar instead,
+   so every grade stays separate and readable. */
+@media (max-width:560px) { .gc { padding:18px 14px 14px; } .gc-plot { height:180px; margin-left:24px; margin-bottom:54px; }
+  .gc-x { font-size:.58rem; bottom:-22px; transform:translateX(-100%) rotate(-70deg); transform-origin:100% 100%; }
+  .gc-cols { gap:3px; } }

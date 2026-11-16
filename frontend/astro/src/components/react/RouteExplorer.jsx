@@ -194,6 +194,24 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
     ? matched.find((r) => r.name === selectedName) || routes.find((r) => r.name === selectedName)
     : null
 
+  // On phones/tablets the preview is a bottom sheet, so freeze the page behind
+  // it: otherwise a swipe that runs out of preview content scrolls the route
+  // list underneath instead. Released when the sheet closes or the layout
+  // widens back to the desktop side-by-side preview.
+  useEffect(() => {
+    if (!selectedName) return undefined
+    const desktop = window.matchMedia('(min-width: 981px)')
+    const sync = () => {
+      document.body.style.overflow = desktop.matches ? '' : 'hidden'
+    }
+    sync()
+    desktop.addEventListener('change', sync)
+    return () => {
+      desktop.removeEventListener('change', sync)
+      document.body.style.overflow = ''
+    }
+  }, [selectedName])
+
   const update = (patch) => setFilters((current) => ({ ...current, ...patch }))
   const reset = () => setFilters(defaultFilters())
   const searchActive = filters.search.trim() !== ''
@@ -290,6 +308,12 @@ export default function RouteExplorer({ routes, areas, mode = 'full' }) {
               />
             ))}
           </ul>
+          {/* Dimmed page behind the phone sheet — tapping it closes the preview. */}
+          <div
+            className={`rx-scrim${selected ? ' is-open' : ''}`}
+            onClick={() => setSelectedName(null)}
+            aria-hidden="true"
+          />
           <aside className={`rx-aside${selected ? ' is-open' : ''}`}>
             <RoutePreview
               route={selected}
