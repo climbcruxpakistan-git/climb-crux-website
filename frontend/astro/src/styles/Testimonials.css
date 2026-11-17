@@ -1,86 +1,82 @@
 /* ============================================================================
-   Fixed climber testimonials — the dark quote card from the review slider
-   (Reviews.css), three across. No section background so the strip sits on
-   whatever the page already uses; only the cards themselves are dark.
+   Fixed climber testimonials — the sliding dark quote cards from the review
+   slider (Reviews.css), with the quote, name and country instead of a date.
+   No section background so the strip sits on whatever the page already uses;
+   only the cards themselves are dark. The slider, card and dot styles all come
+   from Reviews.css, which every page using this component imports.
    ============================================================================ */
 
 .tst {
   padding: clamp(40px, 6vw, 72px) 0 clamp(24px, 4vw, 40px);
 }
 
-.tst-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
+/* Subtitle under the section heading. */
+.tst .rv-heading {
+  margin-bottom: 12px;
 }
 
-.tst-card {
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 34px 34px 26px;
-  border-radius: 18px;
-  background: #26262a;
-  color: #f6efe3;
-  box-shadow: 0 18px 40px rgba(38, 38, 42, 0.18);
-}
-
-.tst-text {
-  flex: 1;
-  margin: 0;
-  /* The global `p` rule paints paragraphs stone-grey and caps them at 60ch;
-     the card sets its own colour so the quote stays cream on charcoal. */
-  color: inherit;
+.tst .rv-lede {
+  margin: 0 auto;
+  /* No character cap: the subtitle reads as one line on desktop and only
+     wraps on narrower screens. */
   max-width: none;
-  font-family: var(--font-body, 'Work Sans', sans-serif);
-  font-size: 1.05rem;
-  line-height: 1.65;
-  overflow-wrap: anywhere;
+  text-align: center;
+  color: var(--rv-side-name);
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
-/* Orange opening / closing quotation marks, same as the review cards. */
-.tst-qm {
-  font-family: var(--font-display, Oswald, sans-serif);
-  color: #f47321;
-  font-size: 1.6em;
-  line-height: 0;
-  vertical-align: -0.12em;
+/* These quotes have no date and no "More" dialog, so the card height follows
+   the longest quote instead of the review slider's fixed landscape shape with
+   a line clamp — every quote stays readable at every width. */
+.tst .rv-card {
+  aspect-ratio: auto;
+  align-self: stretch;
+  min-height: clamp(240px, 24vw, 340px);
 }
 
-.tst-footer {
-  margin-top: 22px;
-  padding-top: 14px;
-  border-top: 1px solid #45454b;
+.tst .rv-text {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
 }
 
-.tst-name {
-  margin: 0;
+/* No review date on these quotes — the reviewer sits on the right, as in the
+   original testimonial strip. */
+.tst .rv-footer {
+  justify-content: flex-end;
+}
+
+.tst-country {
   color: inherit;
-  max-width: none;
-  font-family: var(--font-display, Oswald, sans-serif);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.95rem;
-  text-align: right;
-}
-
-.tst-name span {
-  color: rgba(246, 239, 227, 0.68);
   font-weight: 500;
+  opacity: 0.68;
 }
 
-@media (max-width: 900px) {
-  .tst-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+/* Dots are only 10px visually — give them a 34px tap target without changing
+   how they look. */
+.tst .rv-dot {
+  position: relative;
+}
+
+.tst .rv-dot::after {
+  content: '';
+  position: absolute;
+  /* Tall target; horizontal edges meet the neighbouring dots instead of
+     overlapping them, so a tap never lands on the wrong dot. */
+  inset: -14px -4px;
+}
+
+@media (max-width: 640px) {
+  .tst {
+    padding: 40px 0 24px;
   }
 
-  .tst-card {
-    padding: 26px 24px 20px;
+  .tst .rv-lede {
+    font-size: 0.95rem;
   }
 
-  .tst-text {
-    font-size: 1rem;
+  .tst .rv-card {
+    min-height: 0;
   }
 }

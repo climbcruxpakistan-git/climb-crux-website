@@ -8,7 +8,9 @@
    A neighbour is shifted by 50% of its own width, putting its centre on the
    active card's edge: half hidden behind it, half free on its own side. */
 
-.rv-section {
+/* Shared by the session review slider and the fixed testimonials slider. */
+.rv-section,
+.tst {
   --rv-bg: #F5EEE2;
   --rv-ink: #26262A;
   --rv-cream: #F6EFE3;
@@ -20,7 +22,9 @@
   --rv-side-name: #6B604D;
   --rv-line: #45454B;
   --rv-ease: cubic-bezier(.65, .05, .25, 1);
+}
 
+.rv-section {
   padding: 72px 0 80px;
   background: var(--rv-bg);
 }
@@ -378,9 +382,25 @@
   .rv-text { font-size: 19px; -webkit-line-clamp: 3; }
   .rv-latest-tag { top: 8px; left: 14px; }
 
-  /* No room for outside arrows beside the peeks — swipe, dots and tapping
-     the side cards take over. */
-  .rv-arrow { display: none; }
+  /* No room outside the window, so the arrows become small buttons
+     overlaid on the peeking cards' edges — always visible navigation that
+     doesn't cover the active quote. Swipe and the dots still work too. */
+  .rv-slider { position: relative; }
+
+  .rv-arrow {
+    display: grid;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 6;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    font-size: 1.15rem;
+  }
+
+  .rv-prev { left: 2px; }
+  .rv-next { right: 2px; }
 
   .rv-date { font-size: 0.8rem; }
   .rv-more { font-size: 0.78rem; }
