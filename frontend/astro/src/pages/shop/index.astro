@@ -5,6 +5,7 @@ import ShopAnnouncementBar from '../../components/astro/ShopAnnouncementBar.astr
 import Shop from '../../components/react/Shop.jsx';
 import { getProducts } from '../../lib/api';
 import { categorySlug } from '../../lib/shopCategories';
+import { productTitle } from '../../lib/productTitle.js';
 import '../../styles/Shop.css';
 
 // Rendered on-demand so the ItemList structured data always reflects the current
@@ -38,7 +39,7 @@ const itemListJsonLd = {
   itemListElement: liveProducts.map((p, i) => ({
     '@type': 'ListItem',
     position: i + 1,
-    name: p.name,
+    name: productTitle(p),
     url: `${SITE_URL}/shop/${p.id}/`,
     image: p.imageUrl || undefined,
   })),

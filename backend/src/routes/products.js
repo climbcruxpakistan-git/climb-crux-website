@@ -455,6 +455,8 @@ router.post('/', requireAdmin, async (req, res, next) => {
       slug: req.body.slug || slugify(req.body.name),
       brand: req.body.brand || '',
       sku: req.body.sku || '',
+      gtin: req.body.gtin || '',
+      mpn: req.body.mpn || '',
       category: req.body.category || 'Uncategorized',
       condition: condition ?? '',
       price: req.body.price,
@@ -490,7 +492,7 @@ router.put('/:id', requireAdmin, async (req, res, next) => {
   try {
     const update = {}
     const fields = [
-      'name', 'brand', 'slug', 'sku', 'category', 'condition',
+      'name', 'brand', 'slug', 'sku', 'gtin', 'mpn', 'category', 'condition',
       'price', 'compareAtPrice', 'originalPrice',
       'description',
       'imageUrl', 'featuredImageAlt', 'images',

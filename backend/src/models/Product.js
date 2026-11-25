@@ -2,10 +2,14 @@ import mongoose from 'mongoose'
 
 const productSchema = new mongoose.Schema({
   // ── Basic Information ──
-  name: { type: String, required: true },
+  name: { type: String, required: true, trim: true },
   brand: { type: String, default: '' },
   slug: { type: String, default: '' },
   sku: { type: String, default: '' },
+  // Google product identifiers. gtin is the barcode (UPC/EAN/JAN/ISBN); mpn is
+  // the manufacturer's part number, used when the item has no barcode.
+  gtin: { type: String, default: '', trim: true },
+  mpn: { type: String, default: '', trim: true },
   category: { type: String, default: 'Uncategorized' },
   condition: { type: String, enum: ['', 'Brand New', 'Almost New', 'Slightly Used', 'Used', 'Old'], default: '' },
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getProducts, optimizeImage } from '../../lib/api'
 import { CONDITION_CONFIG, normalizeCondition } from '../../lib/conditions'
+import { displayBrand, productTitle } from '../../lib/productTitle'
 
 const WISHLIST_KEY = 'cc_wishlist'
 
@@ -144,6 +145,8 @@ function ProductCard({ product, saved, onToggleSave }) {
   const available = stock.status !== 'out_of_stock'
   const href = `/shop/${product.id}/`
   const image = product.imageUrl || product.images?.[0]
+  const title = productTitle(product)
+  const brandLabel = displayBrand(product.brand)
 
   return (
     <article className="sp-card">
@@ -188,12 +191,17 @@ function ProductCard({ product, saved, onToggleSave }) {
       </div>
 
       <div className="sp-card-body">
-        <div className="sp-card-brandline">
-          <span className="sp-card-brand">{product.brand || product.category || 'Climb Crux'}</span>
-        </div>
+        {/* The brand is part of the title below, so the eyebrow is only shown
+            when it would add something (category fallback, or a brand the name
+            doesn't already start with). */}
+        {(!brandLabel || !title.toLowerCase().startsWith(brandLabel.toLowerCase())) && (
+          <div className="sp-card-brandline">
+            <span className="sp-card-brand">{brandLabel || product.category || 'Climb Crux'}</span>
+          </div>
+        )}
 
         <h3 className="sp-card-title">
-          <a href={href}>{product.name}</a>
+          <a href={href}>{title}</a>
         </h3>
 
         <div className="sp-card-price">

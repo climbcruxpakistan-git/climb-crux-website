@@ -57,7 +57,7 @@ export default function ShopManager() {
 
   // â”€â”€ Form state â”€â”€
   const [form, setForm] = useState({
-    name: '', slug: '', sku: '', brand: '', category: 'Uncategorized', condition: '',
+    name: '', slug: '', sku: '', gtin: '', mpn: '', brand: '', category: 'Uncategorized', condition: '',
     price: '', compareAtPrice: '',
     description: '',
     imageUrl: '', featuredImageAlt: '', images: emptyImages(),
@@ -139,7 +139,7 @@ export default function ShopManager() {
   // â”€â”€ Form helpers â”€â”€
   function emptyForm() {
     setForm({
-      name: '', slug: '', sku: '', brand: '', category: 'Uncategorized', condition: '',
+      name: '', slug: '', sku: '', gtin: '', mpn: '', brand: '', category: 'Uncategorized', condition: '',
       price: '', compareAtPrice: '',
       description: '',
       imageUrl: '', featuredImageAlt: '', images: emptyImages(),
@@ -168,6 +168,8 @@ export default function ShopManager() {
       name: p.name || '',
       slug: p.slug || '',
       sku: p.sku || '',
+      gtin: p.gtin || '',
+      mpn: p.mpn || '',
       brand: p.brand || '',
       category: p.category || 'Uncategorized',
       condition: p.condition || (featureList.find((f) => /^condition:/i.test(f)) || '').replace(/^condition:\s*/i, '') || '',
@@ -210,6 +212,8 @@ export default function ShopManager() {
       name: form.name,
       slug: form.slug,
       sku: form.sku,
+      gtin: form.gtin,
+      mpn: form.mpn,
       brand: form.brand,
       category: form.category,
       condition: String(form.condition || '').trim(),
@@ -383,6 +387,18 @@ export default function ShopManager() {
             <label>Category</label>
             <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Harnesses & Belay" />
             <span className="field-hint">Used for the shop's category filter buttons.</span>
+          </div>
+        </div>
+        <div className="admin-form-row">
+          <div className="admin-field">
+            <label>GTIN / Barcode</label>
+            <input value={form.gtin} onChange={(e) => setForm({ ...form, gtin: e.target.value })} placeholder="e.g. 3342540834887" />
+            <span className="field-hint">The UPC/EAN/JAN/ISBN number from the product's barcode. Leave empty for used gear sold without packaging.</span>
+          </div>
+          <div className="admin-field">
+            <label>MPN</label>
+            <input value={form.mpn} onChange={(e) => setForm({ ...form, mpn: e.target.value })} placeholder="e.g. D13A" />
+            <span className="field-hint">Manufacturer part number — the identifier Google uses when there is no barcode.</span>
           </div>
         </div>
         <div className="admin-field">

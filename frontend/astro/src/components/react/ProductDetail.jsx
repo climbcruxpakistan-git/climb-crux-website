@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { getProduct, getProducts, getProductReviews, submitProductReview, optimizeImage } from '../../lib/api'
 import { CONDITION_CONFIG, normalizeCondition } from '../../lib/conditions'
+import { displayBrand, productTitle } from '../../lib/productTitle'
 
 const WHATSAPP = '923350044403'
 const SITE_URL = 'https://www.climbcruxpakistan.com'
@@ -262,6 +263,8 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
   // â”€â”€ Derived display data â”€â”€
   const parsed = parseDescription(product.description)
   const specs = product.specifications?.length ? product.specifications : parsed.rows
+  const title = productTitle(product)
+  const brandLabel = displayBrand(product.brand)
   const condition = normalizeCondition(product.condition) || normalizeCondition((product.features || []).find((f) => /^condition:/i.test(String(f || '')))?.replace(/^condition:\s*/i, '') || '')
 
   const qty = product.stockQuantity ?? 10
@@ -289,7 +292,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
         <nav className="px-crumbs" aria-label="Breadcrumb">
           <a href="/shop/">Shop</a><span>›</span>
           <a href={`/shop/?cat=${encodeURIComponent(product.category)}`}>{product.category}</a><span>›</span>
-          <strong>{product.name}</strong>
+          <strong>{title}</strong>
         </nav>
 
         <div className={`px-top ${allImages.length > 1 ? 'has-thumbs' : ''}`}>
@@ -319,11 +322,13 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
 
           {/* â”€â”€ Buy box â”€â”€ */}
           <div className="px-buy">
-            {product.brand && <span className="px-brand">{product.brand}</span>}
+            {brandLabel && !title.toLowerCase().startsWith(brandLabel.toLowerCase()) && (
+              <span className="px-brand">{brandLabel}</span>
+            )}
             {/* Name and badge share one non-wrapping row, so the badge always
                 sits on the same line as the product name. */}
             <div className="px-headline">
-              <h1 className="px-title">{product.name}</h1>
+              <h1 className="px-title">{title}</h1>
             </div>
             {reviewData.total > 0 && (
               <a className="px-rating" href="#reviews"><StarRating rating={reviewData.avgRating} size={16} /> {reviewData.avgRating} ({reviewData.total})</a>
@@ -375,6 +380,14 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
           </div>
         </div>
 
+        {/* â”€â”€ Description (prose lines from the admin description) â”€â”€ */}
+        {parsed.intro.length > 0 && (
+          <div className="px-description">
+            <h2>Description</h2>
+            {parsed.intro.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+          </div>
+        )}
+
         {/* â”€â”€ Specifications â”€â”€ */}
         {(specs.length > 0 || parsed.bullets.length > 0) && (
           <div className="px-specs">
@@ -397,7 +410,7 @@ export default function ProductDetail({ id, initialProduct, initialAllProducts, 
                   </div>
                   <div className="px-card-body">
                     {p.brand && <span className="px-brand">{p.brand}</span>}
-                    <h3>{p.name}</h3>
+                    <h3>{productTitle(p)}</h3>
                     <p><b>PKR {p.price.toLocaleString()}</b>{p.compareAtPrice > p.price && <s>PKR {p.compareAtPrice.toLocaleString()}</s>}</p>
                   </div>
                 </a>

@@ -75,6 +75,12 @@
 .px-policies a:hover { text-decoration: underline; }
 .px-policies span { color: var(--stone); }
 
+/* Description — prose from the admin description field */
+.px-description { margin-top: 40px; background: #fff; border: 1px solid var(--px-line); border-radius: 16px; padding: 24px; }
+.px-description h2 { font-size: 1.5rem; margin: 0 0 12px; }
+.px-description p { margin: 0 0 .8em; font-size: .95rem; line-height: 1.7; color: var(--stone-dark); }
+.px-description p:last-child { margin-bottom: 0; }
+
 /* Specifications — full-width row under the buy box */
 .px-specs { margin-top: 40px; background: #fff; border: 1px solid var(--px-line); border-radius: 16px; padding: 24px; }
 .px-specs h2 { font-size: 1.5rem; margin: 0 0 12px; }
@@ -126,7 +132,7 @@
 
 @media (max-width: 860px) {
   .px-top { grid-template-columns: 1fr; gap: 28px; }
-  .px-specs { margin-top: 28px; }
+  .px-specs, .px-description { margin-top: 28px; }
   .px-buy { align-self: start; }
   .px-grid { grid-template-columns: repeat(2, 1fr); }
   .px-section, .px { padding-bottom: 88px; }

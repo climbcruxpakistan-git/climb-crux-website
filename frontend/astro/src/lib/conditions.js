@@ -1,5 +1,16 @@
 ﻿export const CONDITIONS = ['Brand New', 'Almost New', 'Slightly Used', 'Used', 'Old']
 
+// schema.org itemCondition values for product structured data. Google reads
+// these; anything pre-owned maps to UsedCondition because Shopping only knows
+// new / used / refurbished.
+export const CONDITION_SCHEMA_URL = {
+  'Brand New': 'https://schema.org/NewCondition',
+  'Almost New': 'https://schema.org/UsedCondition',
+  'Slightly Used': 'https://schema.org/UsedCondition',
+  'Used': 'https://schema.org/UsedCondition',
+  'Old': 'https://schema.org/UsedCondition',
+}
+
 export const CONDITION_CONFIG = {
   'Brand New':     { label: 'Brand New',     icon: 'circle-check', bg: '#E6F4EC', fg: '#1E7B4A' },
   'Almost New':    { label: 'Almost New',    icon: 'circle-check', bg: '#EEF3D6', fg: '#5A6B12' },
